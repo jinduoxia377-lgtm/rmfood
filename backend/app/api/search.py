@@ -12,6 +12,7 @@ from typing import Optional, List
 from ..api.deps import get_db_session, get_current_active_user
 from ..core.analytics_reports.search_engine import SearchEngine, SearchQuery, AdvancedFilter
 from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
+from ..core.multi_tenant.org_resolver import resolve_effective_org_id
 from ..models import User
 
 router = APIRouter(prefix="/search", tags=["搜索服务"])
@@ -28,13 +29,23 @@ def _apply_org_filter(query: SearchQuery, org_id: Optional[int]) -> SearchQuery:
     return query
 
 
-def _require_org(tenant: TenantContext) -> None:
-    """强制租户上下文：无 org_id 时禁止全平台搜索（P0 跨租户泄漏）。"""
-    if tenant.org_id is None:
+async def _require_search_org(
+    tenant: TenantContext,
+    current_user: Optional[User],
+    db: AsyncSession,
+) -> int:
+    """解析有效组织（Cookie 认证兼容），无有效组织时禁止全平台搜索（P0 隔离）。
+
+    tenant.org_id 为 None（如 Cookie 认证）时回退用户默认组织/首个活跃成员关系，
+    避免对已认证且有组织的用户误判为无租户而 403。
+    """
+    org_id = await resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="缺少组织租户上下文，禁止全平台范围搜索",
         )
+    return org_id
 
 
 @router.get("/global", summary="全局跨类型搜索")
@@ -55,7 +66,7 @@ async def global_search_endpoint(
     - 支持中文模糊匹配
     - P0：强制认证 + 按当前租户 org_id 过滤，杜绝跨租户泄漏
     """
-    _require_org(tenant)
+    org_id = await _require_search_org(tenant, current_user, db)
     type_list = [t.strip() for t in types.split(",") if t.strip()]
 
     # 直接用 advanced_search 并注入 organization_id 过滤（search_engine 不可改，
@@ -67,7 +78,7 @@ async def global_search_endpoint(
         try:
             query = _apply_org_filter(
                 SearchQuery(keyword=q, page=page, page_size=page_size),
-                tenant.org_id,
+                org_id,
             )
             res = await engine.advanced_search(type_name, query)
             results[type_name] = res.to_dict()
@@ -114,7 +125,7 @@ async def search_resource(
     - **created_from/to**: 时间范围
     - **facets**: 是否返回聚合统计
     """
-    _require_org(tenant)
+    org_id = await _require_search_org(tenant, current_user, db)
     engine = SearchEngine(db)
     
     # 构建查询对象
@@ -141,8 +152,8 @@ async def search_resource(
             )
         )
     
-    # P0：注入租户 org 过滤（organization_id == tenant.org_id）
-    _apply_org_filter(query, tenant.org_id)
+    # P0：注入租户 org 过滤（organization_id == 解析出的有效 org_id）
+    _apply_org_filter(query, org_id)
     
     result = await engine.advanced_search(resource_type, query)
     
