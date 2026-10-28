@@ -14,14 +14,29 @@
 - tcm_compound_targets — 化合物-靶点关联
 - tcm_target_diseases — 靶点-疾病关联
 """
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import datetime
+from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Integer, String, Float, Text, DateTime, JSON, Boolean, ForeignKey, Index, UniqueConstraint, Table, Column, BigInteger
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+
 from app.models.utils import now_utc_mapped
 
+from .base import Base
+
+if TYPE_CHECKING:
+    from .external_data import TCMHerb
 
 # ═══════════════════════════════════════════
 # 关联表（多对多）
@@ -243,8 +258,9 @@ class TCMDisease(Base):
 # 延迟导入避免循环引用
 def _patch_herb_relationships():
     """为 tcm_herbs 表添加化合物关系"""
-    from .external_data import TCMHerb
     from sqlalchemy.orm import relationship
+
+    from .external_data import TCMHerb
 
     # 添加化合物关系（多对多）
     if not hasattr(TCMHerb, 'compounds_rel'):

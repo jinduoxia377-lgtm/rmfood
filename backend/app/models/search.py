@@ -1,10 +1,8 @@
 """Search persistence ORM models (search_history, search_favorites, search_recent_views)"""
-from datetime import datetime
-from sqlalchemy import String, Text, Integer, Boolean, DateTime, JSON
+from sqlalchemy import BigInteger, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import BaseModel
-from .utils import now_utc_mapped
 
 
 class SearchHistory(BaseModel):

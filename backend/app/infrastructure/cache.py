@@ -1,18 +1,20 @@
-from typing import Optional, Any
-from datetime import timedelta
-import redis
 import json
+from datetime import timedelta
+from typing import Any, Optional
+
+import redis
+
 
 class CacheService:
     """Cache service abstraction for CQRS read models."""
-    
+
     def __init__(self, use_redis=False, host="localhost", port=6379):
         self.use_redis = use_redis
         if use_redis:
             self.client = redis.Redis(host=host, port=port, decode_responses=True)
         else:
             self._local_store = {}
-    
+
     def get(self, key: str) -> Optional[Any]:
         if self.use_redis:
             val = self.client.get(key)
@@ -20,7 +22,7 @@ class CacheService:
                 return json.loads(val)
             return None
         return self._local_store.get(key)
-    
+
     def set(self, key: str, value: Any, ttl: Optional[timedelta] = None) -> None:
         serialized = json.dumps(value)
         if self.use_redis:
@@ -30,7 +32,7 @@ class CacheService:
                 self.client.set(key, serialized)
         else:
             self._local_store[key] = serialized
-    
+
     def delete(self, key: str) -> None:
         if self.use_redis:
             self.client.delete(key)

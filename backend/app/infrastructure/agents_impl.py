@@ -6,16 +6,22 @@ Agent 基础设施实现（M2.2）
 2. AgentOrchestrator：任务编排、路由、结果聚合
 """
 from __future__ import annotations
-import logging
-import uuid
-import time
-from typing import Optional
 
+import logging
+import time
+import uuid
+
+from ..domain.agent_ports import AgentOrchestrator, BaseAgent
 from ..domain.agents import (
-    AgentRole, TaskType, TaskStatus, AgentTask, AgentResult,
-    AgentContext, FormulaProposal, SafetyReport, ConversationMessage,
+    AgentContext,
+    AgentResult,
+    AgentRole,
+    AgentTask,
+    ConversationMessage,
+    FormulaProposal,
+    SafetyReport,
+    TaskType,
 )
-from ..domain.agent_ports import BaseAgent, AgentOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +94,6 @@ class FormulaAgent(BaseAgent):
 
     async def _generate_formula(self, inputs: dict, context: AgentContext) -> FormulaProposal:
         target_effects = inputs.get("target_effects", ["抗氧化"])
-        budget = inputs.get("budget", 50)
         exclude = inputs.get("exclude_herbs", [])
 
         # 基于知识库匹配功效
@@ -214,7 +219,7 @@ class KnowledgeAgent(BaseAgent):
                 processing_time_ms=int((time.time() - start) * 1000),
                 sources=sources,
             )
-        except Exception as e:
+        except Exception:
             return AgentResult(
                 task_id=task.id, success=False, output={}, error="任务执行失败",
                 processing_time_ms=int((time.time() - start) * 1000),
@@ -238,7 +243,6 @@ class SafetyAgent(BaseAgent):
         start = time.time()
         try:
             ingredients = task.input.get("ingredients", [])
-            target_effects = task.input.get("target_effects", [])
 
             if not ingredients:
                 return AgentResult(
@@ -322,7 +326,7 @@ class SafetyAgent(BaseAgent):
                 confidence=0.9 if is_safe else 0.7,
                 processing_time_ms=int((time.time() - start) * 1000),
             )
-        except Exception as e:
+        except Exception:
             return AgentResult(
                 task_id=task.id, success=False, output={}, error="任务执行失败",
                 processing_time_ms=int((time.time() - start) * 1000),

@@ -1,17 +1,21 @@
 """API keys and webhooks ORM models"""
 from datetime import datetime
-from sqlalchemy import String, Text, Boolean, DateTime, Integer, BigInteger
+from typing import TYPE_CHECKING
+
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
-from .utils import now_utc_mapped
+
+if TYPE_CHECKING:
+    from .organization import Organization
 
 
 class ApiKey(BaseModel):
     """API key for programmatic access"""
     __tablename__ = "api_keys"
 
-    organization_id: Mapped[int] = mapped_column(BigInteger, nullable=False, index=True)
+    organization_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("organizations.id"), nullable=False, index=True)
     key_hash: Mapped[str] = mapped_column(String(256), unique=True, nullable=False)
     key_prefix: Mapped[str] = mapped_column(String(16), nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -22,7 +26,6 @@ class ApiKey(BaseModel):
 
     organization: Mapped["Organization"] = relationship(
         "Organization", back_populates="api_keys",
-        foreign_keys="[ApiKey.organization_id]",
     )
 
     def to_dict(self) -> dict:
@@ -66,7 +69,7 @@ class WebhookDelivery(BaseModel):
     """Webhook delivery record"""
     __tablename__ = "webhook_deliveries"
 
-    webhook_id: Mapped[int] = mapped_column(BigInteger, nullable=False, index=True)
+    webhook_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("webhooks.id"), nullable=False, index=True)
     event_type: Mapped[str] = mapped_column(String(100), nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="pending")  # pending, success, failed
     http_status: Mapped[int | None] = mapped_column(nullable=True)

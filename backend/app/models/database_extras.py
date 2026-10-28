@@ -9,7 +9,15 @@ from datetime import datetime
 from typing import Any, Optional
 
 from sqlalchemy import (
-    BigInteger, String, Text, Boolean, Float, JSON, DateTime, Integer, Index,
+    JSON,
+    BigInteger,
+    Boolean,
+    DateTime,
+    Float,
+    Index,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 

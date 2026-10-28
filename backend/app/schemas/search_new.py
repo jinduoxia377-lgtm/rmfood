@@ -3,7 +3,8 @@
 
 用于 Potion AI VFT x RMFOOD 深度融合方案的搜索 API。
 """
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 

@@ -4,14 +4,14 @@
 用于用量统计与成本分析。
 """
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-import sqlalchemy as sa
-from sqlalchemy import BigInteger, String, Integer, Text, DateTime, Index
+from sqlalchemy import BigInteger, DateTime, Index, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .base import Base
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class AiBotUsage(Base):

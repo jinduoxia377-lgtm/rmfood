@@ -17,15 +17,25 @@
 - degradation_rate ← tcm_compounds.logp + Arrhenius 加速稳定性模型（标注 model_derived）
 - shelf_life ← 降解速率 + ICH Q1A 货架期惯例（标注 model_derived）
 """
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
+
 from sqlalchemy import (
-    BigInteger, Integer, String, Text, DateTime, JSON, Float, Boolean,
-    CheckConstraint, ForeignKey,
+    JSON,
+    BigInteger,
+    CheckConstraint,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class TCMHerbPK(Base):

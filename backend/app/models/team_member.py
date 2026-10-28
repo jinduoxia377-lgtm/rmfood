@@ -3,12 +3,15 @@
 用于团队协作模块，管理团队成员的权限角色和邀请关系。
 支持 owner/admin/member/guest 四级权限体系。
 """
-from datetime import datetime, timezone
-from sqlalchemy import Integer, DateTime, Enum, ForeignKey, Index, UniqueConstraint, BigInteger
+from datetime import datetime
+
+from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.utils import now_utc_mapped
+
 from .base import Base
 from .enums import TeamRole
-from app.models.utils import now_utc_mapped
 
 
 class TeamMember(Base):

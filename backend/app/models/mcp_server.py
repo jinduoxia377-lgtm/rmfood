@@ -6,14 +6,15 @@
 - 认证 token 加密存储
 """
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import sqlalchemy as sa
-from sqlalchemy import BigInteger, String, Text, JSON, Boolean, DateTime, Index
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .base import Base
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class McpServerConfig(Base):

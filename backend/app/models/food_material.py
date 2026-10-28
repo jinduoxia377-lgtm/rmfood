@@ -4,8 +4,9 @@
 用于 Potion AI VFT × RMFOOD 深度融合方案的食品原料搜索功能。
 对标 Potion AI VFT 的 Raw Materials 数据模型，适配中国药食同源场景。
 """
-from datetime import datetime, timezone
-from sqlalchemy import String, Text, Boolean, Float, BigInteger, ARRAY, JSON, DateTime
+from datetime import datetime
+
+from sqlalchemy import ARRAY, JSON, BigInteger, Boolean, DateTime, Float, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base

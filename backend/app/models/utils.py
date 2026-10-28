@@ -3,7 +3,8 @@
 提供所有模型共享的工具函数和类型定义。
 """
 from datetime import datetime, timezone
-from sqlalchemy import BigInteger, DateTime, CheckConstraint
+
+from sqlalchemy import BigInteger, CheckConstraint, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 
 
@@ -60,6 +61,6 @@ def utc_timestamp_col(default=True, onupdate=False, nullable=True, index=False) 
 def audit_json_check_constraint(table_name: str = "audit_logs") -> CheckConstraint:
     """审计日志 JSON 格式校验约束"""
     return CheckConstraint(
-        f"json_typeof(details) = 'object'::text",
+        "json_typeof(details) = 'object'::text",
         name=f"ck_{table_name}_details_json",
     )

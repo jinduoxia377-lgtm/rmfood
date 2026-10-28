@@ -29,11 +29,14 @@ from __future__ import annotations
 """
 import logging
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Optional, Literal
+from typing import AsyncGenerator, Literal, Optional
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
-    AsyncSession, async_sessionmaker, create_async_engine, AsyncEngine,
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
 )
 
 from ..core.config import settings
@@ -87,10 +90,10 @@ class DatabaseRouter:
                 expire_on_commit=False,
                 autoflush=False,
             )
-            logger.info(f"读写分离已启用 | 主库 + 从库")
+            logger.info("读写分离已启用 | 主库 + 从库")
         else:
             self._replica_session_factory = None
-            logger.info(f"数据库单实例模式 | 未配置只读副本")
+            logger.info("数据库单实例模式 | 未配置只读副本")
 
         logger.info("DatabaseRouter 初始化完成")
 

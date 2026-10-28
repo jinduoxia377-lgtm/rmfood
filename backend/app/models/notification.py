@@ -4,12 +4,15 @@
 支持多种通知类型（系统、团队邀请、同步状态、AI任务完成等），
 包含丰富的元数据和已读状态追踪。
 """
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, Boolean, ForeignKey, Index, BigInteger
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
-from .enums import NotificationType, NotificationStatus
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
+from .enums import NotificationStatus, NotificationType
 
 
 class Notification(Base):

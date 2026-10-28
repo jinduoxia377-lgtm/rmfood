@@ -3,12 +3,15 @@
 用于云端同步模块，记录所有数据同步操作的详细日志。
 支持冲突检测、操作审计和同步状态追踪。
 """
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum, ForeignKey, Index, BigInteger
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, DateTime, Enum, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.utils import now_utc_mapped
+
 from .base import Base
 from .enums import SyncAction, SyncStatus
-from app.models.utils import now_utc_mapped
 
 
 class SyncLog(Base):
@@ -41,5 +44,5 @@ class SyncLog(Base):
         return f"<SyncLog(id={self.id}, user_id={self.user_id}, action={self.action.value}, entity={self.entity_type}:{self.entity_id}, status={self.status.value})>"
 
 
-from .user_model import User
 from .user_device import UserDevice
+from .user_model import User

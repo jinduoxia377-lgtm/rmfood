@@ -1,16 +1,28 @@
 """RMFOOD 配方模型"""
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey, Table, Column, Float, Boolean, BigInteger, CheckConstraint, UniqueConstraint
+from datetime import datetime
+
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
-from .base import ClassifiedMixin
-from .enums import FormulaStatus
-from .peptide_analysis import PeptideAnalysis
-from .peptide_design import PeptideDesign
-from .peptide_batch_coa import PeptideBatchCOA
-from .formula_case import FormulaCase
+
 from app.models.utils import now_utc_mapped
 
+from .base import Base, ClassifiedMixin
+from .enums import FormulaStatus
+from .formula_case import FormulaCase
 
 formula_ingredients = Table(
     "formula_ingredients",
@@ -215,10 +227,10 @@ class Peptide(Base):
     batch_coas = relationship("PeptideBatchCOA", back_populates="peptide", lazy="selectin")
 
 
-from .user_model import User
-from .experiment import Experiment
 from .batch_record import Batch
+from .experiment import Experiment
 from .ingredient_lot import IngredientLot
+from .user_model import User
 
 
 class Comment(Base):

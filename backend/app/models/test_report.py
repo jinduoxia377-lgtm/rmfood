@@ -2,12 +2,19 @@
 测试报告模型
 每个测试参数一条记录，携带规格判定
 """
-from datetime import datetime, timezone
-from sqlalchemy import BigInteger, String, Text, DateTime, JSON, ForeignKey, Float, Enum
+from datetime import datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import BigInteger, DateTime, Enum, Float, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.utils import now_utc_mapped
+
 from .base import Base
 from .enums import TestResult
-from app.models.utils import now_utc_mapped
+
+if TYPE_CHECKING:
+    from .sample import Sample
 
 
 class TestReport(Base):

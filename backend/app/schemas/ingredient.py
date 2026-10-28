@@ -1,5 +1,6 @@
 """RMFOOD 成分相关 Pydantic 模式"""
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 

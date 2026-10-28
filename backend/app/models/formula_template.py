@@ -1,8 +1,9 @@
 """配方模板模型"""
-from sqlalchemy import String, Text, BigInteger, DateTime, Boolean, JSON, func
-from sqlalchemy.orm import Mapped, mapped_column
-from typing import Optional
 from datetime import datetime, timezone
+from typing import Optional
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
 

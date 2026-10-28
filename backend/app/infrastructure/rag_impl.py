@@ -1,4 +1,11 @@
 """
+⚠️ DEPRECATED - 请使用 app/services/ai/rag/rag_service.py（线上版）
+
+这是 M2.1 hex 架构时期遗留的 RAG 基础设施副本（含 MockEmbeddingService / InMemoryVectorStore）。
+- 线上版：app/services/ai/rag/rag_service.py + services/ai/rag/*（ChromaDB + 真实 Embedding）
+- 本文件当前仅被单元测试引用：backend/tests/unit/infrastructure/test_rag.py
+- MockEmbeddingService / InMemoryVectorStore 仅用于测试/开发，生产环境禁止使用。
+
 RAG 基础设施实现（M2.1）
 
 包含：
@@ -6,17 +13,19 @@ RAG 基础设施实现（M2.1）
 2. SimpleDocumentProcessor — 文本分割处理器
 """
 from __future__ import annotations
+
 import hashlib
-import re
 import logging
-from typing import Optional
+import re
 from math import sqrt
 
 from ..domain.rag import (
-    DocumentChunk, EmbeddedChunk, RetrievalQuery,
-    RetrievalResult, KnowledgeBase,
+    DocumentChunk,
+    EmbeddedChunk,
+    RetrievalQuery,
+    RetrievalResult,
 )
-from ..domain.rag_ports import VectorStore, EmbeddingService, DocumentProcessor
+from ..domain.rag_ports import DocumentProcessor, EmbeddingService, VectorStore
 
 logger = logging.getLogger(__name__)
 

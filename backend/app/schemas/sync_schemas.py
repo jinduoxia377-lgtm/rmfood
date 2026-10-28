@@ -4,9 +4,11 @@
 支持数据推送、拉取、冲突检测和设备管理。
 """
 from datetime import datetime
-from typing import List, Optional, Any
+from typing import List, Optional
+
 from pydantic import BaseModel, Field
-from ..models.enums import SyncAction, DeviceType
+
+from ..models.enums import DeviceType, SyncAction
 
 
 class SyncChangeItem(BaseModel):

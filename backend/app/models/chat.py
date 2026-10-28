@@ -2,20 +2,23 @@
 
 用于存储AI对话历史记录，支持会话管理、消息存储和导出功能。
 """
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey, Boolean, BigInteger
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class ChatSession(Base):
     """对话会话模型
-    
+
     存储一个完整的对话会话，包含标题、创建时间、消息数量等元数据。
     """
     __tablename__ = "chat_sessions"
-    
+
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     # DS Bot 移植：单 Bot 对话复用会话表，bot_id 为空表示普通 AI 会话
@@ -27,10 +30,10 @@ class ChatSession(Base):
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
-    
+
     # 关系
     messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan", order_by="ChatMessage.timestamp")
-    
+
     def to_dict(self) -> dict:
         """转换为字典，包含基本信息"""
         return {
@@ -48,11 +51,11 @@ class ChatSession(Base):
 
 class ChatMessage(Base):
     """对话消息模型
-    
+
     存储单条对话消息，包含角色、内容、时间戳和扩展元数据。
     """
     __tablename__ = "chat_messages"
-    
+
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     session_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("chat_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
     role: Mapped[str] = mapped_column(String(20), nullable=False, index=True)  # user, assistant, system
@@ -74,11 +77,11 @@ class ChatMessage(Base):
     bookmark_note: Mapped[str | None] = mapped_column(String(500))
     message_tags: Mapped[list[str] | None] = mapped_column("tags", JSON, default=[])
     message_metadata: Mapped[dict | None] = mapped_column("metadata", JSON, default=dict)
-    
+
     # 关系
     session = relationship("ChatSession", back_populates="messages")
     replied_message = relationship("ChatMessage", remote_side=[id], uselist=False)
-    
+
     def to_dict(self, include_all: bool = True) -> dict:
         """转换为字典"""
         base = {
@@ -88,7 +91,7 @@ class ChatMessage(Base):
             "content": self.content,
             "timestamp": self.timestamp.isoformat(),
         }
-        
+
         if include_all:
             base.update({
                 "is_edited": self.is_edited,
@@ -106,5 +109,5 @@ class ChatMessage(Base):
                 "tags": self.message_tags or [],
                 "metadata": self.message_metadata or {},
             })
-        
+
         return base

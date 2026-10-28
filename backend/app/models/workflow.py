@@ -1,10 +1,13 @@
 """RMFOOD 工作流模型"""
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum, ForeignKey, BigInteger
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
-from .enums import WorkflowStatus, TaskStatus
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
+from .enums import TaskStatus, WorkflowStatus
 
 
 class Workflow(Base):
@@ -87,4 +90,3 @@ class WorkflowTemplate(Base):
         }
 
 
-from .user_model import User

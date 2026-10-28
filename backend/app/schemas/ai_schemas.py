@@ -4,8 +4,9 @@
 支持流式输出、多级优化和个性化推荐。
 """
 from datetime import datetime
-from typing import List, Optional, Any, Dict
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
 # reloaded: 2026-06-05T17:42
 from pydantic import BaseModel, Field, model_validator
 

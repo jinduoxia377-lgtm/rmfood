@@ -22,8 +22,6 @@
 
 from __future__ import annotations
 
-import asyncio
-import json
 import logging
 import time
 from abc import ABC, abstractmethod
@@ -492,7 +490,6 @@ class ElasticsearchIndexService(SearchIndexService):
 
                 for opt in options:
                     text = opt.get("text", "")
-                    source = opt.get("_source", {})
                     if text:
                         results.append(SuggestionResult(
                             text=text,
@@ -561,7 +558,7 @@ class ElasticsearchIndexService(SearchIndexService):
                 "status": "available",
                 "indices": stats,
             }
-        except Exception as e:
+        except Exception:
             return {"backend": "elasticsearch", "status": "error", "error": "搜索服务异常"}
 
     async def close(self) -> None:

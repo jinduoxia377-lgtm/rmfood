@@ -8,8 +8,14 @@ from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import (
-    String, Text, Float, BigInteger, JSON, DateTime,
-    Boolean, ForeignKey, Integer, CheckConstraint
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

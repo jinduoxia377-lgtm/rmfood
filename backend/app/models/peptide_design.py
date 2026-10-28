@@ -16,14 +16,20 @@
   - 删除设计时级联删除所有候选序列
   - 候选序列通过可选peptide_id关联到已知肽库
 """
-from datetime import datetime, timezone
-from typing import Optional
 import enum
+from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Integer, String, DateTime, JSON, Enum, ForeignKey, Boolean, Float, BigInteger
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
+
+if TYPE_CHECKING:
+    from .formula import Peptide
+    from .user_model import User
 
 
 class PeptideDesignStatus(str, enum.Enum):

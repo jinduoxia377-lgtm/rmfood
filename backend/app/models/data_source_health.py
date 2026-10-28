@@ -3,14 +3,17 @@
 记录外部数据源（TCMSP、DFBP 等）的可用性、延迟和同步状态。
 用于监控数据源健康状况，及时发现和处理数据源故障。
 """
-from datetime import datetime, timezone
-from typing import Optional
 import enum
+from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import Integer, String, Float, Boolean, DateTime, JSON, Enum as SAEnum, BigInteger
+from sqlalchemy import JSON, BigInteger, DateTime, Float, Integer, String
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class DataSourceStatus(str, enum.Enum):

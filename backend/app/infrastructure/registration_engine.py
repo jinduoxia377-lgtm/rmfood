@@ -4,14 +4,19 @@
 基于中国特殊食品法规的申报材料自动生成、合规检查、审评预测。
 """
 from __future__ import annotations
+
 import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
 from ..domain.registration import (
-    RegistrationCategory, RegistrationDocument, RegistrationSubmission,
-    ComplianceCheckResult, ComplianceReport, ReviewPrediction,
+    ComplianceCheckResult,
+    ComplianceReport,
+    RegistrationCategory,
+    RegistrationDocument,
     RegistrationRequirement,
+    RegistrationSubmission,
+    ReviewPrediction,
 )
 
 logger = logging.getLogger(__name__)

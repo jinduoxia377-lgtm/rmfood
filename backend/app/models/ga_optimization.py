@@ -4,9 +4,21 @@
 支持历史查询、详情查看和进化过程追溯。
 """
 
-from sqlalchemy import Column, Integer, String, BigInteger, Float, Text, JSON, DateTime, ForeignKey, Index
-from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
+
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+)
+from sqlalchemy.orm import relationship
 
 from ..core.database import Base
 

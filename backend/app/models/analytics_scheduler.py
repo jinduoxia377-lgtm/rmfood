@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional
 
 from sqlalchemy import text
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.models.base import BaseModel
 
 

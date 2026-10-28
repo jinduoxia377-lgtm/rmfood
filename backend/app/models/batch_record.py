@@ -2,12 +2,21 @@
 批记录模型
 建立从配方到实物的第一次落地
 """
-from datetime import datetime, timezone
-from sqlalchemy import BigInteger, String, Text, DateTime, JSON, ForeignKey, Float, Integer, Enum, Table, Column
+from datetime import datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import BigInteger, Column, DateTime, Enum, Float, ForeignKey, String, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.utils import now_utc_mapped
+
 from .base import Base
 from .enums import BatchStatus
-from app.models.utils import now_utc_mapped
+
+if TYPE_CHECKING:
+    from .formula import Formula
+    from .ingredient_lot import IngredientLot
+    from .sample import Sample
 
 # ── 关联表（必须在模型定义前声明）──────────────────────────
 batch_ingredient_lots = Table(

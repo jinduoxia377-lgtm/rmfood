@@ -2,10 +2,10 @@
 食源性多肽COA Pydantic Schema
 用于FastAPI请求/响应数据校验
 """
-from typing import Any, Dict, List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator
+from typing import Any, Dict, List, Optional
 
+from pydantic import BaseModel, Field, field_validator
 
 # ─── 检验单项Schema ───────────────────────────────────────────
 

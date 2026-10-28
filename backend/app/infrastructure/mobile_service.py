@@ -4,13 +4,17 @@
 提供移动端专用的 API 逻辑：轻量数据、离线同步、推送、溯源。
 """
 from __future__ import annotations
+
 import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
 from ..domain.mobile import (
-    MobileSyncItem, MobileDashboard, PushNotification, TraceabilityRecord,
+    MobileDashboard,
+    MobileSyncItem,
+    PushNotification,
+    TraceabilityRecord,
 )
 from ..domain.mobile_ports import MobileServicePort
 

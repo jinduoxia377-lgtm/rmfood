@@ -19,12 +19,21 @@
 已注册邮箱直接提示"请直接登录"。
 """
 from datetime import datetime
+
 from sqlalchemy import (
-    String, Text, DateTime, BigInteger, Index, SmallInteger, text,
+    BigInteger,
+    DateTime,
+    Index,
+    SmallInteger,
+    String,
+    Text,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class PreRegisterStatus:

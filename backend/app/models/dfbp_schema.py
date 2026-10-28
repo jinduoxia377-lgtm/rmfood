@@ -12,14 +12,29 @@
 - peptide_enzymes — 水解酶表
 - peptide_enzyme_links — 肽-酶关联表
 """
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import datetime
+from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Integer, String, Float, Text, DateTime, JSON, ForeignKey, Index, UniqueConstraint, Table, Column, BigInteger
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+
 from app.models.utils import now_utc_mapped
 
+from .base import Base
+
+if TYPE_CHECKING:
+    from .external_data import BioactivePeptide
 
 # ═══════════════════════════════════════════
 # 关联表（多对多）
@@ -236,8 +251,9 @@ class PeptideEnzyme(Base):
 
 def _patch_peptide_relationships():
     """为 bioactive_peptides 表添加规范化关系"""
-    from .external_data import BioactivePeptide
     from sqlalchemy.orm import relationship
+
+    from .external_data import BioactivePeptide
 
     # 添加活性数据关系（一对多）
     if not hasattr(BioactivePeptide, 'activities'):

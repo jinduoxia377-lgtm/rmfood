@@ -3,11 +3,19 @@
 原料入库追踪，链接批次原料消耗
 """
 from datetime import datetime, timezone
-from sqlalchemy import BigInteger, String, Text, DateTime, JSON, ForeignKey, Float, Enum
+from typing import TYPE_CHECKING
+
+from sqlalchemy import BigInteger, DateTime, Enum, Float, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.utils import now_utc_mapped
+
 from .base import Base
 from .enums import IngredientLotStatus
-from app.models.utils import now_utc_mapped
+
+if TYPE_CHECKING:
+    from .batch_record import Batch
+    from .formula import Ingredient
 
 
 class IngredientLot(Base):

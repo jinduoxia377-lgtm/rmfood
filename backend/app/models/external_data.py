@@ -1,9 +1,12 @@
 """RMFOOD Phase 2 外部数据模型"""
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, Float, Boolean, BigInteger
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, Float, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class TCMHerb(Base):
