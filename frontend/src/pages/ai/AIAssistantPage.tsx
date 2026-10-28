@@ -64,6 +64,7 @@ import { useKeyboardSearch } from '@/hooks/useKeyboardSearch';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import { SearchModal } from '@/components/ai/SearchModal';
 import { Menu, X } from 'lucide-react';
+import { RequirePlan } from '@/utils/plan';
 
 // 懒加载非首屏 Tab 组件 — 使用命名导出模式，兼容各组件的 export 方式
 const GenerateTab = lazy(() => import('@/components/ai/features/GenerateTab').then(m => ({ default: m.GenerateTab })));
@@ -856,7 +857,9 @@ export default function AIAssistantPage() {
 
                   <div role="tabpanel" id="panel-generate" aria-label={t('ai.page.panelGenerate')}>
                     <ErrorBoundary moduleName={t('ai.page.tabs.generate')}>
-                    <GenerateTab llmAvailable={llmAvailable} modelStatus={modelStatus || {}} />
+                    <RequirePlan feature="ai_formula_generation">
+                      <GenerateTab llmAvailable={llmAvailable} modelStatus={modelStatus || {}} />
+                    </RequirePlan>
                   </ErrorBoundary>
 
                   </div>
@@ -893,14 +896,20 @@ export default function AIAssistantPage() {
                         </TabsTrigger>
                       </TabsList>
                       <TabsContent value="single">
-                        <GeneticAlgorithmPanel />
+                        <RequirePlan feature="ai_formula_generation">
+                          <GeneticAlgorithmPanel />
+                        </RequirePlan>
                       </TabsContent>
                       <TabsContent value="multi">
-                        <MultiObjectivePanel />
+                        <RequirePlan feature="ai_formula_generation">
+                          <MultiObjectivePanel />
+                        </RequirePlan>
                       </TabsContent>
                       <TabsContent value="formula">
                         <Suspense fallback={<TabLoadingSkeleton />}>
-                          <FormulaInputWithOptimization />
+                          <RequirePlan feature="ai_formula_generation">
+                            <FormulaInputWithOptimization />
+                          </RequirePlan>
                         </Suspense>
                       </TabsContent>
                       </Tabs>
