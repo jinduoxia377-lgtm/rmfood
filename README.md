@@ -20,11 +20,12 @@
 
 > **本文档的数据口径**
 >
-> 本 README 中所有规模数字均来自仓库实测（`git ls-files` + `tsc --noEmit` + `grep` 统计），
-> 统计基准日为 **2026-10-25**，基准提交 **`v2.0.0`**。
+> 本 README 中所有规模数字均来自仓库实测（`git ls-files` + `git ls-tree HEAD` + `tsc --noEmit` + `grep` 统计），
+> 统计基准日为 **2026-10-28**，基准提交 **`216c247`**（`v2.0.0` 后第 3 个提交，含 RAG 修复）。
 > 发布版本号由 [CHANGELOG.md](CHANGELOG.md) 与 [git tag](https://github.com/rmfood/rmfood-platform/tags) 权威记录，
 > 见 [ADR-038 语义化版本发布体系](docs/adr/ADR-038-语义化版本发布体系.md)。
 > 凡无法实测的口径（成熟度百分比）均明确标注来源或标注「待复核」，不写推测数字。
+> 规模口径为**已提交（tracked）仓库状态**；工作区未提交/未跟踪文件（RAG 知识库新增模块已于 2026-10-28 纳入 `git ls-files` 跟踪，见「RAG 知识库」小节）单列于对应章节，不混入 tracked 计数。
 
 ---
 
@@ -67,7 +68,7 @@
 | | 多目标优化 | GA / NSGA-3 / MOEA-D-CMA-ES / MCTS / 并行 MCTS / 模拟退火 / 梯度下降 / 贝叶斯 / LP |
 | | 肽序列设计与分析 | Peplink + RDKit + SELFIES + `peptide_analyzer` 全套管线 |
 | | LLM 对话系统 | Provider 抽象层（OpenAI / DeepSeek / 智谱 / 通义千问 / vLLM 自定义端点）+ 连接池 |
-| | RAG 检索增强 | ChromaDB + FastEmbed 本地 embedding + 文档版本管理 |
+| | RAG 检索增强 | ChromaDB + FastEmbed 本地 embedding + 文档版本管理 + 增量索引 / 批量导入 / 重排序 / 速率限制 / 监控告警 / 性能基准（Phase 5） |
 | | Agent 多智能体 | 编排器 / 辩论机制 / 分组会话 / 记忆服务 / 14 个工具 + MCP 桥接 |
 | **数据驱动决策** | 中药材数据库 | TCMSP / SymMap / RMCHM / CFAM 四源融合，Alembic 持续迁移 |
 | | 活性肽数据库 | DFBP + UniProt/SwissProt 在线客户端 |
@@ -128,16 +129,18 @@ npm run version:current          # 打印当前版本
 
 `bump` 脚本只改文件、**不执行 git commit**，以便人工审阅完整 diff 后再提交打 tag。
 
-**提交钩子接线**（克隆仓库后必做一次）
+**提交钩子接线**（`npm install` 自动接线；手动重接线可选）
 
 ```bash
-npm run hooks:setup   # 把 .husky/pre-commit 接线到 .git/hooks/pre-commit
-npm run qc:baseline   # 仅在有意保留新增违规时刷新 print/console 基线
+npm install            # postinstall 自动把 .husky/{pre-commit,pre-push} 接线到 .git/hooks/ 同名文件
+npm run hooks:setup    # 修改钩子后手动重新接线（幂等，自动备份旧钩子，非 git 环境安全跳过）
+npm run qc:baseline    # 仅在有意保留新增违规时刷新 print/console 基线
 ```
 
-> ⚠️ husky **未安装**在根目录，`frontend/package.json` 虽声明了 husky ^9.1.7 但没有 `prepare` 脚本，
-> 因此 `.husky/` 下的钩子长期空转——这是 2026-10-25 实测确认的治理缺陷。
-> 本项目改用 `.git/hooks/pre-commit` + `npm run hooks:setup` 接线，`.husky/pre-commit` 是唯一权威源。
+> ✅ 提交钩子已治理：`husky` / `lint-staged` 死声明（曾出现在 `frontend/package.json` 但从未接线）
+> 已移除。`.husky/pre-commit`（9 节：肽结构防还原 / print·console 棘轮 / as any / tsc / ruff /
+> UI 护栏 / 未定义名称 / 版本门禁）与 `.husky/pre-push`（测试门禁）是唯一权威源，经
+> `npm install`（`postinstall`）自动接线到 `.git/hooks/` 同名文件，亦可 `npm run hooks:setup` 手动重接线。
 
 ### 两个正交的版本轴（勿混用）
 
@@ -184,24 +187,24 @@ npm run qc:baseline   # 仅在有意保留新增违规时刷新 print/console �
 
 > 统计方法：`git -c core.quotepath=false ls-files`（仅统计版本库跟踪文件，
 > 不含 `node_modules` / `venv` / `__pycache__`；禁用路径转义以正确统计含中文名的文件）
-> 统计时间：2026-10-25 ｜ 基准提交：**`v2.0.0`** ｜ 累计提交：**564 次**
+> 统计时间：2026-10-28 ｜ 基准提交：**`216c247`** ｜ 累计提交：**567 次**
 
 ### 总量
 
 | 维度 | 实测数量 |
 |:-----|:--------:|
-| Git 提交总数 | **564** |
+| Git 提交总数 | **567** |
 | 发布标签（`git tag -l`） | **1**（`v2.0.0`） |
 | 后端 Python 文件（`backend/` 全部） | **1,430** |
 | 后端应用代码（`backend/app/`，`.py`） | **783** |
-| 后端 API 端点装饰器 | **1,011** |
-| 前端源码文件（`frontend/src/`） | **1,485** |
-| 前端测试文件（`__tests__` + `*.test.*` + `*.spec.*`） | **142** |
-| 后端测试文件（`backend/tests/` 189 + `app/tests/` 13 + 根 `tests/` 27） | **229** |
+| 后端 API 端点装饰器 | **890** |
+| 前端源码文件（`frontend/src/`） | **1,486** |
+| 前端测试文件（`__tests__` + `*.test.*` + `*.spec.*`） | **143** |
+| 后端测试文件（`backend/tests/` 184 + `app/tests/` 13 + 根 `tests/` 23） | **220** |
 | Alembic 迁移版本文件（`backend/alembic/versions/`） | **75** |
 | 微信小程序源码（不含 `miniprogram_npm` 依赖） | **356** |
-| 文档资产（`docs/`） | **583** |
-| 架构决策记录（`docs/adr/`，`.md`） | **47** |
+| 文档资产（`docs/`） | **587** |
+| 架构决策记录（`docs/adr/`，`.md`） | **47**（+`index.md` 索引 = 48） |
 | GitHub Actions 工作流 | **2**（含 11 个 Job） |
 | 版本治理脚本（`scripts/version/`） | **3** |
 
@@ -239,24 +242,24 @@ npm run qc:baseline   # 仅在有意保留新增违规时刷新 print/console �
 | `kg/` | 5 | 图引擎 / 图查询 / 推理 Agent / 推理引擎 |
 | `report/` / `compliance/` / `nutrition/` / `experiment/` | 4 / 4 / 4 / 4 | 报告 ｜ 合规 ｜ 营养标签 ｜ 仪器解析 |
 
-### 前端分层（`frontend/src/`，1,485 文件）
+### 前端分层（`frontend/src/`，1,486 文件）
 
 | 层 | 文件数 | 层 | 文件数 |
 |:---|:------:|:---|:------:|
-| `components/` | **780** | `hooks/` | 62 |
+| `components/` | **782** | `hooks/` | 62 |
 | `pages/` | **189** | `services/` | 52 |
 | `i18n/` | **105** | `api/` | 46 |
 | `utils/` | 71 | `types/` | 33 |
 | `config/` | 30 | `stores/` | 24 |
 | `src/__tests__/` / `src/tests/`（顶层） | 19 / 11 | `theme-pro/` / `theme/` | 5 / 4 |
 
-> 全 `frontend/src/` 测试文件合计 **142 个**（含各子目录内嵌 `__tests__/` 与 `*.test.*` / `*.spec.*`）。
+> 全 `frontend/src/` 测试文件合计 **143 个**（含各子目录内嵌 `__tests__/` 与 `*.test.*` / `*.spec.*`）。
 
-### 前端组件域（`frontend/src/components/`，781 文件）
+### 前端组件域（`frontend/src/components/`，782 文件）
 
 | 组件域 | 文件数 | 组件域 | 文件数 |
 |:-------|:------:|:-------|:------:|
-| **`ai/`** | **514** | `layout/` | 6 |
+| **`ai/`** | **516** | `layout/` | 6 |
 | `ui/` | 63 | `search/` / `inference/` / `nutrition/` | 4 / 4 / 4 |
 | `database/` | 57 | `coa/` / `theme/` | 4 / 4 |
 | `dashboard/` | 23 | `experiment/` / `report/` / `sync/` | 3 / 2 / 2 |
@@ -297,7 +300,7 @@ npm run qc:baseline   # 仅在有意保留新增违规时刷新 print/console �
 |:---|:-----|:----:|:-----|
 | **Web 前端** | `frontend/` | 主交付 | React 19 + Vite 8 + TS 5.7，33 个一级页面域 |
 | **微信小程序** | `miniprogram/` | 并行迭代 | 31 个自定义组件 + 3 个分包 + 14 个主包页面域 |
-| **后端 API** | `backend/` | 主服务 | FastAPI，1,011 个端点，`/api/v1` 主前缀 |
+| **后端 API** | `backend/` | 主服务 | FastAPI，890 个端点，`/api/v1` 主前缀 |
 
 ### Web 前端：33 个一级页面域
 
@@ -312,7 +315,7 @@ npm run qc:baseline   # 仅在有意保留新增违规时刷新 print/console �
 
 ### AI 智能助手中心（`/ai`，核心模块）
 
-位于 [frontend/src/components/ai/features/](frontend/src/components/ai/features/)，514 个文件。
+位于 [frontend/src/components/ai/features/](frontend/src/components/ai/features/)，406 个文件。
 Tab 入口定义于 `features/` 顶层：
 
 | Tab | 组件 | 能力 |
@@ -338,6 +341,29 @@ Tab 入口定义于 `features/` 顶层：
 `HeaderBlock` / `ListBlock` / `DataTableBlock` / `MetricsBlock` / `CalloutBlock` / `DividerBlock` / `TimelineBlock` / `ChartBlock` / `SynergyChartBlock` / `IngredientDetailBlock`
 
 使用方式：`import { ChatMessages } from './components/pro'`
+
+### RAG 知识库（知识检索子系统）
+
+后端 `services/ai/rag/`，ChromaDB + FastEmbed 本地 embedding，共 19 个模块文件（**全部已跟踪**）
+（核心 8 + Phase 5 三件套 + 服务级增强 6 + 服务级测试 1 + `__init__`）。
+
+| 分组 | 模块 | 职责 |
+|:-----|:-----|:-----|
+| **核心** | `rag_service` / `vector_store` / `embedding_service` | 检索编排 / 向量库 / 本地 embedding |
+| | `document_processor` / `document_version_manager` / `seeder` / `models` / `_chroma_compat` | 文档处理 / 版本管理 / 种子注入 / 数据模型 / Chroma 兼容层 |
+| **Phase 5**（2026-10-26） | `benchmark` / `monitor` / `README` | 性能基准框架 / 监控告警服务 / 系统文档 |
+| **服务级增强** | `batch_importer` / `incremental_indexer` / `pubmed_adapter` / `reranker` / `rate_limiter` / `formula_rag_hook` | 批量导入 / 增量索引 / PubMed 适配 / 重排序 / 速率限制 / 配方 RAG 钩子 |
+| **部署配置** | `backend/.env.rag.example` / `backend/Dockerfile.rag` / `backend/requirements-rag.txt` / `backend/scripts/seed_rag_formula_docs.py` | 环境变量 / 容器化 / 依赖 / 配方文档种子 |
+| **服务级测试** | `test_rag_e2e.py` | 服务级端到端（TestClient + 真实 PostgreSQL + 隔离 ChromaDB） |
+
+**服务级端到端闭环（2026-10-28）**：
+A 未登录鉴权 401 ✅ → B 种子注入 330 块 + 检索可见 ✅ → C 跨租户隔离 ✅ → D 种子禁删 403 ✅ →
+E 平台库 `safety_off` 结构化报告 ✅ → F 缓存键 / `name_cn` / 分块截断（≤1200 字）✅。
+**P0-1..P0-5 + P1-6 全部闭环**，P0/P1/P2/P3 主体项修复完成；剩余为非功能性项（LLM 超时、reranker 缺装、平台库字段补全度）。
+
+> ✅ **版本管理状态**：已纳入版本管理（2026-10-28，`git add`）：rag/ 全部 19 个模块文件 +
+> 部署配置（`.env.rag.example` / `Dockerfile.rag` / `requirements-rag.txt`）+ 种子脚本
+> `seed_rag_formula_docs.py` 均已跟踪，计入 `git ls-files` tracked 计数。
 
 ### 微信小程序
 
@@ -372,7 +398,7 @@ Tab 入口定义于 `features/` 顶层：
 
 ### 后端 API 域
 
-`backend/app/api/` 共 132 个文件、1,011 个端点：
+`backend/app/api/` 共 132 个文件、890 个端点：
 
 - **顶层路由（61 个文件）**：`auth` / `oauth2_auth` / `users` / `user_settings` / `formulas` / `ingredients` / `experiments` / `ai` / `chat` / `databases` / `knowledge_base` / `knowledge_graph` / `search` / `search_analytics` / `dashboard` / `workflows` / `notifications` / `websocket` / `analytics` / `analytics_scheduler` / `organizations` / `teams` / `integrations` / `file_generator` / `attachments` / `comments` / `comment_likes` / `activity` / `categories` / `tags` / `terminology` / `admin` / `audit` / `enterprise` / `pre_register` / `pre_register_admin` / `whitelist` / `sync` / `articles` / `api_version` / `router_registry` + **肽模块 7 个**（`peptides` / `peptide_analysis_routes` / `peptide_design_routes` / `peptide_structure_routes` / `advanced_peptide` / `food_peptide_routes` / `pepinvent`）+ `lab_validation` / `formula_integration` / `formula_validation` / `coa_routes` / `herb_food` / `herb_images` / `rmchm_images` / `mobile` / `rag_router`
 - **`v1/`（44 个文件）**：企业级路由 — `ai_task` / `agent` / `bot` / `group` / `batches` / `samples` / `tasks` / `task_group` / `doe` / `experiment_data` / `formula_cases` / `ingredient_analysis` / `kg` / `report` / `report_export` / `document` / `import` / `compliance` / `label` / `label_check` / `stability` / `metrics` / `usage` / `quota` / `tenant` / `version` / `sync` / `team` / `team_dashboard` / `notification` / `websocket` / `workflow_exec` / `plugin` / `mcp` / `admin_mcp` / `github_mcp` / `data_flywheel` / `fact_engine` / `explainability` / `core` / `query` / `mo_stream` / `ray`
@@ -395,7 +421,7 @@ Tab 入口定义于 `features/` 顶层：
 ┌───────────────────────────────▼─────────────────────────────────┐
 │                     后端 (FastAPI 0.115 / Python 3.12)          │
 │                                                                  │
-│   api (132 文件 / 1,011 端点)                                    │
+│   api (132 文件 / 890 端点)                                     │
 │     ├─ 顶层 61  ─┬─ v1/ 44  ─┬─ db_modules/ 14  ─┬─ ai_modules/ 13 │
 │        │                                              │          │
 │   application (门面) ─── core (99 模块基础设施)               │
@@ -506,7 +532,7 @@ ErrorBoundary
 | 监控 | @sentry/react + @sentry/tracing / web-vitals | ^10.66.0 / ^7.120.4 / ^5.2.0 |
 | 无障碍 | @axe-core/react + axe-core | ^4.11.3 / ^4.11.4 |
 | 测试 | Vitest + @vitest/coverage-v8 / @testing-library/react / @playwright/test | ^3.2.4 / ^16.3.2 / ^1.59.1 |
-| 代码质量 | ESLint + typescript-eslint / husky + lint-staged / tsx / terser / rollup-plugin-visualizer | ^9.39.4 / ^8.58.0 / ^9.1.7 / ^17.3.0 / ^4.23.15 / ^5.46.1 / ^7.0.1 |
+| 代码质量 | ESLint + typescript-eslint / tsx / terser / rollup-plugin-visualizer | ^9.39.4 / ^8.58.0 / ^4.23.15 / ^5.46.1 / ^7.0.1 |
 
 ### 后端技术栈
 
@@ -539,7 +565,7 @@ ErrorBoundary
 
 ## 迭代里程碑时间线
 
-> 数据来源：`git log`（564 次提交，2026-06-10 → 2026-10-25）+ [docs/adr/index.md](docs/adr/index.md)
+> 数据来源：`git log`（567 次提交，2026-06-10 → 2026-10-27）+ [docs/adr/index.md](docs/adr/index.md)
 
 ### 提交分布
 
@@ -584,10 +610,17 @@ ErrorBoundary
 | **2026-10-24** | AI 阈值集中化重构启动（`deepThinkingService` 深度思考置信度） | commit `f7e1b18` |
 | **2026-10-25** | AI 阈值集中化重构完成（14 个引擎）+ 已知成分接入后端稳定性数据库 | commits `f7e1b18` → `05a7759` |
 | **2026-10-25** | 🏷️ **首个正式发布 `v2.0.0`**：建立语义化版本体系（8 承载点 + 3 脚本 + CI 门禁）、补 LICENSE、建 CHANGELOG | ADR-038 / CHANGELOG.md |
+| **2026-10-26** | 版本治理加固 + 仓库卫生治理 + 发布文档集（`3d3d810`）；提交钩子从未执行的修复与单一权威合并（`ed219ed`） | commits `3d3d810` / `ed219ed` |
+| **2026-10-27** | RAG 修复：翻译体系 / UI 主题 / Markdown 排版三大问题（`216c247`，当前 HEAD） | commit `216c247` |
+| **2026-10-28** | 🧭 **RAG 知识库服务级端到端闭环**：Phase 5 收尾（基准/监控/文档/部署）+ P0-1..P0-5 + P1-6 服务级实测通过 + P0/P1/P2/P3 主体项全部修复 | `reports/rag-*.md` |
 
-### 2026-10-25 提交批次（当前最新）
+### 2026-10-28 提交批次（当前最新）
 
 ```
+216c247  fix(rag): 修复翻译体系/UI主题/Markdown排版三大问题
+ed219ed  fix(hooks): 修复提交钩子从未执行的问题并合并为单一权威
+3d3d810  chore(release): 版本治理加固 + 仓库卫生治理 + 发布文档集
+5feace6  release: v2.0.0 建立正式语义化版本发布体系 (ADR-038)
 05a7759  feat(stability): 已知成分接入后端稳定性数据库并新增专项测试
 8c64305  refactor(ai): 集中 formulaExtractorService 提取阈值
 319b9ec  refactor(ai): 集中 nlpProcessor 规则评分阈值
@@ -605,8 +638,9 @@ f852de8  refactor(ai): 集中 sentimentEngine 情感强度评分阈值
 f7e1b18  refactor(ai): 集中 deepThinkingService 深度思考置信度评分阈值
 ```
 
-> **当前工作重心**：AI 模块「魔法数字治理」——将散落在 14 个引擎中的硬编码阈值集中为可配置常量，
-> 这是可维护性与可测试性的关键整改，而非新功能开发。
+> **当前工作重心**：双线并行——AI 模块「魔法数字治理」（14 个引擎阈值集中化，可维护性整改）与
+> **RAG 知识库服务级闭环**（Phase 5 收尾 + P0-1..P0-5 + P1-6 端到端实测通过，P0/P1/P2/P3 主体项全部修复）。
+> RAG 剩余为非功能性/数据补全项（LLM 超时参数、reranker 缺装、平台库字段补全度），见 [已知技术债务](#已知技术债务)。
 
 ---
 
@@ -734,15 +768,15 @@ f7e1b18  refactor(ai): 集中 deepThinkingService 深度思考置信度评分阈
 
 | 层 | 文件数 | 说明 |
 |:---|:------:|:-----|
-| 前端测试 | **142** | Vitest + @testing-library/react（`__tests__` + `*.test.*` + `*.spec.*`） |
-| 后端测试（`backend/tests/`） | **189** | pytest，分层 unit / integration / e2e |
+| 前端测试 | **143** | Vitest + @testing-library/react（`__tests__` + `*.test.*` + `*.spec.*`） |
+| 后端测试（`backend/tests/`） | **184** | pytest，分层 unit / integration / e2e |
 | 应用内测试（`backend/app/tests/`） | 13 | api / integration / e2e / unit |
-| 根目录测试（`tests/`） | 27 | 跨模块 |
+| 根目录测试（`tests/`） | 23 | 跨模块 |
 
 ### 后端测试分层
 
 ```
-backend/tests/                       (189 文件)
+backend/tests/                       (184 文件)
 ├── unit/            单元测试
 ├── integration/     集成测试（含 testcontainers[postgres]）
 ├── e2e/             端到端
@@ -942,7 +976,7 @@ rmfood-platform/
 │
 ├── backend/                                  # 后端 (FastAPI / Python 3.12)
 │   ├── app/                                  # 应用代码 (783 文件)
-│   │   ├── api/                              # 路由 (132 文件 / 1,011 端点)
+│   │   ├── api/                              # 路由 (132 文件 / 890 端点)
 │   │   │   ├── (顶层 61) auth users formulas experiments ai chat ...
 │   │   │   │              肽模块 7 个 peptides*/peptide_*_routes/pepinvent
 │   │   │   ├── v1/  (44)    企业级路由 ai_task agent batch doe report ...
@@ -966,17 +1000,17 @@ rmfood-platform/
 │   └── requirements*.txt         # 主 + clean + dev + requirements/{base,api,db,ml,dev,prod}
 │
 ├── frontend/                               # 前端 (React 19 / Vite 8 / TS 5.7)
-│   ├── src/                              (1,485 文件)
+│   ├── src/                              (1,486 文件)
 │   │   ├── pages/              (189)  33 个一级页面域
-│   │   ├── components/         (781)  ai(515) ui(63) database(57) dashboard(23) ...
-│   │   │   └── ai/features/    (405)  12 Tab + components(101) services(57)
+│   │   ├── components/         (782)  ai(516) ui(63) database(57) dashboard(23) ...
+│   │   │   └── ai/features/    (406)  12 Tab + components(101) services(57)
 │   │   │                          hooks(44) __tests__(48) GenerateTab(36)
 │   │   │   └── ai/features/components/pro/   专业版对话组件 (22)
 │   │   │   └── ai/features/components/structured/blocks/  结构化消息块 (10)
 │   │   ├── i18n/               (105)  中英双语，AI 模块独立命名空间
 │   │   ├── utils/ hooks/ services/ api/ types/ config/ stores/
 │   │   ├── theme/ theme-pro/ styles/ design-system/
-│   │   ├── __tests__/ + tests/    (全 src 测试文件 142)
+│   │   ├── __tests__/ + tests/    (全 src 测试文件 143)
 │   │   ├── App.tsx             # 3 守卫 + RouterProvider + 6 Provider
 │   │   └── main.tsx
 │   ├── scripts/                  # tokens/theme-gate/ui-guard/postinstall
@@ -991,7 +1025,7 @@ rmfood-platform/
 │   ├── utils/ (49) assets/ (34) docs/ (17)
 │   └── miniprogram_npm/ (634, 第三方依赖, 不计入源码)
 │
-├── docs/                                    # 文档资产 (586)
+├── docs/                                    # 文档资产 (587)
 │   ├── adr/          (48)   架构决策记录 ← 权威索引
 │   ├── release/      (3)    发布流程（总览 / CHECKLIST / ROLLBACK）
 │   ├── reports/      (49)   审计报告
@@ -1090,13 +1124,22 @@ alembic downgrade -1          # 回滚一个版本
 | 🟡 P2 | **`transformers` 曾列为依赖但源码 0 引用** | 旧 README 声明 Transformers ≥4.35.0，实测无引用，需从文档中移除 |
 | 🟡 P2 | **后端 `services/` 体量过大（402 文件）** | 子域边界清晰但缺乏模块间契约约束，需考虑引入接口层 |
 | 🟡 P2 | **`backend/` 根目录 40 个一次性脚本入库** | 实测 40 个 tracked 脚本 = 启动/停止 12 + 探针/排障 28（README 旧称 36，偏低）。根目录 21 个一次性临时输出已移出索引并归档；**40 个脚本本体仍待决策**（迁入 `scripts/` 或删除，其中 12 个启动脚本与根 `start.ps1` 冗余）。另有 3 个 untracked 脚本，含 `test_chat_user_key.py` 硬编码 `password = "admin123"`（已被 `backend/test_*.py` 忽略，不会入库） |
-| 🟡 P2 | **测试覆盖率偏低** | 上一轮审计 6.5/10，阈值 60%，目标 80%；当前 142 前端 + 229 后端测试文件 |
+| 🟡 P2 | **测试覆盖率偏低** | 上一轮审计 6.5/10，阈值 60%，目标 80%；当前 143 前端 + 220 后端测试文件 |
 | 🟡 P2 | **AI 阈值集中化仅完成前端 14 个引擎** | 后端对应引擎（`services/ai/`）的硬编码阈值尚未同步治理 |
 | 🟡 P2 | **AI 模块版本号仍与平台版本正交** | 模块 CHANGELOG = v8.0.0、源码标记 = v9.0，与平台 `v2.0.0` 互不驱动。刻意未合并（见 ADR-038），待 AI 模块下一次大版本决策 |
 | 🟢 P3 | **`docs/` 根目录 310 个文件** | 文档散落，需按主题归档（`reports` / `reviews` / `plans` 已分目录） |
 | 🟢 P3 | **`APP_VERSION` 环境变量覆盖未经生产验证** | 本地已验证 `APP_VERSION=9.9.9` 可覆盖成功，但 Docker / Compose 部署流水线尚未实际注入该变量，首次生产发布需观察 |
 | 🟢 P3 | **CI `rollback` job 不回滚数据库** | 该 job 仅回滚镜像，全程无 `alembic` 调用。带迁移的版本被回滚后数据库仍停在新 schema，须人工按 [docs/release/ROLLBACK.md](docs/release/ROLLBACK.md) 场景 D 执行 |
 | 🟢 P3 | **`v2.0.0` tag 是否已推送远端无法确认** | 本机 `git ls-remote --tags origin` 挂起超时（网络不通），本地 tag 已建且 `git describe` 可解析，但远端状态需联网环境复核 |
+
+### 2026-10-28 复核新增（RAG 知识库服务级闭环）
+
+| 优先级 | 项 | 说明 |
+|:-------|:---|:-----|
+| ✅ 已解决 | **RAG 知识库新增模块已纳入版本管理（2026-10-28）** | 14 个文件已 `git add` 纳入跟踪：Phase 5 三件套（`benchmark` / `monitor` / `README`）+ 服务级增强（`batch_importer` / `incremental_indexer` / `pubmed_adapter` / `reranker` / `rate_limiter` / `formula_rag_hook` + `_chroma_compat`）+ 部署配置（`.env.rag.example` / `Dockerfile.rag` / `requirements-rag.txt` / `seed_rag_formula_docs.py`），均计入 `git ls-files` tracked 计数；规模数字已复核（rag/ 19 个模块文件全部已跟踪） |
+| 🟠 P1 | **工作区脏状态（750 处未提交改动）** | 截至 2026-10-28 工作区有 750 处未提交改动（含 17 处删除、292 处未跟踪）；其中 RAG 源码 14 文件已于 2026-10-28 `git add` 纳入跟踪，剩余未跟踪主要为 `reports/` 等本地验证产物。README tracked 口径基于 HEAD 提交态，与工作区实况存在差异，需在提交前收敛 |
+| 🟡 P2 | **RAG 遗留非功能性项** | LLM 偶发 >150s 超时（`formula_design` 重场景，建议客户端超时 >200s / 重试）；`reranker` 缺装（自动降级）；平台库部分字段为空（数据补全度） |
+| 🟡 P2 | **测试计数口径** | 后端测试 `.py` 文件 = **220**（`backend/tests/` 184 + `app/tests/` 13 + 根 `tests/` 23）；`backend/tests/` 全量文件（含非 `.py`）为 **189**，两种口径勿混用 |
 
 ### 本轮已解决（v2.0.0，2026-10-25）
 
@@ -1107,7 +1150,7 @@ alembic downgrade -1          # 回滚一个版本
 | 🟠 P1 `APP_VERSION` 死配置 | `.env.example` 声明但运行时从不读取 | `Settings` 新增 `app_version_override` 字段，环境变量已生效 |
 | 🟠 P1 版本端点从未注册 | `register_version_routes` 因 `'_IncludedRouter' object has no attribute 'path'` 抛异常，被 try/except 静默降级 | 改用 `getattr(route, "path", None)` 防御，`/api` 与 `/api/v1/info` 首次成功注册 |
 | 🟡 P2 `LICENSE` 文件缺失 | README 与徽章声明 MIT 但无实体文件 | 补入根目录 [`LICENSE`](LICENSE) |
-| 🟠 P1 旧 README 数字严重过时 | 迁移 16 / TS 错误 140 / 后端 247 / 前端 839 / 端点 52 | 本文件已按实测全部更正（75 / 0 / 1,430 / 1,485 / 1,011） |
+| 🟠 P1 旧 README 数字严重过时 | 迁移 16 / TS 错误 140 / 后端 247 / 前端 839 / 端点 52 | 本文件已按实测全部更正（75 / 0 / 1,430 / 1,486 / 890） |
 | 🟢 无版本治理工具 | 手工维护 6 处版本号 | 新增 `scripts/version/` 五个脚本 + 5 个 npm scripts |
 | 🟡 P2 运行期产物被提交入库 | `pg_data_new/` 971 + `coverage_measurements/` 95 + `pytest-of-Administrator/` 73 = **1,139 文件**被跟踪，占 `backend/` 的 39.4% | 三者全部 `git rm --cached`（磁盘保留，不物理删除）+ `.gitignore` 卫生分区 15 条规则防回归；`backend/` 跟踪文件 **2,891 → 1,731** |
 | 🟡 P2 运行期 OpenAPI 导出物入库 | `openapi_clean.json` / `openapi_cleaned.json` / `openapi_fixed.json` 合计 4.27 MB，前两者 md5 相同（重复副本），三者均 mojibake；全仓**零代码引用**（`main.py:952 get_openapi_fixed()` 是函数名巧合，动态调用 `get_openapi()` 不读文件） | 移出索引并归档 + `backend/openapi_*.json` 规则 |
@@ -1140,7 +1183,7 @@ alembic downgrade -1          # 回滚一个版本
 | OpenTelemetry 分布式追踪 | ✅ |
 | API 版本协商机制（`X-API-Version` 响应头） | ✅ |
 | 邮件服务（`forgot_password`） | ✅ |
-| husky / lint-staged 提交钩子 | ❌ 从未生效：husky 未安装在根目录、frontend 无 `prepare` 脚本，`.husky/` 钩子长期空转（2026-10-25 实测确认） |
+| husky / lint-staged 提交钩子 | ✅ 已治理（2026-10-28）：死声明已移除、`.husky/{pre-commit,pre-push}` 经 `npm run hooks:setup` 接线到 `.git/hooks/`，pre-push 测试门禁已生效 |
 | 移除未使用依赖（`passlib`） | ✅ |
 | **TypeScript 编译错误清零（1,331 → 0）** | ✅（2026-10-25 实测） |
 

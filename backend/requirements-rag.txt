@@ -1,0 +1,50 @@
+# RAG 知识库服务依赖
+# 安装：pip install -r requirements-rag.txt
+
+# 核心依赖
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+pydantic>=2.0.0
+sqlalchemy>=2.0.0
+
+# 向量数据库
+chromadb>=0.4.22
+sentence-transformers>=2.2.0
+
+# Embedding API
+openai>=1.6.0
+
+# 中文分词
+jieba>=0.42.1
+
+# 文档解析
+pdfminer.six>=20240706
+python-multipart>=0.0.6
+
+# 批量导入
+openpyxl>=3.1.0
+pandas>=2.0.0
+
+# 重排序
+rerankers>=0.2.0
+
+# HTTP 客户端
+httpx>=0.25.0
+aiohttp>=3.9.0
+
+# 监控与日志
+prometheus-client>=0.19.0
+structlog>=23.2.0
+
+# 配置管理
+python-dotenv>=1.0.0
+
+# 测试
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+httpx>=0.25.0
+
+# 工具
+python-dateutil>=2.8.0
+pydantic-settings>=2.0.0
