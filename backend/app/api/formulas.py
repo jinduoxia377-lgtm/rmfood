@@ -103,6 +103,45 @@ async def _get_formula_with_ingredients(db: AsyncSession, formula_id: int):
     return result.scalar_one_or_none()
 
 
+def _serialize_formula_response(result) -> dict:
+    """将 Formula ORM 对象（须已加载 ingredients/peptides/creator/reviewer）序列化为
+    FormulaResponse 兼容 dict。与 get_formula 一致：Pydantic 无法直接转换 Ingredient/Peptide
+    ORM 对象为 dict，须逐列提取，否则触发 ResponseValidationError / 懒加载 MissingGreenlet。"""
+    def _to_dict(obj):
+        return {c.name: getattr(obj, c.name) for c in obj.__table__.columns}
+
+    ingredients = [_to_dict(i) for i in (result.ingredients or [])]
+    peptides = [_to_dict(p) for p in (result.peptides or [])]
+    status_val = result.status.value if hasattr(result.status, 'value') else str(result.status)
+    return {
+        "id": result.id,
+        "code": result.code,
+        "name": result.name,
+        "description": result.description,
+        "status": status_val,
+        "version": result.version,
+        "creator_id": result.creator_id,
+        "creator_name": result.creator.username if result.creator else None,
+        "reviewer_id": result.reviewer_id,
+        "reviewed_at": result.reviewed_at.isoformat() if result.reviewed_at else None,
+        "review_notes": result.review_notes,
+        "safety_check": result.safety_check,
+        "compliance_status": result.compliance_status,
+        "ai_recommendations": result.ai_recommendations,
+        "synergy_analysis": result.synergy_analysis,
+        "ingredients": ingredients,
+        "peptides": peptides,
+        "created_at": result.created_at.isoformat() if result.created_at else None,
+        "updated_at": result.updated_at.isoformat() if result.updated_at else None,
+        "target_effects": result.target_effects,
+        "composition": result.composition,
+        "processing_method": result.processing_method,
+        "dosage": result.dosage,
+        "storage_conditions": result.storage_conditions,
+        "shelf_life": result.shelf_life,
+    }
+
+
 async def _resolve_effective_org_id(
     tenant_org_id: Optional[int],
     current_user: Optional["User"],
@@ -267,23 +306,31 @@ async def get_recommendations(
 @router.get("/statistics", summary="配方统计数据")
 async def get_formula_statistics(
     tenant: TenantContext = Depends(require_tenant),
+    current_user: Optional[User] = Depends(_optional_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """返回配方统计数据（总数、状态分布）— 匿名可访问"""
+    """返回配方统计数据（总数、状态分布）— 匿名可访问
+
+    有效组织解析（Cookie 认证兼容）：解析出 org_id 时按组织过滤统计；
+    未解析（匿名/无组织成员）时返回全局计数（保持前端统计组件可用，
+    属已知泄漏风险，见遗留风险说明）。
+    """
     from sqlalchemy import func, select as sa_select
     from datetime import datetime, timedelta, timezone
     from ..models.formula import Formula
     from ..models.user_model import User
 
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+
     query = sa_select(func.count(Formula.id))
-    if tenant.org_id is not None:
-        query = query.where(Formula.organization_id == tenant.org_id)
+    if org_id is not None:
+        query = query.where(Formula.organization_id == org_id)
     result = await db.execute(query)
     total = result.scalar() or 0
 
     status_query = sa_select(Formula.status, func.count(Formula.id)).group_by(Formula.status)
-    if tenant.org_id is not None:
-        status_query = status_query.where(Formula.organization_id == tenant.org_id)
+    if org_id is not None:
+        status_query = status_query.where(Formula.organization_id == org_id)
     status_result = await db.execute(status_query)
     status_distribution = {}
     for s, c in status_result.all():
@@ -300,8 +347,8 @@ async def get_formula_statistics(
         cnt_q = sa_select(func.count(Formula.id)).where(
             Formula.created_at >= day_start, Formula.created_at < day_end
         )
-        if tenant.org_id is not None:
-            cnt_q = cnt_q.where(Formula.organization_id == tenant.org_id)
+        if org_id is not None:
+            cnt_q = cnt_q.where(Formula.organization_id == org_id)
         cnt = (await db.execute(cnt_q)).scalar() or 0
         recent_creations.append({"date": day_start.strftime("%Y-%m-%d"), "count": int(cnt)})
 
@@ -314,9 +361,9 @@ async def get_formula_statistics(
     trend_q2 = sa_select(func.count(Formula.id)).where(
         Formula.created_at >= two_weeks_ago, Formula.created_at < week_ago
     )
-    if tenant.org_id is not None:
-        trend_q1 = trend_q1.where(Formula.organization_id == tenant.org_id)
-        trend_q2 = trend_q2.where(Formula.organization_id == tenant.org_id)
+    if org_id is not None:
+        trend_q1 = trend_q1.where(Formula.organization_id == org_id)
+        trend_q2 = trend_q2.where(Formula.organization_id == org_id)
     created_now = (await db.execute(trend_q1)).scalar() or 0
     created_prev = (await db.execute(trend_q2)).scalar() or 0
     trend_data = [{"period": "last7d", "created": int(created_now), "updated": 0, "deleted": 0},
@@ -351,40 +398,8 @@ async def get_formula(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="配方不存在",
         )
-    # 将 ORM 对象序列化为 dict，避免 Pydantic 无法转换 Ingredient/Peptide 对象为 dict
-    def _to_dict(obj):
-        return {c.name: getattr(obj, c.name) for c in obj.__table__.columns}
-
-    ingredients = [_to_dict(i) for i in (result.ingredients or [])]
-    peptides = [_to_dict(p) for p in (result.peptides or [])]
-    status_val = result.status.value if hasattr(result.status, 'value') else str(result.status)
-    return {
-        "id": result.id,
-        "code": result.code,
-        "name": result.name,
-        "description": result.description,
-        "status": status_val,
-        "version": result.version,
-        "creator_id": result.creator_id,
-        "creator_name": result.creator.username if result.creator else None,
-        "reviewer_id": result.reviewer_id,
-        "reviewed_at": result.reviewed_at.isoformat() if result.reviewed_at else None,
-        "review_notes": result.review_notes,
-        "safety_check": result.safety_check,
-        "compliance_status": result.compliance_status,
-        "ai_recommendations": result.ai_recommendations,
-        "synergy_analysis": result.synergy_analysis,
-        "ingredients": ingredients,
-        "peptides": peptides,
-        "created_at": result.created_at.isoformat() if result.created_at else None,
-        "updated_at": result.updated_at.isoformat() if result.updated_at else None,
-        "target_effects": result.target_effects,
-        "composition": result.composition,
-        "processing_method": result.processing_method,
-        "dosage": result.dosage,
-        "storage_conditions": result.storage_conditions,
-        "shelf_life": result.shelf_life,
-    }
+    # 将 ORM 对象序列化为 dict（复用共享序列化助手，避免 Pydantic 无法转换 ORM 对象）
+    return _serialize_formula_response(result)
 
 
 @router.post("", response_model=FormulaResponse, status_code=201, summary="创建配方")
@@ -685,6 +700,7 @@ async def optimize_formula_lp(
     formula_id: int,
     total_dosage_g: float = Query(100.0, gt=0, description="总剂量(g)"),
     max_cost: Optional[float] = Query(None, description="最大成本预算(元)，不限制传 null"),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(require_plan("ai_formula_generation")),
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -693,11 +709,12 @@ async def optimize_formula_lp(
     from ..services.formula.lp_solver import MILPSolver, HerbNutritionData, NutritionConstraint
     from ..services.formula.nutrition_database import HERB_NUTRITION_DB
 
-    # 验证配方存在及租户归属
+    # 验证配方存在及租户归属（有效组织解析，兼容 Cookie 认证/org_id=NULL）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
-    if formula.organization_id is not None and formula.organization_id != current_user.organization_id:
+    if org_id is None or (formula.organization_id is not None and formula.organization_id != org_id):
         raise HTTPException(status_code=403, detail="无权访问此配方的优化功能")
 
     # 提取成分名称
@@ -1123,6 +1140,7 @@ async def delete_formula_template(
 @router.post("/{formula_id}/copy", response_model=FormulaResponse, summary="复制配方")
 async def copy_formula(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -1131,12 +1149,23 @@ async def copy_formula(
     from ..services.formula import FormulaService
     from sqlalchemy import select as sa_select
 
+    # 解析有效组织（Cookie 认证兼容）：无有效组织 → 403 拒绝复制
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=403, detail="缺少租户上下文，禁止复制配方")
+
     source = await _get_formula_with_ingredients(db, formula_id)
     if not source:
         raise HTTPException(status_code=404, detail="源配方不存在")
+    # 源配方归属校验：organization_id=None 的全局配方不暴露（P0 隔离）
+    if source.organization_id is not None and source.organization_id != org_id:
+        raise HTTPException(status_code=404, detail="源配方不存在")
 
-    # 生成新配方
+    # 生成新配方（code 为 NOT NULL 唯一字段，须显式生成，与导入/创建一致）
+    from datetime import datetime as _dt
+    import uuid as _uuid
     new_formula = Formula(
+        code=f"RMF-{_dt.now().strftime('%Y%m%d')}-{str(_uuid.uuid4())[:6].upper()}",
         name=f"{source.name} (副本)",
         description=source.description,
         status=FormulaStatus.DRAFT,
@@ -1148,7 +1177,7 @@ async def copy_formula(
         storage_conditions=source.storage_conditions,
         shelf_life=source.shelf_life,
         creator_id=current_user.id,
-        organization_id=source.organization_id,
+        organization_id=org_id,
     )
     db.add(new_formula)
     await db.flush()
@@ -1178,7 +1207,10 @@ async def copy_formula(
         )
 
     await db.commit()
-    return new_formula
+    # 重新加载副本（FormulaService.get_formula eager-loads ingredients/peptides/creator/reviewer），
+    # 经共享助手序列化为 FormulaResponse 兼容 dict（避免裸 ORM 对象触发 ResponseValidationError）。
+    fresh = await FormulaService(db).get_formula(new_formula.id)
+    return _serialize_formula_response(fresh)
 
 
 
@@ -1622,6 +1654,7 @@ async def check_permission(
 @router.post("/batch-delete", summary="批量删除配方")
 async def batch_delete_formulas(
     request: dict = Body(...),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -1637,12 +1670,15 @@ async def batch_delete_formulas(
     if not ids:
         raise HTTPException(status_code=400, detail="请提供要删除的配方 ID 列表")
 
-    # 租户隔离：非管理员只能删除自己所属组织的配方
+    # 租户隔离：非管理员只能删除自己所属组织的配方（有效组织解析，兼容 Cookie 认证）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
     if current_user.role != UserRole.ADMIN:
+        if org_id is None:
+            raise HTTPException(status_code=403, detail="缺少租户上下文，禁止批量删除配方")
         formulas = await db.execute(
             select(Formula).where(
                 Formula.id.in_(ids),
-                Formula.organization_id == current_user.organization_id,
+                Formula.organization_id == org_id,
             )
         )
     else:
@@ -1725,6 +1761,7 @@ async def import_formulas(
     file: UploadFile = File(...),
     mode: str = Form("all"),
     options: str = Form("{}"),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.RESEARCHER, UserRole.FORMULATOR)),
     db: AsyncSession = Depends(get_db_session),
 ):
@@ -1742,6 +1779,11 @@ async def import_formulas(
     from datetime import datetime
     import pandas as pd
     from ..models.formula import Formula
+
+    # 解析有效组织（Cookie 认证兼容）：无有效组织 → 403，避免创建 organization_id=None 孤儿配方
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=403, detail="缺少租户上下文，禁止导入配方")
 
     try:
         opts = _json.loads(options) if options else {}
@@ -1815,7 +1857,7 @@ async def import_formulas(
             return []
         if isinstance(raw, list):
             return [str(x).strip() for x in raw if str(x).strip()]
-        return [x.strip() for x in re.split(r"[;；,、]", str(raw)) if x.strip()]
+        return [x.strip() for x in _re.split(r"[;；,、]", str(raw)) if x.strip()]
 
     def _parse_composition(raw):
         if raw is None:
@@ -1924,6 +1966,7 @@ async def import_formulas(
                 storage_conditions=_get(row, "storage_conditions"),
                 shelf_life=int(float(_get(row, "shelf_life"))) if _get(row, "shelf_life") is not None else None,
                 creator_id=current_user.id,
+                organization_id=org_id,
             )
             db.add(formula)
             await db.flush()
