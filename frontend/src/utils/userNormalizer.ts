@@ -11,6 +11,15 @@ import type { User, UserRole } from '@/types'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RawUser = Record<string, any>
 
+/**
+ * 将任意来源的用户 plan 归一化为合法 Plan 值。
+ * 后端可能尚未返回 plan（Phase 1 兼容期），缺省回退 'free'，
+ * 不因字段缺失崩溃；未知值一律回退 'free'。
+ */
+function normalizePlan(value: unknown): 'free' | 'pro' {
+  return value === 'pro' ? 'pro' : 'free'
+}
+
 export function normalizeUser(raw: RawUser): User {
   return {
     id: raw.id,
@@ -18,6 +27,9 @@ export function normalizeUser(raw: RawUser): User {
     email: raw.email ?? '',
     fullName: raw.fullName ?? raw.full_name ?? undefined,
     avatarUrl: raw.avatarUrl ?? raw.avatar_url ?? undefined,
+
+    // 订阅计划（缺省 'free'；兼容后端尚未返回 plan 的过渡期）
+    plan: normalizePlan(raw.plan ?? raw.plan_name),
 
     role: (raw.role ?? 'guest') as UserRole,
     isActive: raw.isActive ?? raw.is_active ?? true,

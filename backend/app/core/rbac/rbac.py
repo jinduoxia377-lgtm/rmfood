@@ -605,7 +605,10 @@ def require_role(*allowed_roles: str):
     async def _role_checker(current_user: User = Depends(get_current_user)) -> User:
         role = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
         
-        if role not in allowed_roles and 'ADMIN' not in allowed_roles:
+        # 修复：原条件 "role not in allowed_roles and 'ADMIN' not in allowed_roles"
+        # 在 allowed_roles 含 ADMIN 时恒为 False → 任意角色（含 GUEST）放行，RBAC 绕过。
+        # 正确语义：ADMIN 恒放行（超管旁路），其余角色必须命中 allowed_roles。
+        if role not in allowed_roles and role != 'ADMIN':
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail={

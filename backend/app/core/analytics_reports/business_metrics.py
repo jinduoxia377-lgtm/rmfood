@@ -37,12 +37,14 @@ class BusinessMetricsService:
     async def get_formula_lifecycle_funnel(
         self,
         days: Optional[int] = None,
+        org_id: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         配方从草稿 → 审核中 → 已发布 → 已归档的转化漏斗。
 
         Args:
             days: 仅统计最近 N 天创建的配方；None 则统计全部。
+            org_id: 租户 ID；None 表示全局（不按组织过滤）。
         """
         stage_order = [
             ("draft", "草稿"),
@@ -52,21 +54,23 @@ class BusinessMetricsService:
         ]
 
         try:
+            org_where, org_params = self._org_where(org_id)
             if days is not None:
                 # formulas.created_at 为 naive timestamp，绑定 naive UTC
                 cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
-                result = await self.db.execute(text("""
+                result = await self.db.execute(text(f"""
                     SELECT status, COUNT(*) as cnt
                     FROM formulas
-                    WHERE created_at >= :cutoff
+                    WHERE created_at >= :cutoff{org_where}
                     GROUP BY status
-                """), {"cutoff": cutoff})
+                """), {"cutoff": cutoff, **org_params})
             else:
-                result = await self.db.execute(text("""
+                result = await self.db.execute(text(f"""
                     SELECT status, COUNT(*) as cnt
                     FROM formulas
+                    WHERE 1=1{org_where}
                     GROUP BY status
-                """))
+                """), org_params)
             count_map = {row.status: row.cnt for row in result.fetchall()}
         except Exception as e:
             logger.warning("配方漏斗查询失败: %s", e)
@@ -103,6 +107,7 @@ class BusinessMetricsService:
         self,
         min_support: int = 3,
         limit: int = 30,
+        org_id: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """
         找出经常一起使用的食材对（简化版 Apriori）。
@@ -114,7 +119,12 @@ class BusinessMetricsService:
         ]
         """
         try:
-            result = await self.db.execute(text("""
+            org_where, org_params = ("", {})
+            if org_id is not None:
+                # 多表 join，organization_id 需限定到 formulas（f）
+                org_where = " AND f.organization_id = :org_id"
+                org_params = {"org_id": org_id}
+            result = await self.db.execute(text(f"""
                 SELECT
                     i1.name as ingredient_a,
                     i2.name as ingredient_b,
@@ -124,12 +134,12 @@ class BusinessMetricsService:
                 JOIN ingredients i1 ON fi1.ingredient_id = i1.id
                 JOIN formula_ingredients fi2 ON f.id = fi2.formula_id
                 JOIN ingredients i2 ON fi2.ingredient_id = i2.id
-                WHERE i1.id < i2.id
+                WHERE i1.id < i2.id{org_where}
                 GROUP BY i1.name, i2.name
                 HAVING COUNT(DISTINCT f.id) >= :min_support
                 ORDER BY co_occurrence DESC
                 LIMIT :limit
-            """), {"min_support": min_support, "limit": limit})
+            """), {"min_support": min_support, "limit": limit, **org_params})
             return [dict(row._mapping) for row in result.fetchall()]
         except Exception as e:
             logger.warning("食材关联分析失败: %s", e)
@@ -137,7 +147,7 @@ class BusinessMetricsService:
 
     # ── 3. AI 生成质量评估 ──────────────────────────────────
 
-    async def get_ai_generation_quality(self, days: int = 30) -> Dict[str, Any]:
+    async def get_ai_generation_quality(self, days: int = 30, org_id: Optional[int] = None) -> Dict[str, Any]:
         """
         AI 生成质量指标：采纳率、平均成分数。
 
@@ -152,7 +162,12 @@ class BusinessMetricsService:
         try:
             # ai_generations.created_at 为 naive timestamp，绑定 naive UTC
             cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
-            result = await self.db.execute(text("""
+            org_where, org_params = ("", {})
+            if org_id is not None:
+                # 多表 join，organization_id 需限定到 ai_generations（ag）
+                org_where = " AND ag.organization_id = :org_id"
+                org_params = {"org_id": org_id}
+            result = await self.db.execute(text(f"""
                 SELECT
                     COUNT(*)                                              as total_generations,
                     SUM(CASE WHEN f.status = 'approved' THEN 1 ELSE 0 END) as adopted_count,
@@ -162,8 +177,8 @@ class BusinessMetricsService:
                     )                                                    as avg_components
                 FROM ai_generations ag
                 LEFT JOIN formulas f ON ag.formula_id = f.id
-                WHERE ag.created_at >= :cutoff
-            """), {"cutoff": cutoff})
+                WHERE ag.created_at >= :cutoff{org_where}
+            """), {"cutoff": cutoff, **org_params})
             row = result.fetchone()
             if row is None:
                 return {
@@ -198,6 +213,7 @@ class BusinessMetricsService:
         self,
         categories: Optional[List[str]] = None,
         statuses: Optional[List[str]] = None,
+        org_id: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         统计含药食同源食材的配方占比。
@@ -213,6 +229,12 @@ class BusinessMetricsService:
             # 构建动态过滤条件（参数化，防 SQL 注入）
             conditions = ["i.is_food_homology = true"]
             params: Dict[str, Any] = {}
+            total_where = ""
+
+            if org_id is not None:
+                conditions.append("f.organization_id = :org_id")
+                params["org_id"] = org_id
+                total_where = " WHERE organization_id = :org_id"
 
             if categories:
                 conditions.append("f.category IN :cats")
@@ -226,7 +248,7 @@ class BusinessMetricsService:
 
             result = await self.db.execute(text(f"""
                 SELECT
-                    (SELECT COUNT(*) FROM formulas)
+                    (SELECT COUNT(*) FROM formulas{total_where})
                                                      as total,
                     (SELECT COUNT(DISTINCT f.id)
                      FROM formulas f
@@ -254,13 +276,14 @@ class BusinessMetricsService:
         days: int = 30,
         categories: Optional[List[str]] = None,
         statuses: Optional[List[str]] = None,
+        org_id: Optional[int] = None,
     ) -> Dict[str, Any]:
         """聚合所有业务指标，供 BusinessInsightsTab 一次性拉取。"""
         funnel, assoc, quality, homology = await asyncio.gather(
-            self.get_formula_lifecycle_funnel(days=days),
-            self.get_ingredient_associations(limit=20),
-            self.get_ai_generation_quality(days=days),
-            self.get_food_homology_ratio(categories=categories, statuses=statuses),
+            self.get_formula_lifecycle_funnel(days=days, org_id=org_id),
+            self.get_ingredient_associations(limit=20, org_id=org_id),
+            self.get_ai_generation_quality(days=days, org_id=org_id),
+            self.get_food_homology_ratio(categories=categories, statuses=statuses, org_id=org_id),
         )
         return {
             "lifecycle_funnel": funnel,
@@ -268,3 +291,14 @@ class BusinessMetricsService:
             "ai_quality": quality,
             "food_homology_ratio": homology,
         }
+
+    @staticmethod
+    def _org_where(org_id: Optional[int]) -> tuple[str, Dict[str, Any]]:
+        """构造按 organization_id 过滤的 SQL 片段。
+
+        org_id 为 None 时返回空片段（保持全局视图）；否则返回
+        (" AND organization_id = :org_id", {"org_id": org_id})。
+        """
+        if org_id is None:
+            return "", {}
+        return " AND organization_id = :org_id", {"org_id": org_id}

@@ -723,10 +723,9 @@ class OrganizationService:
 
         ai_generations = (await self.db.execute(
             text("""
-                SELECT COUNT(*) FROM audit_logs
+                SELECT COUNT(*) FROM formula_generation_history
                 WHERE user_id IN (SELECT user_id FROM organization_members WHERE organization_id = :id)
                   AND created_at >= CURRENT_DATE
-                  AND action ILIKE '%ai%'
             """),
             {"id": organization_id},
         )).scalar() or 0

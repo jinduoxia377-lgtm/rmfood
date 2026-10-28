@@ -50,6 +50,8 @@ _LAZY_ROUTER_MODULES = [
     'peptide_structure_routes',  # 肽链结构分析
     'terminology',  # 术语管理
     'pre_register_admin',  # 账号申请（预注册）审核队列管理
+    'pre_register',  # 邮箱预注册（兼容别名）
+    'whitelist',  # 白名单申请流程（captcha/apply/verify-code/resend-code/status）
 
     # SSS 企业级功能模块
     'analytics',

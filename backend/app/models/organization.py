@@ -3,7 +3,7 @@
 Supports multi-tenant organization management.
 """
 from datetime import datetime
-from sqlalchemy import String, Integer, Text, Boolean, BigInteger, DateTime, Numeric, Enum as SAEnum
+from sqlalchemy import String, Integer, Text, Boolean, BigInteger, DateTime, Numeric, JSON, Enum as SAEnum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, List
 
@@ -22,6 +22,13 @@ class Organization(BaseModel):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     owner_id: Mapped[int] = mapped_column(BigInteger, nullable=True, index=True)
 
+    # ── 订阅/版本与扩展（ORM 与迁移 20260819_000000 及 multi_tenant_service
+    #    INSERT/读取 org.plan、org.settings 对齐；缺失曾致 create_all 建库缺列、
+    #   org.plan/org.settings 运行期 AttributeError）──
+    plan: Mapped[str] = mapped_column(String(20), default="free", nullable=False)
+    settings: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    logo_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
     members: Mapped[List["OrganizationMember"]] = relationship(
         "OrganizationMember", back_populates="organization", cascade="all, delete-orphan",
         foreign_keys="[OrganizationMember.organization_id]",
@@ -29,7 +36,6 @@ class Organization(BaseModel):
 
     api_keys: Mapped[List["ApiKey"]] = relationship(
         "ApiKey", back_populates="organization", cascade="all, delete-orphan",
-        foreign_keys="[ApiKey.organization_id]",
     )
 
     def to_dict(self) -> dict:
@@ -49,8 +55,8 @@ class OrganizationMember(BaseModel):
     """Organization membership"""
     __tablename__ = "organization_members"
 
-    organization_id: Mapped[int] = mapped_column(BigInteger, nullable=False, index=True)
-    user_id: Mapped[int] = mapped_column(BigInteger, nullable=False, index=True)
+    organization_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("organizations.id"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)
     role: Mapped[str] = mapped_column(String(50), default="member", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 

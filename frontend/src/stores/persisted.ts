@@ -291,6 +291,7 @@ export function getAuthInfo() {
   return {
     user,
     role: user?.role || 'guest',
+    plan: user?.plan || 'free',
     isAuthenticated,
   };
 }
@@ -368,6 +369,7 @@ export function useAuth() {
     isAuthenticated,
     user,
     role: user?.role || 'guest',
+    plan: user?.plan || 'free',
     login,
     logout,
   };

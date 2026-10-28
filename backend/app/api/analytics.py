@@ -28,6 +28,7 @@ import uuid
 
 from ..core.database.session import get_db
 from ..api.deps import get_current_active_user
+from ..core.plans import require_plan
 from ..utils.error_sanitize import sanitize_error
 from ..core.analytics_reports.analytics_engine import (
     AnalyticsService,
@@ -42,6 +43,7 @@ from ..core.analytics_reports.analytics_engine import (
 from ..core.analytics_reports.health_monitor import get_health_monitor
 from ..core.analytics_reports.anomaly_detector import get_anomaly_detector
 from ..core.analytics_reports.business_metrics import BusinessMetricsService
+from ..core.multi_tenant.tenant_security import require_tenant, TenantContext
 from ..core.realtime.websocket import connection_manager, WebSocketMessage
 from ..models.user_model import User
 from ..models.enums import UserRole
@@ -199,13 +201,14 @@ async def get_kpi_metrics(
     time_range: str = Query("30d", description="Time range: 7d/30d/90d/1y"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
+    tenant: TenantContext = Depends(require_tenant),
 ):
     """Quick access to core KPI metric list"""
     try:
         service = get_analytics_service(db)
         days_map = {"7d": 7, "30d": 30, "90d": 90, "1y": 365}
         days = days_map.get(time_range, 30)
-        kpi = await service._get_kpi_metrics(days=days)
+        kpi = await service._get_kpi_metrics(days=days, org_id=tenant.org_id)
         
         return {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -224,6 +227,7 @@ async def get_trend_data(
     granularity: str = Query("daily", description="hourly/daily/weekly/monthly"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
+    tenant: TenantContext = Depends(require_tenant),
 ):
     """
     Get trend data for an entity (real database query)
@@ -243,7 +247,7 @@ async def get_trend_data(
     
     try:
         service = get_analytics_service(db)
-        trend_data = await service._get_trend_data(entity, days, gran)
+        trend_data = await service._get_trend_data(entity, days, gran, org_id=tenant.org_id)
         
         return {
             "entity": entity,
@@ -287,7 +291,8 @@ async def get_anomalies(
     # 补上签名，取值口径与 /kpi 保持一致。
     time_range: str = Query("30d", description="Time range: 7d/30d/90d/1y"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
+    tenant: TenantContext = Depends(require_tenant),
 ):
     """
     基于历史数据的统计异常检测。
@@ -299,8 +304,8 @@ async def get_anomalies(
         days_map = {"7d": 7, "30d": 30, "90d": 90, "1y": 365}
         days = days_map.get(time_range, 30)
         chart_months = 12 if days >= 365 else 3 if days >= 90 else 1
-        kpi = await service._get_kpi_metrics(days=days)
-        charts = await service._get_chart_data(months=chart_months)
+        kpi = await service._get_kpi_metrics(days=days, org_id=tenant.org_id)
+        charts = await service._get_chart_data(months=chart_months, org_id=tenant.org_id)
 
         dashboard_data = {
             "kpi": kpi,
@@ -328,7 +333,8 @@ async def get_business_metrics(
     categories: str = Query(None, description="Category filter (comma-separated)"),
     status: str = Query(None, description="Status filter (comma-separated)"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
+    tenant: TenantContext = Depends(require_tenant),
 ):
     """
     药食同源业务专属指标：
@@ -348,6 +354,7 @@ async def get_business_metrics(
             days=days,
             categories=category_list,
             statuses=status_list,
+            org_id=tenant.org_id,
         )
         return {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -509,7 +516,8 @@ async def broadcast_analytics_update(update_type: str, data: Dict[str, Any]):
 async def create_report(
     request: CreateReportRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
+    tenant: TenantContext = Depends(require_tenant),
 ):
     """
     Generate custom report (real database data)
@@ -530,7 +538,7 @@ async def create_report(
         )
         
         service = get_analytics_service(db)
-        report_data = await service.generate_custom_report(config)
+        report_data = await service.generate_custom_report(config, org_id=tenant.org_id)
         
         logger.debug(f"Report generated successfully: {config.name} (ID: {config.id})")
         
@@ -550,7 +558,8 @@ async def create_report(
 async def export_data(
     request: ExportRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
+    tenant: TenantContext = Depends(require_tenant),
 ):
     """
     Export data in specified format (real data)
@@ -569,7 +578,7 @@ async def export_data(
         if request.report_id and not data_to_export:
             config = await _load_report_config(db, request.report_id)
             if config:
-                result = await service.generate_custom_report(config)
+                result = await service.generate_custom_report(config, org_id=tenant.org_id)
                 data_to_export = result
         
         if not data_to_export:
@@ -632,17 +641,19 @@ async def get_report_templates(category: str | None = Query(None, description="�
 async def get_available_filters(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
+    tenant: TenantContext = Depends(require_tenant),
 ):
     """Get all available data filter options"""
     service = get_analytics_service(db)
-    return await service._get_available_filters(db)
+    return await service._get_available_filters(db, org_id=tenant.org_id)
 
 
 @router.post("/aggregate", summary="Custom data aggregation")
 async def custom_aggregation(
     request: Dict[str, Any],
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
+    tenant: TenantContext = Depends(require_tenant),
 ):
     """
     Custom data aggregation query (safe, identifier-whitelisted)
@@ -744,6 +755,10 @@ async def custom_aggregation(
 
         if validated_group_by:
             stmt = stmt.group_by(column(validated_group_by))
+
+        # 多租户隔离：按当前租户 org_id 过滤聚合结果（org_id 为 None 时保持全局）
+        if tenant.org_id is not None:
+            stmt = stmt.where(column("organization_id") == tenant.org_id)
 
         result = await db.execute(stmt)
         rows = result.fetchall()
