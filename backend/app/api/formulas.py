@@ -309,11 +309,11 @@ async def get_formula_statistics(
     current_user: Optional[User] = Depends(_optional_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """返回配方统计数据（总数、状态分布）— 匿名可访问
+    """返回配方统计数据（总数、状态分布）— 认证成员按组织过滤。
 
     有效组织解析（Cookie 认证兼容）：解析出 org_id 时按组织过滤统计；
-    未解析（匿名/无组织成员）时返回全局计数（保持前端统计组件可用，
-    属已知泄漏风险，见遗留风险说明）。
+    未解析（匿名/无组织成员）时返回 403，避免全局聚合计数泄漏
+    （原实现回退全局计数，仅暴露数字，现与 list_formulas 的 403 语义对齐）。
     """
     from sqlalchemy import func, select as sa_select
     from datetime import datetime, timedelta, timezone
@@ -321,16 +321,16 @@ async def get_formula_statistics(
     from ..models.user_model import User
 
     org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=403, detail="缺少租户上下文，禁止访问配方统计")
 
     query = sa_select(func.count(Formula.id))
-    if org_id is not None:
-        query = query.where(Formula.organization_id == org_id)
+    query = query.where(Formula.organization_id == org_id)
     result = await db.execute(query)
     total = result.scalar() or 0
 
     status_query = sa_select(Formula.status, func.count(Formula.id)).group_by(Formula.status)
-    if org_id is not None:
-        status_query = status_query.where(Formula.organization_id == org_id)
+    status_query = status_query.where(Formula.organization_id == org_id)
     status_result = await db.execute(status_query)
     status_distribution = {}
     for s, c in status_result.all():
