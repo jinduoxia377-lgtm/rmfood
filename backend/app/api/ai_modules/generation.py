@@ -141,7 +141,7 @@ async def generate_formula_neural(
         if req.priority_values:
             constraints["objective_weights"] = dict(req.priority_values)
 
-        result = await run_ga_generation(req.target_effects, constraints)
+        result = await run_ga_generation(req.target_effects, constraints, user_id=str(current_user.id))
 
         # 兼容前端 NeuralGenerateResponse 结构
         return {
