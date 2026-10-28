@@ -4,13 +4,14 @@
 轻量级 API 端点，专为移动端优化。
 返回精简的 JSON 响应，减少数据传输量。
 """
-from fastapi import APIRouter, Depends, Query, HTTPException
 from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ..application.mobile_facade import MobileFacade
 from ..infrastructure.mobile_service import MobileService
-from ..services.auth import get_current_user
 from ..models.user_model import User
+from ..services.auth import get_current_user
 
 # 依赖注入：创建 MobileService 实例并注入到 Facade
 _mobile_service = MobileService()

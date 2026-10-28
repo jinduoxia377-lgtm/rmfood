@@ -9,11 +9,11 @@ POST /ai/coordination-analysis
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Body, Depends, HTTPException  # A-27: HTTPException 原漏导入
+from fastapi import APIRouter, Depends, HTTPException  # A-27: HTTPException 原漏导入
 from pydantic import BaseModel, Field
 
-from ..deps import get_db_session, get_current_user
 from ...models import User
+from ..deps import get_current_user
 
 logger = logging.getLogger(__name__)
 

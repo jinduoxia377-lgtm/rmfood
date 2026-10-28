@@ -13,7 +13,7 @@ v3 (2026-10-19): 改为白名单申请服务的兼容别名 ——
 前端新通道请使用 /auth/whitelist/* 系列端点。
 """
 from fastapi import APIRouter, Depends, Request
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session

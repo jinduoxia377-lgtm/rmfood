@@ -8,21 +8,15 @@
 - 数据导出/导入
 - 登录历史
 """
-from datetime import datetime, timezone
-from typing import Optional, List
 import json
-import zipfile
-import io
-import uuid
-import os
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
-from fastapi.responses import StreamingResponse, Response
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.responses import Response, StreamingResponse
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc
 
-from ..api.deps import get_db_session, get_current_active_user, CurrentUser, require_role
-from ..models import User, UserRole
+from ..api.deps import get_current_active_user, get_db_session
+from ..models import User
 from ..models.user_device import UserDevice
 
 router = APIRouter(prefix="/users/me/settings", tags=["用户设置"])

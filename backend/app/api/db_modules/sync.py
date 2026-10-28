@@ -3,14 +3,13 @@
 """
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..deps import get_db_session, get_current_user
 from ...models import User
+from ..deps import get_current_user, get_db_session
 
 logger = logging.getLogger(__name__)
 
@@ -25,38 +24,38 @@ async def get_sync_stats(
     """获取数据库同步状态统计"""
     # 获取各数据库的统计信息
     result = await db.execute(text("""
-        SELECT 
+        SELECT
             'herbs' as source,
             COUNT(*) as total_records,
             MAX(updated_at) as last_updated
         FROM tcmsp_herbs
         UNION ALL
-        SELECT 
+        SELECT
             'rmchm' as source,
             COUNT(*) as total_records,
             MAX(updated_at) as last_updated
         FROM rmchm_herbs
         UNION ALL
-        SELECT 
+        SELECT
             'peptides' as source,
             COUNT(*) as total_records,
             MAX(created_at) as last_updated
         FROM bioactive_peptides
     """))
-    
+
     rows = result.fetchall()
     stats = {
         "herbs": {"total_records": 0, "last_updated": None},
         "rmchm": {"total_records": 0, "last_updated": None},
         "peptides": {"total_records": 0, "last_updated": None},
     }
-    
+
     for row in rows:
         source = row[0]
         if source in stats:
             stats[source]["total_records"] = row[1] or 0
             stats[source]["last_updated"] = row[2].isoformat() if row[2] else None
-    
+
     return {
         "success": True,
         "data": stats,

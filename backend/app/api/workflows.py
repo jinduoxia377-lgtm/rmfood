@@ -3,12 +3,20 @@
 工作流列表/详情/任务节点查询/取消/重试/可视化编辑器
 """
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy import select, func, delete
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..api.deps import get_db_session, get_current_user, get_current_active_user
-from ..models.models import Workflow, WorkflowTask, WorkflowTemplate, User, WorkflowStatus, TaskStatus
+from ..api.deps import get_current_active_user, get_db_session
+from ..models.models import (
+    TaskStatus,
+    User,
+    Workflow,
+    WorkflowStatus,
+    WorkflowTask,
+    WorkflowTemplate,
+)
 
 router = APIRouter(prefix="/workflows", tags=["工作流"])
 
@@ -450,28 +458,28 @@ async def update_workflow_config(
     current_user: User = Depends(get_current_active_user),
 ):
     """更新工作流的可视化配置（节点和边）"""
-    
+
     workflow = (await db.execute(
         select(Workflow).where(Workflow.id == workflow_id)
     )).scalar_one_or_none()
-    
+
     if not workflow:
         raise HTTPException(404, detail="工作流不存在")
 
     # A-27: 属主校验
     if workflow.creator_id != current_user.id:
         raise HTTPException(403, detail="无权操作此工作流")
-    
+
     if workflow.status not in (WorkflowStatus.PENDING, WorkflowStatus.CANCELLED):
         raise HTTPException(400, detail="只能修改等待中或已取消的工作流")
-    
+
     # 更新配置
     workflow.config = config_data
     workflow.updated_at = datetime.now(timezone.utc)
-    
+
     # 同步更新任务节点
     nodes = config_data.get("nodes", [])
-    
+
     # 删除旧任务
     await db.execute(delete(WorkflowTask).where(WorkflowTask.workflow_id == workflow_id))
 
@@ -489,7 +497,7 @@ async def update_workflow_config(
             input_data=node.get("data", {}).get("config"),
         )
         db.add(task)
-    
+
     await db.commit()
-    
+
     return {"message": "工作流配置已更新"}

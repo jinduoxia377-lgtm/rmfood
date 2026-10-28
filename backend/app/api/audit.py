@@ -1,15 +1,17 @@
 import logging  # A-27：except 分支里用到 logger，原先未定义
+
 """
 审计日志 API 路由
 管理员查看操作审计记录
 """
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session, require_role
 from ..models.models import AuditLog, User, UserRole
 from ..services.user import UserService
+
 logger = logging.getLogger(__name__)  # A-27：原缺失
 
 router = APIRouter(prefix="/admin", tags=["审计日志"])

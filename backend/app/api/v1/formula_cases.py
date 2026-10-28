@@ -5,15 +5,15 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func, desc, or_, text
+from pydantic import BaseModel, Field
+from sqlalchemy import desc, func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...api.deps import get_db_session
-from ...models.user_model import User
-from ...models.formula_case import FormulaCase, CaseLike, CaseComment
-from ...models.formula import Formula
 from ...core.multi_tenant.tenant_security import current_tenant_id
-from pydantic import BaseModel, Field
+from ...models.formula import Formula
+from ...models.formula_case import CaseComment, CaseLike, FormulaCase
+from ...models.user_model import User
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/formulas/cases", tags=["配方案例"])
@@ -150,7 +150,7 @@ async def list_cases(
             )
         )
     if featured_only:
-        q = q.where(FormulaCase.is_featured == True)
+        q = q.where(FormulaCase.is_featured.is_(True))
     order_col = getattr(FormulaCase, sort_by, FormulaCase.created_at)
     q = q.order_by(desc(order_col) if sort_dir == "desc" else order_col)
     total_q = select(func.count()).select_from(q.subquery())

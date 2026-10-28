@@ -9,7 +9,6 @@ from pydantic import BaseModel, Field
 
 from app.core.database.session import get_db
 from app.services.batch import (
-    SampleTrackingService,
     create_sample_service,
 )
 
@@ -123,11 +122,12 @@ async def compare_test_results(
 ):
     """
     对比多个样品的测试结果
-    
+
     对标 FormLab: "Comparing test results across batches and formulations"
     """
-    from sqlalchemy import select, text
-    from app.models import Sample, TestReport
+    from sqlalchemy import select
+
+    from app.models import TestReport
 
     ids = [int(x.strip()) for x in sample_ids.split(",") if x.strip()]
     params = parameters.split(",") if parameters else None

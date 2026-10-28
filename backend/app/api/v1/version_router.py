@@ -3,26 +3,23 @@
 提供Prompt模板版本管理的RESTful接口。
 支持版本创建、历史查看、差异对比和回滚操作。
 """
-from datetime import datetime, timezone
-from typing import Optional
 import difflib
+from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlalchemy import desc, func, select
 
-from ...core.database.session import get_db
+from ...api.deps import CurrentUser, DbSession
 from ...models.prompt_version import PromptVersion
 from ...schemas.version_schemas import (
+    DiffItem,
+    DiffResponse,
     PromptVersionCreate,
     PromptVersionResponse,
-    VersionListResponse,
-    DiffResponse,
-    DiffItem,
     RollbackRequest,
     RollbackResponse,
+    VersionListResponse,
 )
-from ...api.deps import get_current_active_user, CurrentUser, DbSession
 
 router = APIRouter(prefix="/prompts", tags=["Version Control"])
 
@@ -49,13 +46,13 @@ async def create_version(
 ):
     """
     为指定Prompt模板创建新的版本
-    
+
     - **prompt_id**: Prompt模板ID
     - **version_number**: 版本号（格式：x.y，如1.1）
     - **content_snapshot**: 完整内容快照
     - **changelog**: 可选，变更日志
     - **diff_summary**: 可选，变更摘要
-    
+
     自动记录创建者和时间戳。
     """
     result = await db.execute(
@@ -63,9 +60,9 @@ async def create_version(
         .where(PromptVersion.prompt_template_id == prompt_id)
     )
     max_version = result.scalar() or 0
-    
+
     new_version_num = _parse_version(request.version_number)
-    
+
     version = PromptVersion(
         prompt_template_id=prompt_id,
         version_number=max_version + 1,
@@ -77,7 +74,7 @@ async def create_version(
     db.add(version)
     await db.commit()
     await db.refresh(version)
-    
+
     return PromptVersionResponse.model_validate(version)
 
 
@@ -91,11 +88,11 @@ async def list_versions(
 ):
     """
     获取指定Prompt模板的版本历史
-    
+
     - **prompt_id**: Prompt模板ID
     - **page**: 页码（默认1）
     - **page_size**: 每页条数（默认20）
-    
+
     返回按版本号降序排列的版本列表。
     """
     query = select(PromptVersion).where(
@@ -104,16 +101,16 @@ async def list_versions(
     count_query = select(func.count(PromptVersion.id)).where(
         PromptVersion.prompt_template_id == prompt_id
     )
-    
+
     total_result = await db.execute(count_query)
     total = total_result.scalar() or 0
-    
+
     offset = (page - 1) * page_size
     query = query.order_by(desc(PromptVersion.version_number)).offset(offset).limit(page_size)
-    
+
     result = await db.execute(query)
     versions = result.scalars().all()
-    
+
     current_result = await db.execute(
         select(PromptVersion)
         .where(PromptVersion.prompt_template_id == prompt_id)
@@ -122,7 +119,7 @@ async def list_versions(
     )
     current_version_obj = current_result.scalar_one_or_none()
     current_version = str(current_version_obj.version_number) if current_version_obj else "0.0"
-    
+
     return VersionListResponse(
         versions=[PromptVersionResponse.model_validate(v) for v in versions],
         total=total,
@@ -139,10 +136,10 @@ async def get_version_detail(
 ):
     """
     获取特定版本的详细信息
-    
+
     - **prompt_id**: Prompt模板ID
     - **version_id**: 版本记录ID
-    
+
     返回版本的完整内容和元数据。
     """
     result = await db.execute(
@@ -152,13 +149,13 @@ async def get_version_detail(
         )
     )
     version = result.scalar_one_or_none()
-    
+
     if not version:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="版本不存在",
         )
-    
+
     return PromptVersionResponse.model_validate(version)
 
 
@@ -172,17 +169,17 @@ async def rollback_to_version(
 ):
     """
     回滚到指定的历史版本
-    
+
     - **prompt_id**: Prompt模板ID
     - **version_id**: 目标版本ID
     - **create_new_version**: 是否基于回滚版本创建新版本（默认True）
     - **rollback_reason**: 可选，回滚原因
-    
+
     回滚后可选择是否创建新版本记录。
     """
     if request is None:
         request = RollbackRequest()
-    
+
     target_result = await db.execute(
         select(PromptVersion).where(
             PromptVersion.id == version_id,
@@ -190,13 +187,13 @@ async def rollback_to_version(
         )
     )
     target_version = target_result.scalar_one_or_none()
-    
+
     if not target_version:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="目标版本不存在",
         )
-    
+
     new_version_id = None
     if request.create_new_version:
         max_ver_result = await db.execute(
@@ -204,7 +201,7 @@ async def rollback_to_version(
             .where(PromptVersion.prompt_template_id == prompt_id)
         )
         max_version = max_ver_result.scalar() or 0
-        
+
         new_version = PromptVersion(
             prompt_template_id=prompt_id,
             version_number=max_version + 1,
@@ -216,9 +213,9 @@ async def rollback_to_version(
         db.add(new_version)
         await db.flush()
         new_version_id = new_version.id
-    
+
     await db.commit()
-    
+
     return RollbackResponse(
         success=True,
         message="回滚成功",
@@ -239,12 +236,12 @@ async def compare_versions(
 ):
     """
     对比两个版本的差异
-    
+
     - **prompt_id**: Prompt模板ID
     - **v1**: 版本1的ID
     - **v2**: 版本2的ID
     - **context_lines**: 显示的上下文行数（默认3）
-    
+
     返回详细的diff结果和变更统计。
     """
     result_v1 = await db.execute(
@@ -254,7 +251,7 @@ async def compare_versions(
         )
     )
     version_1 = result_v1.scalar_one_or_none()
-    
+
     result_v2 = await db.execute(
         select(PromptVersion).where(
             PromptVersion.id == v2,
@@ -262,16 +259,16 @@ async def compare_versions(
         )
     )
     version_2 = result_v2.scalar_one_or_none()
-    
+
     if not version_1 or not version_2:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="一个或两个版本不存在",
         )
-    
+
     lines_1 = version_1.content_snapshot.splitlines(keepends=True)
     lines_2 = version_2.content_snapshot.splitlines(keepends=True)
-    
+
     differ = difflib.unified_diff(
         lines_1,
         lines_2,
@@ -279,19 +276,19 @@ async def compare_versions(
         tofile=f"v{version_2.version_number}",
         n=context_lines,
     )
-    
+
     diffs = []
     line_number = 1
     for line in differ:
         if line.startswith('+++') or line.startswith('---'):
             continue
-        
+
         if line.startswith('@'):
             continue
-        
+
         diff_type = "unchanged"
         old_content = None
-        
+
         if line.startswith('+'):
             diff_type = "add"
             content = line[1:]
@@ -301,23 +298,23 @@ async def compare_versions(
             old_content = content
         else:
             content = line[1:] if line.startswith(' ') else line
-        
+
         diffs.append(DiffItem(
             type=diff_type,
             line_number=line_number,
             content=content.rstrip('\n'),
             old_content=old_content.rstrip('\n') if old_content else None,
         ))
-        
+
         if diff_type != "unchanged":
             pass  # OK: intentional — unchanged diffs are skipped
         line_number += 1
-    
+
     add_count = sum(1 for d in diffs if d.type == "add")
     remove_count = sum(1 for d in diffs if d.type == "remove")
-    
+
     summary = f"共 {len(diffs)} 行变更: +{add_count} 行新增, -{remove_count} 行删除"
-    
+
     return DiffResponse(
         version_1=PromptVersionResponse.model_validate(version_1),
         version_2=PromptVersionResponse.model_validate(version_2),
@@ -334,9 +331,9 @@ async def get_latest_version(
 ):
     """
     获取Prompt模板的最新版本
-    
+
     - **prompt_id**: Prompt模板ID
-    
+
     快速获取最新版本信息，无需遍历所有版本。
     """
     result = await db.execute(
@@ -346,11 +343,11 @@ async def get_latest_version(
         .limit(1)
     )
     latest = result.scalar_one_or_none()
-    
+
     if not latest:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="该Prompt暂无版本记录",
         )
-    
+
     return PromptVersionResponse.model_validate(latest)

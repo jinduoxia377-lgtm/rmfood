@@ -8,13 +8,14 @@ P1-12：逐日统计改为 GROUP BY date(created_at) 聚合，SQL 往返次数�
        注：date() 提取依赖 PostgreSQL；SQLite（测试库）下会抛异常，
        生产环境为 PostgreSQL，该异常路径不影响线上行为。
 """
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
 from datetime import datetime, timedelta
 
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..api.deps import get_current_user, get_db_session
 from ..models.models import User
-from ..api.deps import get_db_session, get_current_user
 
 router = APIRouter(prefix="/dashboard", tags=["仪表盘"])
 

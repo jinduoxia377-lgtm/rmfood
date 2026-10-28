@@ -6,14 +6,12 @@
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from app.services.kg.reasoning_engine import (
-    get_reasoning_engine,
     KnowledgeGraphReasoningEngine,
-    SynergyType,
-    ConflictType,
+    get_reasoning_engine,
 )
 
 logger = logging.getLogger(__name__)

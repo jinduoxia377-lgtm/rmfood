@@ -9,6 +9,7 @@
 """
 from __future__ import annotations
 
+import asyncio
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,12 +17,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..deps import get_current_active_user, get_db_session
 from ...core.multi_tenant.tenant_security import TenantContext, require_tenant
+from ...infrastructure.bots_impl import SQLAlchemyGroupChatRepository
 from ...models import User
 from ...models.task_group import TaskGroup
 from ...services.ai.agent.task_team_service import get_task_team_service
-from ...infrastructure.bots_impl import SQLAlchemyGroupChatRepository
+from ..deps import get_current_active_user, get_db_session
 
 router = APIRouter(prefix="/tasks", tags=["研发任务中心"])
 

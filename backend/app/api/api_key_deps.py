@@ -15,14 +15,14 @@
 """
 
 import logging
-from typing import Annotated, List, Optional
+from typing import Annotated, Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .deps import get_db_session
 from ..core.api_framework.integration_framework import get_api_key_service
+from .deps import get_db_session
 
 logger = logging.getLogger(__name__)
 

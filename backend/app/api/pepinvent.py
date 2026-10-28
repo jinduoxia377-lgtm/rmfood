@@ -15,17 +15,17 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
-from ..api.deps import get_db_session, get_current_user
+from ..api.deps import get_db_session
+from ..core.plans import require_plan
 from ..models import User
 from ..services.ai_models.pepinvent_service import (
-    PepinventService,
-    get_pepinvent_service,
     ServiceUnavailableError,
+    get_pepinvent_service,
 )
 
 router = APIRouter(prefix="/ai/peptide", tags=["PepINVENT肽设计"])
@@ -104,7 +104,7 @@ class PeptideSampleRequest(BaseModel):
 async def generate_peptides(
     req: PeptideGenerateRequest,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     基于目标功效使用 PepINVERT 生成肽候选序列。
@@ -181,7 +181,7 @@ async def generate_peptides(
 async def optimize_peptide(
     req: PeptideOptimizeRequest,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     使用强化学习（RL）优化给定的肽序列。
@@ -254,7 +254,7 @@ async def optimize_peptide(
 async def sample_diverse_peptides(
     req: PeptideSampleRequest,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     执行探索性采样以获取高多样性的肽集合。
@@ -316,7 +316,7 @@ async def sample_diverse_peptides(
 
 @router.get("/status", summary="查看 PepINVERT 服务状态")
 async def get_pepinvent_status(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     查看 PepINVERT 服务的运行状态和配置信息。
@@ -355,7 +355,7 @@ async def get_pepinvent_status(
 
 @router.delete("/cache", summary="清除缓存")
 async def clear_cache(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """清除 PepINVERT 服务的响应缓存"""
     try:

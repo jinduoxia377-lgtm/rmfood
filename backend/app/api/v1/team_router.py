@@ -5,32 +5,30 @@
 """
 import logging  # A-27：except 分支里用到 logger，原先未定义
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, delete
 
-from ...core.database.session import get_db
+from ...api.deps import CurrentUser, DbSession
+from ...models.enums import NotificationType, TeamRole
+from ...models.notification import Notification
 from ...models.team import Team
 from ...models.team_member import TeamMember
 from ...models.user_model import User
-from ...models.notification import Notification
-from ...models.enums import TeamRole, NotificationType
 from ...schemas.team_schemas import (
+    InviteLinkResponse,
+    InviteMemberRequest,
     TeamCreate,
-    TeamUpdate,
-    TeamResponse,
-    TeamListResponse,
     TeamDetailResponse,
+    TeamListResponse,
     TeamMemberInfo,
     TeamMemberUpdate,
-    InviteMemberRequest,
-    InviteLinkResponse,
-    JoinTeamRequest,
+    TeamResponse,
+    TeamUpdate,
 )
-from ...api.deps import get_current_active_user, CurrentUser, DbSession
 
 router = APIRouter(prefix="/teams", tags=["Team Collaboration"])
 
@@ -48,7 +46,7 @@ async def _check_team_permission(
     """检查用户在团队中的权限"""
     if required_roles is None:
         required_roles = [TeamRole.OWNER, TeamRole.ADMIN]
-    
+
     result = await db.execute(
         select(TeamMember).where(
             TeamMember.team_id == team_id,
@@ -56,19 +54,19 @@ async def _check_team_permission(
         )
     )
     member = result.scalar_one_or_none()
-    
+
     if not member:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="您不是该团队成员",
         )
-    
+
     if member.role not in required_roles and member.role != TeamRole.OWNER:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="权限不足，需要管理员或更高权限",
         )
-    
+
     return member
 
 
@@ -80,11 +78,11 @@ async def create_team(
 ):
     """
     创建新团队
-    
+
     - **name**: 团队名称（2-100字符）
     - **description**: 可选，团队描述
     - **settings**: 可选，团队设置（JSON格式）
-    
+
     创建者自动成为团队Owner。
     """
     team = Team(
@@ -95,7 +93,7 @@ async def create_team(
     )
     db.add(team)
     await db.flush()
-    
+
     owner_member = TeamMember(
         team_id=team.id,
         user_id=current_user.id,
@@ -105,7 +103,7 @@ async def create_team(
     db.add(owner_member)
     await db.commit()
     await db.refresh(team)
-    
+
     return TeamResponse.model_validate(team)
 
 
@@ -119,11 +117,11 @@ async def list_teams(
 ):
     """
     获取当前用户加入的所有团队列表
-    
+
     - **include_archived**: 是否包含已归档的团队（默认否）
     - **page**: 页码（默认1）
     - **page_size**: 每页条数（默认20）
-    
+
     返回团队基本信息和成员数量。
     """
     query = (
@@ -131,38 +129,38 @@ async def list_teams(
         .join(TeamMember, Team.id == TeamMember.team_id)
         .where(TeamMember.user_id == current_user.id)
     )
-    
+
     if not include_archived:
-        query = query.where(Team.is_archived == False)
-    
+        query = query.where(Team.is_archived.is_(False))
+
     count_query = (
         select(func.count(Team.id))
         .join(TeamMember, Team.id == TeamMember.team_id)
         .where(TeamMember.user_id == current_user.id)
     )
     if not include_archived:
-        count_query = count_query.where(Team.is_archived == False)
-    
+        count_query = count_query.where(Team.is_archived.is_(False))
+
     total_result = await db.execute(count_query)
     total = total_result.scalar() or 0
-    
+
     offset = (page - 1) * page_size
     query = query.order_by(Team.updated_at.desc()).offset(offset).limit(page_size)
-    
+
     result = await db.execute(query)
     teams = result.scalars().all()
-    
+
     team_responses = []
     for team in teams:
         member_count = await db.execute(
             select(func.count(TeamMember.id)).where(TeamMember.team_id == team.id)
         )
         count = member_count.scalar() or 0
-        
+
         team_resp = TeamResponse.model_validate(team)
         team_resp.member_count = count
         team_responses.append(team_resp)
-    
+
     return TeamListResponse(teams=team_responses, total=total)
 
 
@@ -174,22 +172,22 @@ async def get_team_detail(
 ):
     """
     获取团队的详细信息，包括成员列表
-    
+
     - **team_id**: 团队ID
-    
+
     返回团队信息、成员列表和邀请链接。
     """
     await _check_team_permission(db, team_id, current_user.id, [TeamRole.OWNER, TeamRole.ADMIN, TeamRole.MEMBER, TeamRole.GUEST])
-    
+
     result = await db.execute(select(Team).where(Team.id == team_id))
     team = result.scalar_one_or_none()
-    
+
     if not team:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="团队不存在",
         )
-    
+
     members_result = await db.execute(
         select(TeamMember, User.username)
         .join(User, TeamMember.user_id == User.id)
@@ -197,7 +195,7 @@ async def get_team_detail(
         .order_by(TeamMember.joined_at.asc())
     )
     members_data = members_result.all()
-    
+
     member_infos = []
     for member, username in members_data:
         member_info = TeamMemberInfo(
@@ -208,7 +206,7 @@ async def get_team_detail(
             joined_at=member.joined_at,
         )
         member_infos.append(member_info)
-    
+
     return TeamDetailResponse(
         **TeamResponse.model_validate(team).model_dump(),
         members=member_infos,
@@ -225,33 +223,33 @@ async def update_team(
 ):
     """
     更新团队的基本信息和设置
-    
+
     - **team_id**: 团队ID
     - **name**: 可选，新的团队名称
     - **description**: 可选，新的描述
     - **settings**: 可选，新的设置
     - **is_archived**: 可选，归档状态
-    
+
     需要Owner或Admin权限。
     """
     await _check_team_permission(db, team_id, current_user.id)
-    
+
     result = await db.execute(select(Team).where(Team.id == team_id))
     team = result.scalar_one_or_none()
-    
+
     if not team:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="团队不存在",
         )
-    
+
     update_data = request.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(team, field, value)
-    
+
     await db.commit()
     await db.refresh(team)
-    
+
     return TeamResponse.model_validate(team)
 
 
@@ -263,26 +261,26 @@ async def archive_team(
 ):
     """
     归档或删除团队（软删除）
-    
+
     - **team_id**: 团队ID
-    
+
     只有Owner可以执行此操作。
     归档后团队将变为只读状态。
     """
     member = await _check_team_permission(db, team_id, current_user.id, [TeamRole.OWNER])
-    
+
     result = await db.execute(select(Team).where(Team.id == team_id))
     team = result.scalar_one_or_none()
-    
+
     if not team:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="团队不存在",
         )
-    
+
     team.is_archived = True
     await db.commit()
-    
+
     return {"success": True, "message": "团队已归档"}
 
 
@@ -295,15 +293,15 @@ async def invite_member(
 ):
     """
     邀请新成员加入团队
-    
+
     - **team_id**: 团队ID
     - **user_id**: 被邀请用户的ID
     - **role**: 初始角色（默认member）
-    
+
     需要Owner或Admin权限。
     """
     await _check_team_permission(db, team_id, current_user.id)
-    
+
     existing_member = await db.execute(
         select(TeamMember).where(
             TeamMember.team_id == team_id,
@@ -315,7 +313,7 @@ async def invite_member(
             status_code=status.HTTP_409_CONFLICT,
             detail="该用户已经是团队成员",
         )
-    
+
     target_user = await db.execute(
         select(User).where(User.id == request.user_id)
     )
@@ -324,7 +322,7 @@ async def invite_member(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="目标用户不存在",
         )
-    
+
     new_member = TeamMember(
         team_id=team_id,
         user_id=request.user_id,
@@ -332,18 +330,18 @@ async def invite_member(
         invited_by=current_user.id,
     )
     db.add(new_member)
-    
+
     notification = Notification(
         user_id=request.user_id,
         type=NotificationType.SYSTEM,
         title="团队邀请通知",
-        content=f"您已被邀请加入团队",
+        content="您已被邀请加入团队",
         metadata_={"team_id": team_id, "inviter_id": current_user.id},
     )
     db.add(notification)
-    
+
     await db.commit()
-    
+
     return {"success": True, "message": "邀请已发送"}
 
 
@@ -356,32 +354,32 @@ async def list_members(
 ):
     """
     获取团队成员列表
-    
+
     - **team_id**: 团队ID
     - **role_filter**: 可选，按角色筛选 (owner/admin/member/guest)
-    
+
     返回成员的用户名、角色和加入时间。
     """
     await _check_team_permission(db, team_id, current_user.id, [TeamRole.OWNER, TeamRole.ADMIN, TeamRole.MEMBER, TeamRole.GUEST])
-    
+
     query = (
         select(TeamMember, User.username)
         .join(User, TeamMember.user_id == User.id)
         .where(TeamMember.team_id == team_id)
     )
-    
+
     if role_filter:
         try:
             role = TeamRole(role_filter)
             query = query.where(TeamMember.role == role)
         except ValueError:
             logger.debug(f"无效的团队角色过滤器: {role_filter}")
-    
+
     query = query.order_by(TeamMember.joined_at.asc())
-    
+
     result = await db.execute(query)
     members_data = result.all()
-    
+
     member_infos = []
     for member, username in members_data:
         member_info = TeamMemberInfo(
@@ -392,7 +390,7 @@ async def list_members(
             joined_at=member.joined_at,
         )
         member_infos.append(member_info)
-    
+
     return member_infos
 
 
@@ -406,22 +404,22 @@ async def update_member_role(
 ):
     """
     更新团队成员的角色权限
-    
+
     - **team_id**: 团队ID
     - **member_id**: 成员记录ID
     - **role**: 新角色
     - **user_id**: 目标用户ID
-    
+
     只有Owner可以提升为Admin，不能修改自己的角色。
     """
     await _check_team_permission(db, team_id, current_user.id)
-    
+
     if request.user_id == current_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="不能修改自己的角色",
         )
-    
+
     result = await db.execute(
         select(TeamMember).where(
             TeamMember.id == member_id,
@@ -429,13 +427,13 @@ async def update_member_role(
         )
     )
     member = result.scalar_one_or_none()
-    
+
     if not member:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="成员记录不存在",
         )
-    
+
     if request.role == TeamRole.OWNER:
         target_member = await _check_team_permission(db, team_id, current_user.id, [TeamRole.OWNER])
         if target_member.role != TeamRole.OWNER:
@@ -443,10 +441,10 @@ async def update_member_role(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="只有Owner可以转让所有权",
             )
-    
+
     member.role = request.role
     await db.commit()
-    
+
     return {"success": True, "message": f"角色已更新为 {request.role.value}"}
 
 
@@ -459,10 +457,10 @@ async def remove_member(
 ):
     """
     从团队中移除成员
-    
+
     - **team_id**: 团队ID
     - **member_id**: 成员记录ID
-    
+
     Owner/Admin可移除其他成员，任何成员可自行退出。
     """
     result = await db.execute(
@@ -472,27 +470,27 @@ async def remove_member(
         )
     )
     member = result.scalar_one_or_none()
-    
+
     if not member:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="成员记录不存在",
         )
-    
+
     is_self_removal = member.user_id == current_user.id
-    
+
     if not is_self_removal:
         await _check_team_permission(db, team_id, current_user.id)
-        
+
         if member.role == TeamRole.OWNER:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="不能移除团队Owner",
             )
-    
+
     await db.delete(member)
     await db.commit()
-    
+
     action = "退出团队" if is_self_removal else "已移除成员"
     return {"success": True, "message": action}
 
@@ -507,20 +505,20 @@ async def generate_invite_link(
 ):
     """
     生成团队邀请链接
-    
+
     - **team_id**: 团队ID
     - **max_uses**: 最大使用次数（默认10）
     - **expires_hours**: 有效期小时数（默认24，最大30天）
-    
+
     需要Owner或Admin权限。生成的链接可分享给其他人加入团队。
     """
     await _check_team_permission(db, team_id, current_user.id)
-    
+
     invite_code = str(uuid.uuid4())[:8].upper()
     expires_at = _now() + timedelta(hours=expires_hours)
-    
+
     invite_url = f"{settings.base_url}/teams/join?code={invite_code}"
-    
+
     return InviteLinkResponse(
         invite_code=invite_code,
         invite_url=invite_url,
@@ -531,4 +529,5 @@ async def generate_invite_link(
 
 
 from ...core.config import settings
+
 logger = logging.getLogger(__name__)  # A-27：原缺失

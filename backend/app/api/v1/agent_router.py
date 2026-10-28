@@ -14,17 +14,21 @@ import json
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.ai.agent import get_orchestrator, AgentExecution
-from app.services.ai.agent.workflow_engine import get_workflow_engine, WorkflowEngine, WORKFLOW_TEMPLATES
+from app.services.ai.agent import AgentExecution, get_orchestrator
+from app.services.ai.agent.workflow_engine import (
+    WORKFLOW_TEMPLATES,
+    get_workflow_engine,
+)
 
-from ..deps import get_db_session, get_current_active_user
 from ...core.multi_tenant.tenant_security import TenantContext, require_tenant
+from ...core.security.security_middleware import CsrfProtectMiddleware
 from ...models import User
+from ..deps import get_current_active_user, get_db_session
 
 logger = logging.getLogger(__name__)
 
@@ -81,14 +85,29 @@ async def list_tools():
 
 
 @router.get("/csrf-token", summary="获取 CSRF Token")
-async def get_csrf_token():
+async def get_csrf_token(request: Request):
     """
-    获取 CSRF token（适用于 SPA 跨域场景）
-    返回 JSON 格式，避免 Cookie 的 Secure 属性限制
+    获取 CSRF Token（SPA / 外部调用方双提交场景）
+
+    响应体 `token` 与响应 Set-Cookie 的 `csrf_token` cookie 值**保持一致**。
+    该 token 亦可用作 `X-CSRF-Token` 请求头（与 csrf_token cookie 双提交），
+    例如调用 `POST /api/v1/ai/generate` 等受 CSRF 保护的端点时，
+    直接取响应体 token 注入 `X-CSRF-Token` 头即可通过校验。
     """
     import secrets
     token = secrets.token_hex(32)
-    return {"token": token}
+    response = JSONResponse(content={"token": token})
+    # 与 CsrfProtectMiddleware 使用相同的 cookie 参数（key/httponly/samesite/secure/max_age），
+    # 保证响应体 token 与 csrf_token cookie 值一致。
+    response.set_cookie(
+        key=CsrfProtectMiddleware.CSRF_COOKIE_NAME,
+        value=token,
+        httponly=False,  # 🔓 需要 JS 可读，用于 CSRF 双提交保护
+        samesite="strict",
+        secure=CsrfProtectMiddleware._csrf_cookie_secure(request),
+        max_age=86400,  # 24 hours
+    )
+    return response
 
 
 @router.post("/execute", summary="执行 Agent 任务")
@@ -137,7 +156,11 @@ async def execute_agent(
 
 
 @router.get("/executions/{execution_id}", summary="查询执行结果")
-async def get_execution(execution_id: str):
+async def get_execution(
+    execution_id: str,
+    tenant: TenantContext = Depends(require_tenant),
+    current_user: User = Depends(get_current_active_user),
+):
     """查询指定 Agent 执行的任务结果"""
     execution = _executions.get(execution_id)
     if not execution:
@@ -192,6 +215,7 @@ async def execute_agent_stream(
 @router.get("/executions", summary="列出最近的执行记录")
 async def list_executions(
     limit: int = Query(10, ge=1, le=50),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(get_current_active_user),
 ):
     """返回最近执行的 Agent 任务列表"""
@@ -206,6 +230,7 @@ async def list_executions(
 @router.delete("/executions/{execution_id}", summary="删除执行记录")
 async def delete_execution(
     execution_id: str,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(get_current_active_user),
 ):
     """删除指定的执行记录"""

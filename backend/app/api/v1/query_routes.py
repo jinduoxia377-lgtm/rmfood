@@ -4,12 +4,12 @@ These endpoints provide read-optimized access to formula data,
 separate from the write-side endpoints in the main formulas.py.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 
-from app.cqrs.queries.service import QueryService
-from app.cqrs.queries.models import FormulaQueryModel, FormulaSearchQuery, SearchResultItem
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.cqrs.queries.models import FormulaQueryModel, FormulaSearchQuery, SearchResultItem
+from app.cqrs.queries.service import QueryService
 
 # All query routes use prefix /query; health is the only top-level endpoint
 router = APIRouter(prefix="/query", tags=["queries"])

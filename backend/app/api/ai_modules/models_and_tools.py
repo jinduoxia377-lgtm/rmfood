@@ -1,26 +1,21 @@
 """Models and tools module - /taste-predict, /stability, /peptide-score, /models/status, /models/config, /models/list, /stats/summary"""
-import logging
-from datetime import datetime, timezone
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...services.ai.shared.observability import ai_observability
 from ...services.ai.shared.response_cache import ai_cache
-
 from . import (
-    logger,
-    _get_llm_service,
-    ai_service,
-    get_db_session,
-    get_current_user,
-    get_current_active_user,
-    require_role,
     User,
-    FormulaStatus,
+    _get_llm_service,
+    get_current_active_user,
+    get_current_user,
+    get_db_session,
+    logger,
+    require_role,
 )
 
 sub_router = APIRouter(tags=["生成"])
@@ -59,11 +54,27 @@ async def list_llm_models(
       前端调用 /models/models/list 得到 404 后降级直连失败，表现为「获取不到模型」
     """
     import httpx
-    from ...services.llm_service import PROVIDER_DEFAULTS
+
+    from ...services.llm_service import PROVIDER_DEFAULTS, llm_service
 
     provider = (req.provider or "").strip() or "openai"
     api_key = (req.api_key or "").strip()
+    # P0 修复：前端传空密钥时，回退到后端已配置的运行时密钥。
+    # 原实现：前端传 api_key='' → 后端不带 Authorization header → 网关返回 401 → 502。
+    if not api_key:
+        try:
+            api_key = getattr(llm_service.config, "api_key", "") or ""
+        except Exception:
+            api_key = ""
     base_url = (req.base_url or "").strip()
+    if not base_url:
+        # P0 修复：优先回退到后端已配置的运行时 base_url（如 agnes-ai 网关），
+        # 而非提供商默认 URL。原实现回退到 PROVIDER_DEFAULTS 默认值（如
+        # https://api.openai.com/v1），导致用 agnes-ai 的 key 调 OpenAI → 401 → 502。
+        try:
+            base_url = getattr(llm_service.config, "base_url", "") or ""
+        except Exception:
+            base_url = ""
     if not base_url:
         base_url = PROVIDER_DEFAULTS.get(provider, {}).get("base_url") or ""
 
@@ -125,6 +136,7 @@ async def test_llm_config(
       provider / base_url — 回显本次使用的提供商与地址
     """
     import httpx
+
     from ...services.llm_service import PROVIDER_DEFAULTS
 
     provider = (req.provider or "").strip() or "deepseek"
@@ -349,7 +361,7 @@ class UpdateLLMConfigRequest(BaseModel):
     api_key: str = Field(..., description="API Key")
     base_url: str = Field(..., description="API 基础 URL")
     model: str = Field(..., description="模型名称")
-    max_tokens: int = Field(4096, description="最大 token 数")
+    max_tokens: int = Field(16000, description="最大 token 数")
     temperature: float = Field(0.7, description="温度参数")
 
 
@@ -367,7 +379,7 @@ async def update_llm_config(
     此端点保留 30 天兼容期后删除；每次调用记录 warning 日志，
     用于观察是否仍有未察觉的外部调用方（小程序/脚本/旧缓存）。
     """
-    from ...services.llm_service import LLMConfig, save_config_to_db, llm_service
+    from ...services.llm_service import LLMConfig, llm_service, save_config_to_db
 
     # 记录接收到的配置信息（脱敏处理）
     masked_key = req.api_key[:8] + "..." + req.api_key[-4:] if len(req.api_key) > 12 else "***"
@@ -528,7 +540,7 @@ async def get_ai_stats_summary(
         # 1. 对话会话数
         from ...models.chat import ChatSession
         result["chat_count"] = await _safe_count(db,
-            select(func.count(ChatSession.id)).where(ChatSession.user_id == uid, ChatSession.is_active == True))
+            select(func.count(ChatSession.id)).where(ChatSession.user_id == uid, ChatSession.is_active.is_(True)))
 
         # 2. 配方数
         from ...models.formula import Formula
@@ -624,7 +636,7 @@ class SaveModelConfigRequest(BaseModel):
     api_key: str = Field("", description="API Key")
     base_url: str = Field("", description="基础 URL")
     model: str = Field("", description="模型名称")
-    max_tokens: int = Field(4096, description="最大 token 数")
+    max_tokens: int = Field(16000, description="最大 token 数")
     temperature: float = Field(0.7, description="温度参数")
 
 
@@ -637,7 +649,7 @@ async def save_model_config(
 ):
     """保存单个模型配置到数据库（会即时更新运行时 LLM 服务，影响全体用户，故仅限管理员）"""
     from ...services.ai_model_config_service import AIModelConfigService, ModelConfig
-    from ...services.llm_service import llm_service, LLMConfig
+    from ...services.llm_service import LLMConfig, llm_service
 
     valid_types = ["llm", "formula_gpt", "synergy_net", "safety_checker", "taste_predictor", "stability_model", "peptide_scorer"]
     if model_type not in valid_types:
@@ -733,7 +745,7 @@ class UserLLMKeyRequest(BaseModel):
     api_key: str = Field(..., min_length=20, max_length=512, description="API Key（≥ 20 字符）")
     base_url: str = Field("", max_length=512, description="API 基础 URL（留空使用提供商默认）")
     model: str = Field("", max_length=128, description="模型名称（留空使用提供商默认）")
-    max_tokens: int = Field(4096, ge=1, le=32768)
+    max_tokens: int = Field(16000, ge=1, le=100000)
     temperature: float = Field(0.7, ge=0, le=2)
 
 
@@ -747,7 +759,7 @@ async def save_user_llm_key(
     保存后 /ai 对话立即使用该用户密钥驱动 LLM，无需管理员介入。
     全局 llm_service（环境变量/全局 db）不受影响。
     """
-    from ...services.llm_service import LLMService, LLMConfig, save_user_config_to_db
+    from ...services.llm_service import LLMConfig, LLMService, save_user_config_to_db
 
     cfg = LLMConfig(
         provider=req.provider,
@@ -777,7 +789,7 @@ async def get_user_llm_key_status(
     current_user: User = Depends(get_current_user),
 ):
     """返回当前用户是否配置了个人密钥及脱敏信息（不返回明文）"""
-    from ...services.llm_service import LLMService, _user_key_config_key, _decrypt_api_key
+    from ...services.llm_service import LLMService
 
     if current_user is None:
         # 未登录：可选认证端点，返回未配置状态而非 500

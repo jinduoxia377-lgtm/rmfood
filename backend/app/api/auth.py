@@ -8,25 +8,35 @@
 - ✅ Token 不再持久化在前端 localStorage
 - ✅ 登录成功后同时返回 Token（兼容）和设置 Cookie
 """
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status, Response, Request
+import logging
+
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+logger = logging.getLogger(__name__)
+
+from ..api.deps import get_db_session
+from ..core.config import settings
+from ..models.enums import UserRole
+from ..models.user_model import User
 from ..schemas import (
-    LoginRequest, Token, UserCreate, UserResponse, PasswordChange, UserUpdate,
-    ApiResponse, SuccessResponse, DeleteAccountRequest
+    DeleteAccountRequest,
+    LoginRequest,
+    PasswordChange,
+    SuccessResponse,
+    Token,
+    UserCreate,
+    UserResponse,
+    UserUpdate,
 )
 from ..services.auth import AuthService, get_current_user
-from ..models.user_model import User
-from ..models.enums import UserRole
-from ..api.deps import get_db_session, CurrentUser, DbSession, require_role
 from ..utils.auth import (
     create_secure_cookie_settings,
     get_cookie_value,
-    clear_cookie_settings,
 )
-from ..core.config import settings
 
 # 🔒 Cookie 名称常量
 ACCESS_TOKEN_COOKIE = "rmfood_access_token"
@@ -54,6 +64,22 @@ async def login(
     if isinstance(token_data, dict) and token_data.get("requires_2fa"):
         return token_data
 
+    # 登录响应携带用户 plan（规格 tenant-isolation-segmentation-plan.md 3.5）：
+    # 前端登录后无需再单独拉取 /auth/me 即可拿到版本信息。
+    # authenticate 内部已 commit（reset_login_attempts），user 属性已过期，
+    # 故此处按 username 重新查一次 plan（仅取列，避免异步懒加载 MissingGreenlet）。
+    user_plan = "free"
+    try:
+        plan_row = (
+            await db.execute(select(User.plan).where(User.username == data.username))
+        ).scalar_one_or_none()
+        if plan_row:
+            user_plan = plan_row
+    except Exception:  # noqa: BLE001 - plan 读取失败不阻断登录，回落 free
+        logger.warning("登录响应读取 user.plan 失败，回落 free: %s", data.username)
+    login_payload = token_data.model_dump()
+    login_payload["plan"] = user_plan
+
     # 🔒 设置 HttpOnly Cookie（防止 XSS 窃取 JWT）
     # Access Token: 30分钟
     access_cookie = create_secure_cookie_settings(
@@ -72,7 +98,7 @@ async def login(
     )
     response.set_cookie(**refresh_cookie)
 
-    return token_data
+    return login_payload
 
 
 @router.post("/logout", summary="用户登出")
@@ -263,9 +289,9 @@ async def upload_current_user_avatar(
     """
     # 🔒 使用安全的文件验证工具
     from ..utils.file_security import (
-        validate_image_file,
         generate_secure_filename,
         validate_file_path,
+        validate_image_file,
     )
 
     # 验证图片文件（魔数检测 + 大小限制）
@@ -276,7 +302,6 @@ async def upload_current_user_avatar(
 
     # 生成安全的文件路径
     import os
-    import uuid
 
     upload_dir = "uploads/avatars"
     os.makedirs(upload_dir, exist_ok=True)

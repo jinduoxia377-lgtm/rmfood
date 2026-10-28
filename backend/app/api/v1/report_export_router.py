@@ -108,22 +108,22 @@ async def export_explainability_markdown(
     d = report.to_dict()
 
     lines = [
-        f"# 配方可解释性报告",
-        f"",
+        "# 配方可解释性报告",
+        "",
         f"**配方名称**：{formula_name}",
         f"**生成时间**：{report.generated_at}",
-        f"",
-        f"## 综合评分",
-        f"| 评分项 | 分数 |",
-        f"|--------|------|",
+        "",
+        "## 综合评分",
+        "| 评分项 | 分数 |",
+        "|--------|------|",
         f"| 综合评分 | {d['scores']['overall']} / 100 |",
         f"| 功效匹配 | {d['scores']['efficacy']} / 100 |",
         f"| 安全评分 | {d['scores']['safety']} / 100 |",
         f"| 成本评分 | {d['scores']['cost']} / 100 |",
-        f"",
-        f"## 报告摘要",
+        "",
+        "## 报告摘要",
         f"{d['summary']}",
-        f"",
+        "",
     ]
 
     if d["core_ingredients"]:

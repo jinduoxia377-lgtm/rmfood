@@ -13,16 +13,16 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional, Sequence
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..deps import get_db_session, get_current_active_user
 from ...core.multi_tenant.tenant_security import TenantContext, require_tenant
 from ...models import User
 from ...services.ai.agent.group_chat_service import GroupChatService
+from ..deps import get_current_active_user, get_db_session
 
 logger = logging.getLogger(__name__)
 

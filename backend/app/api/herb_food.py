@@ -15,12 +15,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_db_session, get_current_active_user
+from app.api.deps import get_current_active_user, get_db_session
 from app.models.user_model import User
 from app.services.herb_food_query import (
-    HerbFoodQueryService,
     CN_TO_EN_DISEASE,
-    RankedHerb,
+    HerbFoodQueryService,
 )
 
 logger = logging.getLogger(__name__)

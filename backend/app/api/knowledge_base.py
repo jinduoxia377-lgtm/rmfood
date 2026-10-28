@@ -4,26 +4,27 @@
 实现智能意图识别与路由，支持缓存机制
 """
 import logging
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-from .deps import get_db_session
-from ..core.performance.cache_system import get_cache, MultiLevelCache
-from ..services.data_sources.tcmsp_client import tcmsp_service
-from ..services.data_sources.dfbp_client import dfbp_service
+from ..core.performance.cache_system import MultiLevelCache, get_cache
+from ..services.data_sources.china_food_regulations import regulation_service
+
 # A-39：DFBP_PEPTIDE_DATABASE 是 dfbp_client 的【模块级】常量，不是
 #   DFBPSyncService 实例上的属性 —— 原先写 dfbp_service.DFBP_PEPTIDE_DATABASE
 #   在无过滤条件下会抛 AttributeError（GET /knowledge-base/peptide/search → 503）。
-from ..services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
-from ..services.data_sources.china_food_regulations import regulation_service
+from ..services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE, dfbp_service
+from ..services.data_sources.tcmsp_client import tcmsp_service
 from ..services.intent_recognition import (
-    intent_recognition_service,
-    KnowledgeBaseType,
     IntentType,
+    KnowledgeBaseType,
+    intent_recognition_service,
 )
+from .deps import get_db_session
 
 router = APIRouter(prefix="/knowledge-base", tags=["知识数据库"])
 
@@ -39,10 +40,10 @@ async def smart_query(
 ) -> Dict[str, Any]:
     """
     智能查询接口：自动识别用户意图并路由到相应知识库
-    
+
     Args:
         query: 用户查询文本
-        
+
     Returns:
         查询结果，包含意图识别信息和知识库响应
     """
@@ -54,10 +55,10 @@ async def smart_query(
             **cached_result,
             "from_cache": True,
         }
-    
+
     # 意图识别
     kb_type, intent_type, params = intent_recognition_service.recognize_intent(query)
-    
+
     result = {
         "query": query,
         "knowledge_base": kb_type.value,
@@ -67,7 +68,7 @@ async def smart_query(
         "params": params,
         "from_cache": False,
     }
-    
+
     # 根据意图类型路由到相应知识库
     try:
         if kb_type == KnowledgeBaseType.TCM:
@@ -90,10 +91,10 @@ async def smart_query(
     except Exception as e:
         logger.error("查询失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
-    
+
     # 缓存结果（有效期5分钟）
     await cache.set(cache_key, result, ttl=300)
-    
+
     return result
 
 
@@ -101,55 +102,55 @@ async def _route_tcm_query(intent_type: IntentType, params: Dict[str, Any]) -> D
     """路由中药知识库查询"""
     entities = params.get("entities", [])
     query = params.get("query", "")
-    
+
     if intent_type == IntentType.TCM_QUERY_HERB:
         # 获取药材名称
         herb_names = [e["value"] for e in entities if e["type"] == "herb"]
         if herb_names:
             return await tcmsp_service.get_food_homology_list(None, keyword=herb_names[0], page=1, page_size=5)
         return await tcmsp_service.get_food_homology_list(None, keyword=query, page=1, page_size=5)
-    
+
     elif intent_type == IntentType.TCM_QUERY_COMPOUND:
         herb_name = next((e["value"] for e in entities if e["type"] == "herb"), None)
         if herb_name:
             return {"compounds": await tcmsp_service.search_compounds(herb_name, None)}
         return {"message": "请指定要查询的药材名称"}
-    
+
     elif intent_type == IntentType.TCM_QUERY_TARGET:
         compounds = [e["value"] for e in entities if e["type"] == "compound"]
         if compounds:
             return {"targets": await tcmsp_service.search_targets(compounds[0], None)}
         return {"message": "请指定要查询的化合物名称"}
-    
+
     elif intent_type == IntentType.TCM_CHECK_HOMOLOGY:
         herb_name = next((e["value"] for e in entities if e["type"] == "herb"), query)
         return await tcmsp_service.check_food_homology(herb_name)
-    
+
     elif intent_type == IntentType.TCM_SEARCH_EFFECTS:
         return await tcmsp_service.get_food_homology_list(None, keyword=query, page=1, page_size=10)
-    
+
     return {"message": "未找到匹配的中药查询结果"}
 
 
 async def _route_peptide_query(intent_type: IntentType, params: Dict[str, Any]) -> Dict[str, Any]:
     """路由肽知识库查询"""
     entities = params.get("entities", [])
-    
+
     if intent_type == IntentType.PEPTIDE_QUERY_SEQUENCE:
         sequences = [e["value"] for e in entities if e["type"] == "peptide_sequence"]
         if sequences:
             return {"peptide": await dfbp_service.get_peptide_detail(sequences[0])}
         return {"message": "请提供肽序列（如 Ile-Pro-Pro）"}
-    
+
     elif intent_type == IntentType.PEPTIDE_SEARCH_ACTIVITY:
         activities = [e["value"] for e in entities if e["type"] == "activity_type"]
         if activities:
             return {"peptides": await dfbp_service.search_by_activity(activities[0])}
         return {"peptides": await dfbp_service.search_by_activity(params.get("query", ""))}
-    
+
     elif intent_type == IntentType.PEPTIDE_SEARCH_SOURCE:
         return {"peptides": await dfbp_service.search_by_protein(params.get("query", ""))}
-    
+
     return {"message": "未找到匹配的肽查询结果"}
 
 
@@ -157,22 +158,22 @@ async def _route_regulation_query(intent_type: IntentType, params: Dict[str, Any
     """路由法规库查询"""
     entities = params.get("entities", [])
     query = params.get("query", "")
-    
+
     if intent_type == IntentType.REG_QUERY_STANDARD:
         codes = [e["value"] for e in entities if e["type"] == "standard_code"]
         if codes:
             return {"standards": await regulation_service.search_standards(codes[0])}
         return {"standards": await regulation_service.search_standards(query)}
-    
+
     elif intent_type == IntentType.REG_CHECK_ADDITIVE:
         additives = [e["value"] for e in entities if e["type"] == "additive"]
         if additives:
             return {"result": await regulation_service.check_additive_usage(additives[0], "糕点")}
         return {"additives": await regulation_service.search_additives(keyword=query)}
-    
+
     elif intent_type == IntentType.REG_CHECK_HOMOLOGY:
         return {"materials": await regulation_service.get_food_homology_materials(query)}
-    
+
     elif intent_type == IntentType.REG_VALIDATE_FORMULA:
         # 从查询中提取成分
         ingredients = []
@@ -182,7 +183,7 @@ async def _route_regulation_query(intent_type: IntentType, params: Dict[str, Any
         if ingredients:
             return await regulation_service.validate_formula_ingredients(ingredients)
         return {"message": "请提供要验证的配方成分列表"}
-    
+
     return {"message": "未找到匹配的法规查询结果"}
 
 
@@ -206,12 +207,12 @@ async def _route_general_query(intent_type: IntentType, params: Dict[str, Any]) 
                 ],
             }
         }
-    
+
     elif intent_type == IntentType.GENERAL_ABOUT:
         tcm_stats = await tcmsp_service.get_sync_stats(None)
         peptide_stats = await dfbp_service.get_sync_stats(None)
         regulation_stats = await regulation_service.get_regulation_summary()
-        
+
         return {
             "system": "RMFOOD 知识库系统",
             "version": "1.0.0",
@@ -233,7 +234,7 @@ async def _route_general_query(intent_type: IntentType, params: Dict[str, Any]) 
                 },
             ],
         }
-    
+
     return {"message": "未知的通用查询类型"}
 
 
@@ -254,7 +255,7 @@ async def get_tcm_herbs(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     result = await tcmsp_service.get_food_homology_list(db, keyword, page, page_size)
     await cache.set(cache_key, result, ttl=300)
     return result
@@ -271,7 +272,7 @@ async def get_tcm_herb_detail(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     # 搜索药材（注入真实 db，避免 None.execute → 500）
     result = await tcmsp_service.get_food_homology_list(db, keyword=herb_name, page=1, page_size=1)
     if result["total"] > 0:
@@ -281,7 +282,7 @@ async def get_tcm_herb_detail(
         herb["compounds"] = compounds
         await cache.set(cache_key, herb, ttl=300)
         return herb
-    
+
     raise HTTPException(status_code=404, detail=f"未找到药材: {herb_name}")
 
 
@@ -318,7 +319,7 @@ async def check_tcm_homology(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     result = await tcmsp_service.check_food_homology(herb_name)
     await cache.set(cache_key, result, ttl=300)
     return result
@@ -340,7 +341,7 @@ async def search_peptides(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     results = []
     if activity_type:
         results = await dfbp_service.search_by_activity(activity_type, threshold)
@@ -348,7 +349,7 @@ async def search_peptides(
         results = await dfbp_service.search_by_protein(source_protein)
     else:
         results = DFBP_PEPTIDE_DATABASE[:20]
-    
+
     result = {"peptides": results, "total": len(results)}
     await cache.set(cache_key, result, ttl=300)
     return result
@@ -364,12 +365,12 @@ async def get_peptide_detail(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     peptide = await dfbp_service.get_peptide_detail(sequence)
     if peptide:
         await cache.set(cache_key, peptide, ttl=300)
         return peptide
-    
+
     raise HTTPException(status_code=404, detail=f"未找到肽序列: {sequence}")
 
 
@@ -382,7 +383,7 @@ async def get_peptide_activity_types(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     result = {"activity_types": await dfbp_service.get_activity_types()}
     await cache.set(cache_key, result, ttl=600)
     return result
@@ -399,7 +400,7 @@ async def get_similar_peptides(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     result = {"similar_peptides": await dfbp_service.get_similar_sequences(sequence, min_length)}
     await cache.set(cache_key, result, ttl=300)
     return result
@@ -420,14 +421,14 @@ async def get_regulation_standards(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     if keyword:
         result = {"standards": await regulation_service.search_standards(keyword)}
     elif category:
         result = {"standards": await regulation_service.get_standards_by_category(category)}
     else:
         result = {"standards": await regulation_service.get_standards_by_category()}
-    
+
     await cache.set(cache_key, result, ttl=600)
     return result
 
@@ -442,7 +443,7 @@ async def get_regulation_homology(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     result = {"materials": await regulation_service.get_food_homology_materials(name)}
     await cache.set(cache_key, result, ttl=600)
     return result
@@ -458,7 +459,7 @@ async def get_regulation_new_food_materials(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     result = {"materials": await regulation_service.get_new_food_materials(name)}
     await cache.set(cache_key, result, ttl=600)
     return result
@@ -475,7 +476,7 @@ async def search_regulation_additives(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     result = {"additives": await regulation_service.search_additives(keyword, function)}
     await cache.set(cache_key, result, ttl=600)
     return result
@@ -492,7 +493,7 @@ async def check_additive_usage(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     result = await regulation_service.check_additive_usage(additive_name, food_category)
     await cache.set(cache_key, result, ttl=600)
     return result
@@ -508,7 +509,7 @@ async def validate_formula(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     result = await regulation_service.validate_formula_ingredients(ingredients)
     await cache.set(cache_key, result, ttl=300)
     return result
@@ -523,7 +524,7 @@ async def get_regulation_summary(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     result = await regulation_service.get_regulation_summary()
     await cache.set(cache_key, result, ttl=600)
     return result
@@ -542,11 +543,11 @@ async def get_knowledge_base_summary(
     cached = await cache.get(cache_key)
     if cached:
         return cached
-    
+
     tcm_stats = await tcmsp_service.get_sync_stats(None)
     peptide_stats = await dfbp_service.get_sync_stats(None)
     regulation_stats = await regulation_service.get_regulation_summary()
-    
+
     result = {
         "system": "RMFOOD 知识库系统",
         "version": "1.0.0",
@@ -574,7 +575,7 @@ async def get_knowledge_base_summary(
         ],
         "cache_stats": cache.get_stats(),
     }
-    
+
     await cache.set(cache_key, result, ttl=600)
     return result
 

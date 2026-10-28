@@ -16,9 +16,10 @@ API 版本管理模块
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from fastapi import APIRouter, FastAPI, Request, Response
+
 try:
     from starlette.middleware.base import BaseHTTPMiddleware
 except ImportError:

@@ -2,12 +2,13 @@
 RMCHM 药材图片服务
 提供药材图片URL查询和文件访问API
 """
-import os
 import json
+import os
 import re
+from typing import Optional
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
-from typing import Optional
 
 router = APIRouter(prefix="/rmchm", tags=["RMCHM"])
 

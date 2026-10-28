@@ -8,25 +8,22 @@ OFF 数据同步监控与实时查询 API
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, HTTPException, Path
+from fastapi import Depends, HTTPException, Path, Query
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_db_session, get_current_user
+from app.api.deps import get_current_user, get_db_session
 from app.models.user_model import User
 from app.schemas.retail_product import (
-    RetailProductSearchRequest,
-    RetailProductResponse,
-    PaginatedProductResponse,
-    SyncStatusResponse,
-    ImportReportResponse,
     ImportErrorResponse,
+    ImportReportResponse,
+    RetailProductSearchRequest,
+    SyncStatusResponse,
 )
 
 logger = logging.getLogger(__name__)
 
 from . import router
-
 
 # ── 同步状态 ──
 
@@ -37,6 +34,18 @@ async def get_off_sync_status(
     """获取 OFF 数据同步状态和产品统计（公开接口）"""
     from app.services.data_sources.openfoodfacts_client import off_service
     return await off_service.get_sync_stats(db)
+
+
+# ── 诊断指标 ──
+
+@router.get("/openfoodfacts/diagnostics", summary="OFF 请求诊断指标")
+async def get_off_diagnostics():
+    """返回 OFF 数据源进程内请求指标（公开、只读、轻量，不依赖数据库）。
+
+    指标均为内存计数器，随进程重启清零；用于观察实时搜索/回退/缓存/镜像失败趋势。
+    """
+    from app.services.data_sources.openfoodfacts_client import off_service
+    return off_service.get_diagnostics()
 
 
 # ── 错误日志 ──
@@ -146,6 +155,7 @@ async def search_openfoodfacts(
         page=request.page,
         page_size=request.page_size,
         realtime=request.realtime,
+        origin=request.origin or "all",
         category=request.category,
         brand=request.brand,
         formulation_type=request.formulation_type,
@@ -237,7 +247,7 @@ async def get_off_categories(
 @router.post("/openfoodfacts/sync", summary="手动触发增量同步")
 async def trigger_off_sync(
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user),
 ):
     """
     手动触发 OFF 增量同步。
@@ -246,6 +256,8 @@ async def trigger_off_sync(
     实际同步逻辑在 import_openfoodfacts.py 中实现，
     此处返回同步调度状态。
     """
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="未认证，请先登录")
     if current_user.role not in ("admin", "formulator"):
         raise HTTPException(
             status_code=403,

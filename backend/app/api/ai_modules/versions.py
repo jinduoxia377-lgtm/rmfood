@@ -1,23 +1,15 @@
 """Versions and sharing module - /formula/versions, /share"""
-import logging
 import os
-import datetime
-from datetime import timezone
-from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Body
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import (
-    logger,
-    _get_llm_service,
-    ai_service,
-    router,
-    get_db_session,
-    get_current_user,
     User,
-    FormulaStatus,
+    get_current_user,
+    get_db_session,
+    logger,
+    router,
 )
 
 sub_router = APIRouter(tags=["生成"])
@@ -36,57 +28,59 @@ async def get_formula_versions(
     - 包含版本号、修改时间、修改人等信息
     """
     try:
-        mock_versions = [
-            {
-                "version_id": "v1.0",
-                "version_number": 1,
-                "created_at": "2026-04-01T10:00:00Z",
-                "created_by": "user_001",
-                "change_summary": "初始版本",
-                "change_details": "创建配方初始版本",
-                "ingredients_snapshot": [
-                    {"name": "黄芪", "dosage": 10.0, "unit": "g"},
-                    {"name": "党参", "dosage": 8.0, "unit": "g"},
-                    {"name": "茯苓", "dosage": 6.0, "unit": "g"},
-                ],
-                "status": "released",
-            },
-            {
-                "version_id": "v1.1",
-                "version_number": 2,
-                "created_at": "2026-04-10T14:30:00Z",
-                "created_by": "user_002",
-                "change_summary": "调整配方比例",
-                "change_details": "黄芪比例从10g调整为12g，增强补气效果",
-                "ingredients_snapshot": [
-                    {"name": "黄芪", "dosage": 12.0, "unit": "g"},
-                    {"name": "党参", "dosage": 8.0, "unit": "g"},
-                    {"name": "茯苓", "dosage": 6.0, "unit": "g"},
-                ],
-                "status": "released",
-            },
-            {
-                "version_id": "v1.2",
-                "version_number": 3,
-                "created_at": "2026-04-20T09:15:00Z",
-                "created_by": "user_001",
-                "change_summary": "添加新成分",
-                "change_details": "添加枸杞子增强养血效果",
-                "ingredients_snapshot": [
-                    {"name": "黄芪", "dosage": 12.0, "unit": "g"},
-                    {"name": "党参", "dosage": 8.0, "unit": "g"},
-                    {"name": "茯苓", "dosage": 6.0, "unit": "g"},
-                    {"name": "枸杞子", "dosage": 5.0, "unit": "g"},
-                ],
-                "status": "draft",
-            },
-        ]
+        # formula_id 路径参数兼容字符串形式的数字 ID
+        try:
+            formula_id_int = int(formula_id)
+        except (TypeError, ValueError):
+            # 非数字 ID 无法匹配数据库记录，直接返回空列表（不造假数据）
+            return {
+                "formula_id": formula_id,
+                "data": [],
+                "versions": [],
+                "total": 0,
+                "current_version": None,
+            }
+
+        from sqlalchemy import select
+
+        from ...models import FormulaVersion
+        from ...models import User as UserModel
+
+        # 按 formula_id 查询真实版本记录，按版本号倒序
+        result = await db.execute(
+            select(FormulaVersion, UserModel.username)
+            .join(UserModel, UserModel.id == FormulaVersion.created_by, isouter=True)
+            .where(FormulaVersion.formula_id == formula_id_int)
+            .order_by(FormulaVersion.version.desc())
+            .limit(limit)
+        )
+        rows = result.all()
+
+        versions = []
+        for idx, (fv, username) in enumerate(rows):
+            versions.append({
+                "id": str(fv.id),
+                "formula_id": str(fv.formula_id),
+                "version_id": f"v{fv.version}",
+                "version_number": fv.version,
+                "version_label": f"v{fv.version}",
+                "change_summary": fv.change_summary or "",
+                "change_details": fv.change_summary or "",
+                "snapshot": fv.snapshot or {},
+                "ingredients_snapshot": (fv.snapshot or {}).get("ingredients", []),
+                "created_by": str(fv.created_by),
+                "changed_by": str(fv.created_by),
+                "changed_by_name": username or "",
+                "created_at": fv.created_at.isoformat() if fv.created_at else None,
+                "is_current": idx == 0,
+            })
 
         return {
             "formula_id": formula_id,
-            "versions": mock_versions[:limit],
-            "total": len(mock_versions),
-            "current_version": mock_versions[0]["version_id"] if mock_versions else None,
+            "data": versions,
+            "versions": versions,
+            "total": len(versions),
+            "current_version": versions[0]["version_number"] if versions else None,
         }
     except Exception as e:
         logger.error("获取配方版本失败: %s", e, exc_info=True)

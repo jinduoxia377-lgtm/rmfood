@@ -10,23 +10,19 @@ import logging
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
-from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import BigInteger as sa_BigInteger, String as sa_String, DateTime as sa_DateTime
 
 from app.api.deps import get_db_session
-from app.services.import_engine.celery.worker import run_import_task
 from app.schemas.import_schema import (
     CancelResponse,
     ImportErrorItem,  # A-27: 488 行用到，原漏导入
     ImportErrorsResponse,
     ImportListResponse,
     ImportPreviewRequest,
-    ImportReportResponse,
     ImportRunRequest,
     ImportTaskDetail,
     ImportTaskSummary,
@@ -312,7 +308,7 @@ async def run_import(
             "celery_task_id": celery_result.id,
         }
     except Exception as e:
-        logger.error(f"[{{task_id}}] Failed to start Celery task: {{e}}")
+        logger.error("[{task_id}] Failed to start Celery task: {e}")
         task.update({
             "status": "failed",
             "error_summary": "导入任务启动失败",

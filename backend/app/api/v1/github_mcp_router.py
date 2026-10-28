@@ -22,7 +22,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from fastapi import APIRouter, Request
@@ -41,6 +41,7 @@ def _load_env() -> None:
     """
     try:
         from pathlib import Path
+
         from dotenv import load_dotenv
         env_path = Path(__file__).resolve().parents[3] / ".env"
         load_dotenv(env_path, override=True)

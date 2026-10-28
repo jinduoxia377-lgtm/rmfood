@@ -15,12 +15,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from ...api.deps import get_current_user
-from ...models import User
 from ...core.multi_tenant.tenant_quota import (
-    QuotaType, QuotaUsage, TenantQuota,
-    get_quota_checker, get_quota_meter,
     QUOTA_PLANS,
+    QuotaType,
+    TenantQuota,
+    get_quota_checker,
+    get_quota_meter,
 )
+from ...models import User
 
 logger = logging.getLogger("rmfood.api.quotas")
 

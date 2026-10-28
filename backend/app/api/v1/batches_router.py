@@ -10,16 +10,10 @@ from pydantic import BaseModel, Field
 
 from app.core.database.session import get_db
 from app.services.batch import (
-    BatchRecordService,
-    SampleTrackingService,
-    TraceabilityEngine,
-    PriceChangeImpactService,
     create_batch_service,
-    create_sample_service,
-    create_traceability_engine,
     create_price_change_service,
+    create_traceability_engine,
 )
-from app.models.enums import BatchStatus
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +125,7 @@ async def backward_trace(
 ):
     """
     反向追溯：给定批次，找出所有使用的原料批号
-    
+
     对标 FormLab: "Trace a result back to its source: lot, batch & formula version"
     """
     engine = create_traceability_engine(db)
@@ -148,7 +142,7 @@ async def forward_trace(
 ):
     """
     正向追溯：给定原料批号，找出所有使用该批号的批次和成品
-    
+
     对标 FormLab: "Lot & raw-material traceability for small teams"
     """
     engine = create_traceability_engine(db)
@@ -166,14 +160,15 @@ async def analyze_price_impact(
 ):
     """
     分析某原料调价对所有配方和批次的成本影响
-    
+
     对标 FormLab: "How to manage raw-material costs across 100+ formulas"
     """
     service = create_price_change_service(db)
     try:
         # 获取当前价格
-        from app.models import Ingredient
         from sqlalchemy import select
+
+        from app.models import Ingredient
         stmt = select(Ingredient).where(Ingredient.id == ingredient_id)
         result = await db.execute(stmt)
         ingredient = result.scalar_one_or_none()
@@ -196,13 +191,14 @@ async def update_price(
 ):
     """
     更新原料价格（自动记录历史），并返回影响分析
-    
+
     对标 FormLab: "Bulk-update ingredient prices"
     """
     service = create_price_change_service(db)
     try:
-        from app.models import Ingredient
         from sqlalchemy import select
+
+        from app.models import Ingredient
         stmt = select(Ingredient).where(Ingredient.id == ingredient_id)
         result = await db.execute(stmt)
         ingredient = result.scalar_one_or_none()

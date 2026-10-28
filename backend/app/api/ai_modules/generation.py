@@ -11,26 +11,25 @@ Generation module - AI 配方生成相关端点
 
 历史遗留：旧版 /generate 处理器（统一优化器）已于 2026-10-16 清理。
 """
-import logging
-import time
 import datetime
+import time
 from datetime import timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...core.plans import require_plan
 from . import (
-    logger,
+    User,
     _get_llm_service,
     ai_service,
-    router,
-    get_db_session,
     get_current_active_user,
-    User,
+    get_db_session,
+    logger,
+    router,
 )
-from ...core.plans import require_plan
 
 
 class NeuralGenerateRequest(BaseModel):
@@ -97,11 +96,27 @@ class SevenStepFormulaRequest(BaseModel):
 @router.get("/health", tags=["系统"])
 async def ai_health_check():
     """AI 服务健康检查端点"""
+    from ...services.ai import ai_herb_knowledge_ready
+
+    # RAG 知识库就绪状态：三个内置种子文档（tcm_herb_encyclopedia /
+    # food_homology_catalog / food_safety_regulations）均已注入 collection 才算就绪。
+    # 与 /ai/rag/seed/status 的 is_seeded 语义保持一致。
+    rag_collection_ready = False
+    try:
+        from ...services.ai.rag.rag_service import rag_service
+        from ...services.ai.rag.seeder import SEED_DOCUMENT_NAMES
+        rag_sources = set(rag_service.list_documents())
+        rag_collection_ready = bool(rag_sources) and SEED_DOCUMENT_NAMES.issubset(rag_sources)
+    except Exception:
+        rag_collection_ready = False
+
     return {
         "status": "healthy",
         "service": "ai-api",
         "version": "1.0.0",
         "llm_available": _get_llm_service().is_available if hasattr(_get_llm_service(), 'is_available') else "unknown",
+        "ai_herb_knowledge": ai_herb_knowledge_ready(),
+        "rag_collection_ready": rag_collection_ready,
         "timestamp": datetime.datetime.now(timezone.utc).isoformat()
     }
 
@@ -129,7 +144,7 @@ async def generate_formula_neural(
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
 
-    logger.info(f"高级优化配方生成请求 - target_effects=%s, max_candidates=%s, use_pepinvent=%s",
+    logger.info("高级优化配方生成请求 - target_effects=%s, max_candidates=%s, use_pepinvent=%s",
                 req.target_effects, req.max_candidates, req.use_pepinvent)
 
     try:
@@ -149,6 +164,10 @@ async def generate_formula_neural(
             "total": result["total"],
             "generator": result["generator"],
         }
+    except HTTPException:
+        # 透传 run_ga_generation 抛出的 HTTPException（如 503 AI 服务未初始化），
+        # 避免被 except Exception 吞成 500（与 generation_v2.py /generate 对齐）。
+        raise
     except Exception as e:
         logger.error("配方生成服务异常: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="AI 服务异常，请稍后重试")
@@ -174,9 +193,12 @@ async def generate_formula_v2(
                 f"new_engine={req.use_new_engine}, template={req.template}")
 
     try:
+        from ...services.ai.rag.formula_rag_hook import build_formula_designer_knowledge_base
         from ...services.formula_designer import FormulaDesigner
 
-        designer = FormulaDesigner(knowledge_base={})
+        # 清理空知识库：改用真实 DB 药材（HerbKnowledgeService）构建 knowledge_base，
+        # 使 _manual_formula_design 兜底路径不再产出 0 味药材的空配方。
+        designer = FormulaDesigner(knowledge_base=build_formula_designer_knowledge_base())
         intent = {
             "target_effects": req.target_effects,
             "use_new_engine": req.use_new_engine,
@@ -240,7 +262,7 @@ async def generate_formula_seven_step(
     logger.info(f"[SevenStep] 请求 - effects={req.target_effects}, form={req.product_form}")
 
     try:
-        from ...services.formula.seven_step_engine import SevenStepFormulaEngine, FormulaRequest
+        from ...services.formula.seven_step_engine import FormulaRequest, SevenStepFormulaEngine
 
         engine = SevenStepFormulaEngine()
         formula_req = FormulaRequest(

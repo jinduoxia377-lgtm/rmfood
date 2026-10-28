@@ -2,25 +2,23 @@
 
 v2.0 (2026-07-06): 替换 Mock 数据为真实服务调用
 """
-import logging
 import datetime
 from datetime import timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
 from . import (
-    logger,
-    _get_llm_service,
-    ai_service,
-    router,
-    get_db_session,
-    get_current_user,
-    User,
     FormulaStatus,
+    User,
+    ai_service,
+    get_current_user,
+    get_db_session,
+    logger,
+    router,
 )
 from .recommendations import RecommendationRequest, TrendPredictionRequest
 
@@ -57,6 +55,11 @@ async def get_optimization_suggestions(
     2. 调用 ai_service 进行成分/功效/成本分析
     3. 基于分析结果生成针对性优化建议
     """
+    # 未登录直接 401（get_current_user 为可选认证，current_user 可能为 None，
+    # 后续 current_user.id 会抛 AttributeError 变成 500）
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="请先登录后再使用 AI 优化建议")
+
     # 组织计划 AI 配额检查（超限 403）
     try:
         from ...core.multi_tenant.multi_tenant_service import ensure_ai_quota
@@ -71,8 +74,9 @@ async def get_optimization_suggestions(
 
         # 从数据库加载配方（如果提供了 formula_id）
         if formula_data.formula_id:
-            from ...models.formula import Formula
             from sqlalchemy.orm import selectinload
+
+            from ...models.formula import Formula
             result = await db.execute(
                 select(Formula)
                 .options(selectinload(Formula.ingredients))
@@ -160,8 +164,9 @@ async def recommend_formulas(
 ):
     """基于用户历史和当前项目提供真实配方推荐"""
     try:
-        from ...models.formula import Formula
         from sqlalchemy.orm import selectinload
+
+        from ...models.formula import Formula
 
         query = select(Formula).options(selectinload(Formula.ingredients)).where(
             Formula.creator_id == current_user.id,
@@ -208,8 +213,8 @@ async def predict_trends(
 ):
     """基于真实数据库数据统计的趋势预测"""
     try:
-        from ...models.formula import Formula
         from ...models.experiment import Experiment
+        from ...models.formula import Formula
 
         # 获取真实统计数据
         formula_count = await db.execute(

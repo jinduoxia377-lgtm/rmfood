@@ -5,26 +5,29 @@
 import logging
 import secrets
 from typing import Optional, Union
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ..schemas.experiment import (
-    ExperimentCreate, ExperimentUpdate, ExperimentResponse,
-    ExperimentDataResponse, ExperimentListResponse,
-    CompleteExperimentRequest,
-)
-from ..models.experiment import Experiment, ExperimentData
-from ..services.experiment_service import ExperimentService
-from ..services.auth import require_role
-from ..models.models import User, UserRole, ExperimentStatus
-from ..api.deps import get_db_session, PaginationParams, ExperimentFilterParams, get_current_user
-from ..core.plans import require_plan
-from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
+from ..api.deps import ExperimentFilterParams, PaginationParams, get_db_session
 from ..core.multi_tenant.org_resolver import resolve_effective_org_id
-from sqlalchemy import text
+from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
+from ..core.plans import require_plan
+from ..models.experiment import Experiment, ExperimentData
+from ..models.models import ExperimentStatus, User, UserRole
+from ..schemas.experiment import (
+    CompleteExperimentRequest,
+    ExperimentCreate,
+    ExperimentDataResponse,
+    ExperimentListResponse,
+    ExperimentResponse,
+    ExperimentUpdate,
+)
+from ..services.auth import require_role
+from ..services.experiment_service import ExperimentService
 
 logger = logging.getLogger(__name__)
 

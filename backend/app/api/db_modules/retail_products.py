@@ -7,15 +7,15 @@
 """
 import logging
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import Depends, HTTPException, Query
+from sqlalchemy import func, select  # A-27: ilike 不是顶层函数，改用列方法 .ilike()
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func  # A-27: ilike 不是顶层函数，改用列方法 .ilike()
 
-from app.api.deps import get_db_session, get_current_user
+from app.api.deps import get_current_user, get_db_session
 from app.models.food_material import FoodMaterial
-from app.models.retail_product import RetailProduct
+from app.models.user_model import User
 
 logger = logging.getLogger(__name__)
 
@@ -210,23 +210,28 @@ async def get_retail_product(
         from app.schemas.retail_product import RetailProductResponse
         _RetailProductResponse = RetailProductResponse
 
-    return _RetailProductResponse.model_validate(product).dict(exclude_none=None)
+    # exclude_none 必须是 bool；传 None 在 Pydantic V2 下会抛 TypeError（500）
+    return _RetailProductResponse.model_validate(product).dict(exclude_none=True)
 
 
-@router.post("/retail-products", summary="创建零售产品")
+@router.post("/retail-products/manual", summary="创建零售产品（管理后台）")
 async def create_retail_product(
     data: dict,
     db: AsyncSession = Depends(get_db_session),
+    current_user: Optional[User] = Depends(get_current_user),
 ):
     """
     创建零售产品（管理后台用，支持多种数据来源）
 
+    注意：POST /retail-products 被 db_modules/food_materials.py 的
+    混合搜索端点占用，因此管理创建端点挂载在 /retail-products/manual 下。
+
     需要管理员或配方师权限。
     """
-    from app.api.deps import get_current_user
-    current_user = await get_current_user(db)
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="未认证，请先登录")
     if current_user.role not in ("admin", "formulator"):
-        raise HTTPException(status_code=403, detail="权限不足")
+        raise HTTPException(status_code=403, detail="权限不足，需要管理员或配方师权限")
 
     global _RetailProduct
     if _RetailProduct is None:
@@ -262,8 +267,14 @@ async def update_retail_product(
     product_id: int,
     data: dict,
     db: AsyncSession = Depends(get_db_session),
+    current_user: Optional[User] = Depends(get_current_user),
 ):
-    """更新零售产品"""
+    """更新零售产品（管理后台用，需要管理员或配方师权限）"""
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="未认证，请先登录")
+    if current_user.role not in ("admin", "formulator"):
+        raise HTTPException(status_code=403, detail="权限不足，需要管理员或配方师权限")
+
     global _RetailProduct
     if _RetailProduct is None:
         from app.models.retail_product import RetailProduct
@@ -296,10 +307,11 @@ async def update_retail_product(
 async def delete_retail_product(
     product_id: int,
     db: AsyncSession = Depends(get_db_session),
+    current_user: Optional[User] = Depends(get_current_user),
 ):
-    """删除零售产品（软删除）"""
-    from app.api.deps import get_current_user
-    current_user = await get_current_user(db)
+    """删除零售产品（管理后台用，仅管理员可删除）"""
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="未认证，请先登录")
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="仅管理员可删除")
 

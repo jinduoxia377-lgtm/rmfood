@@ -3,15 +3,15 @@
 
 提供设备注册、同步推/拉、冲突检测等云端同步功能。
 """
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..schemas.base import ApiResponse
-from ..models.user_device import UserDevice
 from ..models.sync_log import SyncLog
+from ..models.user_device import UserDevice
+from ..schemas.base import ApiResponse
 from .deps import get_db
 
 router = APIRouter(prefix="/sync", tags=["云端同步"])

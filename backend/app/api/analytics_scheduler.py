@@ -14,13 +14,13 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
 from app.api.deps import get_current_active_user
-from app.models.user_model import User
 from app.core.analytics_reports.scheduled_reports import get_scheduler
 from app.models.analytics_scheduler import ensure_table_exists
+from app.models.user_model import User
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +64,9 @@ async def create_job(
 
     # 持久化到数据库（异步，不阻塞响应）
     try:
-        from app.models.analytics_scheduler import upsert_job  # noqa: PLC0415
         import asyncio  # noqa: PLC0415
+
+        from app.models.analytics_scheduler import upsert_job  # noqa: PLC0415
 
         async def _persist():
             from app.core.database.session import AsyncSessionLocal  # noqa: PLC0415

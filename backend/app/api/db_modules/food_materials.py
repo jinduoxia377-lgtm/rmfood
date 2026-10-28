@@ -4,35 +4,35 @@
 对标 Potion AI VFT 的 /search/raw-materials 和 /search/products 端点。
 使用共享 router 实例注册到 /databases 前缀下。
 """
-import time
 import logging
-from typing import Optional, List
-from fastapi import APIRouter, Depends, Query, HTTPException
+import time
+from typing import List
+
+from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db_session
 from app.schemas.search_new import (
     FoodMaterialSearchRequest,
     FoodMaterialSearchResponse,
+    NormalizeRequest,
+    NormalizeResponse,
     RetailProductSearchRequest,
     RetailProductSearchResponse,
     SearchSuggestionRequest,
     SearchSuggestionResponse,
-    NormalizeRequest,
-    NormalizeResponse,
 )
 from app.services.search.bm25_searcher import BM25Searcher
-from app.services.search.vector_searcher import VectorSearcher
-from app.services.search.hybrid_search import HybridSearchService
-from app.services.search.stream_search import StreamSearchService
 from app.services.search.chinese_nlp import get_nlp_pipeline
 from app.services.search.compliance_engine import ComplianceEngine
+from app.services.search.hybrid_search import HybridSearchService
+from app.services.search.stream_search import StreamSearchService
+from app.services.search.vector_searcher import VectorSearcher
 
 logger = logging.getLogger(__name__)
 
 # 使用共享 router 实例注册到 /databases 前缀
 from . import router
-
 
 # ── 食品原料搜索 ──
 
@@ -197,7 +197,8 @@ async def get_search_suggestions(
 
     对标 Potion AI VFT 的 featured search queries
     """
-    from sqlalchemy import select, func
+    from sqlalchemy import select
+
     from app.models.food_material import FoodMaterial
     from app.models.retail_product import RetailProduct
 
@@ -309,8 +310,9 @@ async def check_compliance(
     """
     检查单个食品原料的合规性
     """
-    from app.models.food_material import FoodMaterial
     from sqlalchemy import select
+
+    from app.models.food_material import FoodMaterial
 
     result = await db.execute(
         select(FoodMaterial).where(FoodMaterial.id == material_id)
@@ -332,8 +334,9 @@ async def check_formula_compliance(
     """
     检查配方的整体合规性
     """
-    from app.models.food_material import FoodMaterial
     from sqlalchemy import select
+
+    from app.models.food_material import FoodMaterial
 
     result = await db.execute(
         select(FoodMaterial).where(FoodMaterial.id.in_(material_ids))

@@ -6,13 +6,12 @@
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from app.core.multi_tenant.multi_tenant import get_current_tenant
 from app.services.multi_tenant import (
-    get_isolation_manager,
     IsolationLevel,
+    get_isolation_manager,
     get_tenant_ai_config_manager,
 )
 
@@ -32,7 +31,7 @@ class UpdateAIConfigRequest(BaseModel):
     llm_model: Optional[str] = None
     temperature: Optional[float] = Field(None, ge=0.0, le=2.0)
     top_p: Optional[float] = Field(None, ge=0.0, le=1.0)
-    max_tokens: Optional[int] = Field(None, ge=100, le=8000)
+    max_tokens: Optional[int] = Field(None, ge=100, le=100000)
     optimization_weights: Optional[dict] = None
     compliance_overrides: Optional[dict] = None
     custom_prohibited_combos: Optional[list] = None

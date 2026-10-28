@@ -7,6 +7,7 @@ __all__ = ["api_router", "register_lazy_routers"]  # 公开接口导出
 2. 非关键路由 — 在 lifespan 启动阶段延迟注册（优化启动速度 + 失败不阻塞）
 """
 import logging
+
 from fastapi import APIRouter
 
 logger = logging.getLogger(__name__)
@@ -15,11 +16,13 @@ api_router = APIRouter()
 
 # ── 阶段1: 关键路由立即注册 ──
 from .auth import router as auth_router
+from .databases import router as databases_router  # 数据库检索（立即加载，确保路由注册）
+from .formulas import router as formulas_router
+from .knowledge_graph import (
+    router as knowledge_graph_router,  # 知识图谱分析（立即加载，智能分析核心功能）
+)
 from .oauth2_auth import router as oauth2_router
 from .users import router as users_router
-from .formulas import router as formulas_router
-from .databases import router as databases_router  # 数据库检索（立即加载，确保路由注册）
-from .knowledge_graph import router as knowledge_graph_router  # 知识图谱分析（立即加载，智能分析核心功能）
 
 api_router.include_router(auth_router)
 api_router.include_router(oauth2_router)

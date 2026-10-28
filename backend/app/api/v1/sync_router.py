@@ -11,46 +11,44 @@
 - SyncService: 同步编排服务
 - EncryptionUtils: 数据加密工具
 """
-import uuid
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import Optional, List
+import uuid
+from datetime import datetime, timezone
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_
 
-from ...core.database.session import get_db
-from ...models.user_device import UserDevice
-from ...models.sync_log import SyncLog
+from ...api.deps import CurrentUser, DbSession
 from ...models.enums import DeviceType, SyncAction, SyncStatus
+from ...models.sync_log import SyncLog
+from ...models.user_device import UserDevice
 from ...schemas.sync_schemas import (
-    SyncPushRequest,
-    SyncPushResponse,
-    SyncPullResponse,
-    ResolveConflictRequest,
-    ResolveConflictResponse,
-    SyncStatusResponse,
+    ConflictItem,
     DeviceInfo,
     DeviceRegisterRequest,
     DeviceRegisterResponse,
+    ResolveConflictRequest,
+    ResolveConflictResponse,
+    SyncChangeItem,
     SyncHistoryResponse,
     SyncLogItem,
-    ConflictItem,
-    SyncChangeItem,
+    SyncPullResponse,
+    SyncPushRequest,
+    SyncPushResponse,
+    SyncStatusResponse,
 )
-from ...api.deps import get_current_active_user, get_db_session, CurrentUser, DbSession
-from app.core.middleware.exceptions import NotFoundError, ConflictError
-from ...services.sync.diff_detector import DiffDetector, SyncChange, ChangeType
-from ...services.sync.change_queue import ChangeQueue, QueueItem
+from ...services.sync.change_queue import ChangeQueue
 from ...services.sync.conflict_detector import (
+    Conflict,
     ConflictDetector,
     ConflictType,
     MergeStrategy,
-    Conflict,
 )
+from ...services.sync.diff_detector import DiffDetector
 from ...services.sync.protocol import SyncProtocol
-from ...services.sync.sync_service import SyncService, SyncResult, SyncMode
+from ...services.sync.sync_service import SyncService
 from ...utils.encryption import EncryptionUtils
 
 logger = logging.getLogger(__name__)
@@ -116,25 +114,25 @@ async def push_changes(
 ):
     """
     推送本地变更到服务器
-    
+
     - **device_id**: 设备唯一标识符
     - **changes**: 变更列表（最多1000条）
     - **client_timestamp**: 客户端时间戳
-    
+
     功能：
     1. 验证设备并自动注册
     2. 使用差异检测算法分析变更
     3. 通过协议层压缩传输
     4. 检测潜在冲突
     5. 记录同步日志
-    
+
     返回接受的变更数量和检测到的冲突列表。
     """
     detector = _get_detector()
     protocol = _get_protocol()
-    
+
     device = await _get_or_register_device(db, current_user.id, request.device_id)
-    
+
     try:
         changes_data = [
             {
@@ -146,17 +144,17 @@ async def push_changes(
             }
             for c in request.changes
         ]
-        
+
         protocol_response = await protocol.push_changes(
             user_id=current_user.id,
             device_id=request.device_id,
             changes=changes_data,
             client_timestamp=request.client_timestamp,
         )
-        
+
         accepted_changes = []
         conflicts = []
-        
+
         for i, change in enumerate(request.changes):
             if i < protocol_response.accepted_count:
                 sync_log = SyncLog(
@@ -185,14 +183,14 @@ async def push_changes(
 
         if device:
             device.last_sync_at = _now()
-        
+
         await db.commit()
-        
+
         logger.info(
             f"[Sync] 推送完成: user={current_user.id}, device={request.device_id}, "
             f"accepted={len(accepted_changes)}, conflicts={len(conflicts)}"
         )
-        
+
         return SyncPushResponse(
             success=True,
             accepted_count=len(accepted_changes),
@@ -200,7 +198,7 @@ async def push_changes(
             server_timestamp=protocol_response.server_timestamp,
             next_sync_token=protocol_response.next_sync_token,
         )
-        
+
     except Exception as e:
         logger.error("[Sync] 推送失败: %s", e, exc_info=True)
         raise HTTPException(
@@ -219,25 +217,25 @@ async def pull_changes(
 ):
     """
     拉取服务器的变更
-    
+
     - **device_id**: 设备唯一标识符
     - **since**: 可选，只返回此时间之后的变更
     - **limit**: 最大返回条数（默认100）
-    
+
     返回服务器端的变更列表和可能的冲突。
     """
     query = select(SyncLog).where(
         SyncLog.user_id == current_user.id,
         SyncLog.status == SyncStatus.COMPLETED,
     )
-    
+
     if since:
         query = query.where(SyncLog.timestamp > since)
-    
+
     query = query.order_by(SyncLog.timestamp.asc()).limit(limit)
     result = await db.execute(query)
     logs = result.scalars().all()
-    
+
     server_changes = []
     for log in logs:
         change = SyncChangeItem(
@@ -248,9 +246,9 @@ async def pull_changes(
             version=1,
         )
         server_changes.append(change)
-    
+
     last_sync = server_changes[-1].timestamp if server_changes else _now()
-    
+
     return SyncPullResponse(
         server_changes=server_changes,
         last_sync_timestamp=last_sync,
@@ -268,9 +266,9 @@ async def get_sync_status(
 ):
     """
     获取指定设备的同步状态
-    
+
     - **device_id**: 设备唯一标识符
-    
+
     返回最后同步时间、待处理变更数和设备状态。
     """
     result = await db.execute(
@@ -280,7 +278,7 @@ async def get_sync_status(
         )
     )
     device = result.scalar_one_or_none()
-    
+
     if not device:
         return SyncStatusResponse(
             last_sync_time=None,
@@ -288,7 +286,7 @@ async def get_sync_status(
             device_status="inactive",
             total_syncs=0,
         )
-    
+
     pending_count_result = await db.execute(
         select(func.count(SyncLog.id)).where(
             SyncLog.user_id == current_user.id,
@@ -296,7 +294,7 @@ async def get_sync_status(
         )
     )
     pending_count = pending_count_result.scalar() or 0
-    
+
     total_syncs_result = await db.execute(
         select(func.count(SyncLog.id)).where(
             SyncLog.user_id == current_user.id,
@@ -304,7 +302,7 @@ async def get_sync_status(
         )
     )
     total_syncs = total_syncs_result.scalar() or 0
-    
+
     device_status = "active" if device.is_active else "inactive"
     if device.last_sync_at:
         time_diff = (_now() - device.last_sync_at).total_seconds()
@@ -312,7 +310,7 @@ async def get_sync_status(
             device_status = "syncing"
         elif time_diff > 3600:
             device_status = "offline"
-    
+
     return SyncStatusResponse(
         last_sync_time=device.last_sync_at,
         pending_changes_count=pending_count,
@@ -329,36 +327,36 @@ async def resolve_conflict(
 ):
     """
     解决数据冲突并提交合并结果
-    
+
     - **entity_type**: 实体类型
     - **entity_id**: 实体ID
     - **resolved_data**: 合并后的最终数据
     - **resolution_strategy**: 解决策略 (local/server/merge)
     - **conflict_ids**: 要解决的冲突日志ID列表
-    
+
     功能：
     1. 验证用户权限和冲突存在性
     2. 应用用户选择的解决策略
     3. 验证数据完整性
     4. 持久化解决后的数据
     5. 记录审计日志
-    
+
     返回合并后的实体信息和新版本号。
     """
     conflict_detector = _get_conflict_detector()
-    
+
     try:
         strategy_map = {
             "local": MergeStrategy.LAST_WRITE_WINS,
             "server": MergeStrategy.LAST_WRITE_WINS,
             "merge": MergeStrategy.UNION_MERGE,
         }
-        
+
         merge_strategy = strategy_map.get(
             request.resolution_strategy,
             MergeStrategy.MANUAL,
         )
-        
+
         mock_conflict = Conflict(
             entity_type=request.entity_type,
             entity_id=str(request.entity_id),
@@ -366,7 +364,7 @@ async def resolve_conflict(
             server_data={},
             conflict_type=ConflictType.CONTENT_CONFLICT,
         )
-        
+
         if merge_strategy == MergeStrategy.MANUAL:
             resolved = conflict_detector.manual_resolve(
                 conflict=mock_conflict,
@@ -378,7 +376,7 @@ async def resolve_conflict(
                 conflict=mock_conflict,
                 strategy=merge_strategy,
             )
-        
+
         merged_log = SyncLog(
             user_id=current_user.id,
             action=SyncAction.MERGE,
@@ -395,7 +393,7 @@ async def resolve_conflict(
             status=SyncStatus.COMPLETED,
         )
         db.add(merged_log)
-        
+
         if request.conflict_ids:
             await db.execute(
                 select(SyncLog).where(
@@ -408,23 +406,23 @@ async def resolve_conflict(
                 .where(SyncLog.id.in_(request.conflict_ids))
                 .values(status=SyncStatus.COMPLETED, error_msg="Resolved by user")
             )
-        
+
         await db.commit()
         await db.refresh(merged_log)
-        
+
         logger.info(
             f"[Sync] 冲突已解决: user={current_user.id}, "
             f"entity={request.entity_type}:{request.entity_id}, "
             f"strategy={request.resolution_strategy}"
         )
-        
+
         return ResolveConflictResponse(
             success=True,
             merged_entity_id=request.entity_id,
             new_version=merged_log.id,
             timestamp=_now(),
         )
-        
+
     except Exception as e:
         logger.error("[Sync] 冲突解决失败: %s", e, exc_info=True)
         raise HTTPException(
@@ -440,7 +438,7 @@ async def list_devices(
 ):
     """
     获取当前用户的所有已注册设备列表
-    
+
     返回设备ID、类型、名称、最后同步时间等信息。
     """
     result = await db.execute(
@@ -449,7 +447,7 @@ async def list_devices(
         .order_by(UserDevice.created_at.desc())
     )
     devices = result.scalars().all()
-    
+
     return [DeviceInfo.model_validate(d) for d in devices]
 
 
@@ -461,11 +459,11 @@ async def register_device(
 ):
     """
     注册新设备用于云端同步
-    
+
     - **device_id**: 设备唯一标识符
     - **device_type**: 设备类型 (web/ios/android/desktop)
     - **device_name**: 设备显示名称
-    
+
     如果设备已存在则更新信息，否则创建新记录。
     """
     existing = await db.execute(
@@ -475,7 +473,7 @@ async def register_device(
         )
     )
     device = existing.scalar_one_or_none()
-    
+
     if device:
         device.device_type = request.device_type
         device.device_name = request.device_name
@@ -491,9 +489,9 @@ async def register_device(
         )
         db.add(device)
         message = "设备注册成功"
-    
+
     await db.commit()
-    
+
     return DeviceRegisterResponse(
         success=True,
         device_id=request.device_id,
@@ -510,9 +508,9 @@ async def unregister_device(
 ):
     """
     注销指定设备（软删除）
-    
+
     - **device_id**: 要注销的设备ID
-    
+
     注销后该设备将无法再进行同步操作。
     """
     result = await db.execute(
@@ -522,16 +520,16 @@ async def unregister_device(
         )
     )
     device = result.scalar_one_or_none()
-    
+
     if not device:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"设备 {device_id} 不存在",
         )
-    
+
     device.is_active = False
     await db.commit()
-    
+
     return {"success": True, "message": f"设备 {device_id} 已注销"}
 
 
@@ -546,21 +544,21 @@ async def get_sync_history(
 ):
     """
     获取同步操作历史记录
-    
+
     - **page**: 页码（默认1）
     - **page_size**: 每页条数（默认20，最大100）
     - **entity_type**: 可选，按实体类型筛选
     - **status**: 可选，按状态筛选
-    
+
     返回分页的同步日志列表。
     """
     query = select(SyncLog).where(SyncLog.user_id == current_user.id)
     count_query = select(func.count(SyncLog.id)).where(SyncLog.user_id == current_user.id)
-    
+
     if entity_type:
         query = query.where(SyncLog.entity_type == entity_type)
         count_query = count_query.where(SyncLog.entity_type == entity_type)
-    
+
     if status_filter:
         try:
             sync_status = SyncStatus(status_filter)
@@ -568,16 +566,16 @@ async def get_sync_history(
             count_query = count_query.where(SyncLog.status == sync_status)
         except ValueError:
             logger.debug(f"无效的同步状态过滤器: {status_filter}")
-    
+
     total_result = await db.execute(count_query)
     total = total_result.scalar() or 0
-    
+
     offset = (page - 1) * page_size
     query = query.order_by(SyncLog.timestamp.desc()).offset(offset).limit(page_size)
-    
+
     result = await db.execute(query)
     logs = result.scalars().all()
-    
+
     return SyncHistoryResponse(
         logs=[SyncLogItem.model_validate(log) for log in logs],
         total=total,
@@ -595,7 +593,7 @@ async def _get_or_register_device(db: AsyncSession, user_id: int, device_id: str
         )
     )
     device = result.scalar_one_or_none()
-    
+
     if not device:
         device = UserDevice(
             device_id=device_id,
@@ -606,7 +604,7 @@ async def _get_or_register_device(db: AsyncSession, user_id: int, device_id: str
         )
         db.add(device)
         await db.flush()
-    
+
     return device
 
 
@@ -619,7 +617,7 @@ async def full_sync(
 ):
     """
     执行完整的双向同步流程
-    
+
     流程：
     1. 接收本地数据快照
     2. 检测本地变更
@@ -627,18 +625,18 @@ async def full_sync(
     4. 拉取远程变更
     5. 检测并解决冲突
     6. 返回合并结果
-    
+
     - **device_id**: 设备唯一标识符
     - **local_data**: 本地数据字典 {entity_type: {entity_id: data}}
     - **last_sync_timestamp**: 可选，上次同步时间戳
-    
+
     返回详细的同步结果统计。
     """
     sync_service = _get_sync_service()
-    
+
     local_data = request.get("local_data", {})
     last_sync_ts = request.get("last_sync_timestamp")
-    
+
     if last_sync_ts:
         try:
             if isinstance(last_sync_ts, str):
@@ -646,7 +644,7 @@ async def full_sync(
         except Exception as ts_err:
             logger.warning("时间戳解析失败: %s", ts_err)
             last_sync_ts = None
-    
+
     try:
         result = await sync_service.full_sync(
             user_id=current_user.id,
@@ -654,13 +652,13 @@ async def full_sync(
             local_data=local_data,
             last_sync_timestamp=last_sync_ts,
         )
-        
+
         logger.info(
             f"[Sync] 完整同步完成: user={current_user.id}, "
             f"pushed={result.pushed_count}, pulled={result.pulled_count}, "
             f"conflicts={result.conflicts_detected}, success={result.success}"
         )
-        
+
         return {
             "success": result.success,
             "sync_mode": result.sync_mode.value,
@@ -678,7 +676,7 @@ async def full_sync(
             "errors": result.errors,
             "warnings": result.warnings,
         }
-        
+
     except Exception as e:
         logger.error("[Sync] 完整同步失败: %s", e, exc_info=True)
         raise HTTPException(
@@ -697,23 +695,23 @@ async def incremental_sync(
 ):
     """
     增量同步（只处理最近变更）
-    
+
     只同步指定实体类型或最近修改的数据，
     适用于频繁的小规模同步场景。
-    
+
     - **device_id**: 设备唯一标识符
     - **local_data**: 本地数据
     - **entity_types**: 可选，要同步的实体类型列表
-    
+
     返回增量同步结果。
     """
     sync_service = _get_sync_service()
-    
+
     local_data = request.get("local_data", {})
     type_list = None
     if entity_types:
         type_list = [t.strip() for t in entity_types.split(",") if t.strip()]
-    
+
     try:
         result = await sync_service.incremental_sync(
             user_id=current_user.id,
@@ -721,7 +719,7 @@ async def incremental_sync(
             local_data=local_data,
             entity_types=type_list,
         )
-        
+
         return {
             "success": result.success,
             "sync_mode": "incremental",
@@ -735,7 +733,7 @@ async def incremental_sync(
             "server_timestamp": result.server_timestamp.isoformat() if result.server_timestamp else None,
             "next_sync_token": result.next_sync_token,
         }
-        
+
     except Exception as e:
         logger.error("[Sync] 增量同步失败: %s", e, exc_info=True)
         raise HTTPException(
@@ -750,7 +748,7 @@ async def get_sync_stats(
 ):
     """
     获取同步引擎的详细统计和状态信息
-    
+
     返回：
     - 同步服务性能指标
     - 差异检测器缓存命中率
@@ -763,7 +761,7 @@ async def get_sync_stats(
     protocol = _get_protocol()
     conflict_detector = _get_conflict_detector()
     queue = _get_change_queue()
-    
+
     return {
         "sync_service": sync_service.get_stats(),
         "detector": detector.stats,
@@ -781,26 +779,26 @@ async def encrypt_sensitive_data(
 ):
     """
     加密数据中的敏感字段
-    
+
     使用AES-256-GCM算法加密字典中的敏感字段。
     自动识别 password、token、api_key 等字段并加密。
-    
+
     - **data**: 要加密的字典数据
     - **encrypt_all**: 是否加密所有字段（默认false）
-    
+
     返回加密后的数据。
     """
     try:
         data = request.get("data", {})
         encrypt_all = request.get("encrypt_all", False)
-        
+
         from ...utils.key_manager import KeyManager
-        
+
         key_manager = KeyManager()
         key = key_manager.get_data_encryption_key(user_id=str(current_user.id))
-        
+
         encrypted = EncryptionUtils.encrypt_dict(data, key, encrypt_all)
-        
+
         return {
             "success": True,
             "encrypted_data": encrypted,
@@ -809,7 +807,7 @@ async def encrypt_sensitive_data(
                 if isinstance(v, dict) and v.get("__encrypted__")
             ],
         }
-        
+
     except Exception as e:
         logger.error("[Sync] 数据加密失败: %s", e, exc_info=True)
         raise HTTPException(
@@ -825,26 +823,26 @@ async def decrypt_sensitive_data(
 ):
     """
     解密由 /encrypt-data 端点加密的数据
-    
+
     - **encrypted_data**: 加密后的字典数据
-    
+
     返回原始明文数据。
     """
     try:
         encrypted_data = request.get("encrypted_data", {})
-        
+
         from ...utils.key_manager import KeyManager
-        
+
         key_manager = KeyManager()
         key = key_manager.get_data_encryption_key(user_id=str(current_user.id))
-        
+
         decrypted = EncryptionUtils.decrypt_dict(encrypted_data, key)
-        
+
         return {
             "success": True,
             "decrypted_data": decrypted,
         }
-        
+
     except Exception as e:
         logger.error("[Sync] 数据解密失败: %s", e, exc_info=True)
         raise HTTPException(

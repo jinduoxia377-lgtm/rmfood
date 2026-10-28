@@ -10,27 +10,23 @@
 """
 
 import logging
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel, EmailStr
 from typing import List, Optional
-from datetime import datetime
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from pydantic import BaseModel, EmailStr
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
 
-from .deps import get_db_session, get_current_user
 from ..core.realtime.notification_center import (
+    NotificationCategory,
+    NotificationChannel,
     NotificationService,
     UserNotificationPreference,
-    NotificationChannel,
-    NotificationCategory,
-    notify_mention,
-    notify_comment,
-    notify_approval_required,
 )
 from ..models.enums import NotificationType
-
+from .deps import get_current_user, get_db_session
 
 router = APIRouter(prefix="/notifications/v2", tags=["notifications"])
 
@@ -73,24 +69,24 @@ class SendTestNotificationRequest(BaseModel):
 def _get_user_id(current_user) -> Optional[int]:
     """
     安全获取用户ID（兼容ORM对象和字典）
-    
+
     Args:
         current_user: User ORM对象或字典
-        
+
     Returns:
         用户ID或None
     """
     if current_user is None:
         return None
-    
+
     # 优先尝试属性访问（ORM对象）
     if hasattr(current_user, 'id'):
         return current_user.id
-    
+
     # 回退到字典访问
     if isinstance(current_user, dict):
         return current_user.get('id')
-    
+
     logger.warning(f"无法从current_user对象获取ID: {type(current_user)}")
     return None
 
@@ -262,9 +258,9 @@ async def update_preferences(
 
     user_id = _get_user_id(current_user)
     service = NotificationService(db)
-    
+
     existing = await service._get_user_preference(user_id)
-    
+
     update_data = {}
     if request.enabled is not None:
         update_data["enabled"] = request.enabled
@@ -362,7 +358,7 @@ async def bulk_send_notifications(
 
     user_id = _get_user_id(current_user)
     service = NotificationService(db)
-    
+
     # 检查权限
     user_info = await service._get_user_info(user_id)
     if not user_info or user_info.get("role") != "admin":
@@ -404,7 +400,7 @@ async def clear_all_notifications(
 
     user_id = _get_user_id(current_user)
     service = NotificationService(db)
-    
+
     deleted_count = await service.clear_all_user_notifications(user_id)
     await db.commit()
 

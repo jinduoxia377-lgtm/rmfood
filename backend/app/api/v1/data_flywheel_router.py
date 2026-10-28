@@ -19,9 +19,9 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
+from app.services.analytics.user_behavior import BehaviorAnonymizer
 from app.services.data_sources.pipeline.collection_pipeline import CollectionPipeline
 from app.services.data_sources.pipeline.validators import DataQualityValidator
-from app.services.analytics.user_behavior import BehaviorAnonymizer
 from app.services.ml.recommendation_trainer import RecommendationTrainer
 
 logger = logging.getLogger(__name__)

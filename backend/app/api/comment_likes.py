@@ -3,14 +3,14 @@
 支持对评论进行点赞、取消点赞、获取点赞数
 """
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 
+from ..api.deps import get_db_session
+from ..models.formula import CommentLike
 from ..models.models import Comment, User
 from ..services.auth import get_current_user
-from ..api.deps import get_db_session
-from pydantic import BaseModel
-from ..models.formula import CommentLike
 
 router = APIRouter(prefix="/comments/likes", tags=["评论点赞"])
 

@@ -12,10 +12,10 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..deps import get_current_active_user, get_db_session
 from ...core.multi_tenant.tenant_security import TenantContext, require_tenant
 from ...models import User
 from ...models.usage import AiBotUsage
+from ..deps import get_current_active_user, get_db_session
 
 router = APIRouter(prefix="/usage", tags=["AI 用量统计"])
 

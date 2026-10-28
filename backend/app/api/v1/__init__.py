@@ -8,21 +8,21 @@ These routers exist only in the v1 namespace (no api/ counterpart).
 """
 from fastapi import APIRouter
 
-from .sync_router import router as sync_router
-from .team_router import router as team_router
-from .team_dashboard_router import router as team_dashboard_router
-from .version_router import router as version_router
-from .metrics_router import router as metrics_router
-from .ray_router import router as ray_router
-from .mo_stream_endpoint import router as mo_stream_router
 from .batches_router import router as batches_router
-from .samples_router import router as samples_router
-from .fact_engine_router import router as fact_engine_router
-from .doe_router import router as doe_router
-from .stability_router import router as stability_router
-from .label_router import router as label_router
 from .document_router import router as document_router
+from .doe_router import router as doe_router
+from .fact_engine_router import router as fact_engine_router
+from .label_router import router as label_router
 from .mcp_router import router as mcp_router
+from .metrics_router import router as metrics_router
+from .mo_stream_endpoint import router as mo_stream_router
+from .ray_router import router as ray_router
+from .samples_router import router as samples_router
+from .stability_router import router as stability_router
+from .sync_router import router as sync_router
+from .team_dashboard_router import router as team_dashboard_router
+from .team_router import router as team_router
+from .version_router import router as version_router
 
 # import_router requires celery; skip if not installed
 try:

@@ -24,15 +24,16 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
 # 导入RMFOOD专用的食品肽分析器
-from ..api.deps import get_db_session, get_current_user
+from ..api.deps import get_db_session
+from ..core.plans import require_plan
 from ..models import User
 from ..services.ai_models.food_peptide_analyzer import (
     RMFOODPeptideAnalyzer,
@@ -60,10 +61,10 @@ def get_food_analyzer() -> RMFOODPeptideAnalyzer:
 
 class FoodDeepAnalysisRequest(BaseModel):
     """食品肽深度分析请求"""
-    
+
     sequence: str = Field(
-        ..., 
-        min_length=2, 
+        ...,
+        min_length=2,
         max_length=100,
         description="待分析的食品活性肽序列",
         example="VLGYTKEGN"
@@ -72,7 +73,7 @@ class FoodDeepAnalysisRequest(BaseModel):
 
 class FoodBatchScreenRequest(BaseModel):
     """批量筛选请求"""
-    
+
     sequences: List[str] = Field(
         ...,
         min_length=1,
@@ -97,55 +98,55 @@ class FoodBatchScreenRequest(BaseModel):
 async def food_deep_analysis(
     req: FoodDeepAnalysisRequest,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     对单个食品活性肽进行深度分析
-    
+
     **核心分析维度** (按重要性排序):
     1. 🛡️ **安全性评估** (权重35%)
        - 过敏原性风险检测
        - 毒性模式识别
        - 消化稳定性预测
        - GRAS-like合规性初步判断
-    
+
     2. 💪 **生物活性预测** (权重30%)
        - ACE抑制活性 (降压肽潜力)
        - 抗氧化活性 (保鲜/抗衰老)
        - 抗菌活性 (天然防腐剂)
        - 鲜味增强活性 (风味调节)
-    
+
     3. 🧪 **理化性质计算** (权重20%)
        - 分子量、等电点
        - 溶解度指数 (0-1)
        * 苦味评分 (0-1, 越低越好)
        - 必需氨基酸含量
        * pH稳定性范围
-    
+
     4. 🏷️ **PTM位点识别** (权重10%)
        - 仅4种食品相关类型:
          * 磷酸化 (影响生物活性)
          * N-糖基化 (影响溶解度/稳定性)
          * O-糖基化 (影响口感/质地)
          * 乙酰化 (影响N端稳定性)
-    
+
     **输出格式**:
     - food_application_score: 综合食品应用评分 (0-100)
     - safety_assessment: 详细安全性报告
     - bioactivity_predictions: 各维度活性得分
     - application_suggestions: 应用建议列表
-    
+
     **性能指标**:
     - 响应时间: <200ms (离线运行)
     - 无需外部API依赖
-    
+
     **Example Request**:
     ```json
     {
         "sequence": "VLGYTKEGN"
     }
     ```
-    
+
     **Example Response**:
     ```json
     {
@@ -163,12 +164,12 @@ async def food_deep_analysis(
     """
     try:
         logger.info(f"🍎 RMFOOD食品肽分析开始 | 序列: {req.sequence} | 用户: {current_user.id}")
-        
+
         analyzer = get_food_analyzer()
-        
+
         # 执行深度分析
         result = await analyzer.analyze_peptide_deeply(req.sequence)
-        
+
         # 构建标准响应
         response_data = {
             "success": True,
@@ -188,21 +189,21 @@ async def food_deep_analysis(
                 "processing_time_ms": getattr(result, 'processing_time_ms', None),
             }
         }
-        
+
         # 从application_suggestions中提取关键建议
         if hasattr(result, '_raw_result') and result._raw_result:
             raw = result._raw_result
             if hasattr(raw, 'application_suggestions'):
                 response_data["data"]["application_suggestions"] = raw.application_suggestions
-        
+
         logger.info(
             f"✅ RMFOOD食品肽分析完成 | 序列: {req.sequence} | "
             f"评分: {result.overall_scores.get('food_application_score', 'N/A')} | "
             f"安全等级: {result.safety_assessment.get('risk_level', 'N/A')}"
         )
-        
+
         return response_data
-        
+
     except ValueError as ve:
         logger.warning("序列验证失败: %s", ve)
         raise HTTPException(status_code=422, detail="参数无效")
@@ -216,32 +217,32 @@ async def food_deep_analysis(
 async def food_batch_screen(
     req: FoodBatchScreenRequest,
     db=Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_plan("peptide_analysis")),
 ):
     """
     批量筛选适合食品应用的肽序列
-    
+
     **适用场景**:
     - 配方候选肽库虚拟筛选 (从数百个候选中快速定位Top 10)
     - 高通量酶解产物分析 (识别最具潜力的活性片段)
     - 食品原料活性成分鉴定 (如发酵产物、水解液)
-    
+
     **筛选逻辑**:
     1. 对每条序列进行完整的食品导向分析
     2. 计算综合食品应用评分 (0-100)
     3. 按评分降序排列
     4. 返回达标候选的详细信息
-    
+
     **输出内容**:
     - total_processed: 处理总数
     - qualified_count: 达标数量 (≥min_score)
     - top_candidates: Top 10 候选详情
     - statistics: 分布统计 (评分分布、安全性分布)
-    
+
     **Performance**:
     - 吞吐量: >500 seq/s (短序列<30 AA)
     - 响应时间: 200条序列 <1秒
-    
+
     **Example Request**:
     ```json
     {
@@ -255,15 +256,15 @@ async def food_batch_screen(
             f"🍎 RMFOOD批量筛选开始 | 数量: {len(req.sequences)} | "
             f"最低评分: {req.min_score} | 用户: {current_user.id}"
         )
-        
+
         analyzer = get_food_analyzer()
-        
+
         # 执行批量筛选
         screen_result = await analyzer.batch_analyze_for_food(
             sequences=req.sequences,
             min_score=req.min_score
         )
-        
+
         # 包装响应
         response_data = {
             "success": True,
@@ -277,15 +278,15 @@ async def food_batch_screen(
                 "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             }
         }
-        
+
         logger.info(
             f"✅ RMFOOD批量筛选完成 | 总数: {screen_result.get('total_processed', 0)} | "
             f"达标: {screen_result.get('qualified_count', 0)} | "
             f"耗时: {screen_result.get('processing_time_ms', 0):.0f}ms"
         )
-        
+
         return response_data
-        
+
     except Exception as e:
         logger.error("批量筛选异常: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="批量分析异常，请稍后重试")

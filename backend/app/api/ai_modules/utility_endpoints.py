@@ -24,14 +24,14 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from . import (
-    logger,
-    get_db_session,
-    get_current_user,
-    get_current_active_user,
-    User,
-)
 from ...services.llm_service import LLMMessage
+from . import (
+    User,
+    get_current_active_user,
+    get_current_user,
+    get_db_session,
+    logger,
+)
 
 sub_router = APIRouter(tags=["AI工具"])
 
@@ -551,8 +551,10 @@ async def submit_feedback(
 ):
     """记录 AI 推荐反馈。持久化到 SystemConfig（键 ai_feedback_log）的 JSON 数组。"""
     import json as _json
-    from ...models.system import SystemConfig
+
     from sqlalchemy import select
+
+    from ...models.system import SystemConfig
 
     user_id = current_user.id if current_user else None
     config_key = "ai_feedback_log"
@@ -604,8 +606,9 @@ async def set_default_model(
     current_user: User | None = Depends(get_current_user),
 ):
     """持久化用户的默认模型选择（SystemConfig 键 default_model_<user_id>）。"""
-    from ...models.system import SystemConfig
     from sqlalchemy import select
+
+    from ...models.system import SystemConfig
 
     user_key = f"default_model_{current_user.id if current_user else 'anon'}"
     try:

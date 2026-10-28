@@ -6,8 +6,8 @@ Pydantic TypeAdapter "not fully defined" 错误。
 """
 from __future__ import annotations
 
-from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 

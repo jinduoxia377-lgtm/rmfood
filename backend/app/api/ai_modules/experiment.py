@@ -2,7 +2,6 @@
 
 v2.0 (2026-07-06): 替换 Mock 数据为真实实验数据分析
 """
-import logging
 import datetime
 from datetime import timezone
 from typing import Any
@@ -12,12 +11,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import (
-    logger,
-    ai_service,
-    router,
-    get_db_session,
-    get_current_user,
     User,
+    get_current_user,
+    get_db_session,
+    logger,
+    router,
 )
 
 sub_router = APIRouter(tags=["实验"])

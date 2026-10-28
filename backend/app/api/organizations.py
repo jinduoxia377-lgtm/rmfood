@@ -16,25 +16,23 @@
 
 import json
 import logging
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, EmailStr
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel, EmailStr
-from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 
-from .deps import get_db_session, get_current_active_user
 from ..core.multi_tenant.multi_tenant_service import (
-    OrganizationService,
-    OrganizationRole,
-    OrganizationPlan,
-    ResourceType,
     PLAN_LIMITS,
+    OrganizationPlan,
+    OrganizationRole,
     get_org_service,
 )
-
+from .deps import get_current_active_user, get_db_session
 
 router = APIRouter(prefix="/organizations", tags=["organizations"])
 
@@ -161,7 +159,7 @@ async def create_organization(
 ):
     """创建新组织"""
     service = get_org_service(db)
-    
+
     try:
         org = await service.create_organization(
             owner_id=current_user.id,
@@ -169,7 +167,7 @@ async def create_organization(
             slug=request.slug,
             description=request.description,
         )
-        
+
         return {
             "success": True,
             "organization": {
@@ -180,7 +178,7 @@ async def create_organization(
                 "created_at": (org["created_at"].isoformat() if isinstance(org, dict) else org.created_at.isoformat()),
             },
         }
-        
+
     except ValueError as e:
         logger.error("创建组织失败: %s", e, exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
@@ -335,6 +333,27 @@ async def get_global_analytics(
         {"name": "免费版", "value": plan_distribution_obj["free"], "color": "var(--text-muted, #9A9A9F)"},
     ]
 
+    # 真实平均存储使用率：按每个组织 attachments 实际占用 / 计划存储上限计算
+    total_storage_percent = 0.0
+    for r in org_rows:
+        try:
+            plan_enum = OrganizationPlan((r.plan or "free").lower())
+        except ValueError:
+            plan_enum = OrganizationPlan.FREE
+        storage_limit_mb = PLAN_LIMITS.get(plan_enum, PLAN_LIMITS[OrganizationPlan.FREE]).storage_mb
+        if not storage_limit_mb or storage_limit_mb <= 0:
+            continue
+        storage_used_mb = (await db.execute(
+            text("""
+                SELECT COALESCE(SUM(a.file_size), 0) / 1048576.0
+                FROM attachments a
+                WHERE a.uploaded_by IN (SELECT user_id FROM organization_members WHERE organization_id = :id)
+            """),
+            {"id": r.id},
+        )).scalar() or 0
+        total_storage_percent += min((float(storage_used_mb) / storage_limit_mb) * 100.0, 100.0)
+    avg_storage_usage = round(total_storage_percent / total_orgs, 1) if total_orgs > 0 else 0
+
     # 近 30 天成员增长（所有我的组织）
     member_trend_rows = (await db.execute(
         text("""
@@ -361,7 +380,7 @@ async def get_global_analytics(
     return {
         "totalOrgs": total_orgs,
         "totalMembers": total_members,
-        "avgStorageUsage": 0,
+        "avgStorageUsage": avg_storage_usage,
         "monthlyApiCalls": int(api_calls),
         "memberTrend": member_trend,
         "storageTrend": [],
@@ -381,7 +400,7 @@ async def get_organization(
 ):
     """通过ID或slug获取组织详情"""
     service = get_org_service(db)
-    
+
     try:
         org_id = int(org_id_or_slug)
         org = await service.get_organization(org_id)
@@ -470,7 +489,7 @@ async def update_organization(
 ):
     """更新组织基本信息（需ADMIN或OWNER权限）"""
     service = get_org_service(db)
-    
+
     updates = {}
     if request.name is not None:
         updates["name"] = request.name
@@ -498,7 +517,7 @@ async def delete_organization(
 ):
     """删除组织（仅OWNER，慎用！）"""
     service = get_org_service(db)
-    
+
     try:
         success = await service.delete_organization(org_id, current_user.id)
         return {"success": success}
@@ -519,11 +538,11 @@ async def get_members(
 ):
     """获取组织所有成员"""
     service = get_org_service(db)
-    
+
     membership = await service._get_membership(org_id, current_user.id)
     if not membership:
         raise HTTPException(status_code=403, detail="您不是该组织的成员")
-    
+
     members = await service.get_members(org_id)
     return {"members": members}
 
@@ -537,7 +556,7 @@ async def invite_member(
 ):
     """邀请新成员加入组织"""
     service = get_org_service(db)
-    
+
     if not (await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN])
                 or await service.member_has_custom_permission(org_id, current_user.id, "members", "manage")):
         raise HTTPException(status_code=403, detail="需要管理员权限")
@@ -572,6 +591,7 @@ async def invite_member(
         # 📧 真实发送邀请邮件（开发环境保存到 logs/email-dev，生产环境 SMTP）
         try:
             import os as _os
+
             from ..core.config import settings as _settings
             from ..utils.email_service import send_organization_invitation_email
             org_obj = await service.get_organization(org_id)
@@ -628,6 +648,7 @@ async def invite_member(
         # 📧 已注册用户：发送「已加入组织」通知邮件
         try:
             import os as _os
+
             from ..core.config import settings as _settings
             from ..utils.email_service import send_organization_invitation_email
             org_obj = await service.get_organization(org_id)
@@ -672,7 +693,7 @@ async def remove_member(
     """从组织中移除成员"""
     service = get_org_service(db)
     await _require_org_permission(org_id, current_user, "member_management", db, resource="members", action="manage")
-    
+
     try:
         success = await service.remove_member(org_id, user_id, current_user.id)
         return {"success": success}
@@ -745,7 +766,7 @@ async def suspend_member(
     """停用成员（保留记录但禁止访问）"""
     service = get_org_service(db)
     await _require_org_permission(org_id, current_user, "member_management", db, resource="members", action="manage")
-    
+
     try:
         success = await service.suspend_member(org_id, user_id, current_user.id)
         return {"success": success}
@@ -765,7 +786,7 @@ async def resume_member(
     """恢复成员"""
     service = get_org_service(db)
     await _require_org_permission(org_id, current_user, "member_management", db, resource="members", action="manage")
-    
+
     try:
         success = await service.resume_member(org_id, user_id, current_user.id)
         return {"success": success}
@@ -789,7 +810,7 @@ async def create_team(
     """在组织中创建新团队"""
     service = get_org_service(db)
     await _require_org_permission(org_id, current_user, "team_management", db, resource="teams", action="create")
-    
+
     try:
         team = await service.create_team(
             org_id=org_id,
@@ -874,7 +895,7 @@ async def get_teams(
 ):
     """获取组织的所有团队"""
     service = get_org_service(db)
-    
+
     teams = await service.get_teams(org_id)
     return {"teams": [dict(t) if hasattr(t, "_mapping") else t for t in teams]}
 
@@ -891,7 +912,7 @@ async def get_quotas(
 ):
     """获取组织的资源配额使用详情"""
     service = get_org_service(db)
-    
+
     quotas = await service.get_quota_usage(org_id)
 
     return {
@@ -912,7 +933,7 @@ async def archive_organization(
 ):
     """归档组织（软删除）"""
     service = get_org_service(db)
-    
+
     try:
         success = await service.archive_organization(org_id, current_user.id)
         return {"success": success}
@@ -930,7 +951,7 @@ async def restore_organization(
 ):
     """恢复已归档的组织"""
     service = get_org_service(db)
-    
+
     try:
         success = await service.restore_organization(org_id, current_user.id)
         return {"success": success}
@@ -995,7 +1016,7 @@ async def clone_organization(
 ):
     """克隆组织（复制基本信息）"""
     service = get_org_service(db)
-    
+
     try:
         new_org_id = await service.clone_organization(org_id, current_user.id, request.name)
         return {
@@ -1019,7 +1040,7 @@ async def get_organization_analytics(
     """获取组织数据分析"""
     service = get_org_service(db)
     await _require_org_permission(org_id, current_user, "api_access", db, resource="api", action="access")
-    
+
     try:
         analytics = await service.get_analytics(org_id, time_range)
         return analytics
@@ -1041,7 +1062,7 @@ async def get_audit_log(
     """获取组织审计日志"""
     service = get_org_service(db)
     await _require_org_permission(org_id, current_user, "api_access", db, resource="api", action="access")
-    
+
     try:
         log_data = await service.get_audit_log(org_id, limit, offset, action_type)
         return log_data
@@ -1060,7 +1081,7 @@ async def export_organization(
     service = get_org_service(db)
     await _require_org_permission(org_id, current_user, "data_export", db, resource="data", action="export")
     await _require_org_permission(org_id, current_user, "api_access", db, resource="api", action="access")
-    
+
     try:
         export_data = await service.export_organization(org_id, format_type)
         return export_data
@@ -1078,15 +1099,15 @@ async def get_permissions(
 ):
     """获取组织权限配置"""
     service = get_org_service(db)
-    
+
     membership = await service._get_membership(org_id, current_user.id)
     if not membership:
         raise HTTPException(status_code=403, detail="您不是该组织的成员")
-    
+
     org = await service.get_organization(org_id)
     if not org:
         raise HTTPException(status_code=404, detail="组织不存在")
-    
+
     settings = org.settings or {}
     if isinstance(settings, str):
         try:
@@ -1117,14 +1138,14 @@ async def update_permissions(
 ):
     """更新组织权限配置（需OWNER或ADMIN）"""
     service = get_org_service(db)
-    
+
     if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
         raise HTTPException(status_code=403, detail="权限不足")
-    
+
     org = await service.get_organization(org_id)
     if not org:
         raise HTTPException(status_code=404, detail="组织不存在")
-    
+
     settings = org.settings or {}
     if isinstance(settings, str):
         try:
@@ -1132,13 +1153,13 @@ async def update_permissions(
         except Exception:
             settings = {}
     settings["permissions"] = permissions
-    
+
     await service.db.execute(
         text("UPDATE organizations SET settings = CAST(:settings AS jsonb), updated_at = NOW() WHERE id = :id"),
         {"settings": json.dumps(settings), "id": org_id},
     )
     await service.db.commit()
-    
+
     return {"success": True, "permissions": permissions}
 
 
@@ -1424,8 +1445,9 @@ async def export_members(
 
     members = await service.get_members(org_id)
     if format_type == "json":
-        from fastapi.responses import JSONResponse
         import datetime as _dt
+
+        from fastapi.responses import JSONResponse
         json_members = []
         for m in members:
             m = dict(m)
@@ -1435,7 +1457,8 @@ async def export_members(
             json_members.append(m)
         return JSONResponse(content={"members": json_members})
 
-    import csv, io
+    import csv
+    import io
     buf = io.StringIO()
     writer = csv.DictWriter(buf, fieldnames=["user_id", "username", "email", "role", "joined_at", "is_active"])
     writer.writeheader()

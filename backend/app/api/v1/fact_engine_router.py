@@ -5,11 +5,11 @@ FactEngine API 路由
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.core.database.session import get_db
-from app.services.fact_engine import FactEngine, AIReportWriter, get_fact_engine, get_report_writer
+from app.services.fact_engine import get_fact_engine, get_report_writer
 
 logger = logging.getLogger(__name__)
 

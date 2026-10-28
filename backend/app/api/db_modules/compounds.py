@@ -1,16 +1,16 @@
 """
 TCMSP 化合物/靶点/疾病 检索 API
 """
+import logging
+
 from fastapi import Depends, HTTPException, Query
-from sqlalchemy import select, func, text
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..deps import get_db_session, get_current_user
-from ...models.tcm_schema import TCMCompound, TCMTarget, TCMDisease
-from ...models.external_data import TCMHerb
+from ...models.tcm_schema import TCMCompound, TCMDisease, TCMTarget
+from ..deps import get_current_user, get_db_session
 from . import router
 
-import logging
 logger = logging.getLogger(__name__)
 
 

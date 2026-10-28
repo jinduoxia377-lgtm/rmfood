@@ -4,15 +4,15 @@
 """
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
-from sqlalchemy import text, bindparam
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..schemas.user import UserCreate, UserUpdate, UserResponse
-from ..services.user import UserService
-from ..services.auth import get_current_user, require_role
+from ..api.deps import PaginationParams, get_current_active_user, get_db_session
 from ..models import User, UserRole
-from ..api.deps import get_db_session, PaginationParams, get_current_active_user
+from ..schemas.user import UserCreate, UserResponse, UserUpdate
+from ..services.auth import get_current_user, require_role
+from ..services.user import UserService
 
 router = APIRouter(prefix="/users", tags=["用户管理"])
 
@@ -172,7 +172,7 @@ async def upload_avatar(
     file.file.seek(0, 2)  # 移动到文件末尾
     file_size = file.file.tell()
     file.file.seek(0)  # 重置到文件开头
-    
+
     if file_size > 2 * 1024 * 1024:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -182,11 +182,10 @@ async def upload_avatar(
     # 生成文件路径
     import os
     import uuid
-    from datetime import datetime
-    
+
     upload_dir = "uploads/avatars"
     os.makedirs(upload_dir, exist_ok=True)
-    
+
     file_ext = os.path.splitext(file.filename)[1]
     filename = f"{user_id}_{uuid.uuid4()}{file_ext}"
     file_path = os.path.join(upload_dir, filename)

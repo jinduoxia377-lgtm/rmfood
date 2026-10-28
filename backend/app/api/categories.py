@@ -2,16 +2,17 @@
 分类管理路由
 """
 from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ..models import Category
-from ..services.auth import get_current_user
-from ..models.user_model import User
 from ..api.deps import get_db_session
 from ..core.performance.cache_system import cache_async, cache_service
+from ..models import Category
+from ..models.user_model import User
+from ..services.auth import get_current_user
 
 router = APIRouter(prefix="/categories", tags=["分类管理"])
 

@@ -1,16 +1,16 @@
 """
 TCMSP 中药材检索 API
 """
-from fastapi import Depends, HTTPException, Query
-from sqlalchemy import select, func
+import logging
+
+from fastapi import Depends, Query
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..deps import get_db_session, get_current_user
-from ...models import TCMHerb, MMIDHerb, SymMapHerb, User
-from ...services.data_sources.tcmsp_client import tcmsp_service
+from ...models import SymMapHerb, TCMHerb, User
+from ..deps import get_current_user, get_db_session
 from . import router
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -162,7 +162,7 @@ async def get_herb_categories(
 ):
     """获取 TCMSP 药材分类统计（含药食同源标注）"""
     from sqlalchemy import text as sql_text
-    
+
     # 获取分类统计（含药食同源数量）
     result = await db.execute(sql_text("""
         SELECT COALESCE(NULLIF(category, ''), '未分类') as category,
@@ -173,15 +173,15 @@ async def get_herb_categories(
         ORDER BY count DESC
     """))
     rows = result.all()
-    
+
     # 获取总体药食同源统计（使用国家卫健委2025版目录106种）
     # TCMSP数据库只有96种标记，但国家合规目录有106种
     total_food_homology = 106  # 国家卫健委药食同源目录（2025版）
-    
+
     return {
         "categories": [
             {
-                "category": row[0], 
+                "category": row[0],
                 "count": row[1],
                 "food_homology_count": row[2]
             }

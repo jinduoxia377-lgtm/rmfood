@@ -8,14 +8,15 @@
 - 质量控制审核流程
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Query, Depends
-from pydantic import BaseModel, Field
-from typing import List, Dict, Optional, Any
-from datetime import datetime, date, timezone  # A-27: 473 行 timezone.utc 用到
-import json
 import logging
+from datetime import date, datetime, timezone  # A-27: 473 行 timezone.utc 用到
+from typing import Any, Dict, List, Optional
 
-from ..api.deps import get_current_active_user, require_role
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+
+from ..api.deps import require_role
+from ..core.plans import require_plan
 from ..models import User
 from ..models.enums import UserRole
 
@@ -32,16 +33,16 @@ class LabExperimentData(BaseModel):
     lab_name: str = Field(..., min_length=2, max_length=200)
     experiment_date: date
     researcher_name: str = Field(..., min_length=2, max_length=100)
-    
+
     # 目标信息
     target_type: str = Field(..., pattern="^(formula|ingredient|synergy_pair)$")
     target_name: str = Field(..., max_length=200)
     target_id: Optional[int] = None
-    
+
     # 实验方法
     method_description: Optional[str] = None
     equipment_used: Optional[str] = None
-    
+
     # 测量参数 (灵活JSON格式)
     measured_parameters: Dict[str, Any] = Field(
         default_factory=dict,
@@ -51,7 +52,7 @@ class LabExperimentData(BaseModel):
             "ph_value": {"value": 6.8, "unit": "pH", "std_dev": 0.05}
         }
     )
-    
+
     # 系统预测值（用于对比）
     predicted_values: Dict[str, Any] = Field(default_factory=dict)
 
@@ -76,13 +77,13 @@ class ValidationReport(BaseModel):
     target_name: str
     validation_result: str  # 'passed' | 'failed' | 'inconclusive'
     overall_score: float = Field(ge=0, le=100)
-    
+
     parameter_comparisons: List[Dict[str, Any]]
     deviation_statistics: Dict[str, float]
-    
+
     conclusion_notes: Optional[str] = None
     recommendations: List[str]
-    
+
     validated_at: datetime
     reviewed_by: Optional[str] = None
 
@@ -92,28 +93,28 @@ class ValidationReport(BaseModel):
 @router.post("/experiments", summary="提交实验数据")
 async def submit_experiment_data(
     data: LabExperimentData,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_plan("advanced_analytics"))
 ):
     """
     提交新的实验室验证数据
-    
+
     支持的数据类型:
     - formula: 配方整体验证
     - ingredient: 单成分验证
     - synergy_pair: 成分协同效应验证
-    
+
     数据格式要求:
     - measured_parameters: JSON对象，包含测量值、单位、标准差
     - predicted_values: 可选，系统预测值用于自动对比
     """
     try:
         from ..models.formula_deep_integration import LabValidationData, ValidationStatus
-        
+
         # 检查是否已存在相同实验ID
         existing = await LabValidationData.get_or_none(experiment_id=data.experiment_id)
         if existing:
             raise HTTPException(status_code=409, detail=f"实验ID {data.experiment_id} 已存在")
-        
+
         # 创建记录
         validation_record = await LabValidationData.create(
             target_type=data.target_type,
@@ -129,9 +130,9 @@ async def submit_experiment_data(
             measured_parameters=data.measured_parameters,
             predicted_values=data.predicted_values
         )
-        
+
         logger.info(f"实验数据已接收: {data.experiment_id} - {data.target_name}")
-        
+
         return {
             "success": True,
             "experiment_id": data.experiment_id,
@@ -139,7 +140,7 @@ async def submit_experiment_data(
             "message": "实验数据已成功提交，等待处理",
             "record_id": validation_record.id
         }
-        
+
     except Exception as e:
         logger.error(f"提交实验数据失败: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="提交实验数据失败")
@@ -149,18 +150,20 @@ async def submit_experiment_data(
 @router.post("/experiments/batch-import", summary="批量导入实验数据")
 async def batch_import_experiments(
     request: ValidationBatchImportRequest,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_plan("advanced_analytics"))
 ):
     """
     批量导入多个实验数据
-    
+
     支持 CSV/JSON 文件上传或直接 JSON 提交
     自动去重和校验
     """
+    from ..models.formula_deep_integration import LabValidationData, ValidationStatus
+
     results = []
     success_count = 0
     failed_count = 0
-    
+
     for exp_data in request.experiments:
         try:
             # 复用单个提交流程
@@ -194,7 +197,7 @@ async def batch_import_experiments(
                 "record_id": validation_record.id
             })
             success_count += 1
-            
+
         except Exception as e:
             results.append({
                 "experiment_id": exp_data.experiment_id,
@@ -202,7 +205,7 @@ async def batch_import_experiments(
                 "status": "failed"
             })
             failed_count += 1
-    
+
     return {
         "success": True,
         "total_submitted": len(request.experiments),
@@ -217,11 +220,11 @@ async def batch_import_experiments(
 async def run_validation_comparison(
     experiment_id: str,
     request: ValidationComparisonRequest,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(require_plan("advanced_analytics"))
 ):
     """
     对指定实验执行预测值与实测值的对比分析
-    
+
     分析内容:
     - 各参数偏差计算
     - 统计显著性检验 (t-test / Wilcoxon)
@@ -230,18 +233,18 @@ async def run_validation_comparison(
     """
     try:
         from ..models.formula_deep_integration import LabValidationData, ValidationStatus
-        
+
         # 查询实验记录
         record = await LabValidationData.get_or_none(experiment_id=experiment_id)
         if not record:
             raise HTTPException(status_code=404, detail=f"未找到实验 {experiment_id}")
-        
+
         if not record.predicted_values:
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail="该实验缺少系统预测值，无法进行对比"
             )
-        
+
         # 执行对比分析
         comparison_result = _perform_comparison_analysis(
             measured=record.measured_parameters,
@@ -249,14 +252,14 @@ async def run_validation_comparison(
             tolerance=request.tolerance_range,
             alpha=request.significance_level
         )
-        
+
         # 更新记录状态
         record.status = ValidationStatus.COMPLETED
         record.deviation_analysis = comparison_result["statistics"]
         record.validation_result = comparison_result["result"]
         record.conclusion_notes = comparison_result["conclusion"]
         await record.save()
-        
+
         return ValidationReport(
             experiment_id=experiment_id,
             target_name=record.target_name,
@@ -269,7 +272,7 @@ async def run_validation_comparison(
             validated_at=datetime.now(timezone.utc),
             reviewed_by=current_user.username if current_user else None
         )
-        
+
     except Exception as e:
         logger.error(f"验证对比失败 ({experiment_id}): {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="验证对比失败")
@@ -277,7 +280,7 @@ async def run_validation_comparison(
 
 @router.get("/experiments", summary="查询实验列表")
 async def list_experiments(
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
     target_type: Optional[str] = Query(None, pattern="^(formula|ingredient|synergy_pair)$"),
     status: Optional[str] = Query(None, pattern="^(pending|in_progress|completed|failed)$"),
     target_name: Optional[str] = Query(None, description="目标名称模糊搜索"),
@@ -296,18 +299,18 @@ async def list_experiments(
 
     # 数据隔离: 仅查询当前用户的数据
     query = LabValidationData.all().filter(LabValidationData.owner_id == current_user.id)
-    
+
     if target_type:
         query = query.filter(target_type=target_type)
     if status:
         query = query.filter(status=status)
     if target_name:
         query = query.filter(target_name__icontains=target_name)
-    
+
     # 分页
     total = await query.count()
     records = await query.offset((page - 1) * page_size).limit(page_size).all()
-    
+
     return {
         "success": True,
         "total": total,
@@ -335,15 +338,15 @@ async def list_experiments(
 @router.get("/experiments/{experiment_id}", summary="获取实验详情")
 async def get_experiment_detail(
     experiment_id: str,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
 ):
     """获取单个实验的完整详情，包括原始数据和对比分析"""
     from ..models.formula_deep_integration import LabValidationData
-    
+
     record = await LabValidationData.get_or_none(experiment_id=experiment_id)
     if not record:
         raise HTTPException(status_code=404, detail="实验不存在")
-    
+
     return {
         "success": True,
         "data": {
@@ -364,6 +367,7 @@ async def review_experiment(
     experiment_id: str,
     review_data: ExperimentReviewRequest,
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.REVIEWER)),
+    _plan_user: User = Depends(require_plan("advanced_analytics")),
 ):
     """
     审核并确认实验数据质量
@@ -378,21 +382,21 @@ async def review_experiment(
 
     qc_passed = review_data.qc_passed
     notes = review_data.notes
-    
+
     record.qc_passed = qc_passed
     record.reviewer_id = current_user.id if current_user else None
     record.reviewed_at = datetime.now(timezone.utc)
-    
+
     if qc_passed and record.validation_result == 'passed':
         record.status = ValidationStatus.COMPLETED
     elif not qc_passed:
         record.status = ValidationStatus.FAILED
         record.conclusion_notes = f"QC不通过: {notes}"
-    
+
     await record.save()
-    
+
     logger.info(f"实验审核完成: {experiment_id} QC={'通过' if qc_passed else '不通过'} by={current_user}")
-    
+
     return {
         "success": True,
         "experiment_id": experiment_id,
@@ -404,11 +408,11 @@ async def review_experiment(
 
 @router.get("/statistics/dashboard", summary="验证统计仪表板")
 async def get_validation_dashboard(
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_plan("advanced_analytics")),
 ):
     """
     实验室验证统计概览
-    
+
     包含:
     - 总实验数 / 通过率 / 失败率
     - 按类型分布
@@ -416,19 +420,19 @@ async def get_validation_dashboard(
     - 偏差分布直方图数据
     """
     from ..models.formula_deep_integration import LabValidationData
-    
+
     total = await LabValidationData.all().count()
-    
+
     passed = await LabValidationData.filter(validation_result='passed').count()
     failed = await LabValidationData.filter(validation_result='failed').count()
     pending = await LabValidationData.filter(status='pending').count()
-    
+
     # 按目标类型分组统计
     type_stats = {}
     for t in ['formula', 'ingredient', 'synergy_pair']:
         count = await LabValidationData.filter(target_type=t).count()
         type_stats[t] = count
-    
+
     # 平均偏差统计
     # A-27：原写 `deviation_analysis__not_isnull()` —— 这是一个【未定义的函数调用】，
     #       一进来就抛 NameError。Tortoise 的写法是过滤关键字 + 布尔值。
@@ -437,9 +441,9 @@ async def get_validation_dashboard(
     for r in all_records[:100]:  # 取最近100条
         if r.deviation_analysis and 'mean_absolute_percentage_error' in r.deviation_analysis:
             avg_deviations.append(r.deviation_analysis['mean_absolute_percentage_error'])
-    
+
     overall_mape = sum(avg_deviations) / len(avg_deviations) if avg_deviations else 0
-    
+
     from datetime import timedelta as _td
 
     # 最近30天趋势
@@ -486,7 +490,7 @@ def _perform_comparison_analysis(
 ) -> Dict[str, Any]:
     """
     执行详细的对比分析
-    
+
     Returns:
         {
             result: 'passed' | 'failed' | 'inconclusive',
@@ -501,15 +505,15 @@ def _perform_comparison_analysis(
     all_deviations = []
     passed_params = 0
     total_params = len(measured)
-    
+
     for param_name, measured_data in measured.items():
         pred_data = predicted.get(param_name, {})
-        
+
         measured_val = measured_data.get("value", 0)
         predicted_val = pred_data.get("value", 0)
         unit = measured_data.get("unit", "")
         std_dev = measured_data.get("std_dev", 0)
-        
+
         # 计算偏差
         if predicted_val != 0:
             absolute_deviation = abs(measured_val - predicted_val)
@@ -517,14 +521,14 @@ def _perform_comparison_analysis(
         else:
             absolute_deviation = abs(measured_val)
             percentage_deviation = 0
-        
+
         all_deviations.append(percentage_deviation)
-        
+
         # 判断是否在容差范围内
         is_within_tolerance = percentage_deviation <= (tolerance * 100)
         if is_within_tolerance:
             passed_params += 1
-        
+
         # 统计检验（简化版t检验）
         if std_dev > 0:
             t_statistic = absolute_deviation / std_dev
@@ -532,7 +536,7 @@ def _perform_comparison_analysis(
         else:
             t_statistic = None
             is_significant = False
-        
+
         parameter_details.append({
             "parameter": param_name,
             "measured_value": measured_val,
@@ -545,16 +549,16 @@ def _perform_comparison_analysis(
             "t_statistic": round(t_statistic, 3) if t_statistic else None,
             "is_significant": is_significant
         })
-    
+
     # 计算总体指标
     mean_ape = sum(all_deviations) / len(all_deviations) if all_deviations else 0
     max_ape = max(all_deviations) if all_deviations else 0
     pass_rate = (passed_params / total_params * 100) if total_params > 0 else 0
-    
+
     # 综合评分 (0-100)
     overall_score = 100 - (mean_ape * 2) - (max_ape * 0.5) if mean_ape < 50 else 0
     overall_score = max(0, min(100, overall_score))
-    
+
     # 判定结果
     if pass_rate >= 80 and mean_ape <= 15:
         result = "passed"
@@ -565,7 +569,7 @@ def _perform_comparison_analysis(
     else:
         result = "failed"
         conclusion = f"验证失败: 多个参数超出容差范围 (MAPE={mean_ape:.1f}%, 通过率={pass_rate:.0f}%)"
-    
+
     # 生成建议
     recommendations = []
     if mean_ape > 20:
@@ -575,7 +579,7 @@ def _perform_comparison_analysis(
         recommendations.append(f"🔴 参数 '{worst_param['parameter']}' 偏差过大 ({worst_param['percentage_deviation']:.1f}%)，需重点关注")
     if pass_rate >= 90:
         recommendations.append("✅ 预测精度良好，可用于生产环境")
-    
+
     return {
         "result": result,
         "overall_score": round(overall_score, 1),

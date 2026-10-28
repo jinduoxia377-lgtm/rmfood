@@ -1,19 +1,17 @@
 import logging  # A-27：except 分支里用到 logger，原先未定义
+
 """RMFOOD 团队协作扩展 API Router
 
 提供团队仪表盘、统计和高级功能的RESTful接口。
 """
-from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, Query, status
 
-from ...core.database.session import get_db
-from ...api.deps import get_current_active_user, CurrentUser, DbSession
-from ...services.team.team_impl import TeamService
-from ...services.team.team_dashboard import TeamDashboardService
+from ...api.deps import CurrentUser, DbSession
 from ...services.search.elasticsearch_service import ElasticsearchService, SearchFilters
+from ...services.team.team_dashboard import TeamDashboardService
+
 logger = logging.getLogger(__name__)  # A-27：原缺失
 
 router = APIRouter(prefix="/teams/dashboard", tags=["Team Dashboard"])
@@ -27,18 +25,18 @@ async def get_team_dashboard(
 ):
     """
     获取团队仪表盘数据
-    
+
     包括：
     - 成员统计和角色分布
     - 提示词和版本数量
     - 版本提交趋势（近30天）
     - 活跃度排名Top 10成员
     - 最近动态
-    
+
     - **team_id**: 团队ID
     """
     dashboard_service = TeamDashboardService(db)
-    
+
     try:
         stats = await dashboard_service.get_stats(team_id)
         return stats
@@ -60,18 +58,18 @@ async def get_team_activity_feed(
 ):
     """
     获取团队动态时间线
-    
+
     按时间倒序排列，包括：
     - 成员加入/离开
     - 版本提交
     - 通知记录
-    
+
     - **team_id**: 团队ID
     - **limit**: 返回条数限制
     - **offset**: 偏移量
     """
     dashboard_service = TeamDashboardService(db)
-    
+
     feed = await dashboard_service.get_activity_feed(team_id, limit=limit, offset=offset)
     return feed
 
@@ -90,26 +88,26 @@ async def advanced_search(
 ):
     """
     高级搜索接口
-    
+
     支持多维度筛选组合，返回高亮片段和聚合统计。
-    
+
     - **query**: 搜索关键词
     - **category**: 可选，分类筛选
     - **author_id**: 可选，作者筛选
     - **date_from/date_to**: 可选，日期范围
     """
     from datetime import datetime as dt
-    
+
     filters = SearchFilters(
         category=category,
         author_id=author_id,
         date_from=dt.fromisoformat(date_from) if date_from else None,
         date_to=dt.fromisoformat(date_to) if date_to else None,
     )
-    
+
     es_service = ElasticsearchService(db)
     result = await es_service.search(query, filters, page=page, per_page=per_page)
-    
+
     return result
 
 
@@ -123,17 +121,17 @@ async def search_suggestions(
 ):
     """
     搜索建议接口（自动补全）
-    
+
     输入时实时返回匹配建议。
     前端应配合debounce 300ms使用。
-    
+
     - **prefix**: 输入前缀
     - **team_id**: 可选，限制在指定团队内搜索
     - **limit**: 返回数量
     """
     es_service = ElasticsearchService(db)
     suggestions = await es_service.suggest(prefix, team_id=team_id, limit=limit)
-    
+
     return {
         "suggestions": [
             {

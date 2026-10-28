@@ -1,7 +1,8 @@
+import logging
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, Dict, Any, List
-import logging
 
 logger = logging.getLogger(__name__)
 

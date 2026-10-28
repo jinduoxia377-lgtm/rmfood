@@ -5,7 +5,7 @@
 提供搜索热词、趋势、行为分析等 API。
 """
 import logging
-from typing import Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 

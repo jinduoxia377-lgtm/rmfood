@@ -4,13 +4,12 @@
 提供产品方案报告的生成和导出接口。
 """
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from app.services.report.product_plan_reporter import get_reporter, ProductPlanReporter
+from app.services.report.product_plan_reporter import ProductPlanReporter, get_reporter
 
 logger = logging.getLogger(__name__)
 

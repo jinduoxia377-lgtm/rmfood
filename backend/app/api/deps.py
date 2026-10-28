@@ -27,16 +27,17 @@ async def data_route(user: User = Depends(require_permissions(["data:read"]))):
 ```
 """
 import logging
-from typing import Annotated, Optional, List
-from fastapi import Depends, HTTPException, Request, status, Query
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Annotated, List, Optional
+
+from fastapi import Depends, HTTPException, Query, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.database.session import get_db
-from ..utils.auth import decode_token
+from ..models.enums import UserRole
 from ..models.user_model import User
-from ..models.enums import FormulaStatus, UserRole
+from ..utils.auth import decode_token
 
 logger = logging.getLogger(__name__)
 

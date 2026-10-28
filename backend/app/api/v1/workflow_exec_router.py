@@ -7,24 +7,22 @@ import asyncio
 import json
 import logging
 import uuid
-from typing import Optional
-
-from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
-from sqlalchemy import select, func, delete
 from datetime import datetime, timezone  # A-27: 113 行 datetime.now(timezone.utc) 用到，原漏导入
+
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_db_session, get_current_active_user
-from app.models.models import Workflow, WorkflowTask, User, WorkflowStatus, TaskStatus
-
+from app.api.deps import get_current_active_user, get_db_session
+from app.core.realtime.websocket_manager import MessageType, WSMessage, get_ws_manager
 from app.core.workflow import (
-    WorkflowDAG,
-    WorkflowNode,
-    WorkflowEdge,
     EdgeType,
+    WorkflowDAG,
+    WorkflowEdge,
+    WorkflowNode,
     execute_workflow_dag,
 )
-from app.core.realtime.websocket_manager import get_ws_manager, MessageType, WSMessage
+from app.models.models import TaskStatus, User, Workflow, WorkflowStatus, WorkflowTask
 
 logger = logging.getLogger(__name__)
 

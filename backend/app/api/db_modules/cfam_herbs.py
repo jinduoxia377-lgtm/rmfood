@@ -13,10 +13,10 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select, func, text
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_db_session, get_current_user
+from app.api.deps import get_current_user, get_db_session
 from app.models.external_data import HFEHerb, TCMHerb
 from app.models.user_model import User
 
@@ -174,11 +174,11 @@ async def get_cfam_stats(db: AsyncSession = Depends(get_db_session)):
     from sqlalchemy import text as sql_text
 
     # 总体统计
-    total = (await db.execute(select(func.count()).select_from(HFEHerb).where(HFEHerb.is_food_homology == True))).scalar() or 0
+    total = (await db.execute(select(func.count()).select_from(HFEHerb).where(HFEHerb.is_food_homology.is_(True)))).scalar() or 0
 
     # 按公告批次统计
     announcement_stats = (await db.execute(sql_text("""
-        SELECT 
+        SELECT
             CASE source_version
                 WHEN '卫法监发[2002]51号' THEN 'ann_2002_51'
                 WHEN '卫健委公告2019年第8号' THEN 'ann_2019_8'
@@ -246,7 +246,7 @@ async def sync_cfam_data(
         nature_flavor = _get_nature_flavor(name_cn)
 
         await db.execute(text("""
-            INSERT INTO hf_enriched_herbs 
+            INSERT INTO hf_enriched_herbs
             (name_cn, latin_name, nature_cn, flavor_cn, source_version, is_food_homology, data_quality_score, synced_at)
             VALUES (:name_cn, :latin_name, :nature_cn, :flavor_cn, :source_version, true, 1.0, NOW())
             ON CONFLICT (name_cn) DO UPDATE SET
@@ -345,7 +345,6 @@ _NATURE_FLAVOR_DB = {
     "罗汉果": {"nature": "凉", "flavor": "甘"},
     "龙眼肉": {"nature": "温", "flavor": "甘"},
     "大枣": {"nature": "温", "flavor": "甘"},
-    "薄荷": {"nature": "凉", "flavor": "辛"},
     "藿香": {"nature": "微温", "flavor": "辛"},
 }
 

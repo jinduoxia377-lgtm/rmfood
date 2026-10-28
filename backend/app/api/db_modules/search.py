@@ -1,22 +1,23 @@
 """
 统一搜索、数据同步与快照 API
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func, text
+from fastapi import Depends, HTTPException, Query
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..deps import get_db_session, get_current_user
-from ...models import DataSnapshot, User, TCMHerb, BioactivePeptide, KnowledgeGraphNode
-from ...services.data_sources.tcmsp_client import tcmsp_service
+from ...models import BioactivePeptide, DataSnapshot, KnowledgeGraphNode, TCMHerb, User
 from ...services.data_sources.dfbp_client import dfbp_service
 from ...services.data_sources.graph_service import graph_service
+from ...services.data_sources.tcmsp_client import tcmsp_service
+from ..deps import get_current_user, get_db_session
 
 """
 Shared router for search module.
 """
+import logging
+
 from . import router
 
-import logging
 logger = logging.getLogger(__name__)
 
 @router.get("/knowledge-graph/search", summary="知识图谱搜索")
@@ -146,10 +147,11 @@ async def unified_search(
 ):
     """跨数据源统一搜索 — 合并药材/肽/知识图谱/食品原料/零售产品的搜索结果"""
     from sqlalchemy import select as sa_select
-    from app.models.external_data import TCMHerb, MMIDHerb
-    from app.models.retail_product import RetailProduct
+
+    from app.models.external_data import MMIDHerb, TCMHerb
     from app.models.food_material import FoodMaterial
     from app.models.knowledge_graph import KGNode
+    from app.models.retail_product import RetailProduct
 
     source_list = [s.strip() for s in sources.split(",") if s.strip()]
     results = []
@@ -605,6 +607,100 @@ async def dashboard_overview(
 # ═══════════════════════════════════════════
 
 
+# ── 搜索建议（自动补全）──────────────────────
+from pydantic import BaseModel, Field
+
+
+class SearchSuggestRequest(BaseModel):
+    """搜索建议请求体"""
+    query: str = Field(..., min_length=1, max_length=100)
+    limit: int = Field(10, ge=1, le=20)
+    search_types: list[str] = Field(
+        default_factory=lambda: ["herbs", "peptides", "food_materials", "retail_products"],
+    )
+
+
+@router.post("/search/suggest", summary="搜索建议（自动补全）")
+async def search_suggest(
+    body: SearchSuggestRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """基于本地库为搜索框提供自动补全建议（药材/活性肽/食品原料/零售产品）。"""
+    from app.models.retail_product import RetailProduct
+
+    keyword = body.query.strip()
+    limit = body.limit
+    if not keyword:
+        return {"suggestions": []}
+
+    like = f"%{keyword}%"
+    suggestions: list[dict] = []
+    wanted = set(body.search_types)
+
+    # 零售产品（市售产品自动补全）
+    if "retail_products" in wanted:
+        try:
+            rows = (await db.execute(
+                select(RetailProduct.id, RetailProduct.product_name, RetailProduct.brand)
+                .where(
+                    RetailProduct.product_name.ilike(like)
+                    | RetailProduct.brand.ilike(like)
+                    | RetailProduct.category.ilike(like)
+                )
+                .order_by(RetailProduct.data_quality.desc())
+                .limit(limit)
+            )).all()
+            for row in rows:
+                name = row[1] or ""
+                brand = row[2] or ""
+                suggestions.append({
+                    "text": name if name else brand,
+                    "type": "retail_product",
+                    "score": 0.98 if name.lower().startswith(keyword.lower()) else 0.9,
+                    "extra": {"brand": brand, "id": row[0]},
+                })
+        except Exception as e:  # noqa: BLE001
+            logger.warning("[SearchSuggest] retail_products 查询失败: %s", e)
+
+    # 药材（TCMHerb 名称）
+    if "herbs" in wanted and len(suggestions) < limit:
+        try:
+            rows = (await db.execute(
+                select(TCMHerb.name_cn)
+                .where(TCMHerb.name_cn.ilike(like))
+                .order_by(TCMHerb.name_cn)
+                .limit(limit - len(suggestions))
+            )).scalars().all()
+            for name in rows:
+                suggestions.append({
+                    "text": name,
+                    "type": "herb",
+                    "score": 0.95 if name.lower().startswith(keyword.lower()) else 0.85,
+                })
+        except Exception as e:  # noqa: BLE001
+            logger.warning("[SearchSuggest] herbs 查询失败: %s", e)
+
+    # 活性肽（序列片段）
+    if "peptides" in wanted and len(suggestions) < limit:
+        try:
+            rows = (await db.execute(
+                select(BioactivePeptide.sequence)
+                .where(BioactivePeptide.sequence.ilike(like))
+                .limit(limit - len(suggestions))
+            )).scalars().all()
+            for seq in rows:
+                suggestions.append({
+                    "text": seq[:40],
+                    "type": "peptide",
+                    "score": 0.8,
+                })
+        except Exception as e:  # noqa: BLE001
+            logger.warning("[SearchSuggest] peptides 查询失败: %s", e)
+
+    return {"suggestions": suggestions[:limit]}
+
+
 import logging
+
 logger = logging.getLogger(__name__)
 logger.info("search module loaded")

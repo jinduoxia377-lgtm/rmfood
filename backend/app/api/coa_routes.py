@@ -13,23 +13,24 @@
 - GET /by-batch/{batch_no} - 按批号查询
 """
 import logging
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..api.deps import get_db_session, get_current_user, PaginationParams
+from ..api.deps import PaginationParams, get_current_user, get_db_session
 from ..models.user_model import User
-from ..schemas.coa import (
-    COACreate, COAUpdate, COAResponse, COAListResponse,
-    COATestItemCreate, COATestItemUpdate,
-    COAFilterParams,
-)
 from ..schemas import ApiResponse
+from ..schemas.coa import (
+    COACreate,
+    COATestItemCreate,
+    COATestItemUpdate,
+    COAUpdate,
+)
+from ..services.coa_generator import generate_coa_pdf, generate_coa_word
 from ..services.coa_service import COAService
-from ..services.coa_generator import generate_coa_word, generate_coa_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -316,13 +317,14 @@ async def get_coa_stats(
 ):
     """获取COA统计数据"""
     from sqlalchemy import func as sqla_func
+
     from ..models.peptide_batch_coa import PeptideBatchCOA
 
     result = await db.execute(
         select(
             sqla_func.count(PeptideBatchCOA.id).label("total"),
-            sqla_func.count(PeptideBatchCOA.id).filter(PeptideBatchCOA.qualified == True).label("qualified"),
-            sqla_func.count(PeptideBatchCOA.id).filter(PeptideBatchCOA.qualified == False).label("unqualified"),
+            sqla_func.count(PeptideBatchCOA.id).filter(PeptideBatchCOA.qualified.is_(True)).label("qualified"),
+            sqla_func.count(PeptideBatchCOA.id).filter(PeptideBatchCOA.qualified.is_(False)).label("unqualified"),
             sqla_func.count(PeptideBatchCOA.id).filter(PeptideBatchCOA.test_conclusion == "待检").label("pending"),
             sqla_func.count(sqla_func.distinct(PeptideBatchCOA.peptide_id)).label("peptide_types"),
             sqla_func.count(sqla_func.distinct(PeptideBatchCOA.batch_no)).label("total_batches"),
