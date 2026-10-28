@@ -26,7 +26,63 @@ from ..models.user_model import User
 from ..models.formula import Formula
 from ..services.auth import get_current_user as _required_get_current_user
 from ..api.deps import get_db_session, PaginationParams, FormulaFilterParams, require_role, get_current_user as _optional_get_current_user
+from ..core.plans import require_plan
 from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
+from ..core.multi_tenant.tenant_quota import QuotaType, require_quota
+
+from ..services.ai.formula_intelligence import _match_food_material
+
+
+async def _enrich_ingredients_with_food_material(
+    db: AsyncSession,
+    composition: Optional[dict],
+) -> dict:
+    """
+    用平台原料库（FoodMaterial）富化 composition.ingredients 中每个成分的 platform_data。
+
+    富化字段：matched_name / food_homology / safe_dose_range / effects /
+    active_ingredients / contraindications / toxicity_class / source。
+    数据库不可用或未匹配时保持原样（不报错）。
+    """
+    if not composition or not isinstance(composition, dict):
+        return composition or {}
+    ingredients = composition.get("ingredients") or []
+    if not ingredients:
+        return composition
+
+    enriched_ingredients = []
+    for ing in ingredients:
+        if not isinstance(ing, dict):
+            enriched_ingredients.append(ing)
+            continue
+        name = str(ing.get("name") or "").strip()
+        if not name:
+            enriched_ingredients.append(ing)
+            continue
+        try:
+            mat = await _match_food_material(db, name)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[enrich] 成分 %s 原料库匹配失败（跳过富化）: %s", name, exc)
+            mat = None
+        if mat is not None:
+            ing = {
+                **ing,
+                "platform_data": {
+                    "matched_name": mat.name_cn,
+                    "food_homology": bool(getattr(mat, "food_homology", False)),
+                    "safe_dose_range": {
+                        "min_g": getattr(mat, "safe_dose_min", None),
+                        "max_g": getattr(mat, "safe_dose_max", None),
+                    },
+                    "effects": list(getattr(mat, "effects", None) or []),
+                    "active_ingredients": list(getattr(mat, "active_ingredients", None) or []),
+                    "contraindications": list(getattr(mat, "contraindications", None) or []),
+                    "toxicity_class": getattr(mat, "toxicity_class", None),
+                    "source": "平台原料库",
+                },
+            }
+        enriched_ingredients.append(ing)
+    return {**composition, "ingredients": enriched_ingredients}
 
 router = APIRouter(prefix="/formulas", tags=["配方管理"])
 logger = logging.getLogger(__name__)
@@ -47,27 +103,64 @@ async def _get_formula_with_ingredients(db: AsyncSession, formula_id: int):
     return result.scalar_one_or_none()
 
 
-async def _require_formula_access(tenant_org_id: Optional[int], current_user: Optional["User"], db: AsyncSession) -> None:
-    """配方访问权限开关：org 关闭 formula_access 时，仅 OWNER 可访问。"""
+async def _resolve_effective_org_id(
+    tenant_org_id: Optional[int],
+    current_user: Optional["User"],
+    db: AsyncSession,
+) -> Optional[int]:
+    """解析当前请求的有效组织 ID（租户隔离核心）。
+
+    优先级：
+    1. tenant_org_id —— TenantMiddleware 从 JWT（Bearer 或 Cookie）解析出的 org_id
+       （组织绑定用户，JWT 携带 org_id 声明）。
+    2. current_user.organization_id —— 用户默认组织（users.organization_id）。
+    3. organization_members 首个 active 组织 —— 本地库用户的真实组织关系
+       （当前库中 9 个用户 organization_id 均为 NULL，真实关系在此表）。
+
+    返回 None 表示匿名或无有效组织，调用方应拒绝访问（维持 P0 隔离）。
+    """
+    if tenant_org_id is not None:
+        return tenant_org_id
     if current_user is None:
-        return
-    org_id = tenant_org_id
-    if not org_id:
-        from sqlalchemy import text as _text
-        row = (await db.execute(
-            _text("SELECT organization_id FROM organization_members WHERE user_id = :uid AND is_active = TRUE ORDER BY id LIMIT 1"),
-            {"uid": current_user.id},
-        )).fetchone()
-        org_id = row.organization_id if row else None
-    if not org_id:
-        return
+        return None
+    if current_user.organization_id:
+        return current_user.organization_id
+    from sqlalchemy import text as _text
+    row = (await db.execute(
+        _text("SELECT organization_id FROM organization_members WHERE user_id = :uid AND is_active = TRUE ORDER BY id LIMIT 1"),
+        {"uid": current_user.id},
+    )).fetchone()
+    return row.organization_id if row else None
+
+
+async def _require_formula_access(
+    tenant_org_id: Optional[int],
+    current_user: Optional["User"],
+    db: AsyncSession,
+) -> int:
+    """配方访问权限开关：解析有效组织，并执行组织级权限校验。
+
+    P0 租户隔离：无有效组织（匿名/无组织成员）时拒绝，防止绕过
+    organization_id 过滤列出全平台配方（跨租户泄漏）。
+
+    返回有效 org_id（int），供调用方用于 organization_id 过滤，
+    避免把 None 透传给 service 导致"不过滤组织"的 P0 泄漏。
+    """
+    org_id = await _resolve_effective_org_id(tenant_org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=403, detail="缺少租户上下文，禁止跨组织访问配方")
+    if current_user is None:
+        # org 已由 token 解析（org 绑定用户），无用户对象仍允许（保持原语义，
+        # 不做组织权限开关校验），但返回有效 org_id 供过滤。
+        return org_id
     from ..core.multi_tenant.multi_tenant_service import get_org_service
     svc = get_org_service(db)
     # 自定义角色授权（additive）：拥有 formula:read 的成员可访问
     if await svc.member_has_custom_permission(org_id, current_user.id, "formula", "read"):
-        return
+        return org_id
     if not await svc.check_org_permission(org_id, current_user.id, "formula_access"):
         raise HTTPException(status_code=403, detail="该组织已关闭「配方访问」权限，仅所有者可操作")
+    return org_id
 
 
 @router.get("", summary="获取配方列表")
@@ -79,7 +172,9 @@ async def list_formulas(
     db: AsyncSession = Depends(get_db_session),
 ):
     """分页获取配方列表，支持状态筛选和关键词搜索"""
-    await _require_formula_access(tenant.org_id, current_user, db)
+    # 解析并校验有效组织（匿名/无组织成员 → 403；不再把 None 传给 service，
+    # 避免 organization_id=None 时不过滤组织造成 P0 跨租户泄漏）
+    org_id = await _require_formula_access(tenant.org_id, current_user, db)
     service = FormulaService(db)
     formulas, total = await service.list_formulas(
         page=pagination.page,
@@ -87,7 +182,7 @@ async def list_formulas(
         status=FormulaStatus(filters.status) if filters.status else None,
         creator_id=filters.creator_id,
         search=filters.search,
-        organization_id=tenant.org_id,
+        organization_id=org_id,
     )
     from ..schemas.formula import IngredientResponse as _IngResp, PeptideResponse as _PepResp
     formula_responses = []
@@ -243,10 +338,15 @@ async def get_formula(
     db: AsyncSession = Depends(get_db_session),
 ):
     """获取配方详情（含成分和肽段列表）"""
+    # 解析有效组织：匿名/无组织成员 → 404（不泄露存在性），并拒绝访问
+    # organization_id=None 的全局配方，维持 P0 租户隔离。
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="配方不存在")
     service = FormulaService(db)
     result = await service.get_formula(formula_id)
     # 验证所属组织
-    if result.organization_id is not None and result.organization_id != tenant.org_id:
+    if result.organization_id is not None and result.organization_id != org_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="配方不存在",
@@ -290,23 +390,34 @@ async def get_formula(
 @router.post("", response_model=FormulaResponse, status_code=201, summary="创建配方")
 async def create_formula(
     data: FormulaCreate,
+    _quota: None = Depends(require_quota(QuotaType.FORMULAS)),
     tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(require_role(UserRole.RESEARCHER, UserRole.FORMULATOR)),
     db: AsyncSession = Depends(get_db_session),
 ):
     """创建新配方（草稿状态）"""
-    # 组织权限开关：配方访问
-    await _require_formula_access(tenant.org_id, current_user, db)
+    # 组织权限开关：配方访问（返回有效 org_id，匿名/无组织成员 → 403）
+    org_id = await _require_formula_access(tenant.org_id, current_user, db)
     # 组织计划配额拦截：配方数超限时阻止创建
-    if tenant.org_id:
+    if org_id:
         from ..core.multi_tenant.multi_tenant_service import get_org_service
         try:
-            await get_org_service(db)._check_quota(tenant.org_id, "formulas")
+            await get_org_service(db)._check_quota(org_id, "formulas")
         except PermissionError as e:
             raise HTTPException(status_code=403, detail=str(e))
 
     service = FormulaService(db)
-    return await service.create_formula(data, creator_id=current_user.id, organization_id=tenant.org_id)
+
+    # 五期：用平台原料库富化成分的 platform_data（药食同源/安全剂量/功效成分/禁忌），
+    # 让 AI 对话等入口保存的配方成分可溯源到平台真实数据。
+    try:
+        enriched_composition = await _enrich_ingredients_with_food_material(db, data.composition)
+        if enriched_composition != (data.composition or {}):
+            data = data.model_copy(update={"composition": enriched_composition})
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("配方成分原料库富化失败（跳过，不影响保存）: %s", exc)
+
+    return await service.create_formula(data, creator_id=current_user.id, organization_id=org_id)
 
 
 @router.put("/{formula_id}", response_model=FormulaResponse, summary="更新配方")
@@ -320,8 +431,12 @@ async def update_formula(
     """更新配方（仅草稿和已驳回状态可编辑，需拥有资源权限）"""
     service = FormulaService(db)
     # 所有权校验 + 租户隔离
+    # 解析有效组织：无组织成员 → 404（维持 P0 隔离，拒绝访问全局配方）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     formula = await service.get_formula(formula_id)
-    if formula.organization_id is not None and formula.organization_id != tenant.org_id:
+    if formula.organization_id is not None and formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
     is_owner = formula.creator_id == current_user.id
     is_admin = current_user.role in (UserRole.ADMIN, UserRole.FORMULATOR)
@@ -343,8 +458,12 @@ async def delete_formula(
     """删除配方（软删除，归档处理）"""
     service = FormulaService(db)
     # 租户隔离验证
+    # 解析有效组织：无组织成员 → 404（维持 P0 隔离，拒绝访问全局配方）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     formula = await service.get_formula(formula_id)
-    if formula.organization_id is not None and formula.organization_id != tenant.org_id:
+    if formula.organization_id is not None and formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
     await service.delete_formula(formula_id, user_id=current_user.id)
     return SuccessResponse(message="配方已归档删除")
@@ -566,7 +685,7 @@ async def optimize_formula_lp(
     formula_id: int,
     total_dosage_g: float = Query(100.0, gt=0, description="总剂量(g)"),
     max_cost: Optional[float] = Query(None, description="最大成本预算(元)，不限制传 null"),
-    current_user: User = Depends(_required_get_current_user),
+    current_user: User = Depends(require_plan("ai_formula_generation")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """使用 MILP 对配方成分进行精确配比优化，最小化成本并满足营养约束"""
@@ -1066,7 +1185,7 @@ async def copy_formula(
 @router.post('/optimize/multi-algorithm', summary='Multi-Algorithm Optimization')
 async def multi_algorithm_optimize(
     request: dict = Body(...),
-    current_user: User = Depends(_required_get_current_user),
+    current_user: User = Depends(require_plan("ai_formula_generation")),
     db: AsyncSession = Depends(get_db_session),
 ):
     from ..services.formula.multi_algorithm_orchestrator import (
@@ -1107,7 +1226,7 @@ async def multi_algorithm_optimize(
 async def export_formula(
     formula_id: int,
     format_type: str = Query("pdf", description="导出格式: pdf/excel/csv"),
-    current_user: User = Depends(_required_get_current_user),
+    current_user: User = Depends(require_plan("advanced_report_export")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """导出单个配方的详细信息为 PDF 或 Excel"""
@@ -1832,6 +1951,7 @@ async def import_formulas(
 async def export_formulas_batch(
     request: dict = Body(...),
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.RESEARCHER, UserRole.FORMULATOR)),
+    _plan_user: User = Depends(require_plan("advanced_report_export")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """按条件导出配方。

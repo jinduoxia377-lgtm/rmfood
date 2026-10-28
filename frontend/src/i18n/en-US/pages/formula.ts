@@ -69,6 +69,7 @@ export default {
     cancelSelect: 'Cancel selection',
     loadFailed: 'Failed to load',
     loadFailedDesc: 'Unable to fetch formula data. Please check your network and retry.',
+    loadFailedForbiddenDesc: 'Your account has no organization or access permission. Please contact your administrator.',
     retry: 'Retry',
 
     // Empty states

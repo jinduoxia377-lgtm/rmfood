@@ -179,16 +179,21 @@ class TenantMiddleware(BaseHTTPMiddleware):
         org_slug: Optional[str] = None
 
         # ── 从 JWT 提取 org_id ──
+        # 认证来源：优先 Authorization: Bearer 头，回退 HttpOnly Cookie。
+        # 前端已改为 Cookie 认证（不再发送 Authorization 头），此处必须读取
+        # rmfood_access_token Cookie，否则 org 绑定用户的租户上下文无法解析。
         token = self._extract_bearer_token(request)
+        if not token:
+            token = request.cookies.get("rmfood_access_token")
         if token:
             try:
                 from app.utils.auth import decode_token as decode_access_token
                 payload = decode_access_token(token)
                 # JWT payload 应包含 org_id 字段（见 auth_service.create_access_token）
-                raw_org_id = getattr(payload, "org_id", None)
+                raw_org_id = payload.get("org_id")
                 if raw_org_id is not None:
                     org_id = int(raw_org_id)
-                    org_slug = getattr(payload, "org_slug", "")
+                    org_slug = payload.get("org_slug", "") or ""
             except Exception as e:
                 # Token 解析失败（过期/无效）—— 不阻塞，让 AuthMiddleware 处理
                 logger.debug("[Tenant] Token 解析失败（将由鉴权层处理）: %s", e)

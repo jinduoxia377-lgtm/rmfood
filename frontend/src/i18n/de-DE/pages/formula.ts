@@ -69,6 +69,7 @@ export default {
     cancelSelect: 'Auswahl aufheben',
     loadFailed: 'Laden fehlgeschlagen',
     loadFailedDesc: 'Formeldaten konnten nicht geladen werden. Bitte Netzwerk prüfen und erneut versuchen.',
+    loadFailedForbiddenDesc: 'Ihr Konto hat keine Organisation oder Zugriffsberechtigung. Bitte kontaktieren Sie Ihren Administrator.',
     retry: 'Erneut versuchen',
 
     // Leere Zustände

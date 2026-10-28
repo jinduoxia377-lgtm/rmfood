@@ -977,10 +977,10 @@ export default function FormulaListPage() {
       {/* ═══════════════════════════════════════════════════════════
           主内容区域（三栏布局）
       ═══════════════════════════════════════════════════════════ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-w-0">
 
         {/* ═══════════════ 移动端/平板端：顶部搜索栏 ═══════════════ */}
-        <div className="lg:hidden col-span-12 space-y-[var(--space-apple-md)]">
+        <div className="lg:hidden lg:col-span-12 space-y-[var(--space-apple-md)] min-w-0">
           <div className="relative">
             {/* A-24：移动端顶部的搜索框（lg:hidden 分支）——placeholder 不是可访问名称，
                 它与筛选面板里那个搜索框是两个独立实例，需要各自带 aria-label。 */}
@@ -1305,7 +1305,11 @@ export default function FormulaListPage() {
               <AlertTriangle className="w-4 h-4" />
               <AlertTitle>{t('pages.formula.loadFailed')}</AlertTitle>
               <AlertDescription className="flex items-center gap-2 mt-1.5">
-                <span>{t('pages.formula.loadFailedDesc')}</span>
+                <span>
+                  {(error as { response?: { status?: number } } | null)?.response?.status === 403
+                    ? t('pages.formula.loadFailedForbiddenDesc')
+                    : t('pages.formula.loadFailedDesc')}
+                </span>
                 <Button variant="outline" size="sm" onClick={() => qc.invalidateQueries({ queryKey: ['formulas-list'] })}>
                   <RefreshCw className="w-3.5 h-3.5 mr-1" /> {t('pages.formula.retry')}
                 </Button>
