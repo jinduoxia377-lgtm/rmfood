@@ -10,12 +10,12 @@ import {
   ChevronUp, ChevronDown, ArrowUpDown, FlaskConical,
   Calendar, Download, Send,
   TestTube, CheckCircle2, AlertCircle, Ban, Clock,
-  Sparkles,
+  Sparkles, AlertTriangle, RefreshCw,
 } from 'lucide-react'
 import { useExperiments, useExperimentStatistics, useFormulas } from '@/hooks/useQueries'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { StatusBadge, EmptyState, Pagination, Skeleton } from '@/components/ui/Common'
-import { Button, Input, StatCard, Badge, Card, CardContent } from '@/components/ui'
+import { Button, Input, StatCard, Badge, Card, CardContent, Alert, AlertTitle, AlertDescription } from '@/components/ui'
 import { Highlight } from '@/components/common'
 import { cn } from '@/lib/utils'
 import { experimentApi } from '@/api/experiment'
@@ -75,7 +75,7 @@ export default function ExperimentListPage() {
   const formulaOptions = (formulaData as { items?: Array<{ id: number; name?: string }> } | undefined)?.items ?? []
 
   // 查询（排序交由服务端处理）
-  const { data, isLoading } = useExperiments({
+  const { data, isLoading, error } = useExperiments({
     page,
     page_size: 12,
     status: status || undefined,
@@ -163,7 +163,11 @@ export default function ExperimentListPage() {
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
       return next
     })
   }
@@ -435,6 +439,24 @@ export default function ExperimentListPage() {
             {t('pages.experiment.cancelSelection')}
           </button>
         </div>
+      )}
+
+      {/* ── 错误状态 ── */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertTriangle className="w-4 h-4" />
+          <AlertTitle>{t('pages.experiment.loadFailed')}</AlertTitle>
+          <AlertDescription className="flex items-center gap-2 mt-1.5">
+            <span>
+              {(error as { response?: { status?: number } } | null)?.response?.status === 403
+                ? t('pages.experiment.loadFailedForbiddenDesc')
+                : t('pages.experiment.loadFailedDesc')}
+            </span>
+            <Button variant="outline" size="sm" onClick={() => qc.invalidateQueries({ queryKey: ['experiments'] })}>
+              <RefreshCw className="w-3.5 h-3.5 mr-1" /> {t('common.retry')}
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* ── 列表 ── */}
