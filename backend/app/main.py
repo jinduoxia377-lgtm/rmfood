@@ -5,66 +5,78 @@ FastAPI 应用工厂 + 生命周期事件
 # NOTE: DATABASE_URL is provided via Docker environment variables.
 # Do NOT call load_dotenv here to avoid overwriting container env vars.
 import os
+
 if os.environ.get("ENV", "development") in ("development", "test"):
     try:
+        from pathlib import Path
+
         from dotenv import load_dotenv
-        load_dotenv()  # 开发环境：加载 .env 文件（ENCRYPTION_KEY 等）
+
+        # 从 backend/ 目录加载 .env（绝对路径，不依赖 CWD）
+        # __file__ = backend/app/main.py → .parent.parent = backend/
+        _env_path = Path(__file__).parent.parent / ".env"
+        if _env_path.exists():
+            load_dotenv(dotenv_path=_env_path)
+        else:
+            # 兼容: 回退到默认 CWD 查找（Docker 等场景）
+            load_dotenv()
     except ImportError:
         pass  # 未安装 python-dotenv，跳过
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
-from .core.config import settings
-from .core.database.init_db import init_db
-from .core.performance.cache_system import init_cache, close_cache
-from .core.observability.logging_config import get_logger, setup_logging
-from .core.middleware.error_alert import setup_error_handling
-from .core.security.security_middleware import (
-    SecurityHeadersMiddleware,
-    RateLimitMiddleware,
-    RequestLoggingMiddleware,
-    RateLimitConfig,
-    CsrfProtectMiddleware,
+
+from .api import (
+    api_router,
+    mobile,  # 🔒 P2-5: 移动端专用 API
+    register_lazy_routers,
+    search_analytics,  # 🔒 Potion AI VFT: 搜索分析
 )
-from .core.middleware.encoding import UTF8EncodingMiddleware
-from .core.middleware.exceptions import GlobalExceptionHandler
-from .core.observability.telemetry import (
-    TelemetryMiddleware, configure_trace_logging, get_trace_summary,
-    enable_otel_sdk,
-)
-from .core.multi_tenant.tenant_security import (
-    TenantMiddleware, tenant_query_guard,
-)
-from .core.middleware.health_check import register_health_routes
-from .core.api_framework.api_docs import register_api_docs_middleware
-from .core.observability.metrics_extended import setup_enhanced_metrics
-from .core.database.database_pool import (
-    pool_monitor_task,
-    check_pool_health,
-)
-from .core.api_framework.http_client import http_client
-from .core.observability.logging_enhanced import init_enhanced_logging
-from .core.realtime.websocket import connection_manager
-from .core.realtime.websocket_manager import get_ws_manager
-from .api import api_router, register_lazy_routers
-from .api.router_registry import registry as router_registry
-from .api import mobile  # 🔒 P2-5: 移动端专用 API
 from .api import search as search_router_module  # 🔒 全局搜索 API
-from .api import search_analytics  # 🔒 Potion AI VFT: 搜索分析
+
 # 🔒 P1-5: API 版本管理
 from .api.api_version import (
-    register_version_routes,
     register_version_middleware,
+    register_version_routes,
 )
-from .infrastructure.event_bus import RedisStreamsEventBus
-from .core.middleware.audit_middleware import create_audit_middleware, AuditMiddleware
-from .core.database.data_masking import MaskingLogFilter
-from .core.compliance.backup_and_recovery import get_backup_manager
+from .api.router_registry import registry as router_registry
+from .core.api_framework.api_docs import register_api_docs_middleware
+from .core.config import settings
+from .core.database.database_pool import (
+    pool_monitor_task,
+)
+from .core.database.init_db import init_db
+from .core.middleware.audit_middleware import AuditMiddleware
+from .core.middleware.encoding import UTF8EncodingMiddleware
+from .core.middleware.error_alert import setup_error_handling
+from .core.middleware.exceptions import GlobalExceptionHandler
+from .core.middleware.health_check import register_health_routes
+from .core.multi_tenant.tenant_security import (
+    TenantMiddleware,
+)
+from .core.observability.logging_config import get_logger
+from .core.observability.metrics_extended import setup_enhanced_metrics
+from .core.observability.telemetry import (
+    TelemetryMiddleware,
+    enable_otel_sdk,
+    get_trace_summary,
+)
+from .core.realtime.websocket_manager import get_ws_manager
+from .core.security.security_middleware import (
+    CsrfProtectMiddleware,
+    RateLimitConfig,
+    RateLimitMiddleware,
+    RequestLoggingMiddleware,
+    SecurityHeadersMiddleware,
+)
 from .core.security.sentry_config import sentry_init
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -92,37 +104,37 @@ async def lifespan(app: FastAPI):
         logger.info("[Telemetry] 使用自研 Tracer 实现（设置 USE_OTEL_SDK=true 切换至官方 SDK）")
 
     # ── 导入所有模型，确保 Base.metadata 包含所有表定义 ──
+    # ── 启动阶段：验证 PostgreSQL 连接 ──
+    from .core.database.session import close_database, ensure_connection, get_engine
     from .models import (  # noqa: F401
-        user_model,
-        models,
-        system,
+        ai_suggestion,
+        change_event,
         chat,
+        data_source_health,
+        dfbp_schema,
+        document_version,
+        experiment,
+        external_data,
+        food_material,
         formula,
-        peptide_design,
-        peptide_analysis,
-        workflow,
-        team,
-        team_member,
+        knowledge_graph,
+        models,
         notification,
+        peptide_analysis,
+        peptide_design,
         prompt_template,
         prompt_version,
-        experiment,
-        knowledge_graph,
-        external_data,
-        change_event,
+        retail_product,
         seed_data,
         sync_log,
+        system,
         tcm_schema,
-        dfbp_schema,
-        ai_suggestion,
-        food_material,
-        retail_product,
-        data_source_health,
+        team,
+        team_member,
         user_device,
+        user_model,
+        workflow,
     )
-    # ── 启动阶段：验证 PostgreSQL 连接 ──
-    from .core.database.session import ensure_connection, init_database, close_database
-    from .core.database.session import get_engine
     # 1. 验证数据库连接（指数退避重试，最多5次）
     db_connected = await ensure_connection()
     if not db_connected:
@@ -169,6 +181,16 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"[Startup] 超时任务扫描失败（非阻塞）: {e}")
 
+    # 4.2.1 RAG 文档版本持久化恢复：从数据库加载版本历史
+    try:
+        from .api.rag_router import _version_mgr
+        from .core.database.session import AsyncSessionLocal
+        async with AsyncSessionLocal() as db:
+            await _version_mgr.load_from_db(db)
+        logger.info("[Startup] RAG 文档版本历史已从数据库加载")
+    except Exception as e:
+        logger.warning(f"[Startup] RAG 版本历史加载失败（非阻塞）: {e}")
+
     # 4.3 预置内置 GitHub MCP 服务器（方案 A：用户零配置）
     try:
         from .services.ai.agent.task_team_service import seed_github_mcp_server
@@ -176,19 +198,22 @@ async def lifespan(app: FastAPI):
         logger.info("[Startup] GitHub MCP 内置服务器就绪")
     except Exception as e:
         logger.warning(f"[Startup] GitHub MCP 种子失败（非阻塞）: {e}")
-    
+
     # 4.5. 验证配方生成数据完整性
     try:
-        from .services.recipe_generation_data_checker import check_herb_data_completeness, check_herb_knowledge_service
         from .core.database.session import async_session_factory
+        from .services.recipe_generation_data_checker import (
+            check_herb_data_completeness,
+            check_herb_knowledge_service,
+        )
         async with async_session_factory() as db:
             db_stats = await check_herb_data_completeness(db)
             service_stats = await check_herb_knowledge_service(db)
-            
-            logger.info(f"[Startup] 配方生成数据检查:")
+
+            logger.info("[Startup] 配方生成数据检查:")
             logger.info(f"  药材数: {db_stats['total_herbs']}, 覆盖率: {db_stats['knowledge_coverage_rate']}")
             logger.info(f"  适配器: {'✅' if service_stats['adapter_working'] else '❌'}, 加载: {service_stats.get('herbs_loaded', 0)}")
-            
+
             if not db_stats['sufficient_data'] or not service_stats.get('sufficient', False):
                 logger.warning("[Startup] 配方生成数据不完整，建议运行数据补全脚本")
                 logger.warning("  命令: python -m app.services.recipe_generation_data_completer")
@@ -249,6 +274,7 @@ async def lifespan(app: FastAPI):
     stale_loop_task = None
     try:
         import asyncio as _asyncio
+
         from .services.ai.agent.task_team_service import recover_stale_tasks
 
         async def _stale_recovery_loop():
@@ -268,6 +294,7 @@ async def lifespan(app: FastAPI):
     whitelist_expiry_task = None
     try:
         import asyncio as _asyncio
+
         from .core.database.session import get_session_factory
         from .services.whitelist import expire_overdue_applications
 
@@ -363,7 +390,7 @@ def create_app() -> FastAPI:
     # 预初始化 settings 确保环境变量已加载
     from app.core.config import settings as _init_settings
     _ = _init_settings.database.url
-    
+
     app = FastAPI(
         title=settings.app_name,
         description="""
@@ -570,6 +597,7 @@ Authorization: Bearer <your_access_token>
     # 生产环境绝对不注册调试端点（双重防护）
     if settings.debug and not settings.is_production:
         from fastapi import Depends
+
         from .api.deps import admin_route
         @app.get("/debug/traces", tags=["调试"], summary="查看最近 Trace 摘要（管理员）")
         async def debug_traces(_=Depends(admin_route)):
@@ -882,7 +910,6 @@ Authorization: Bearer <your_access_token>
             }
         }
     # ── 静态文件服务 ──
-    import os
     import mimetypes
     from pathlib import Path
     # Windows 的 mimetypes 注册表常缺少 webp/avif/svg 映射，
@@ -948,13 +975,16 @@ Authorization: Bearer <your_access_token>
     @app.get("/metrics/prometheus", tags=["系统"], include_in_schema=False)
     async def prometheus_metrics():
         """Prometheus 格式指标端点"""
-        from .core.observability.metrics import metrics
         from fastapi.responses import PlainTextResponse
+
+        from .core.observability.metrics import metrics
         return PlainTextResponse(metrics.expose(), media_type="text/plain; version=0.0.4; charset=utf-8")
     return app
 app = create_app()
 # 修复 OpenAPI JSON 格式问题
 import re
+
+
 @app.get("/openapi.json", include_in_schema=False)
 async def get_openapi_fixed():
     """返回清理后的 OpenAPI JSON"""

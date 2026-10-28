@@ -1,12 +1,13 @@
 """配方案例库 API 单元测试"""
-import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
-from datetime import datetime, timezone
-
 import sys
+from datetime import datetime, timezone
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 sys.path.insert(0, '.')
 
-from app.models.formula_case import FormulaCase, CaseLike, CaseComment
+from app.models.formula_case import CaseComment, CaseLike, FormulaCase
 
 
 class TestFormulaCaseModel:
@@ -108,7 +109,6 @@ class TestFormulaCaseAPI:
                 mock_result.scalar_one.return_value = 1  # total
                 mock_select.return_value.where.return_value.offset.return_value.limit.return_value = mock_result
 
-                from app.api.formula_cases import list_cases
                 # 实际调用需要通过 FastAPI test client，这里只验证逻辑
 
     @pytest.mark.asyncio

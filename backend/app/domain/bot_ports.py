@@ -11,7 +11,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Sequence
 
-from .bots import AIBot, BotMemory, BotStatus, BotVisibility
+from .bots import AIBot, BotMemory, BotStatus
 
 
 class BotRepository(ABC):

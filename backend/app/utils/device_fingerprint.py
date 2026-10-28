@@ -9,6 +9,7 @@
 - 输出 32 位十六进制（128 bit 熵），碰撞概率可忽略
 """
 import hashlib
+
 from fastapi import Request
 
 

@@ -5,6 +5,7 @@ RAG（检索增强生成）领域实体（M2.1）
 不依赖任何向量数据库或 Embedding 模型。
 """
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional

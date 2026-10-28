@@ -5,6 +5,7 @@
 因为原 ports.py 随 DDD 死代码删除而移除。
 """
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional

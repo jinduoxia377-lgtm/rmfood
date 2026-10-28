@@ -4,13 +4,12 @@
 为 unit / integration / api / e2e 各层级提供共用 fixture。
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import create_app
-
 
 # ── FastAPI Test Client ────────────────────────────────────────────────
 

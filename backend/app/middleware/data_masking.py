@@ -6,11 +6,9 @@
 - 冲突详情中的敏感数据
 - API响应日志过滤
 """
-import logging
-import re
 import json
+import logging
 from typing import Any, Dict, List, Optional, Set
-from functools import wraps
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +94,7 @@ class DataMasker:
         """
         self.enabled = enabled and not debug_mode
         self.rules = list(self.SYNC_SPECIFIC_RULES)
-        
+
         if custom_rules:
             self.rules.extend(custom_rules)
 
@@ -134,20 +132,20 @@ class DataMasker:
     ) -> Dict[str, Any]:
         """递归处理字典"""
         result = {}
-        
+
         for key, value in data.items():
             key_lower = key.lower()
-            
+
             if key_lower in self.SENSITIVE_FIELDS:
                 result[key] = self.DEFAULT_MASK
                 continue
-            
+
             matched_rule = None
             for rule in self.rules:
                 if rule.matches(key):
                     matched_rule = rule
                     break
-            
+
             if matched_rule:
                 try:
                     result[key] = matched_rule.mask_func(value, context=context)
@@ -158,14 +156,14 @@ class DataMasker:
                 result[key] = self.mask(value, context)
             else:
                 result[key] = value
-                
+
         return result
 
     def _mask_string(self, value: str) -> str:
         """处理字符串值"""
         if len(value) <= 8:
             return self.DEFAULT_MASK
-        
+
         return value[:3] + self.DEFAULT_MASK + value[-2:]
 
     def add_rule(self, rule: DataMaskingRule):
@@ -182,17 +180,17 @@ class DataMasker:
     def get_masked_keys(self, data: Dict[str, Any]) -> List[str]:
         """获取将被脱敏的字段名列表"""
         masked = []
-        
+
         for key in data.keys():
             if key.lower() in self.SENSITIVE_FIELDS:
                 masked.append(key)
                 continue
-                
+
             for rule in self.rules:
                 if rule.matches(key):
                     masked.append(key)
                     break
-                    
+
         return masked
 
 
@@ -203,18 +201,18 @@ def _truncate_data(
     """截断数据显示前N个字符"""
     if data is None:
         return None
-        
+
     if isinstance(data, (dict, list)):
         data_str = json.dumps(data, ensure_ascii=False)
         if len(data_str) > max_length:
             return data_str[:max_length] + f"... (truncated, total {len(data_str)} chars)"
         return data
-        
+
     if isinstance(data, str):
         if len(data) > max_length:
             return data[:max_length] + "..."
         return data
-        
+
     return data
 
 
@@ -222,10 +220,10 @@ def _mask_device_id(device_id: str) -> str:
     """部分遮盖设备ID"""
     if not device_id or len(device_id) < 6:
         return "****"
-    
+
     visible_start = min(4, len(device_id) // 3)
     visible_end = min(2, len(device_id) // 4)
-    
+
     return (
         device_id[:visible_start]
         + "******"
@@ -237,10 +235,10 @@ def _mask_sensitive_fields(data: Any) -> Any:
     """递归脱敏字典中的敏感字段"""
     if not isinstance(data, dict):
         return data
-        
+
     result = {}
     sensitive = DataMasker.SENSITIVE_FIELDS
-    
+
     for key, value in data.items():
         if key.lower() in sensitive:
             result[key] = DataMasker.DEFAULT_MASK
@@ -253,7 +251,7 @@ def _mask_sensitive_fields(data: Any) -> Any:
             ]
         else:
             result[key] = value
-            
+
     return result
 
 
@@ -279,7 +277,7 @@ def mask_device_info_for_logging(device: Dict[str, Any]) -> Dict[str, Any]:
     """
     if not isinstance(device, dict):
         return {"masked": True}
-    
+
     return {
         "id": device.get("id"),
         "device_type": device.get("device_type"),
@@ -298,7 +296,7 @@ def mask_conflict_for_display(conflict: Dict[str, Any]) -> Dict[str, Any]:
     """
     if not isinstance(conflict, dict):
         return conflict
-    
+
     return {
         "id": conflict.get("id"),
         "entity_type": conflict.get("entity_type"),
@@ -330,7 +328,7 @@ class SyncDataMaskingMiddleware:
             return
 
         path = scope.get("path", "")
-        
+
         if "/sync" not in path and "/api" not in path:
             await self.app(scope, receive, send)
             return
@@ -339,13 +337,13 @@ class SyncDataMaskingMiddleware:
             if message["type"] == "http.response.body":
                 try:
                     body = message.get("body", b"")
-                    
+
                     if body:
                         import json as _json
-                        
+
                         try:
                             data = _json.loads(body.decode())
-                            
+
                             if isinstance(data, dict):
                                 masked = self._masker.mask(data)
                                 new_body = _json.dumps(masked).encode()
@@ -360,7 +358,7 @@ class SyncDataMaskingMiddleware:
                             pass
                 except Exception as resp_err:
                     logger.debug("响应掩码处理失败: %s", resp_err)
-                    
+
             await send(message)
 
         await self.app(scope, receive, send_wrapper)

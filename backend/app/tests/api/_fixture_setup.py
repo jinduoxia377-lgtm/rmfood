@@ -4,8 +4,9 @@ API 测试夹具 (API Test Fixtures)
 提供认证 token、租户上下文等常用 fixture。
 """
 
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock
 
 
 @pytest.fixture()

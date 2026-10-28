@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger(__name__)
 """
 RAG 全链路端到端验证测试
@@ -11,7 +12,8 @@ import asyncio
 
 
 async def main():
-    import sys, os
+    import os
+    import sys
 
     RAG_DIR = os.path.normpath(os.path.join(
         os.path.dirname(__file__), "..", "services", "ai", "rag"
@@ -19,7 +21,7 @@ async def main():
     if RAG_DIR not in sys.path:
         sys.path.insert(0, RAG_DIR)
 
-    import importlib, types
+    import types
     _rag_pkg = types.ModuleType("services.ai.rag")
     _rag_pkg.__path__ = [RAG_DIR]
     _rag_pkg.__package__ = "services.ai.rag"
@@ -29,10 +31,9 @@ async def main():
     sys.modules["services.ai"].__path__ = []
     sys.modules["services.ai.rag"] = _rag_pkg
 
-    import services.ai.rag.models as _models
     import services.ai.rag.document_processor as _dp
-    import services.ai.rag.vector_store as _vs
     import services.ai.rag.embedding_service as _emb
+    import services.ai.rag.vector_store as _vs
 
     logger.info("=" * 60)
     logger.info("RAG 全链路验证测试 (tests/e2e)")

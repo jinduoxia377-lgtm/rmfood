@@ -4,9 +4,8 @@
 味觉/嗅觉/口感的多维度评价模型。
 """
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Optional
 
+from dataclasses import dataclass, field
 
 # ─── 味觉维度 ───
 

@@ -4,11 +4,12 @@ Agent 端口接口（M2.2）
 定义 Agent 的抽象契约。
 """
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from .agents import (
-    AgentContext, AgentRole, AgentTask, AgentResult,
-    FormulaProposal, SafetyReport,
+    AgentContext,
+    AgentResult,
+    AgentRole,
+    AgentTask,
 )
 
 

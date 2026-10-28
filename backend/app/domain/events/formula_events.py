@@ -1,11 +1,11 @@
 from datetime import datetime
-from typing import Any, Dict
+
 
 class DomainEvent:
     def __init__(self, event_id, timestamp):
         self.event_id = event_id
         self.timestamp = timestamp
-    
+
     def to_dict(self):
         return {"event_id": self.event_id, "timestamp": self.timestamp}
 
@@ -16,7 +16,7 @@ class FormulaCreatedEvent(DomainEvent):
         self.user_id = user_id
         self.creator = creator
         self.formula_data = formula_data
-        
+
     def to_dict(self):
         base = super().to_dict()
         base.update({

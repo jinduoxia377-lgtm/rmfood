@@ -13,13 +13,11 @@
     python -m backend.app.utils.migration_audit --check-dependencies
     python -m backend.app.utils.migration_audit --report
 """
-import os
-import sys
-import re
-import ast
 import logging
-from pathlib import Path
+import re
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 logger = logging.getLogger("rmfood.migration_audit")
@@ -192,28 +190,28 @@ def generate_audit_report() -> str:
     """
     scan_result = scan_migrations()
     report_lines = [
-        f"# 🔒 RMFOOD 数据库迁移审计报告",
-        f"",
+        "# 🔒 RMFOOD 数据库迁移审计报告",
+        "",
         f"**生成时间**: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}",
-        f"",
-        f"## 📊 概览",
-        f"",
-        f"| 指标 | 值 |",
-        f"|------|-----|",
+        "",
+        "## 📊 概览",
+        "",
+        "| 指标 | 值 |",
+        "|------|-----|",
         f"| 总迁移数 | {len(scan_result['revisions'])} |",
         f"| 孤立迁移 | {len(scan_result['orphans'])} |",
         f"| Head 版本 | {len(scan_result['heads'])} |",
         f"| 循环依赖 | {len(scan_result['cycles'])} |",
-        f"",
+        "",
     ]
 
     # 孤立迁移警告
     if scan_result["orphans"]:
         report_lines.extend([
-            f"## ⚠️ 孤立迁移",
-            f"",
-            f"以下迁移没有上游依赖（可能是初始迁移或已断开连接）:",
-            f"",
+            "## ⚠️ 孤立迁移",
+            "",
+            "以下迁移没有上游依赖（可能是初始迁移或已断开连接）:",
+            "",
         ])
         for orphan in scan_result["orphans"]:
             info = scan_result["revisions"].get(orphan, {})
@@ -221,19 +219,19 @@ def generate_audit_report() -> str:
         report_lines.append("")
     else:
         report_lines.extend([
-            f"## ✅ 依赖完整性",
-            f"",
-            f"所有迁移都有正确的上游依赖关系。",
-            f"",
+            "## ✅ 依赖完整性",
+            "",
+            "所有迁移都有正确的上游依赖关系。",
+            "",
         ])
 
     # 循环依赖警告
     if scan_result["cycles"]:
         report_lines.extend([
-            f"## 🔴 循环依赖",
-            f"",
-            f"检测到以下循环依赖（必须修复）:",
-            f"",
+            "## 🔴 循环依赖",
+            "",
+            "检测到以下循环依赖（必须修复）:",
+            "",
         ])
         for cycle in scan_result["cycles"]:
             cycle_str = " → ".join(cycle)
@@ -241,17 +239,17 @@ def generate_audit_report() -> str:
         report_lines.append("")
     else:
         report_lines.extend([
-            f"## ✅ 无循环依赖",
-            f"",
-            f"迁移依赖链无循环。",
-            f"",
+            "## ✅ 无循环依赖",
+            "",
+            "迁移依赖链无循环。",
+            "",
         ])
 
     # Head 版本信息
     if scan_result["heads"]:
         report_lines.extend([
-            f"## 📌 当前 Head 版本",
-            f"",
+            "## 📌 当前 Head 版本",
+            "",
         ])
         for head in scan_result["heads"]:
             info = scan_result["revisions"].get(head, {})
@@ -260,8 +258,8 @@ def generate_audit_report() -> str:
 
     # 迁移安全检查
     report_lines.extend([
-        f"## 🔍 迁移安全检查",
-        f"",
+        "## 🔍 迁移安全检查",
+        "",
     ])
 
     unsafe_migrations = []
@@ -275,7 +273,7 @@ def generate_audit_report() -> str:
         for revision, info, safety in unsafe_migrations:
             report_lines.extend([
                 f"### `{revision}` ({info['file']})",
-                f"",
+                "",
             ])
             for warning in safety["warnings"]:
                 report_lines.append(f"- {warning}")
@@ -284,16 +282,16 @@ def generate_audit_report() -> str:
             report_lines.append("")
     else:
         report_lines.extend([
-            f"✅ 所有迁移文件通过安全检查。",
-            f"",
+            "✅ 所有迁移文件通过安全检查。",
+            "",
         ])
 
     # 迁移列表
     report_lines.extend([
-        f"## 📜 完整迁移列表",
-        f"",
-        f"| Revision | 文件 | 依赖 |",
-        f"|----------|------|------|",
+        "## 📜 完整迁移列表",
+        "",
+        "| Revision | 文件 | 依赖 |",
+        "|----------|------|------|",
     ])
 
     for revision, info in scan_result["revisions"].items():
@@ -353,7 +351,7 @@ def run_audit(check_only: bool = False) -> bool:
     if unsafe_count > 0:
         logger.info(f"\n⚠️  警告: {unsafe_count} 个迁移存在安全隐患")
     else:
-        logger.info(f"\n✅ 所有迁移通过安全检查")
+        logger.info("\n✅ 所有迁移通过安全检查")
 
     # Head 版本
     logger.info(f"\n📌 当前 Head 版本: {', '.join(scan_result['heads'])}")

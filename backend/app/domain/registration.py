@@ -4,6 +4,7 @@
 保健食品/特医食品注册申报的核心实体。
 """
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional

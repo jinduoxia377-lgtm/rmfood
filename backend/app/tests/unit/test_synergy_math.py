@@ -13,8 +13,9 @@
 """
 
 import math
+from typing import Dict, List, Tuple
+
 import pytest
-from typing import Dict, Tuple, List
 
 # ── 独立工具函数 ─────────────────────────────────────────────────────
 
@@ -44,7 +45,6 @@ def _bliss_core(efficacy_a: float, efficacy_b: float, alpha: float = 0.0) -> dic
 
 def _hypergeometric_test(N: int, K: int, n: int, k: int) -> float:
     """纯 Python 超几何检验 P(X >= k)。"""
-    from math import comb
 
     if k == 0:
         return 1.0

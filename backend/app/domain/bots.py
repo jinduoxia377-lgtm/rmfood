@@ -79,7 +79,7 @@ class AIBot:
     provider: Optional[str] = None
     model_id: Optional[str] = None
     temperature: float = 0.7
-    max_tokens: int = 4096
+    max_tokens: int = 16000
     capabilities: list[str] = field(default_factory=list)
     is_chief: bool = False
     is_system: bool = False
