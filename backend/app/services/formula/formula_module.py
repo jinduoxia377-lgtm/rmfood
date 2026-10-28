@@ -191,9 +191,11 @@ class FormulaService:
             selectinload(Formula.categories),
         )
 
-        # 软删除过滤（默认不显示已删除的记录）
-        if not include_deleted and hasattr(Formula, 'deleted_at'):
-            query = query.where(Formula.deleted_at.is_(None))
+        # 软删除过滤：delete_formula 用 status=ARCHIVED 表示软删除（formulas 表无 deleted_at 列，
+        # 原 `hasattr(Formula, 'deleted_at')` 恒为 False，导致已归档配方仍出现在默认列表）。
+        # 默认（未指定状态过滤且不 include_deleted）排除已归档；指定状态过滤时按状态显示（可查看归档）。
+        if not include_deleted and status is None:
+            query = query.where(Formula.status != FormulaStatus.ARCHIVED)
 
         # ── 多租户隔离 ──
         if organization_id is not None:
