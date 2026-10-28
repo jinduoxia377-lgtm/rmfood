@@ -1,10 +1,14 @@
 """RMFOOD 肽序列分析模型"""
-from datetime import datetime, timezone
-from typing import TYPE_CHECKING, List, Dict, Optional
-from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum as SQLEnum, ForeignKey, BigInteger
+from datetime import datetime
+from typing import TYPE_CHECKING, Dict, List, Optional
+
+from sqlalchemy import JSON, BigInteger, DateTime, ForeignKey, String, Text
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class AnalysisMode(str):
@@ -23,6 +27,7 @@ class DimensionType(str):
 
 
 if TYPE_CHECKING:
+    from .formula import Peptide
     from .user_model import User
 
 
@@ -48,7 +53,7 @@ class PeptideAnalysis(Base):
     created_by: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)
 
     user: Mapped["User"] = relationship(
-        "User", 
+        "User",
         back_populates="peptide_analyses",
         foreign_keys=[user_id]
     )

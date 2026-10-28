@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-
 # ── RetailProduct Response Schema ───────────────────────────────
 
 class RetailProductResponse(BaseModel):
@@ -93,6 +92,10 @@ class RetailProductSearchRequest(BaseModel):
     page: int = Field(1, ge=1)
     page_size: int = Field(20, ge=1, le=200)
     realtime: bool = False
+    origin: Optional[str] = Field(
+        None,
+        description="数据来源过滤: all / internet（OFF 实时+缓存）/ local（平台参考数据）",
+    )
 
 
 # ── Sync / Admin Response Schemas ──────────────────────────────

@@ -4,8 +4,10 @@
 支持多类型通知、已读状态管理和偏好设置。
 """
 from datetime import datetime
-from typing import List, Optional, Any, Dict
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
+
 from ..models.enums import NotificationType
 
 

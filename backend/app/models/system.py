@@ -1,10 +1,12 @@
 """RMFOOD 系统模型"""
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey, Boolean, BigInteger, CheckConstraint, Index
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.utils import now_utc_mapped, now_utc_naive
+
 from .base import Base
-from app.models.utils import now_utc_naive
-from app.models.utils import now_utc_mapped
 
 
 class AuditLog(Base):

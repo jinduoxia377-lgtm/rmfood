@@ -15,15 +15,24 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Optional, Sequence
 
-from sqlalchemy import select, func, or_, and_, update, delete
+from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..domain.bots import (
-    AIBot, BotMemory, BotStatus, BotVisibility, MemoryType,
-    GroupSession, GroupMember, GroupMessage,
-)
 from ..domain.bot_ports import (
-    BotRepository, BotMemoryStore, GroupChatRepository, UsageRecorder,
+    BotMemoryStore,
+    BotRepository,
+    GroupChatRepository,
+    UsageRecorder,
+)
+from ..domain.bots import (
+    AIBot,
+    BotMemory,
+    BotStatus,
+    BotVisibility,
+    GroupMember,
+    GroupMessage,
+    GroupSession,
+    MemoryType,
 )
 from ..models.bot import AIBot as AIBotModel
 from ..models.bot import BotMemory as BotMemoryModel
@@ -297,8 +306,10 @@ class SQLAlchemyGroupChatRepository(GroupChatRepository):
         member_bot_ids: Sequence[int], commit: bool = True,
     ) -> GroupSession:
         from ..models.bot import (
-            BotGroupSession as GroupModel,
             BotGroupMember as MemberModel,
+        )
+        from ..models.bot import (
+            BotGroupSession as GroupModel,
         )
         session = GroupModel(
             tenant_id=tenant_id, name=name, chief_bot_id=chief_bot_id, created_by=created_by,
@@ -329,8 +340,10 @@ class SQLAlchemyGroupChatRepository(GroupChatRepository):
         include_archived: bool = False,
     ) -> tuple[list[GroupSession], int]:
         from ..models.bot import (
-            BotGroupSession as GroupModel,
             BotGroupMember as MemberModel,
+        )
+        from ..models.bot import (
+            BotGroupSession as GroupModel,
         )
         # 用户可见：本人创建，或成员中包含本人创建的 Bot
         my_bot_ids = select(AIBotModel.id).where(

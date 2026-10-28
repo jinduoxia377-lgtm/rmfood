@@ -3,15 +3,16 @@
 存储多 Provider 的 API 配置、认证方式、模型映射和兜底链，
 替代纯内存配置，支持后端重启后自动恢复。
 """
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 import sqlalchemy as sa
-from sqlalchemy import String, Text, JSON, Boolean, Integer, DateTime
+from sqlalchemy import JSON, DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .base import Base
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class AIModelConfig(Base):
@@ -86,7 +87,13 @@ class AIModelConfig(Base):
         sa.Float, nullable=False, server_default="0.7",
     )
     max_tokens: Mapped[int] = mapped_column(
-        sa.Integer, nullable=False, server_default="4096",
+        # P1-4 修复（2026-10-26）：server_default 由 "4096" 提到 "16000"。
+        # 旧值与代码层 ModelConfig.max_tokens 默认 16000
+        # （app/services/ai_model_config_service.py）矛盾，导致新租户 / 新 model_type /
+        # 全新安装的首次种子（get_or_create 不显式传 max_tokens，靠本默认值兜底）
+        # 静默拿到 4096，专业配方卡 JSON 会被截断。
+        # 线上数据订正见 alembic/versions/20261026_010000_bump_max_tokens_default.py。
+        sa.Integer, nullable=False, server_default="16000",
     )
     top_p: Mapped[float] = mapped_column(
         sa.Float, nullable=False, server_default="0.9",

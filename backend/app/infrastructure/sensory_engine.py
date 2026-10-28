@@ -4,13 +4,15 @@
 基于成分-味觉知识库的味觉/口感预测。
 """
 from __future__ import annotations
-from typing import Optional
 
 from ..domain.sensory import (
-    TasteProfile, MouthfeelProfile, FlavorNote, SensoryScore,
-    SensoryReport, TasteOptimizationSuggestion,
+    FlavorNote,
+    MouthfeelProfile,
+    SensoryReport,
+    SensoryScore,
+    TasteOptimizationSuggestion,
+    TasteProfile,
 )
-
 
 # ─── 药材味觉知识库（药典记载 + 经验数据） ───
 

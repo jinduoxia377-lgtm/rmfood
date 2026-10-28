@@ -1,7 +1,8 @@
 """专业术语相关的Pydantic Schema"""
-from typing import Optional, List, Any
-from pydantic import BaseModel, Field, validator
 from datetime import datetime
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class TermCategoryCreate(BaseModel):
@@ -35,7 +36,7 @@ class TermCategoryOut(BaseModel):
     sort_order: int
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -105,7 +106,7 @@ class TermOut(BaseModel):
     frequency: int
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -127,7 +128,7 @@ class TermVariantOut(BaseModel):
     similarity: float
     variant_type: str
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -178,7 +179,7 @@ class TermNormalizationRuleOut(BaseModel):
     enabled: bool
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -201,7 +202,7 @@ class TermStatisticsOut(BaseModel):
     accuracy_rate: float
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
 

@@ -6,17 +6,17 @@
   BaseModel 继承自 app.core.database.Base（SQLAlchemy DeclarativeBase）。
   领域模型依赖持久化机制在此项目中是有意为之——详见 ADR-004。
 """
-import sqlalchemy as sa
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import DateTime, Boolean, select, BigInteger
-from sqlalchemy.orm import Mapped, mapped_column, declared_attr
-from ..core.database import Base
-from sqlalchemy.orm import declarative_base
 
+import sqlalchemy as sa
+from sqlalchemy import BigInteger, DateTime
+from sqlalchemy.orm import Mapped, declared_attr, mapped_column
+
+from ..core.database import Base
 
 # 创建扩展性 Base，允许表定义重复
-ExtendedBase = declarative_base(cls=_BaseWithExtendExisting) if False else Base
+ExtendedBase = Base
 from .utils import now_utc_mapped
 
 
@@ -25,21 +25,21 @@ class BaseModel(Base):
     __abstract__ = True
 
     @declared_attr
-    def __tablename__(cls) -> str:
+    def __tablename__(self) -> str:
         """自动生成表名为类名的小写复数形式"""
         import inflection
-        return inflection.underscore(cls.__name__)
+        return inflection.underscore(self.__name__)
 
     @declared_attr
-    def id(cls) -> Mapped[int]:
+    def id(self) -> Mapped[int]:
         return mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     @declared_attr
-    def created_at(cls) -> Mapped[datetime]:
+    def created_at(self) -> Mapped[datetime]:
         return mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
 
     @declared_attr
-    def updated_at(cls) -> Mapped[datetime]:
+    def updated_at(self) -> Mapped[datetime]:
         return mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     def to_dict(self) -> dict:
@@ -70,7 +70,7 @@ class SoftDeleteMixin:
     """
 
     @declared_attr
-    def deleted_at(cls) -> Mapped[Optional[datetime]]:
+    def deleted_at(self) -> Mapped[Optional[datetime]]:
         return mapped_column(DateTime(timezone=True), nullable=True, default=None, index=True)
 
     @property
@@ -110,7 +110,6 @@ class SoftDeleteQueryMixin:
     @staticmethod
     def active_only(query):
         """过滤已删除的记录（假设模型有 deleted_at 字段）"""
-        from sqlalchemy import inspect as sqla_inspect
         # 获取模型类
         model_class = query.column_descriptions[0]['type']
         if hasattr(model_class, 'deleted_at'):
@@ -125,7 +124,6 @@ class SoftDeleteQueryMixin:
     @staticmethod
     def only_deleted(query):
         """只返回已删除的记录"""
-        from sqlalchemy import inspect as sqla_inspect
         model_class = query.column_descriptions[0]['type']
         if hasattr(model_class, 'deleted_at'):
             return query.where(model_class.deleted_at.isnot(None))
@@ -146,7 +144,7 @@ class ClassifiedMixin:
     """
 
     @declared_attr
-    def data_classification(cls) -> Mapped[str]:
+    def data_classification(self) -> Mapped[str]:
         """数据分类等级：public/internal/secret/top_secret"""
         return mapped_column(
             sa.String(20),
@@ -157,12 +155,12 @@ class ClassifiedMixin:
         )
 
     @declared_attr
-    def data_retention_days(cls) -> Mapped[Optional[int]]:
+    def data_retention_days(self) -> Mapped[Optional[int]]:
         """数据保留天数（NULL 表示永久保留）"""
         return mapped_column(sa.Integer, nullable=True, default=None)
 
     @declared_attr
-    def data_owner(cls) -> Mapped[Optional[str]]:
+    def data_owner(self) -> Mapped[Optional[str]]:
         """数据责任人（用户 ID 或团队名）"""
         return mapped_column(sa.String(100), nullable=True, default=None)
 

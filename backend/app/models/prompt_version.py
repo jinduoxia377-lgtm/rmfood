@@ -3,11 +3,14 @@
 用于AI辅助模块，记录Prompt模板的完整版本历史。
 支持内容快照、差异对比和变更追踪，便于回滚和审计。
 """
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey, Index, BigInteger
+from datetime import datetime
+
+from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class PromptVersion(Base):
@@ -42,6 +45,6 @@ class PromptVersion(Base):
         return f"<PromptVersion(id={self.id}, template_id={self.prompt_template_id}, version={self.version_number})>"
 
 
-from .user_model import User
 from .ai_suggestion import AiSuggestion
 from .prompt_template import PromptTemplate
+from .user_model import User

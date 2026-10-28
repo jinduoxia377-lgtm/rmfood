@@ -2,12 +2,20 @@
 样品模型
 连接批次与测试结果
 """
-from datetime import datetime, timezone
-from sqlalchemy import BigInteger, String, Text, DateTime, JSON, ForeignKey, Float, Integer, Enum
+from datetime import datetime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import BigInteger, DateTime, Enum, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.utils import now_utc_mapped
+
 from .base import Base
 from .enums import SampleType
-from app.models.utils import now_utc_mapped
+
+if TYPE_CHECKING:
+    from .batch_record import Batch
+    from .test_report import TestReport
 
 
 class Sample(Base):

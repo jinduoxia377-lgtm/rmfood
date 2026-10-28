@@ -4,12 +4,15 @@
 支持多种建议类型（成分替换、工艺改进、成本优化等），
 记录置信度分数和应用状态，便于效果追踪。
 """
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, Float, Boolean, DateTime, JSON, Enum, ForeignKey, Index, BigInteger
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, Enum, Float, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.utils import now_utc_mapped
+
 from .base import Base
 from .enums import SuggestionType
-from app.models.utils import now_utc_mapped
 
 
 class AiSuggestion(Base):

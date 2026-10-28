@@ -8,12 +8,13 @@
 遵循 ADR-002 的事件驱动架构选型。
 """
 from __future__ import annotations
+
 import json
 import logging
 import uuid
-from abc import ABC, abstractmethod
+from abc import ABC
 from datetime import datetime, timezone
-from typing import Any, Callable, Coroutine, Optional
+from typing import Any, Callable, Coroutine
 
 from ..core.observability.domain_events import DomainEvent
 
@@ -285,5 +286,5 @@ class RedisStreamsEventBus(ABC):
 
 
 # 导入辅助修复（序列化中用到的类型）
-from enum import Enum
 from decimal import Decimal
+from enum import Enum

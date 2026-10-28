@@ -2,12 +2,15 @@
 
 用于云端同步模块，记录用户的设备信息，支持多设备同步和冲突检测。
 """
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Boolean, DateTime, Enum, ForeignKey, Index, BigInteger
+from datetime import datetime
+
+from sqlalchemy import BigInteger, Boolean, DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.utils import now_utc_mapped
+
 from .base import Base
 from .enums import DeviceType
-from app.models.utils import now_utc_mapped
 
 
 class UserDevice(Base):
@@ -35,5 +38,5 @@ class UserDevice(Base):
         return f"<UserDevice(id={self.id}, device_id='{self.device_id}', user_id={self.user_id}, type={self.device_type.value})>"
 
 
-from .user_model import User
 from .sync_log import SyncLog
+from .user_model import User

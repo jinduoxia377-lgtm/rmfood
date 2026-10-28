@@ -9,11 +9,25 @@
 这些表不通过 ORM 直接操作，而是由种子脚本通过原始 SQL 写入。
 提供模型定义是为了让 Alembic 迁移能识别它们。
 """
-from datetime import datetime, timezone
-from sqlalchemy import BigInteger, Integer, String, Text, DateTime, JSON, Float, Boolean, CheckConstraint, ForeignKey
+from datetime import datetime
+
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class SynergyInteraction(Base):

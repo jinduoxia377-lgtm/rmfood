@@ -3,13 +3,24 @@
 Supports multi-tenant organization management.
 """
 from datetime import datetime
-from sqlalchemy import String, Integer, Text, Boolean, BigInteger, DateTime, Numeric, JSON, Enum as SAEnum, ForeignKey
+from typing import TYPE_CHECKING, List, Optional
+
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional, List
 
 from .base import BaseModel
-from .utils import now_utc_mapped
-from .enums import UserRole
+
+if TYPE_CHECKING:
+    from .api_key import ApiKey
 
 
 class Organization(BaseModel):

@@ -4,7 +4,8 @@
 支持版本创建、历史查看、差异对比和回滚操作。
 """
 from datetime import datetime
-from typing import List, Optional, Any
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 

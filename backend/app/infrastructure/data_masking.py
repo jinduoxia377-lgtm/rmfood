@@ -9,8 +9,8 @@
 - L4 TOP_SECRET：强脱敏（仅保留必要信息）
 """
 from __future__ import annotations
+
 import re
-from typing import Any
 
 
 def mask_value(value: str, level: str, field_type: str = "generic") -> str:

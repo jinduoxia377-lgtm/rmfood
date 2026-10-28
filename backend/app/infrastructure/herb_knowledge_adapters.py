@@ -12,6 +12,7 @@ HerbKnowledgePort 适配器实现
 通过依赖注入，使优化器能动态获取 TCMSP 数据库中的完整药材知识。
 """
 import logging
+from contextlib import asynccontextmanager
 from typing import Dict, List, Optional
 
 from sqlalchemy import select
@@ -67,22 +68,46 @@ class TCMSPHerbKnowledgeAdapter(HerbKnowledgePort):
     def __init__(self, session=None):
         self._session = session
         self._efficacy_index_cache: Optional[Dict[str, List[str]]] = None
+        self._all_profiles_cache: Optional[List[HerbProfile]] = None
 
-    async def _get_session(self) -> AsyncSession:
-        """懒获取数据库会话（适配无注入场景）"""
+    @asynccontextmanager
+    async def _session_scope(self):
+        """会话生命周期管理：外部注入的 session 不关闭，自建 session 自动关闭。
+
+        修复连接泄漏：get_all_herbs / get_herb_by_id 不再遗留未关闭的会话。
+        """
         if self._session is not None:
-            return self._session
+            yield self._session
+            return
         from app.core.database.session import async_session_factory
-        return async_session_factory()
+        async with async_session_factory() as session:
+            yield session
+
+    async def _load_all_profiles(self, session: AsyncSession) -> List[HerbProfile]:
+        """加载全部药材并缓存（供 extra_knowledge.herb_id 双路匹配使用）"""
+        if self._all_profiles_cache is not None:
+            return self._all_profiles_cache
+        from ..models.external_data import TCMHerb
+        stmt = select(TCMHerb)
+        herbs = (await session.execute(stmt)).scalars().all()
+        profiles = [self._to_profile(h) for h in herbs]
+        self._all_profiles_cache = profiles
+        return profiles
 
     async def get_herb_by_id(self, herb_id: str) -> Optional[HerbProfile]:
         try:
             from ..models.external_data import TCMHerb
-            session = await self._get_session()
-            stmt = select(TCMHerb).where(TCMHerb.name_cn == herb_id)
-            result = await session.execute(stmt)
-            orm = result.scalar_one_or_none()
-            return self._to_profile(orm) if orm else None
+            async with self._session_scope() as session:
+                # 1) name_cn 精确匹配（原实现仅此一路，导致 "hq" 这类 herb_id 恒查不到）
+                stmt = select(TCMHerb).where(TCMHerb.name_cn == herb_id)
+                orm = (await session.execute(stmt)).scalar_one_or_none()
+                if orm:
+                    return self._to_profile(orm)
+                # 2) extra_knowledge.herb_id 匹配（双路）
+                for profile in await self._load_all_profiles(session):
+                    if profile.herb_id == herb_id:
+                        return profile
+                return None
         except Exception as e:
             logger.error(f"[TCMSPHerbKnowledgeAdapter] 查询药材失败 herb_id={herb_id}: {e}")
             return None
@@ -90,17 +115,17 @@ class TCMSPHerbKnowledgeAdapter(HerbKnowledgePort):
     async def get_herbs_by_efficacy(self, efficacy: str) -> List[HerbProfile]:
         try:
             from ..models.external_data import TCMHerb
-            session = await self._get_session()
-            # 从 extra_knowledge JSON 和 effects 文本字段匹配功效
-            stmt = select(TCMHerb)
-            result = await session.execute(stmt)
-            herbs = result.scalars().all()
-            profiles = []
-            for h in herbs:
-                p = self._to_profile(h)
-                if p.efficacy_scores.get(efficacy, 0) > 0 or efficacy in (h.effects or ""):
-                    profiles.append(p)
-            return sorted(profiles, key=lambda p: p.efficacy_scores.get(efficacy, 0), reverse=True)
+            async with self._session_scope() as session:
+                # 从 extra_knowledge JSON 和 effects 文本字段匹配功效
+                stmt = select(TCMHerb)
+                result = await session.execute(stmt)
+                herbs = result.scalars().all()
+                profiles = []
+                for h in herbs:
+                    p = self._to_profile(h)
+                    if p.efficacy_scores.get(efficacy, 0) > 0 or efficacy in (h.effects or ""):
+                        profiles.append(p)
+                return sorted(profiles, key=lambda p: p.efficacy_scores.get(efficacy, 0), reverse=True)
         except Exception as e:
             logger.error(f"[TCMSPHerbKnowledgeAdapter] 功效查询失败 efficacy={efficacy}: {e}")
             return []
@@ -108,11 +133,11 @@ class TCMSPHerbKnowledgeAdapter(HerbKnowledgePort):
     async def get_all_herbs(self) -> List[HerbProfile]:
         try:
             from ..models.external_data import TCMHerb
-            session = await self._get_session()
-            stmt = select(TCMHerb)
-            result = await session.execute(stmt)
-            herbs = result.scalars().all()
-            return [self._to_profile(h) for h in herbs]
+            async with self._session_scope() as session:
+                stmt = select(TCMHerb)
+                result = await session.execute(stmt)
+                herbs = result.scalars().all()
+                return [self._to_profile(h) for h in herbs]
         except Exception as e:
             logger.error(f"[TCMSPHerbKnowledgeAdapter] 获取全部药材失败: {e}")
             return []

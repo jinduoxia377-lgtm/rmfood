@@ -4,10 +4,11 @@ This supports both in-process event handling (for monolithic mode) and
 distributed messaging (for microservices mode via Kafka/RabbitMQ).
 """
 
-from typing import Callable, Optional, Dict, List
-from dataclasses import dataclass
 import asyncio
 import logging
+import time
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -24,32 +25,32 @@ class Event:
 class EventBus:
     """
     Central event bus that allows services to communicate via domain events.
-    
+
     In monolithic mode, events are delivered synchronously within the same process.
     In microservices mode, this can be backed by a message broker like Kafka.
     """
-    
+
     def __init__(self):
         self._subscribers: Dict[str, List[Callable]] = {}
         self._publisher: Optional[Any] = None  # Will be set for distributed mode
-    
+
     def subscribe(self, event_type: str, handler: Callable) -> None:
         """Subscribe a handler to an event type."""
         if event_type not in self._subscribers:
             self._subscribers[event_type] = []
         self._subscribers[event_type].append(handler)
         logger.info(f"Subscribed handler to event type: {event_type}")
-    
+
     def unsubscribe(self, event_type: str, handler: Callable) -> None:
         """Unsubscribe a handler from an event type."""
         if event_type in self._subscribers:
             self._subscribers[event_type].remove(handler)
             logger.info(f"Unremoved handler from event type: {event_type}")
-    
+
     async def publish(self, event: Event) -> None:
         """Publish an event to all subscribers."""
         event_type = type(event).__name__
-        
+
         if event_type in self._subscribers:
             for handler in self._subscribers[event_type]:
                 try:
@@ -60,11 +61,11 @@ class EventBus:
                         handler(event)
                 except Exception as e:
                     logger.error(f"Error handling event {event.event_id}: {e}")
-        
+
         # Also trigger any distributed publisher if configured
         if self._publisher:
             await self._publisher.publish_event(event)
-    
+
     def set_publisher(self, publisher: Any) -> None:
         """Set a distributed message broker publisher (for microservices mode)."""
         self._publisher = publisher

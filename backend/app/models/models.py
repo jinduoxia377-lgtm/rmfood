@@ -5,30 +5,30 @@ RMFOOD 数据模型层 (SQLAlchemy ORM) - 兼容层
 请使用 from app.models import ... 导入
 """
 from .enums import (
-    UserRole,
-    FormulaStatus,
     ExperimentStatus,
-    WorkflowStatus,
-    TaskStatus,
-    NotificationType,
+    FormulaStatus,
     NotificationStatus,
+    NotificationType,
+    TaskStatus,
+    UserRole,
+    WorkflowStatus,
 )
-from .user_model import User
+from .experiment import Experiment, ExperimentData
+from .external_data import BioactivePeptide, KnowledgeGraphNode, MMIDHerb, SymMapHerb, TCMHerb
 from .formula import (
+    Comment,
     Formula,
     FormulaVersion,
     Ingredient,
     Peptide,
-    Comment,
     formula_ingredients,
     formula_peptides,
 )
-from .experiment import Experiment, ExperimentData
-from .workflow import Workflow, WorkflowTask, WorkflowTemplate
 from .notification import Notification
-from .system import AuditLog, Attachment, DataSnapshot
-from .external_data import TCMHerb, MMIDHerb, SymMapHerb, BioactivePeptide, KnowledgeGraphNode
 from .peptide_structure import PeptideStructureAnalysis
+from .system import Attachment, AuditLog, DataSnapshot
+from .user_model import User
+from .workflow import Workflow, WorkflowTask, WorkflowTemplate
 
 __all__ = [
     "UserRole",

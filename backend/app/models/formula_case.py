@@ -2,11 +2,11 @@
 
 用于展示成功配方设计，供其他用户参考学习。
 """
-from datetime import datetime, timezone
-from sqlalchemy import (
-    BigInteger, String, Text, DateTime, JSON, Enum, ForeignKey, Integer, Boolean
-)
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from .base import Base
 from .utils import now_utc_mapped
 

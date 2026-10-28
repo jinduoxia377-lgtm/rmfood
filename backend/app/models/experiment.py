@@ -1,10 +1,13 @@
 """RMFOOD 实验模型"""
-from datetime import datetime, timezone
-from sqlalchemy import Float, Integer, String, Text, DateTime, JSON, Enum, ForeignKey, BigInteger
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, DateTime, Enum, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.utils import now_utc_naive
+
 from .base import Base
 from .enums import ExperimentStatus
-from app.models.utils import now_utc_naive
 
 
 class Experiment(Base):
@@ -102,5 +105,5 @@ class ExperimentData(Base):
     experiment: Mapped["Experiment"] = relationship("Experiment", back_populates="data_points")
 
 
-from .user_model import User
 from .formula import Formula
+from .user_model import User

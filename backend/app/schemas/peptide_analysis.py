@@ -1,6 +1,7 @@
 """RMFOOD 肽序列分析相关 Pydantic 模式"""
-from typing import Any, Dict, List, Optional
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 from typing_extensions import Literal
 

@@ -12,15 +12,17 @@
 - SafetyThresholdChangeLog: 安全阈值变更审计日志
 """
 
-from datetime import date, datetime, timezone
-from typing import Optional, List
 import enum
+from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import Integer, String, Float, Boolean, DateTime, Text, ForeignKey, JSON, Enum as SAEnum, Index, BigInteger
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+
 from app.models.utils import now_utc_mapped
 
+from .base import Base
 
 # ==================== 枚举类型 ====================
 
@@ -424,9 +426,8 @@ class SafetyThresholdChangeLog(Base):
 
 
 # 导入关系引用
-from .user_model import User
 from .formula import Formula
-
+from .user_model import User
 
 # 导出所有模型
 __all__ = [

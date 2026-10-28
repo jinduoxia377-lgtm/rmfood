@@ -9,10 +9,9 @@ AI 模拟响应数据（离线/演示模式）
 """
 
 import os
-from typing import Optional
 
-# 环境变量控制是否启用 Mock 模式
-MOCK_MODE_ENABLED = os.getenv("AI_MOCK_MODE", "true").lower() == "true"
+# 环境变量控制是否启用 Mock 模式（默认关闭，避免误导为生产依赖）
+MOCK_MODE_ENABLED = os.getenv("AI_MOCK_MODE", "false").lower() == "true"
 
 # ===== 模拟响应数据 =====
 
@@ -89,8 +88,8 @@ def is_mock_enabled() -> bool:
     """检查是否启用了 Mock 模式
 
     通过环境变量 AI_MOCK_MODE 控制：
-    - "true"（默认）: 启用 Mock 模式
-    - "false": 禁用 Mock 模式
+    - "true": 启用 Mock 模式
+    - "false"（默认）: 禁用 Mock 模式
 
     Returns:
         是否启用 Mock 模式

@@ -1,5 +1,6 @@
 """RMFOOD 基础 Pydantic 模式"""
-from typing import Generic, Optional, TypeVar, List
+from typing import Generic, List, Optional, TypeVar
+
 from pydantic import BaseModel, Field
 
 T = TypeVar('T')

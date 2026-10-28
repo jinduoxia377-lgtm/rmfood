@@ -1,7 +1,10 @@
 """Integrations and report configs ORM models"""
 from datetime import datetime
-from sqlalchemy import String, Text, Integer, Boolean, DateTime, JSON
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
+
+from .base import BaseModel
 
 
 class Integration(BaseModel):

@@ -3,11 +3,14 @@
 用于AI辅助模块，管理Prompt模板的基础信息。
 支持多版本管理、分类标签和访问控制。
 """
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey, Boolean, BigInteger
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class PromptTemplate(Base):
@@ -34,5 +37,5 @@ class PromptTemplate(Base):
         return f"<PromptTemplate(id={self.id}, name={self.name}, category={self.category})>"
 
 
-from .user_model import User
 from .prompt_version import PromptVersion
+from .user_model import User

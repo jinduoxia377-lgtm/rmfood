@@ -1,6 +1,7 @@
 """RMFOOD 通知相关 Pydantic 模式"""
 from datetime import datetime
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 

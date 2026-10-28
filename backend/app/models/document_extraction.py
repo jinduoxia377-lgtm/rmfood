@@ -3,10 +3,13 @@
 保存 CoA/PDS/SDS 智能提取结果，实现数据备案、追溯与调用
 """
 from datetime import datetime
-from sqlalchemy import BigInteger, String, Text, DateTime, JSON, ForeignKey, Float, Boolean
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, Float, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class DocumentExtraction(Base):

@@ -3,11 +3,14 @@
 用于团队协作模块，管理团队基本信息、设置和归档状态。
 支持团队级别的配方共享、权限管理和协作工作流。
 """
-from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, Boolean, DateTime, JSON, ForeignKey, Index, BigInteger
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class Team(Base):
@@ -37,5 +40,5 @@ class Team(Base):
         return f"<Team(id={self.id}, name='{self.name}', owner_id={self.owner_id}, archived={self.is_archived})>"
 
 
-from .user_model import User
 from .team_member import TeamMember
+from .user_model import User

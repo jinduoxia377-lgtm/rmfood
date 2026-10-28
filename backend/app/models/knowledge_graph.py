@@ -8,14 +8,15 @@
 使用方式:
     from app.models.knowledge_graph import KGNode, KGEdge
 """
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Integer, String, Float, DateTime, JSON, ForeignKey, Index, UniqueConstraint, BigInteger
+from sqlalchemy import JSON, BigInteger, DateTime, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base
+
 from app.models.utils import now_utc_mapped
 
+from .base import Base
 
 # 节点类型常量
 NODE_TYPES = [

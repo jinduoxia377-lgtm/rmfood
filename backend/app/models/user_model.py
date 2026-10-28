@@ -1,12 +1,24 @@
 """RMFOOD 用户模型"""
 import logging
-from datetime import datetime, timezone
-from typing import Optional
-from sqlalchemy import Integer, String, Text, Boolean, DateTime, JSON, Enum, BigInteger
+from datetime import datetime
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, Enum, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
+
+from app.models.utils import now_utc_mapped
+
 from .base import Base
 from .enums import UserRole
-from app.models.utils import now_utc_mapped
+
+if TYPE_CHECKING:
+    from .ga_optimization import GARunRecord
+    from .peptide_analysis import PeptideAnalysis
+    from .peptide_design import PeptideDesign
+    from .sync_log import SyncLog
+    from .team import Team
+    from .team_member import TeamMember
+    from .user_device import UserDevice
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +90,7 @@ class User(Base):
     sync_logs: Mapped[list["SyncLog"]] = relationship(
         "SyncLog", back_populates="user", cascade="all, delete-orphan"
     )
-    
+
     # 肽相关关系
     peptide_designs: Mapped[list["PeptideDesign"]] = relationship(
         "PeptideDesign", back_populates="user", cascade="all, delete-orphan"
@@ -167,13 +179,14 @@ class User(Base):
                 - (True, None): 未超过限制
                 - (False, oldest_device): 超过限制，返回最久未使用的设备（将被踢出）
         """
-        from sqlalchemy import select, func
+        from sqlalchemy import func, select
+
         from .user_device import UserDevice
 
         # 统计活跃设备数量
         result = await db.execute(
             select(func.count(UserDevice.id))
-            .where(UserDevice.user_id == self.id, UserDevice.is_active == True)
+            .where(UserDevice.user_id == self.id, UserDevice.is_active)
         )
         active_count = result.scalar() or 0
 
@@ -183,7 +196,7 @@ class User(Base):
         # 超过限制，查找最久未使用的设备
         result = await db.execute(
             select(UserDevice)
-            .where(UserDevice.user_id == self.id, UserDevice.is_active == True)
+            .where(UserDevice.user_id == self.id, UserDevice.is_active)
             .order_by(UserDevice.last_sync_at.asc().nullsfirst())
             .limit(1)
         )
@@ -215,7 +228,9 @@ class User(Base):
             dict: 操作结果信息
         """
         from datetime import datetime, timezone
+
         from sqlalchemy import select
+
         from .user_device import UserDevice
 
         current_time = datetime.now(timezone.utc)
@@ -291,6 +306,7 @@ class User(Base):
             bool: 是否成功移除
         """
         from sqlalchemy import select
+
         from .user_device import UserDevice
 
         result = await db.execute(
@@ -319,11 +335,12 @@ class User(Base):
             List[UserDevice]: 活跃设备列表
         """
         from sqlalchemy import select
+
         from .user_device import UserDevice
 
         result = await db.execute(
             select(UserDevice)
-            .where(UserDevice.user_id == self.id, UserDevice.is_active == True)
+            .where(UserDevice.user_id == self.id, UserDevice.is_active)
             .order_by(UserDevice.last_sync_at.desc())
         )
         return list(result.scalars().all())
@@ -339,12 +356,13 @@ class User(Base):
             int: 被注销的设备数量
         """
         from sqlalchemy import select
+
         from .user_device import UserDevice
 
         result = await db.execute(
             select(UserDevice).where(
                 UserDevice.user_id == self.id,
-                UserDevice.is_active == True,
+                UserDevice.is_active,
             )
         )
         devices = list(result.scalars().all())
@@ -360,7 +378,7 @@ class User(Base):
         return count
 
 
-from .formula import Formula
 from .experiment import Experiment
+from .formula import Formula
+from .formula_case import CaseComment, CaseLike, FormulaCase
 from .notification import Notification
-from .formula_case import FormulaCase, CaseLike, CaseComment

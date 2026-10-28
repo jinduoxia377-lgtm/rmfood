@@ -11,17 +11,26 @@
 - 软删除：deleted_at 置空即删除，查询过滤
 """
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import sqlalchemy as sa
 from sqlalchemy import (
-    BigInteger, String, Text, JSON, Boolean, Integer, Float, DateTime,
-    ForeignKey, Index,
+    JSON,
+    BigInteger,
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .base import Base
 from app.models.utils import now_utc_mapped
+
+from .base import Base
 
 
 class AIBot(Base):
@@ -75,7 +84,10 @@ class AIBot(Base):
         Float, nullable=False, server_default="0.7",
     )
     max_tokens: Mapped[int] = mapped_column(
-        Integer, nullable=False, server_default="4096",
+        # P1-4 修复（2026-10-26）：server_default 由 "4096" 提到 "16000"，
+        # 与 AIModelConfig.max_tokens 及 ModelConfig 代码层默认值对齐。
+        # bot_router 的 bot.max_tokens 是 bot 对话端点的输出上限默认值。
+        Integer, nullable=False, server_default="16000",
     )
 
     # ── 能力与角色 ─────────────────────────────────────────────

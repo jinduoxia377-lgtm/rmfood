@@ -3,6 +3,7 @@
 """
 from datetime import datetime
 from typing import Optional
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -48,6 +49,7 @@ class UserResponse(UserBase):
     username: str = Field(..., min_length=1, max_length=50)
     id: int
     role: str
+    plan: str = "free"  # 用户级版本: free/pro（规格 tenant-isolation-segmentation-plan.md 2.1）
     is_active: bool
     department: Optional[str] = None
     phone: Optional[str] = None
