@@ -314,6 +314,8 @@ async def get_formula_statistics(
     有效组织解析（Cookie 认证兼容）：解析出 org_id 时按组织过滤统计；
     未解析（匿名/无组织成员）时返回 403，避免全局聚合计数泄漏
     （原实现回退全局计数，仅暴露数字，现与 list_formulas 的 403 语义对齐）。
+    统计口径与默认列表一致：排除已归档（软删除 status=ARCHIVED），
+    使 total_formulas 与列表 total 匹配，避免前端计数卡片与列表行数不一致。
     """
     from sqlalchemy import func, select as sa_select
     from datetime import datetime, timedelta, timezone
@@ -324,13 +326,14 @@ async def get_formula_statistics(
     if org_id is None:
         raise HTTPException(status_code=403, detail="缺少租户上下文，禁止访问配方统计")
 
+    # 与默认列表口径一致：排除已归档（软删除 status=ARCHIVED），使 total_formulas 匹配列表 total。
     query = sa_select(func.count(Formula.id))
-    query = query.where(Formula.organization_id == org_id)
+    query = query.where(Formula.organization_id == org_id, Formula.status != FormulaStatus.ARCHIVED)
     result = await db.execute(query)
     total = result.scalar() or 0
 
     status_query = sa_select(Formula.status, func.count(Formula.id)).group_by(Formula.status)
-    status_query = status_query.where(Formula.organization_id == org_id)
+    status_query = status_query.where(Formula.organization_id == org_id, Formula.status != FormulaStatus.ARCHIVED)
     status_result = await db.execute(status_query)
     status_distribution = {}
     for s, c in status_result.all():
@@ -349,6 +352,7 @@ async def get_formula_statistics(
         )
         if org_id is not None:
             cnt_q = cnt_q.where(Formula.organization_id == org_id)
+        cnt_q = cnt_q.where(Formula.status != FormulaStatus.ARCHIVED)
         cnt = (await db.execute(cnt_q)).scalar() or 0
         recent_creations.append({"date": day_start.strftime("%Y-%m-%d"), "count": int(cnt)})
 
@@ -364,6 +368,8 @@ async def get_formula_statistics(
     if org_id is not None:
         trend_q1 = trend_q1.where(Formula.organization_id == org_id)
         trend_q2 = trend_q2.where(Formula.organization_id == org_id)
+    trend_q1 = trend_q1.where(Formula.status != FormulaStatus.ARCHIVED)
+    trend_q2 = trend_q2.where(Formula.status != FormulaStatus.ARCHIVED)
     created_now = (await db.execute(trend_q1)).scalar() or 0
     created_prev = (await db.execute(trend_q2)).scalar() or 0
     trend_data = [{"period": "last7d", "created": int(created_now), "updated": 0, "deleted": 0},
