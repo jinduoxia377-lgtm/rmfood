@@ -732,7 +732,7 @@ export function WorkflowVisualEditor({
                 >
                   <div className="flex items-start gap-3">
                     {(() => {
-                      const TIcon = TEMPLATE_ICON_MAP[template.category] || Sparkles
+                      const TIcon = TEMPLATE_ICON_MAP[template.category ?? ''] || Sparkles
                       return <div className="shrink-0 opacity-75 text-primary-500 dark:text-primary-700"><TIcon size={18} /></div>
                     })()}
                     <div className="flex-1">
@@ -747,7 +747,7 @@ export function WorkflowVisualEditor({
                         <span>·</span>
                         <span>{template.estimated_duration || '未知'}</span>
                         <span>·</span>
-                        <Badge size="sm" className="mt-0">{template.category.replace('_', ' ')}</Badge>
+                        <Badge size="sm" className="mt-0">{(template.category ?? '').replace('_', ' ')}</Badge>
                       </div>
                     </div>
                     <ChevronRight size={18} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1" />
