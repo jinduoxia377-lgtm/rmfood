@@ -109,7 +109,16 @@ echo "✅ TypeScript 类型检查通过"
 # 6. 运行 Python lint
 # ---------------------------------------------------------------------------
 echo "📋 运行 Python lint..."
-python -m ruff check backend/app --output-format=github 2>/dev/null || echo "⚠️  ruff 未安装，跳过 lint"
+# ruff 门禁：仅 lint 本次暂存的 .py（避免全量既有积压阻塞无关提交）；
+# 正确探测 ruff（而非用 `||` 吞掉真违规），ruff 未装则 fail-soft 跳过。
+if python -m ruff --version >/dev/null 2>&1; then
+  staged_py=$(git diff --cached --name-only --diff-filter=ACM -- '*.py')
+  if [ -n "$staged_py" ]; then
+    python -m ruff check $staged_py --output-format=github || { echo "❌ ruff 检测到 lint 违规（暂存 .py），请修复后重新提交"; exit 1; }
+  fi
+else
+  echo "⚠️  ruff 未安装，跳过 lint（backend/ 下 uv sync 安装后生效）"
+fi
 echo "✅ Python lint 检查完成"
 
 # ---------------------------------------------------------------------------
