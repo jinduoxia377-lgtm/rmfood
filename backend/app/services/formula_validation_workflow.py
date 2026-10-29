@@ -1132,7 +1132,6 @@ class FormulaValidationService:
         param_mapping = {
             "risk_score": ("safety_risk_score", "分", "safety_check", "risk_score"),
             "毒性": ("safety_risk_score", "分", "safety_check", "risk_score"),
-            "overall_score": ("compatibility_score", "分", "compatibility_check", "overall_score"),
             "兼容": ("compatibility_score", "分", "compatibility_check", "overall_score"),
             "max_effect": ("efficacy_max_effect", "比例", "efficacy_prediction", "max_effect"),
             "消化率": ("efficacy_max_effect", "比例", "efficacy_prediction", "max_effect"),
