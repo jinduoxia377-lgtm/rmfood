@@ -54,6 +54,7 @@ import { validateAiFormula, repairStructuredFormula, type AiFormulaValidationRes
 import { parseDosageToGramsOrZero } from './utils/dosage'
 import { FormulaStatus } from '@/types'
 import type { FormulaCreatePayload } from '@/types/formula'
+import type { ToolCall } from './components/pro/DetailsPanel'
 const FeedbackModal = React.lazy(() => import('./components/FeedbackModal').then(m => ({ default: m.FeedbackModal })))
 
 // ===== 图标库 =====
@@ -621,7 +622,7 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
         {detailsOpenLocal && detailsCallLocal && (
           <div className="fixed inset-y-0 right-0 z-50 w-full max-w-[320px] flex-shrink-0 border-l border-[var(--border-color)] overflow-hidden sm:static sm:z-auto sm:w-[320px] sm:max-w-none">
             <DetailsPanel
-              selectedCall={{ ...detailsCallLocal, arguments: detailsCallLocal.args } as any}
+              selectedCall={{ ...detailsCallLocal, arguments: detailsCallLocal.args } as unknown as ToolCall}
               onClose={() => setDetailsOpen(false)}
               title="工具调用详情"
             />
@@ -641,7 +642,7 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
         {shareModalContent && (
           <React.Suspense fallback={null}>
             <FormulaShareModal
-              content={detectStructuredContent(shareModalContent.content) ?? { blocks: [], responseType: 'general' as any}}
+              content={detectStructuredContent(shareModalContent.content) ?? { blocks: [], responseType: 'general'}}
               onClose={() => setShareModalContent(null)}
             />
           </React.Suspense>
