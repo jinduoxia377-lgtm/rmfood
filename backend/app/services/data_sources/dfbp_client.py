@@ -278,7 +278,7 @@ class DFBPSyncService:
         # 去重旧的活跃快照
         await db.execute(
             DataSnapshot.__table__.update()
-            .where(DataSnapshot.source_db == "dfbp_knowledge_base", DataSnapshot.is_active == True)
+            .where(DataSnapshot.source_db == "dfbp_knowledge_base", DataSnapshot.is_active.is_(True))
             .values(is_active=False)
         )
 

@@ -28,7 +28,6 @@ from .data_preprocessing import (
     CATEGORY_ENCODINGS,
     EFFECT_ENCODINGS,
     CompatibilityFeatureBuilder,
-    DataPreprocessingPipeline,
     EffectEncoder,
     HerbFeatureExtractor,
     MissingValueHandler,

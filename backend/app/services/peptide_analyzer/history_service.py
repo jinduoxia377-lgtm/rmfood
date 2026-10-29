@@ -194,13 +194,13 @@ class PeptideStructureHistoryService:
                 func.avg(PeptideStructureAnalysis.antimicrobial_score).label("avg_amp"),
                 func.sum(
                     func.case(
-                        (PeptideStructureAnalysis.is_allergen == True, 1),
+                        (PeptideStructureAnalysis.is_allergen.is_(True), 1),
                         else_=0
                     )
                 ).label("allergen_count"),
                 func.sum(
                     func.case(
-                        (PeptideStructureAnalysis.is_toxic == True, 1),
+                        (PeptideStructureAnalysis.is_toxic.is_(True), 1),
                         else_=0
                     )
                 ).label("toxic_count"),

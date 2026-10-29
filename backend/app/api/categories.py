@@ -26,7 +26,7 @@ async def list_categories(
 ):
     """获取分类树形列表"""
     if parent_id is None:
-        query = select(Category).where(Category.parent_id == None).order_by(Category.sort_order, Category.id)
+        query = select(Category).where(Category.parent_id.is_(None)).order_by(Category.sort_order, Category.id)
     else:
         query = select(Category).where(Category.parent_id == parent_id).order_by(Category.sort_order, Category.id)
 

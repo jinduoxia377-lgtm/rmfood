@@ -645,7 +645,7 @@ class TCMSPSyncService:
 
             total_herbs = (await db.execute(select(func.count()).select_from(TCMHerb))).scalar() or 0
             food_homology = (await db.execute(
-                select(func.count()).select_from(TCMHerb).where(TCMHerb.is_food_homology == True)
+                select(func.count()).select_from(TCMHerb).where(TCMHerb.is_food_homology.is_(True))
             )).scalar() or 0
             category_stats = await db.execute(
                 select(TCMHerb.category, func.count())
@@ -711,7 +711,7 @@ class TCMSPSyncService:
         # 去重旧的活跃快照
         await db.execute(
             DataSnapshot.__table__.update()
-            .where(DataSnapshot.source_db == "tcm_knowledge_base", DataSnapshot.is_active == True)
+            .where(DataSnapshot.source_db == "tcm_knowledge_base", DataSnapshot.is_active.is_(True))
             .values(is_active=False)
         )
 
@@ -868,8 +868,8 @@ class TCMSPSyncService:
 
             from app.models.models import TCMHerb
 
-            query = select(TCMHerb).where(TCMHerb.is_food_homology == True)
-            count_query = select(func.count()).select_from(TCMHerb).where(TCMHerb.is_food_homology == True)
+            query = select(TCMHerb).where(TCMHerb.is_food_homology.is_(True))
+            count_query = select(func.count()).select_from(TCMHerb).where(TCMHerb.is_food_homology.is_(True))
 
             if keyword:
                 like = f"%{keyword}%"

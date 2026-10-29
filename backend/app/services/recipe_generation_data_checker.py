@@ -39,7 +39,7 @@ async def check_herb_data_completeness(db: AsyncSession) -> dict[str, Any]:
     with_knowledge = await db.execute(
         select(func.count())
         .select_from(TCMHerb)
-        .where(TCMHerb.extra_knowledge != None)
+        .where(TCMHerb.extra_knowledge.is_not(None))
         .where(TCMHerb.extra_knowledge != '')
     )
     with_knowledge = with_knowledge.scalar() or 0
@@ -48,14 +48,14 @@ async def check_herb_data_completeness(db: AsyncSession) -> dict[str, Any]:
     food_homology = await db.execute(
         select(func.count())
         .select_from(TCMHerb)
-        .where(TCMHerb.is_food_homology == True)
+        .where(TCMHerb.is_food_homology.is_(True))
     )
     food_homology = food_homology.scalar() or 0
 
     # 检查 efficacy_scores 分布
     result = await db.execute(
         select(TCMHerb.extra_knowledge)
-        .where(TCMHerb.extra_knowledge != None)
+        .where(TCMHerb.extra_knowledge.is_not(None))
         .limit(100)
     )
 

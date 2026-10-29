@@ -66,8 +66,6 @@ DEFAULT_CATEGORY_MAP = {
     "dried-vegetables": "蔬干",
     "canned-fruits": "罐头水果",
     "canned-vegetables": "罐头蔬菜",
-    "fruit-juices": "果汁",
-    "vegetable-juices": "蔬菜汁",
     "salads": "沙拉",
     "hummus": "鹰嘴豆泥",
 
