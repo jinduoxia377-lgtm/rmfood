@@ -29,6 +29,8 @@ export default {
     all: 'All',
     noWorkflows: 'No workflows yet',
     noWorkflowsDesc: 'Click the "Create Workflow" button above to start, or choose a quick template',
+    loadFailedDesc: 'Unable to load workflow data. Check your network connection and retry.',
+    loadFailedForbiddenDesc: 'Your account has no organization or access permission. Please contact your administrator.',
     flowChart: 'Flowchart',
     edit: 'Edit',
     cancelEdit: 'Cancel edit',

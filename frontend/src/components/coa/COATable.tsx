@@ -2,7 +2,7 @@
 /**
  * COA 列表表格组件 — 含 Toast 反馈、删除确认、批量导出
  */
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { coaService } from '@/services/professional/coaService';
 import type { PeptideBatchCOA } from '@/services/professional/coaService';
@@ -29,7 +29,7 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
   const queryClient = useQueryClient();
   const { success: toastSuccess, error: toastError, warning: toastWarning } = useToast();
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['coa-list', page, search, statusFilter, peptideId],
     queryFn: async () => {
       const params: any = { page, page_size: 20 };
@@ -150,8 +150,22 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
         </div>
       )}
 
+      {/* 错误状态 */}
+      {!isLoading && error && (
+        <div className="flex flex-col items-center justify-center py-12 gap-3">
+          <p className="text-sm text-[var(--color-error-text)]">
+            {(error as { response?: { status?: number } } | null)?.response?.status === 403
+              ? '当前账号无组织或访问权限，请联系管理员确认授权'
+              : 'COA数据加载失败，请点击刷新重试'}
+          </p>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="w-3.5 h-3.5 mr-1" /> 刷新
+          </Button>
+        </div>
+      )}
+
       {/* 空状态 */}
-      {!isLoading && items.length === 0 && (
+      {!isLoading && !error && items.length === 0 && (
         <div className="text-center py-12 text-[var(--text-muted)]">
           <p className="text-sm">暂无COA数据</p>
           <p className="text-xs mt-1">点击"新建COA"添加出厂检验报告</p>
@@ -159,7 +173,7 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
       )}
 
       {/* 列表 */}
-      {!isLoading && items.length > 0 && (
+      {!isLoading && !error && items.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((coa: PeptideBatchCOA) => (
             <div key={coa.id} className="relative group">

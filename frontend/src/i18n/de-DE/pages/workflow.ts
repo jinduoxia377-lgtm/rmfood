@@ -29,6 +29,8 @@ export default {
     all: 'Alle',
     noWorkflows: 'Noch keine Workflows',
     noWorkflowsDesc: 'Klicken Sie oben auf „Workflow erstellen" oder wählen Sie eine Schnellvorlage',
+    loadFailedDesc: 'Workflow-Daten konnten nicht geladen werden. Prüfen Sie Ihre Netzwerkverbindung und versuchen Sie es erneut.',
+    loadFailedForbiddenDesc: 'Ihr Konto hat keine Organisation oder Zugriffsberechtigung. Bitte kontaktieren Sie Ihren Administrator.',
     flowChart: 'Flussdiagramm',
     edit: 'Bearbeiten',
     cancelEdit: 'Bearbeitung abbrechen',
