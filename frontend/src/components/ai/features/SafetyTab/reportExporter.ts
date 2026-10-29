@@ -72,7 +72,7 @@ export function exportSafetyReport(options: ExportOptions): void {
 
   const warnings = (result as Partial<SafetyCheckResult>).warnings || [];
   const errors = result.errors || [];
-  const details: Record<string, any> = (result as any).details || {};
+  const details: Record<string, any> = (result as unknown as { details?: Record<string, any> }).details || {};
 
   const dangerCount = warnings.filter((w: any) => ['danger','critical','contraindicated'].includes(w.level)).length;
   const warningCount = warnings.filter((w: any) => ['warning','caution'].includes(w.level)).length;
@@ -87,13 +87,13 @@ export function exportSafetyReport(options: ExportOptions): void {
   const allIssues = [
     ...warnings.map((w) => ({
       type: w.level === 'danger' ? 'DANGER' : 'WARNING',
-      ingredient: w.ingredient || (w as any).name || '-',
-      message: (w.message || (w as any).reason || String(w)).slice(0, 80),
+      ingredient: w.ingredient || (w as unknown as { name?: string }).name || '-',
+      message: (w.message || (w as unknown as { reason?: string }).reason || String(w)).slice(0, 80),
     })),
     ...errors.map((e) => ({
       type: 'ERROR',
       ingredient: '-',
-      message: (typeof e === 'string' ? e : (e as any).message || String(e)).slice(0, 80),
+      message: (typeof e === 'string' ? e : (e as unknown as { message?: string }).message || String(e)).slice(0, 80),
     })),
   ];
 
@@ -122,7 +122,7 @@ export function exportSafetyReport(options: ExportOptions): void {
       styles: { cellPadding: 3, lineColor: [226, 232, 240] },
       body: allIssues.map((issue) => [issue.type, issue.ingredient, issue.message]),
     });
-    y = (doc as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY ? (doc as any).lastAutoTable?.finalY + 10 : y + 10;
+    y = (doc as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY ? (doc as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY! + 10 : y + 10;
   }
 
   const checkKeys = Object.keys(details);

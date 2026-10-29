@@ -368,7 +368,7 @@ export default function IngredientAnalysisPage() {
                     <div className="space-y-1">
                       {result.suggestions.map((s, i) => (
                         <div key={i} className="flex items-start gap-2 px-[var(--space-apple-sm)] py-1.5 text-sm text-[var(--text-primary)]">
-                          <span className="text-[var(--color-secondary-text)]">→</span>{typeof s === 'string' ? s : (s as any).text || (s as any).message || (s as any).type || JSON.stringify(s)}
+                          <span className="text-[var(--color-secondary-text)]">→</span>{typeof s === 'string' ? s : (s as unknown as { text?: string; message?: string; type?: string }).text || (s as unknown as { text?: string; message?: string; type?: string }).message || (s as unknown as { text?: string; message?: string; type?: string }).type || JSON.stringify(s)}
                         </div>
                       ))}
                     </div>

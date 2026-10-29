@@ -156,7 +156,7 @@ async function deriveAesKey(cryptoObj: Crypto, input: { userId?: number | string
 
 async function getOrCreateDpapiKey(): Promise<CryptoKey | null> {
   try {
-    const cryptoObj = (globalThis.crypto || (self as any).crypto);
+    const cryptoObj = (globalThis.crypto || (self as unknown as { crypto: Crypto }).crypto);
     if (!cryptoObj?.subtle) return null;
     const derived = await deriveAesKey(cryptoObj, getEffectiveDerivationInput());
     if (derived) return derived;
@@ -181,7 +181,7 @@ export async function encryptKeyAsync(raw: string): Promise<string> {
   const key = await getOrCreateDpapiKey();
   if (!key) return encrypt(raw);
   try {
-    const cryptoObj = (globalThis.crypto || (self as any).crypto);
+    const cryptoObj = (globalThis.crypto || (self as unknown as { crypto: Crypto }).crypto);
     const salt = cryptoObj.getRandomValues(new Uint8Array(16));
     const iv = cryptoObj.getRandomValues(new Uint8Array(12));
     const data = new TextEncoder().encode(raw);
@@ -200,7 +200,7 @@ export async function decryptKeyAsync(stored: string): Promise<{ raw: string; le
     try {
       const key = await getOrCreateDpapiKey();
       if (!key) return { raw: '', legacyUnencrypted: true };
-      const cryptoObj = (globalThis.crypto || (self as any).crypto);
+      const cryptoObj = (globalThis.crypto || (self as unknown as { crypto: Crypto }).crypto);
       const [, ivB64, cipherB64] = stored.slice(FORMAT_V2_PREFIX.length).split(':');
       const dec = (s: string) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
       const iv = dec(ivB64);
@@ -228,7 +228,7 @@ const CONFIG_SYNC_TOKEN_KEY = 'rmfood_config_sync_token';
 
 function generateConfigSyncToken(): string {
   try {
-    const cryptoObj = (globalThis.crypto || (self as any).crypto);
+    const cryptoObj = (globalThis.crypto || (self as unknown as { crypto: Crypto }).crypto);
     const b = cryptoObj.getRandomValues ? cryptoObj.getRandomValues(new Uint8Array(16)) : null;
     if (b) return Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
   } catch { /* crypto 不可用时忽略 */ }

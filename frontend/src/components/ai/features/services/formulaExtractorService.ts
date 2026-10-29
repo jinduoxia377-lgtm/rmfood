@@ -304,7 +304,7 @@ export function toAIRecognizedFormula(extracted: ExtractedFormula): AIRecognized
     confidence: extracted.ingredients.length > 0 ? FES_CONFIDENCE_WITH_INGREDIENTS : FES_CONFIDENCE_NO_INGREDIENTS,
     sourceMessageId: '',
     parsedAt: new Date(),
-    rawData: {} as any,
+    rawData: {} as AIRecognizedFormula['rawData'],
     ingredients: extracted.ingredients.map(i => ({
       name: i.name,
       dosage: i.dosage,

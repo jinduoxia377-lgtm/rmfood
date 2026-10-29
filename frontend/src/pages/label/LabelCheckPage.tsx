@@ -204,7 +204,7 @@ export default function LabelCheckPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">{ing.name}</span>
-                        <Badge variant={meta.variant as any}>{ing.category_label}</Badge>
+                        <Badge variant={meta.variant as "info"|"warning"|"danger"}>{ing.category_label}</Badge>
                         {ing.allergen && (
                           <Badge variant="warning">{t('pages.labelCheck.allergen', { group: ing.allergen_group })}</Badge>
                         )}
