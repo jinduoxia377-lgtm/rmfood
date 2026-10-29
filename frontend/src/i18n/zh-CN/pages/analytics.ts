@@ -49,5 +49,8 @@ export default {
       published: '已发布',
       archived: '已归档',
     },
+    loadFailed: '加载失败',
+    loadFailedDesc: '无法获取分析数据，请检查网络连接后重试',
+    loadFailedForbiddenDesc: '当前账号无组织或访问权限，请联系管理员确认授权',
   },
 }

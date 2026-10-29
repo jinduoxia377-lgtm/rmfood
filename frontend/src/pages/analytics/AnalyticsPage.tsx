@@ -67,6 +67,7 @@ export default function AnalyticsPage() {
     dashboard,
     loading: dataLoading,
     error: dataError,
+    errorStatus: dataErrorStatus,
     lastFetched,
     refresh,
     filters: apiFilters,
@@ -225,6 +226,7 @@ export default function AnalyticsPage() {
               icon={<RefreshCw size={14} />}
               onClick={refresh}
               disabled={dataLoading}
+              className="min-w-[44px]"
             >
               <span className="hidden sm:inline">{t('pages.analytics.refresh')}</span>
             </Button>
@@ -234,6 +236,7 @@ export default function AnalyticsPage() {
               size="sm"
               icon={<Download size={14} />}
               onClick={() => handleExport('excel')}
+              className="min-w-[44px]"
             >
               <span className="hidden sm:inline">{t('pages.analytics.exportCsv')}</span>
             </Button>
@@ -242,6 +245,7 @@ export default function AnalyticsPage() {
               size="sm"
               icon={<Download size={14} />}
               onClick={() => handleExport('json')}
+              className="min-w-[44px]"
             >
               <span className="hidden sm:inline">{t('pages.analytics.exportJson')}</span>
             </Button>
@@ -403,13 +407,15 @@ export default function AnalyticsPage() {
       {/* 错误提示 */}
       {dataError && (
         <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/20 border border-[var(--color-error-border)] dark:border-error-900/40 text-[var(--color-error-text)] dark:text-[var(--color-error-text)] text-sm">
-          {dataError}
+          {dataErrorStatus === 403
+            ? t('pages.analytics.loadFailedForbiddenDesc')
+            : dataError}
         </div>
       )}
 
       {/* Tab 导航 — 与 Dashboard 一致的药丸风格 */}
       <Tabs value={tab} onValueChange={(v) => setTab(v as AnalyticsTab)}>
-        <TabsList className="mb-0">
+        <TabsList className="mb-0 w-full max-w-full overflow-x-auto justify-start lg:justify-center [&>*]:shrink-0">
           {TABS.map(({ key, labelKey, icon: Icon }) => (
             <TabsTrigger key={key} value={key} icon={<Icon className="w-3.5 h-3.5" />}>
               {t(labelKey)}

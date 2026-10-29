@@ -148,6 +148,7 @@ export function useAnalyticsData(opts: UseAnalyticsDataOptions = {}) {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [errorStatus, setErrorStatus] = useState<number | null>(null)
   const [lastFetched, setLastFetched] = useState<Date | null>(null)
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -191,6 +192,7 @@ export function useAnalyticsData(opts: UseAnalyticsDataOptions = {}) {
     if (cached) {
       setDashboard(cached)
       setError(null)
+      setErrorStatus(null)
       setLastFetched(new Date())
       setLoading(false)
       return
@@ -210,10 +212,13 @@ export function useAnalyticsData(opts: UseAnalyticsDataOptions = {}) {
       _setCached(data)
       setDashboard(data)
       setError(null)
+      setErrorStatus(null)
       setLastFetched(new Date())
     } catch (e: unknown) {
       if (e instanceof Error && ((e as {name?: string; code?: string}).name === 'CanceledError' || (e as {code?: string}).code === 'ERR_CANCELED')) return
       logger.error('[useAnalyticsData] fetch failed:', e)
+      const status = (e as { response?: { status?: number } })?.response?.status ?? null
+      setErrorStatus(status)
       setError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
       setLoading(false)
@@ -282,6 +287,8 @@ export function useAnalyticsData(opts: UseAnalyticsDataOptions = {}) {
     loading,
     /** 错误信息 */
     error,
+    /** 错误 HTTP 状态码（用于区分 403 等） */
+    errorStatus,
     /** 上次拉取时间 */
     lastFetched,
     /** 手动刷新 */
