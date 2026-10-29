@@ -29,6 +29,8 @@ export default {
     all: '全部',
     noWorkflows: '暂无工作流',
     noWorkflowsDesc: '点击上方「创建工作流」按钮开始，或选择快捷模板快速创建',
+    loadFailedDesc: '无法获取工作流数据，请检查网络连接后重试',
+    loadFailedForbiddenDesc: '当前账号无组织或访问权限，请联系管理员确认授权',
     flowChart: '流程图',
     edit: '编辑',
     cancelEdit: '取消编辑',

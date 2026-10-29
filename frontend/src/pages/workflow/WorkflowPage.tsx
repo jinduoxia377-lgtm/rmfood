@@ -8,7 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   GitBranch, CheckCircle, XCircle, Clock, Loader2, Play,
   CircleDot, AlertTriangle, ChevronRight, RotateCcw, Ban, Plus, Sparkles,
-  RefreshCw, FileSearch, Search,
+  RefreshCw, FileSearch, Search, AlertCircle,
 } from 'lucide-react'
 import { workflowApi, type Workflow, type WorkflowDetail, type WorkflowTask } from '@/api/workflow'
 import {
@@ -120,7 +120,7 @@ export default function WorkflowPage() {
     onError: () => addToast({ type: 'error', message: '保存失败，请重试' }),
   })
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error: listError, refetch } = useQuery({
     queryKey: ['workflows', page, statusFilter, searchQuery],
     queryFn: () => workflowApi.list({ page, page_size: 10, status: statusFilter || undefined, search: searchQuery || undefined }),
   })
@@ -377,6 +377,20 @@ export default function WorkflowPage() {
                 </div>
               </Card>
             ))
+          ) : listError ? (
+            <Card>
+              <CardContent className="p-12 flex flex-col items-center gap-3">
+                <AlertCircle className="w-10 h-10 text-[var(--color-error-text)]" />
+                <p className="text-sm text-[var(--color-error-text)]">
+                  {(listError as { response?: { status?: number } } | null)?.response?.status === 403
+                    ? t('pages.workflow.loadFailedForbiddenDesc')
+                    : t('pages.workflow.loadFailedDesc')}
+                </p>
+                <Button variant="outline" size="sm" onClick={() => refetch()}>
+                  <RefreshCw className="w-3.5 h-3.5 mr-1" /> {t('common.retry')}
+                </Button>
+              </CardContent>
+            </Card>
           ) : workflows.length === 0 ? (
             <Card>
               <CardContent className="p-12">
