@@ -135,9 +135,11 @@ async def ensure_whitelist_org(db: AsyncSession) -> Organization:
 
 
 async def assign_user_to_whitelist_org(db: AsyncSession, user) -> None:
-    """将用户归入白名单组织（设置 user.organization_id，参与租户隔离）。
+    """将用户归入白名单组织（设置 user.organization_id，参与租户隔离）+ 添加为组织成员。
 
     组织不存在时先 ensure 创建（幂等），保证首个获批用户前组织就绪。
+    同时把用户插入 organization_members（角色 member，幂等）——否则用户虽有
+    organization_id 租户指针，但不在组织成员表，组织成员页/详情看不到该用户。
     注意：User 模型的租户字段是 organization_id（非 org_id）。
     """
     org_id = await get_whitelist_org_id(db)
@@ -145,6 +147,18 @@ async def assign_user_to_whitelist_org(db: AsyncSession, user) -> None:
         org = await ensure_whitelist_org(db)
         org_id = int(org.id)
     user.organization_id = org_id
+    # 新用户尚未 flush 时 user.id 为 None；先 flush（同一事务内，调用方随后 flush/commit
+    # 幂等）拿到 user.id，才能插入 organization_members 成员行。
+    if getattr(user, "id", None) is None:
+        await db.flush()
+    await db.execute(
+        text("""
+            INSERT INTO organization_members (organization_id, user_id, role, is_active)
+            VALUES (:org_id, :uid, 'member', TRUE)
+            ON CONFLICT (organization_id, user_id) DO NOTHING
+        """),
+        {"org_id": org_id, "uid": int(user.id)},
+    )
 
 
 def is_whitelist_member(user) -> bool:
