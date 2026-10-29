@@ -8,9 +8,10 @@
  * - Token 估算器
  */
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AgentWorkflowTab } from '../../AgentWorkflowTab';
+import { useUnifiedAgent } from '../../hooks/useUnifiedAgent';
 import { getWaterfallEmitter, resetWaterfallEmitter } from '../../utils/waterfall';
 import { tokenEstimator } from '../../utils/eventSourcing';
 import type { AgentMessage } from '@/components/ai/shared/types';
@@ -56,6 +57,19 @@ vi.mock('@/api/deep_dev', () => ({
     listTemplates: vi.fn().mockResolvedValue({
       items: [
         { template_id: 'formula_design', name: '配方设计', description: '测试' },
+      ],
+      total: 1,
+    }),
+    listAgentTemplates: vi.fn().mockResolvedValue({
+      success: true,
+      items: [
+        {
+          template_id: 'formula_design',
+          name: '配方设计',
+          description: 'RAG检索 → 配方生成 → 合规检查 → 报告输出',
+          stage_count: 5,
+          stages: ['rag_retrieve', 'formula_design', 'compliance_check', 'report_generation', 'final_answer'],
+        },
       ],
       total: 1,
     }),
@@ -192,32 +206,36 @@ describe('WaterfallEmitter', () => {
 });
 
 describe('useUnifiedAgent Hook', () => {
-  it('应初始化为空状态', () => {
-    // Hook 需要在组件内调用，这里测试返回值结构
-    expect(true).toBe(true); // 基础占位测试
+  beforeEach(() => {
+    resetWaterfallEmitter();
+    vi.clearAllMocks();
   });
 
-  it('应返回正确的初始状态', () => {
-    // 模拟 Hook 返回
-    const initialState = {
-      messages: [],
-      tools: [],
-      stages: [],
-      isRunning: false,
-      executedCount: 0,
-      workflowType: 'formula_design',
-      availableTools: [],
-      workflowTemplates: [],
-      currentTurn: null,
-      turnHistory: [],
-      tokenCount: 0,
-    };
+  it('应初始化默认工作流类型与空状态', () => {
+    const { result } = renderHook(() =>
+      useUnifiedAgent({ initialWorkflowType: 'formula_design' }),
+    );
+    expect(result.current.workflowType).toBe('formula_design');
+    expect(result.current.messages).toEqual([]);
+    expect(result.current.isRunning).toBe(false);
+    expect(result.current.executedCount).toBe(0);
+  });
 
-    expect(initialState).toMatchObject({
-      messages: [],
-      isRunning: false,
-      executedCount: 0,
+  it('execute 应把智能路由推荐的 workflowType 传给后端（回归 P1-F2）', async () => {
+    const { result } = renderHook(() =>
+      useUnifiedAgent({ initialWorkflowType: 'formula_design' }),
+    );
+    await act(async () => {
+      await result.current.execute('针对高血糖人群设计代茶饮配方', 'compliance_check');
     });
+
+    // workflowApi.execute(wfType, { query, max_steps }) —— 断言 wfType 被路由覆盖为 compliance_check
+    const { workflowApi } = await import('@/api/deep_dev');
+    const execMock = workflowApi.execute as unknown as ReturnType<typeof vi.fn>;
+    expect(execMock).toHaveBeenCalled();
+    const [wfType, payload] = execMock.mock.calls[0] as [string, { query: string }];
+    expect(wfType).toBe('compliance_check');
+    expect(payload.query).toBe('针对高血糖人群设计代茶饮配方');
   });
 });
 

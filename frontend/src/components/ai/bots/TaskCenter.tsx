@@ -6,6 +6,7 @@
  * - 点击任务 → 右侧展示对应任务群执行视图（复用 GroupChatView + 轮询）
  */
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, RefreshCw, Archive, RotateCcw, UserPlus, ArrowLeft } from 'lucide-react';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Badge, Textarea } from '@/components/ui';
 import { BotAvatar } from './BotAvatar';
@@ -17,15 +18,20 @@ interface TaskCenterProps {
   bots: BotType[];
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  recruiting: '招募中',
-  dispatching: '派单中',
-  completed: '已完成',
-  failed: '失败',
-  archived: '已归档',
+/** 任务状态 → pages.agent.taskStatus.* 的 key 后缀 */
+const TASK_STATUS_KEY: Record<string, string> = {
+  recruiting: 'taskStatus.recruiting',
+  dispatching: 'taskStatus.dispatching',
+  completed: 'taskStatus.completed',
+  failed: 'taskStatus.failed',
+  archived: 'taskStatus.archived',
 };
 
 export function TaskCenter({ bots }: TaskCenterProps) {
+  const { t } = useTranslation();
+  /** 解析任务状态为本地化标签；未知状态回退原始值 */
+  const statusLabel = (status: string) =>
+    TASK_STATUS_KEY[status] ? t(`pages.agent.${TASK_STATUS_KEY[status]}`) : status;
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState<TaskItem | null>(null);
@@ -45,11 +51,11 @@ export function TaskCenter({ bots }: TaskCenterProps) {
       setTasks(items);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '加载任务失败');
+      setError(e instanceof Error ? e.message : t('pages.agent.taskLoadFailed'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,7 +64,7 @@ export function TaskCenter({ bots }: TaskCenterProps) {
         if (!cancelled) setTasks(items);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : '加载任务失败');
+        if (!cancelled) setError(e instanceof Error ? e.message : t('pages.agent.taskLoadFailed'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -66,7 +72,7 @@ export function TaskCenter({ bots }: TaskCenterProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const selectTask = useCallback(async (task: TaskItem) => {
     setSelected(task);
@@ -75,10 +81,10 @@ export function TaskCenter({ bots }: TaskCenterProps) {
       const g = await groupApi.get(task.group_id);
       setGroup(g);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '加载任务群失败');
+      setError(e instanceof Error ? e.message : t('pages.agent.taskGroupLoadFailed'));
       setGroup(null);
     }
-  }, []);
+  }, [t]);
 
   // 任务状态自动刷新：派单中/招募中的任务每 5s 拉取最新状态，完成后停止
   useEffect(() => {
@@ -123,7 +129,7 @@ export function TaskCenter({ bots }: TaskCenterProps) {
         await selectTask(item);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : '创建任务失败');
+      setError(e instanceof Error ? e.message : t('pages.agent.taskCreateFailed'));
     } finally {
       setCreating(false);
     }
@@ -154,7 +160,7 @@ export function TaskCenter({ bots }: TaskCenterProps) {
       const item = await taskApi.get(selected.id);
       setSelected(item);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '重新派单失败');
+      setError(e instanceof Error ? e.message : t('pages.agent.taskRetryFailed'));
     }
   };
 
@@ -166,7 +172,7 @@ export function TaskCenter({ bots }: TaskCenterProps) {
       const latest = await groupApi.get(selected.group_id);
       setGroup(latest);
     } catch (e) {
-      setAddExpertError(e instanceof Error ? e.message : '添加专家失败');
+      setAddExpertError(e instanceof Error ? e.message : t('pages.agent.taskAddExpertFailed'));
     }
   };
 
@@ -178,17 +184,24 @@ export function TaskCenter({ bots }: TaskCenterProps) {
       {/* 头部 */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold text-foreground">研发任务中心</h2>
+          <h2 className="text-base font-semibold text-foreground">{t('pages.agent.taskTitle')}</h2>
           <p className="text-xs text-muted-foreground">
-            提交任务 → 系统自动配齐专家、创建任务群并派单执行
+            {t('pages.agent.taskSubtitle')}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => void loadTasks()} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void loadTasks()}
+            disabled={loading}
+            aria-label={t('pages.agent.refreshAria')}
+            title={t('pages.agent.refresh')}
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
           </Button>
           <Button size="sm" onClick={() => setDialogOpen(true)} data-testid="task-create-button">
-            <Plus className="mr-1 h-4 w-4" /> 创建研发任务
+            <Plus className="mr-1 h-4 w-4" aria-hidden="true" /> {t('pages.agent.createTask')}
           </Button>
         </div>
       </div>
@@ -212,14 +225,14 @@ export function TaskCenter({ bots }: TaskCenterProps) {
                     : 'bg-muted text-muted-foreground hover:bg-muted/70'
                 }`}
               >
-                {f === 'all' ? '全部' : STATUS_LABEL[f]}
+                {f === 'all' ? t('pages.agent.taskFilterAll') : statusLabel(f)}
               </button>
             ))}
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto p-2">
             {filtered.length === 0 && (
               <div className="py-8 text-center text-xs text-muted-foreground">
-                暂无任务。点击「创建研发任务」开始。
+                {t('pages.agent.taskEmpty')}
               </div>
             )}
             <div className="space-y-2">
@@ -239,7 +252,7 @@ export function TaskCenter({ bots }: TaskCenterProps) {
                   </div>
                   <div className="mt-1 flex items-center justify-between">
                     <Badge variant={t.status === 'failed' ? 'destructive' : 'secondary'} className="text-xs">
-                      {STATUS_LABEL[t.status] || t.status}
+                      {statusLabel(t.status)}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
                       {t.created_at ? new Date(t.created_at).toLocaleString().slice(0, 16) : ''}
@@ -272,24 +285,24 @@ export function TaskCenter({ bots }: TaskCenterProps) {
                   data-testid="group-chat-back"
                 >
                   <ArrowLeft className="mr-1 h-4 w-4" aria-hidden="true" />
-                  返回列表
+                  {t('pages.agent.taskBackToList')}
                 </Button>
               </div>
               <div className="flex min-h-0 flex-1 flex-col rounded-[var(--radius-Apple-md)] border border-border">
                 <div className="flex items-center justify-between border-b border-border px-3 py-2">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate text-xs font-semibold text-foreground">{activeTask.task_content}</span>
-                    <Badge className="text-xs">{STATUS_LABEL[activeTask.status] || activeTask.status}</Badge>
+                    <Badge className="text-xs">{statusLabel(activeTask.status)}</Badge>
                     <Button variant="ghost" size="sm" onClick={() => setAddExpertOpen(true)}>
-                      <UserPlus className="mr-1 h-3.5 w-3.5" /> 追加专家
+                      <UserPlus className="mr-1 h-3.5 w-3.5" /> {t('pages.agent.taskAddExpertBtn')}
                     </Button>
                     {activeTask.status !== 'archived' ? (
                       <Button variant="ghost" size="sm" onClick={() => void handleArchive()}>
-                        <Archive className="mr-1 h-3.5 w-3.5" /> 归档
+                        <Archive className="mr-1 h-3.5 w-3.5" /> {t('pages.agent.taskArchive')}
                       </Button>
                     ) : (
                       <Button variant="ghost" size="sm" onClick={() => void handleRestore()}>
-                        <RotateCcw className="mr-1 h-3.5 w-3.5" /> 恢复
+                        <RotateCcw className="mr-1 h-3.5 w-3.5" /> {t('pages.agent.taskRestore')}
                       </Button>
                     )}
                   </div>
@@ -297,10 +310,10 @@ export function TaskCenter({ bots }: TaskCenterProps) {
                 {activeTask.status === 'failed' && (
                   <div className="flex items-center justify-between border-b border-border bg-destructive/10 px-3 py-2">
                     <div className="text-xs text-destructive">
-                      失败原因：{activeTask.error_message || '未知错误'}
+                      {t('pages.agent.taskFailReason', { msg: activeTask.error_message || t('pages.agent.taskUnknownError') })}
                     </div>
                     <Button size="sm" variant="outline" onClick={() => void handleRetry()}>
-                      <RotateCcw className="mr-1 h-3.5 w-3.5" /> 重新派单
+                      <RotateCcw className="mr-1 h-3.5 w-3.5" /> {t('pages.agent.taskRetry')}
                     </Button>
                   </div>
                 )}
@@ -315,7 +328,7 @@ export function TaskCenter({ bots }: TaskCenterProps) {
             </>
           ) : (
             <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-              选择左侧任务查看执行过程
+              {t('pages.agent.taskSelectHint')}
             </div>
           )}
         </div>
@@ -325,30 +338,30 @@ export function TaskCenter({ bots }: TaskCenterProps) {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>创建研发任务</DialogTitle>
+            <DialogTitle>{t('pages.agent.taskCreateTitle')}</DialogTitle>
             <DialogDescription>
-              提交任务后，系统将自动从角色库配齐专家（必要时实时招募 AI 员工）、创建任务群并派单执行。
+              {t('pages.agent.taskCreateDesc')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 px-6 py-2">
             <div className="space-y-1.5">
-              <span className="text-sm font-medium text-foreground">任务描述 *</span>
+              <span className="text-sm font-medium text-foreground">{t('pages.agent.taskDescLabel')}</span>
               <Textarea
                 value={taskInput}
                 onChange={(e) => setTaskInput(e.target.value)}
                 rows={4}
                 maxLength={4000}
-                placeholder="如：设计一款辅助降血糖的饮品配方，并做安全性审查与药食同源合规核查。"
+                placeholder={t('pages.agent.taskDescPlaceholder')}
                 data-testid="task-input"
               />
             </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setDialogOpen(false)} disabled={creating}>
-              取消
+              {t('pages.agent.taskCancel')}
             </Button>
             <Button onClick={() => void handleCreate()} disabled={creating || !taskInput.trim()}>
-              {creating ? '创建中…' : '创建并派单'}
+              {creating ? t('pages.agent.taskCreating') : t('pages.agent.taskCreateAndDispatch')}
             </Button>
           </div>
         </DialogContent>
@@ -358,9 +371,9 @@ export function TaskCenter({ bots }: TaskCenterProps) {
       <Dialog open={addExpertOpen} onOpenChange={setAddExpertOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>追加专家</DialogTitle>
+            <DialogTitle>{t('pages.agent.taskAddExpertTitle')}</DialogTitle>
             <DialogDescription>
-              将团队中尚未加入的 Bot 添加到当前任务群，之后可在群聊中 @ 该专家定向派单。
+              {t('pages.agent.taskAddExpertDesc')}
             </DialogDescription>
           </DialogHeader>
           {addExpertError && (
@@ -371,7 +384,7 @@ export function TaskCenter({ bots }: TaskCenterProps) {
               const memberIds = new Set(group?.members.map((m) => m.bot_id) ?? []);
               const candidates = bots.filter((b) => !memberIds.has(b.id) && !b.is_chief);
               if (candidates.length === 0) {
-                return <div className="py-6 text-center text-xs text-muted-foreground">没有可追加的 Bot（当前团队已包含全部可用专家）。</div>;
+                return <div className="py-6 text-center text-xs text-muted-foreground">{t('pages.agent.taskAddExpertEmpty')}</div>;
               }
               return candidates.map((b) => (
                 <div key={b.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
@@ -381,7 +394,7 @@ export function TaskCenter({ bots }: TaskCenterProps) {
                     <span className="text-xs text-muted-foreground">{(b.capabilities || []).slice(0, 3).join(', ')}</span>
                   </div>
                   <Button size="sm" onClick={() => void handleAddExpert(b.id)}>
-                    添加
+                    {t('pages.agent.taskAdd')}
                   </Button>
                 </div>
               ));

@@ -13,12 +13,18 @@
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
+
+# ── 耗时优化：辨证 LLM/RAG 超时兜底（LLM 慢/挂起时不再阻塞 46-62s，
+#    超时后降级到规则引擎，保证工作流快速返回） ──
+_DIALECTICS_RAG_TIMEOUT = 4.0   # RAG 检索超时（秒）
+_DIALECTICS_LLM_TIMEOUT = 15.0  # 辨证 LLM 调用超时（秒）
 
 # ── 急重症关键词（命中即建议就医，不生成配方） ──
 URGENT_KEYWORDS: List[str] = [
@@ -298,6 +304,11 @@ async def _llm_analyze(query: str, rag_chunks: List[Dict[str, str]]) -> Dict[str
             if parsed.get("urgent")
             else ""
         ),
+        # P3-B-usage：暴露 LLM token 用量，供 orchestrator 写入 ai_bot_usage
+        "_token_usage": {
+            "prompt_tokens": int((resp.usage or {}).get("prompt_tokens", 0)),
+            "completion_tokens": int((resp.usage or {}).get("completion_tokens", 0)),
+        },
     }
 
 
@@ -352,12 +363,23 @@ async def analyze_dialectics(query: str, db: Optional[Any] = None, user_id: Opti
             "referral_message": "",
         }
 
-    # 2. LLM + RAG
+    # 2. LLM + RAG（带超时兜底，慢 LLM 不阻塞工作流）
     try:
-        rag_chunks = await _retrieve_rag(query, user_id=user_id)
-        result = await _llm_analyze(query, rag_chunks)
+        rag_chunks = await asyncio.wait_for(
+            _retrieve_rag(query, user_id=user_id),
+            timeout=_DIALECTICS_RAG_TIMEOUT,
+        )
+        result = await asyncio.wait_for(
+            _llm_analyze(query, rag_chunks),
+            timeout=_DIALECTICS_LLM_TIMEOUT,
+        )
         logger.info(f"[Dialectics] LLM+RAG 辨证完成 engine=llm_rag urgent={result['urgent']}")
         return result
+    except asyncio.TimeoutError:
+        logger.warning(
+            f"[Dialectics] 辨证 LLM/RAG 超时（RAG<={_DIALECTICS_RAG_TIMEOUT}s "
+            f"LLM<={_DIALECTICS_LLM_TIMEOUT}s），降级规则引擎"
+        )
     except Exception as e:
         logger.warning(f"[Dialectics] LLM 辨证不可用，降级规则引擎: {e}")
 

@@ -2,6 +2,7 @@
  * GroupChatPanel — 群聊协作面板（列表 + 新建 + 聊天）
  */
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Users, RefreshCw, ArrowLeft } from 'lucide-react';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import { groupApi } from './api';
@@ -13,6 +14,7 @@ interface GroupChatPanelProps {
 }
 
 export function GroupChatPanel({ bots }: GroupChatPanelProps) {
+  const { t } = useTranslation();
   const [groups, setGroups] = useState<GroupSession[]>([]);
   const [selected, setSelected] = useState<GroupSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,11 +32,11 @@ export function GroupChatPanel({ bots }: GroupChatPanelProps) {
       setGroups(data.items);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '加载群聊失败');
+      setError(e instanceof Error ? e.message : t('pages.agent.groupLoadFailed'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,7 +45,7 @@ export function GroupChatPanel({ bots }: GroupChatPanelProps) {
         if (!cancelled) setGroups(data.items);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : '加载群聊失败');
+        if (!cancelled) setError(e instanceof Error ? e.message : t('pages.agent.groupLoadFailed'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -51,7 +53,7 @@ export function GroupChatPanel({ bots }: GroupChatPanelProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const toggleMember = (botId: number) => {
     setMemberIds((prev) =>
@@ -61,7 +63,7 @@ export function GroupChatPanel({ bots }: GroupChatPanelProps) {
 
   const handleCreate = async () => {
     if (!name.trim() || !chiefId) {
-      setError('群聊名称与 Chief 必填');
+      setError(t('pages.agent.groupNameRequired'));
       return;
     }
     setCreating(true);
@@ -79,7 +81,7 @@ export function GroupChatPanel({ bots }: GroupChatPanelProps) {
       setMemberIds([]);
       setChiefId(undefined);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '创建群聊失败');
+      setError(e instanceof Error ? e.message : t('pages.agent.groupCreateFailed'));
     } finally {
       setCreating(false);
     }
@@ -89,15 +91,22 @@ export function GroupChatPanel({ bots }: GroupChatPanelProps) {
     <div className="flex h-full flex-col gap-3">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold text-foreground">群聊协作</h2>
-          <p className="text-xs text-muted-foreground">多 Bot 分工协作，@ 定向派单，Chief 默认统筹</p>
+          <h2 className="text-base font-semibold text-foreground">{t('pages.agent.groupTitle')}</h2>
+          <p className="text-xs text-muted-foreground">{t('pages.agent.groupSubtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => void loadGroups()} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void loadGroups()}
+            disabled={loading}
+            aria-label={t('pages.agent.refreshAria')}
+            title={t('pages.agent.refresh')}
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
           </Button>
           <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1 h-4 w-4" /> 新建群聊
+            <Plus className="mr-1 h-4 w-4" aria-hidden="true" /> {t('pages.agent.newGroup')}
           </Button>
         </div>
       </div>
@@ -112,7 +121,7 @@ export function GroupChatPanel({ bots }: GroupChatPanelProps) {
           <div className="mb-2 flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => setSelected(null)} data-testid="group-chat-back">
               <ArrowLeft className="mr-1 h-4 w-4" aria-hidden="true" />
-              返回列表
+              {t('pages.agent.groupBackToList')}
             </Button>
           </div>
           <div className="flex min-h-0 flex-1 flex-col rounded-[var(--radius-Apple-md)] border border-border bg-card">
@@ -135,13 +144,13 @@ export function GroupChatPanel({ bots }: GroupChatPanelProps) {
                 <span className="text-sm font-semibold text-foreground">{g.name}</span>
               </div>
               <div className="mt-2 text-xs text-muted-foreground">
-                成员 {g.members.length} 个 · 管理员 Bot#{g.chief_bot_id}
+                {t('pages.agent.groupMembersInfo', { count: g.members.length, id: g.chief_bot_id })}
               </div>
             </button>
           ))}
           {groups.length === 0 && (
             <div className="col-span-full rounded-[var(--radius-Apple-md)] border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-              还没有群聊。点击「新建群聊」创建第一个多 Bot 协作空间。
+              {t('pages.agent.groupEmpty')}
             </div>
           )}
         </div>
@@ -151,31 +160,31 @@ export function GroupChatPanel({ bots }: GroupChatPanelProps) {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>新建群聊</DialogTitle>
-            <DialogDescription>指定管理员 Chief 与成员 Bot，创建多智能体协作空间。</DialogDescription>
+            <DialogTitle>{t('pages.agent.groupDialogTitle')}</DialogTitle>
+            <DialogDescription>{t('pages.agent.groupDialogDesc')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 px-6 py-2">
             <div className="space-y-1.5">
-              <span className="text-sm font-medium text-foreground">群聊名称 *</span>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="如：降糖饮品研发群" maxLength={100} />
+              <span className="text-sm font-medium text-foreground">{t('pages.agent.groupNameLabel')}</span>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('pages.agent.groupNamePlaceholder')} maxLength={100} />
             </div>
             <div className="space-y-1.5">
-              <span className="text-sm font-medium text-foreground">管理员（Chief）*</span>
+              <span className="text-sm font-medium text-foreground">{t('pages.agent.groupChiefLabel')}</span>
               <Select value={chiefId ? String(chiefId) : undefined} onValueChange={(v) => setChiefId(Number(v))}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="选择 Chief Bot" />
+                  <SelectValue placeholder={t('pages.agent.groupChiefPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {bots.map((b) => (
                     <SelectItem key={b.id} value={String(b.id)}>
-                      {b.name}{b.is_chief ? '（Chief）' : ''}
+                      {b.name}{b.is_chief ? t('pages.agent.groupChiefSuffix') : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <span className="text-sm font-medium text-foreground">成员 Bot（可多选，默认由 Chief 回复）</span>
+              <span className="text-sm font-medium text-foreground">{t('pages.agent.groupMembersLabel')}</span>
               <div className="flex flex-wrap gap-2">
                 {bots.filter((b) => b.id !== chiefId).map((b) => {
                   const active = memberIds.includes(b.id);
@@ -194,15 +203,15 @@ export function GroupChatPanel({ bots }: GroupChatPanelProps) {
                   );
                 })}
                 {bots.length === 0 && (
-                  <span className="text-xs text-muted-foreground">请先创建 Bot</span>
+                  <span className="text-xs text-muted-foreground">{t('pages.agent.groupMembersEmpty')}</span>
                 )}
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setCreateOpen(false)}>取消</Button>
+            <Button variant="ghost" onClick={() => setCreateOpen(false)}>{t('pages.agent.groupCancel')}</Button>
             <Button onClick={() => void handleCreate()} disabled={creating || !name.trim() || !chiefId}>
-              {creating ? '创建中…' : '创建群聊'}
+              {creating ? t('pages.agent.groupCreating') : t('pages.agent.groupCreateBtn')}
             </Button>
           </DialogFooter>
         </DialogContent>

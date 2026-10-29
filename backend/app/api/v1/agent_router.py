@@ -190,16 +190,27 @@ async def execute_agent_stream(
     async def event_stream():
         yield _sse("start", {"query": req.query, "mode": req.mode})
 
+        # P2-B2 修复：fast 分支原先只 yield 假 tool_start/tool_done 且恒调用
+        # execute_smart（无视 mode）。现按 mode 真实执行，并按实际步骤推送事件。
         if req.mode == "fast":
-            tool_chain = req.tool_chain or []
-            for tool_name, params in tool_chain:
-                yield _sse("tool_start", {"tool": tool_name})
-                # 此处简化：实际应在 orchestrator 中暴露流式接口
-                yield _sse("tool_done", {"tool": tool_name, "status": "done"})
+            tool_chain = req.tool_chain or [
+                ["rag_retrieve", {"query": req.query, "top_k": 5}],
+                ["compliance_check", {"ingredients": [], "target_population": "adults"}],
+            ]
+            execution = await orch.execute_fast(req.query, tool_chain, context=ctx)
+        else:
+            execution = await orch.execute_smart(
+                req.query, max_steps=req.max_steps, context=ctx,
+            )
 
-        execution = await orch.execute_smart(
-            req.query, max_steps=req.max_steps, context=ctx,
-        )
+        # 按真实执行结果推送逐步事件
+        for step in execution.steps:
+            yield _sse("tool_start", {"tool": step.tool_name, "step_id": step.step_id})
+            yield _sse("tool_done", {
+                "tool": step.tool_name,
+                "step_id": step.step_id,
+                "status": step.status.value,
+            })
 
         yield _sse("complete", execution.to_dict())
         yield _sse("done", "")
@@ -304,7 +315,11 @@ async def execute_workflow(
 
 
 @router.get("/workflow/executions/{execution_id}", summary="查询工作流执行结果")
-async def get_workflow_execution(execution_id: str):
+async def get_workflow_execution(
+    execution_id: str,
+    tenant: TenantContext = Depends(require_tenant),
+    current_user: User = Depends(get_current_active_user),
+):
     """查询工作流执行结果"""
     engine = get_workflow_engine()
     execution = engine.get_execution(execution_id)

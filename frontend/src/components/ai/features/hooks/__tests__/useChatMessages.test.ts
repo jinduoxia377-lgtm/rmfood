@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useChatMessages } from '../useChatMessages'
 import { chatService } from '../../services/chatService'
-import { storageService } from '../../services/storageService'
+import { chatStorageService } from '../../capabilities/storage/ChatStorageService'
 
 vi.mock('../../services/chatService', () => ({
   chatService: {
@@ -16,6 +16,9 @@ vi.mock('../../services/chatService', () => ({
       state: 'idle',
       transition: vi.fn(),
       canTransition: vi.fn().mockReturnValue(true),
+      // P0-3 状态机监听器：useChatMessages 通过 addStateListener 订阅 isStreaming 状态。
+      // 原 mock 缺此方法 → TypeError: machine.addStateListener is not a function。
+      addStateListener: vi.fn().mockReturnValue(vi.fn()),
     }),
     closeAllPendingRequests: vi.fn(),
   },
@@ -26,6 +29,31 @@ vi.mock('../../services/storageService', () => ({
     get: vi.fn().mockReturnValue(null),
     set: vi.fn(),
     remove: vi.fn(),
+  },
+}))
+
+// P0/P1 变更：useChatMessages 现经 chatStorageService（IndexedDB 主存储 + 云端同步）
+// 与 chatEventLog（append-only 事件日志）持久化，测试需 mock 以免真实 IndexedDB/网络。
+vi.mock('../../capabilities/storage/ChatStorageService', () => ({
+  chatStorageService: {
+    saveMessages: vi.fn().mockResolvedValue(undefined),
+    syncToServer: vi.fn().mockResolvedValue(undefined),
+    loadMessages: vi.fn().mockResolvedValue([]),
+    deleteMessages: vi.fn().mockResolvedValue(undefined),
+  },
+}))
+
+vi.mock('../../capabilities/storage/ChatEventLog', () => ({
+  chatEventLog: {
+    onChange: vi.fn().mockReturnValue(vi.fn()),
+    append: vi.fn(),
+    deriveMessages: vi.fn().mockReturnValue([]),
+  },
+}))
+
+vi.mock('../../services/userPreferencesService', () => ({
+  userPreferencesService: {
+    extractAndSavePreferencesFromContent: vi.fn().mockReturnValue(null),
   },
 }))
 
@@ -51,7 +79,6 @@ function mockStreamResponse(content: string) {
 
 describe('useChatMessages', () => {
   const mockStream = chatService.sendMessageStream as Mock
-  const mockStorageSet = storageService.set as Mock
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -81,7 +108,11 @@ describe('useChatMessages', () => {
         await result.current.sendMessage('Hello AI')
       })
       
-      expect(mockStream).toHaveBeenCalledWith('Hello AI', expect.any(Array))
+      // P0/P1：sendMessageStream 现为 4 参（query, history, stream, options{scenarioMode,ragContext,model}）
+      // 仅断言前 2 参（query + history 数组），避免与新增可选参耦合。
+      const streamCall = mockStream.mock.calls[0] ?? []
+      expect(streamCall[0]).toBe('Hello AI')
+      expect(Array.isArray(streamCall[1])).toBe(true)
       expect(result.current.messages).toHaveLength(2)
       expect(result.current.messages[0].role).toBe('user')
       expect(result.current.messages[1].role).toBe('assistant')
@@ -198,17 +229,28 @@ describe('useChatMessages', () => {
   })
 
   describe('存储操作', () => {
-    it('发送消息应写入存储', async () => {
+    it('发送消息应写入存储（IndexedDB 防抖）', async () => {
       mockStreamResponse('AI Response')
-      
+
       const { result } = renderHook(() => useChatMessages())
-      
+
+      // P0/P1：持久化经 chatStorageService（IndexedDB 主存储 + 云端同步），
+      // 需先设置活动会话（activeSessionIdRef）。
+      act(() => {
+        result.current.setActiveSessionId('test-session')
+      })
+
       await act(async () => {
         await result.current.sendMessage('Hello')
       })
-      
-      // localStorage 兜底路径（jsdom 无 IndexedDB）会写入 storageService
-      expect(mockStorageSet).toHaveBeenCalled()
+
+      // saveToStorage 为 500ms 防抖，等待其触发
+      await waitFor(() => {
+        expect(chatStorageService.saveMessages).toHaveBeenCalledWith(
+          'test-session',
+          expect.any(Array),
+        )
+      })
     })
   })
 })

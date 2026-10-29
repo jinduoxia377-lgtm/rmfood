@@ -2,6 +2,7 @@
  * BotCreateDialog — 新建具名 Bot（人设/模型/能力白名单/可见性）
  */
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Button,
   Dialog,
@@ -34,21 +35,22 @@ interface BotCreateDialogProps {
 }
 
 const CAPABILITY_OPTIONS = [
-  { name: 'rag_retrieve', label: '知识检索' },
-  { name: 'generate_formula', label: '配方生成' },
-  { name: 'compliance_check', label: '合规检查' },
-  { name: 'safety_assess', label: '安全评估' },
-  { name: 'generate_experiment_plan', label: '实验方案' },
-  { name: 'literature_search', label: '文献检索' },
-  { name: 'ingredient_info', label: '原料查询' },
-  { name: 'cost_estimate', label: '成本估算' },
-  { name: 'qa_answer', label: '知识问答' },
-  { name: 'formula_compare', label: '配方对比' },
-  { name: 'stability_predict', label: '稳定性预测' },
-  { name: 'taste_predict', label: '口感预测' },
+  { name: 'rag_retrieve', labelKey: 'botCapabilityRagRetrieve' },
+  { name: 'generate_formula', labelKey: 'botCapabilityGenerateFormula' },
+  { name: 'compliance_check', labelKey: 'botCapabilityComplianceCheck' },
+  { name: 'safety_assess', labelKey: 'botCapabilitySafetyAssess' },
+  { name: 'generate_experiment_plan', labelKey: 'botCapabilityGenerateExperimentPlan' },
+  { name: 'literature_search', labelKey: 'botCapabilityLiteratureSearch' },
+  { name: 'ingredient_info', labelKey: 'botCapabilityIngredientInfo' },
+  { name: 'cost_estimate', labelKey: 'botCapabilityCostEstimate' },
+  { name: 'qa_answer', labelKey: 'botCapabilityQaAnswer' },
+  { name: 'formula_compare', labelKey: 'botCapabilityFormulaCompare' },
+  { name: 'stability_predict', labelKey: 'botCapabilityStabilityPredict' },
+  { name: 'taste_predict', labelKey: 'botCapabilityTastePredict' },
 ];
 
 export function BotCreateDialog({ open, onOpenChange, onCreate }: BotCreateDialogProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState('');
   const [description, setDescription] = useState('');
@@ -86,7 +88,7 @@ export function BotCreateDialog({ open, onOpenChange, onCreate }: BotCreateDialo
 
   const handleSubmit = async () => {
     if (!name.trim() || !persona.trim()) {
-      setError('名称与人设不能为空');
+      setError(t('pages.agent.botCreateNamePersonaRequired'));
       return;
     }
     setSubmitting(true);
@@ -110,7 +112,7 @@ export function BotCreateDialog({ open, onOpenChange, onCreate }: BotCreateDialo
       setError(
         typeof detail === 'string'
           ? detail
-          : (e instanceof Error ? e.message : '创建失败，请重试'),
+          : (e instanceof Error ? e.message : t('pages.agent.botCreateFailed')),
       );
     } finally {
       setSubmitting(false);
@@ -121,9 +123,9 @@ export function BotCreateDialog({ open, onOpenChange, onCreate }: BotCreateDialo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>新建智能体</DialogTitle>
+          <DialogTitle>{t('pages.agent.botCreateTitle')}</DialogTitle>
           <DialogDescription>
-            创建一个具名 AI Bot，配置人设、模型与能力白名单，它将以独立身份与你协作。
+            {t('pages.agent.botCreateDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -136,45 +138,45 @@ export function BotCreateDialog({ open, onOpenChange, onCreate }: BotCreateDialo
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <FieldLabel>名称 *</FieldLabel>
+              <FieldLabel>{t('pages.agent.botCreateName')}</FieldLabel>
               <Input
                 id="bot-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="如：法规专家"
+                placeholder={t('pages.agent.botCreateNamePlaceholder')}
                 maxLength={100}
               />
             </div>
             <div className="space-y-1.5">
-              <FieldLabel>头像（图片 URL）</FieldLabel>
+              <FieldLabel>{t('pages.agent.botCreateAvatar')}</FieldLabel>
               <Input
                 id="bot-avatar"
                 value={avatar}
                 onChange={(e) => setAvatar(e.target.value)}
-                placeholder="如：https://example.com/bot.png"
+                placeholder={t('pages.agent.botCreateAvatarPlaceholder')}
                 maxLength={100}
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <FieldLabel>简介</FieldLabel>
+            <FieldLabel>{t('pages.agent.botCreateDescLabel')}</FieldLabel>
             <Input
               id="bot-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="一句话介绍这个 Bot 的职责"
+              placeholder={t('pages.agent.botCreateDescPlaceholder')}
               maxLength={500}
             />
           </div>
 
           <div className="space-y-1.5">
-            <FieldLabel>人设 System Prompt *</FieldLabel>
+            <FieldLabel>{t('pages.agent.botCreatePersona')}</FieldLabel>
             <Textarea
               id="bot-persona"
               value={persona}
               onChange={(e) => setPersona(e.target.value)}
-              placeholder="定义这个 Bot 的角色、职责、输出规范…"
+              placeholder={t('pages.agent.botCreatePersonaPlaceholder')}
               rows={6}
               maxLength={20000}
             />
@@ -182,14 +184,14 @@ export function BotCreateDialog({ open, onOpenChange, onCreate }: BotCreateDialo
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <FieldLabel>模型</FieldLabel>
+              <FieldLabel>{t('pages.agent.botCreateModel')}</FieldLabel>
               <Select value={modelId} onValueChange={setModelId}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="跟随全局模型" />
+                  <SelectValue placeholder={t('pages.agent.botCreateModelPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {models.length === 0 && (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">暂无可用模型配置</div>
+                    <div className="px-3 py-2 text-sm text-muted-foreground">{t('pages.agent.botCreateModelEmpty')}</div>
                   )}
                   {models.map((m) => (
                     <SelectItem key={`${m.provider}:${m.model_id}`} value={m.model_id}>
@@ -200,7 +202,7 @@ export function BotCreateDialog({ open, onOpenChange, onCreate }: BotCreateDialo
               </Select>
             </div>
             <div className="space-y-1.5">
-              <FieldLabel>可见性</FieldLabel>
+              <FieldLabel>{t('pages.agent.botCreateVisibility')}</FieldLabel>
               <Select
                 value={visibility}
                 onValueChange={(v) => setVisibility(v as 'private' | 'org')}
@@ -209,15 +211,15 @@ export function BotCreateDialog({ open, onOpenChange, onCreate }: BotCreateDialo
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="private">仅自己</SelectItem>
-                  <SelectItem value="org">组织共享</SelectItem>
+                  <SelectItem value="private">{t('pages.agent.botCreateVisibilityPrivate')}</SelectItem>
+                  <SelectItem value="org">{t('pages.agent.botCreateVisibilityOrg')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <FieldLabel>能力白名单</FieldLabel>
+            <FieldLabel>{t('pages.agent.botCreateCapabilities')}</FieldLabel>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {CAPABILITY_OPTIONS.map((cap) => {
                 const checked = capabilities.includes(cap.name);
@@ -232,7 +234,7 @@ export function BotCreateDialog({ open, onOpenChange, onCreate }: BotCreateDialo
                         : 'border-border text-muted-foreground hover:border-primary-300'
                     }`}
                   >
-                    {cap.label}
+                    {t(`pages.agent.${cap.labelKey}`)}
                   </button>
                 );
               })}
@@ -242,10 +244,10 @@ export function BotCreateDialog({ open, onOpenChange, onCreate }: BotCreateDialo
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            取消
+            {t('pages.agent.botCreateCancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={submitting} data-testid="bot-create-submit">
-            {submitting ? '创建中…' : '创建 Bot'}
+            {submitting ? t('pages.agent.botCreateSubmitting') : t('pages.agent.botCreateSubmit')}
           </Button>
         </DialogFooter>
       </DialogContent>

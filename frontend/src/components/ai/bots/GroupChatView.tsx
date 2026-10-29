@@ -9,6 +9,7 @@
  * - 消息引用（待完善项 3）：hover 消息可引用，发送带 reply_to
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { Send, RefreshCw, Users, Pencil, X, Info, Search, Maximize2, Minimize2, ArrowLeft } from 'lucide-react';
 import {
@@ -54,24 +55,29 @@ function getMessageType(msg: GroupMessage): StructuredMsgType {
   return 'result';
 }
 
-/** 结构化消息类型小标签（统一气泡背景后，用标签保留语义区分） */
-const MSG_TYPE_BADGE: Record<string, { label: string; cls: string }> = {
-  summary: { label: '汇总', cls: 'bg-accent-100 text-accent-700 dark:bg-accent-900/40 dark:text-accent-300' },
-  plan: { label: '任务分配', cls: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300' },
-  recruit: { label: '招募', cls: 'bg-accent-100 text-accent-700 dark:bg-accent-900/40 dark:text-accent-300' },
-  failure: { label: '失败', cls: 'bg-destructive/10 text-destructive' },
-  pending: { label: '处理中', cls: 'bg-muted text-muted-foreground' },
+/** 结构化消息类型小标签（统一气泡背景后，用标签保留语义区分）；labelKey 为 pages.agent 命名空间的 key 后缀 */
+const MSG_TYPE_BADGE: Record<string, { labelKey: string; cls: string }> = {
+  summary: { labelKey: 'groupMsgSummary', cls: 'bg-accent-100 text-accent-700 dark:bg-accent-900/40 dark:text-accent-300' },
+  plan: { labelKey: 'groupMsgPlan', cls: 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300' },
+  recruit: { labelKey: 'groupMsgRecruit', cls: 'bg-accent-100 text-accent-700 dark:bg-accent-900/40 dark:text-accent-300' },
+  failure: { labelKey: 'groupMsgFailure', cls: 'bg-destructive/10 text-destructive' },
+  pending: { labelKey: 'groupMsgPending', cls: 'bg-muted text-muted-foreground' },
 };
 
-const TASK_STATUS_LABEL: Record<string, string> = {
-  recruiting: '招募中',
-  dispatching: '派单中',
-  completed: '已完成',
-  failed: '失败',
-  archived: '已归档',
+/** 任务状态 → pages.agent.taskStatus.* 的 key 后缀 */
+const TASK_STATUS_KEY: Record<string, string> = {
+  recruiting: 'taskStatus.recruiting',
+  dispatching: 'taskStatus.dispatching',
+  completed: 'taskStatus.completed',
+  failed: 'taskStatus.failed',
+  archived: 'taskStatus.archived',
 };
 
 export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupChatViewProps) {
+  const { t } = useTranslation();
+  /** 解析任务状态为本地化标签；未知状态回退原始值 */
+  const taskStatusLabel = (status: string) =>
+    TASK_STATUS_KEY[status] ? t(`pages.agent.${TASK_STATUS_KEY[status]}`) : status;
   // 本地群聊状态（成员管理后更新）
   const [groupState, setGroupState] = useState<GroupSession>(group);
   // 归档只读（阶段 C）
@@ -110,10 +116,10 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
 
   const botName = useCallback(
     (botId: number | null | undefined) => {
-      if (!botId) return '未知 Bot';
+      if (!botId) return t('pages.agent.groupUnknownBot');
       return bots.find((b) => b.id === botId)?.name ?? `Bot#${botId}`;
     },
-    [bots],
+    [bots, t],
   );
 
   const botAvatar = useCallback((botId: number | null | undefined) => {
@@ -243,7 +249,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
         startPolling(group.id);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : '加载消息失败');
+      setError(e instanceof Error ? e.message : t('pages.agent.groupMessagesLoadFailed'));
     } finally {
       setLoading(false);
     }
@@ -271,7 +277,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
         }
       })
       ?.catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : '加载消息失败');
+        if (!cancelled) setError(e instanceof Error ? e.message : t('pages.agent.groupMessagesLoadFailed'));
       })
       ?.finally(() => {
         if (!cancelled) setLoading(false);
@@ -313,7 +319,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
         setSending(false);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : '发送失败');
+      setError(e instanceof Error ? e.message : t('pages.agent.groupSendFailed'));
       setSending(false);
     }
   };
@@ -331,7 +337,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
       const latest = await groupApi.get(group.id);
       setGroupState(latest);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '添加成员失败');
+      setError(e instanceof Error ? e.message : t('pages.agent.groupAddMemberFailed'));
     }
   };
 
@@ -341,13 +347,13 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
       const latest = await groupApi.get(group.id);
       setGroupState(latest);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '移除成员失败');
+      setError(e instanceof Error ? e.message : t('pages.agent.groupRemoveMemberFailed'));
     }
   };
 
   const senderName = (msg: GroupMessage): string =>
     msg.sender_type === 'user'
-      ? '我'
+      ? t('pages.agent.groupMe')
       : msg.sender_bot_name || botName(msg.sender_bot_id);
 
   const chatContent = (
@@ -363,7 +369,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           {onBackToTasks && (
-            <Button variant="ghost" size="sm" onClick={onBackToTasks} aria-label="返回任务中心" title="返回任务中心">
+            <Button variant="ghost" size="sm" onClick={onBackToTasks} aria-label={t('pages.agent.groupBackToTasks')} title={t('pages.agent.groupBackToTasks')}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
@@ -373,21 +379,21 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
           <div>
             <div className="text-sm font-semibold text-foreground">{groupState.name}</div>
             <div className="text-xs text-muted-foreground">
-              管理员：{botName(groupState.chief_bot_id)} · 成员 {groupState.members.length} 个
+              {t('pages.agent.groupAdminInfo', { name: botName(groupState.chief_bot_id), count: groupState.members.length })}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          {taskStatus && TASK_STATUS_LABEL[taskStatus] && (
+          {taskStatus && TASK_STATUS_KEY[taskStatus] && (
             <Badge
               variant={taskStatus === 'failed' ? 'destructive' : 'secondary'}
               className="text-xs"
             >
-              {TASK_STATUS_LABEL[taskStatus]}
+              {taskStatusLabel(taskStatus)}
             </Badge>
           )}
           <Button variant="ghost" size="sm" onClick={() => setMemberOpen(true)}>
-            <Users className="mr-1 h-4 w-4" /> 成员
+            <Users className="mr-1 h-4 w-4" /> {t('pages.agent.groupMemberBtn')}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => void loadMessages()} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -397,15 +403,15 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
             size="sm"
             onClick={() => setExpanded((v) => !v)}
             data-testid="group-chat-expand"
-            aria-label={expanded ? '退出全屏' : '放大对话框'}
-            title={expanded ? '退出全屏' : '放大对话框'}
+            aria-label={expanded ? t('pages.agent.groupExitFullscreen') : t('pages.agent.groupExpandTitle')}
+            title={expanded ? t('pages.agent.groupExitFullscreen') : t('pages.agent.groupExpandTitle')}
           >
             {expanded ? (
               <Minimize2 className="mr-1 h-4 w-4" aria-hidden="true" />
             ) : (
               <Maximize2 className="mr-1 h-4 w-4" aria-hidden="true" />
             )}
-            {expanded ? '退出全屏' : '放大'}
+            {expanded ? t('pages.agent.groupExitFullscreen') : t('pages.agent.groupExpand')}
           </Button>
         </div>
       </div>
@@ -413,7 +419,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
       {/* 派单进度条（深度开发 D-1） */}
       {progress && (taskStatus === 'recruiting' || taskStatus === 'dispatching') && (
         <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-1.5">
-          <span className="text-xs text-muted-foreground">子任务进度</span>
+          <span className="text-xs text-muted-foreground">{t('pages.agent.groupProgress')}</span>
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-primary-500 transition-all"
@@ -437,7 +443,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
           <input
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
-            placeholder="搜索消息…"
+            placeholder={t('pages.agent.groupSearchPlaceholder')}
             className="min-w-0 flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
           />
           {filterText && (
@@ -467,17 +473,17 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
                   <div className={`mb-0.5 flex items-center gap-1 text-xs text-muted-foreground ${isUser ? 'justify-end' : ''}`}>
                     <span>{senderName(msg)}</span>
                     {typeBadge && (
-                      <span className={`rounded px-1 py-0.5 text-xs font-medium ${typeBadge.cls}`}>{typeBadge.label}</span>
+                      <span className={`rounded px-1 py-0.5 text-xs font-medium ${typeBadge.cls}`}>{t(`pages.agent.${typeBadge.labelKey}`)}</span>
                     )}
                     {!isUser && msg.task_execution_id && (
-                      <Badge variant="secondary" className="text-xs">已派单</Badge>
+                      <Badge variant="secondary" className="text-xs">{t('pages.agent.groupDispatched')}</Badge>
                     )}
                     {/* 查看专家详情（深度开发 D-2） */}
                     {!isUser && msg.sender_bot_id && (
                       <button
                         className="opacity-0 transition-opacity group-hover:opacity-100"
                         onClick={() => openBotDetail(msg.sender_bot_id as number)}
-                        title="查看专家详情"
+                        title={t('pages.agent.groupViewExpert')}
                       >
                         <Info className="h-3 w-3" />
                       </button>
@@ -486,7 +492,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
                     <button
                       className="ml-1 opacity-0 transition-opacity group-hover:opacity-100"
                       onClick={() => setReplyTo({ id: msg.id, content: msg.content, senderName: senderName(msg) })}
-                      title="引用此消息"
+                      title={t('pages.agent.groupReplyTitle')}
                     >
                       <Pencil className="h-3 w-3" />
                     </button>
@@ -511,7 +517,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
           })}
           {messages.length === 0 && !loading && (
             <div className="py-10 text-center text-xs text-muted-foreground">
-              群聊已就绪：输入任务，{botName(groupState.chief_bot_id)} 将自动组织团队完成；@ 成员可定向协作。
+              {t('pages.agent.groupReady', { chief: botName(groupState.chief_bot_id) })}
             </div>
           )}
           <div ref={bottomRef} />
@@ -521,7 +527,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
       {/* @ 选择器（可选定向） */}
       {memberBots.length > 0 && (
         <div className="flex flex-wrap items-center gap-1 border-t border-border px-3 pt-2">
-          <span className="text-xs text-muted-foreground">@ 定向（可选）：</span>
+          <span className="text-xs text-muted-foreground">{t('pages.agent.groupAtSelector')}</span>
           {memberBots.map((bot) => {
             const active = mentioned.includes(bot.id);
             return (
@@ -545,7 +551,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
       {replyTo && (
         <div className="flex items-center justify-between border-t border-border bg-muted/40 px-3 py-1.5 text-xs">
           <span className="truncate text-muted-foreground">
-            引用 {replyTo.senderName}：{replyTo.content.slice(0, 60)}
+            {t('pages.agent.groupReplyPrefix', { name: replyTo.senderName })}{replyTo.content.slice(0, 60)}
           </span>
           <button onClick={() => setReplyTo(null)} className="ml-2 text-muted-foreground hover:text-destructive">
             <X className="h-3.5 w-3.5" />
@@ -564,7 +570,8 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
               void handleSend();
             }
           }}
-          placeholder={isArchived ? '群聊已归档（只读）' : `输入任务，${botName(groupState.chief_bot_id)} 自动组织团队…`}
+          placeholder={isArchived ? t('pages.agent.groupArchivedPlaceholder') : t('pages.agent.groupPlaceholder', { chief: botName(groupState.chief_bot_id) })}
+          aria-label={t('pages.agent.groupInputAria')}
           className="min-h-[44px] flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary-400 disabled:cursor-not-allowed disabled:opacity-60"
           rows={2}
           maxLength={4000}
@@ -572,7 +579,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
           data-testid="group-input"
         />
         <Button onClick={() => void handleSend()} disabled={isArchived || sending || !input.trim()}>
-          <Send className="mr-1 h-4 w-4" /> {isArchived ? '已归档' : sending ? '派单中…' : '发送'}
+          <Send className="mr-1 h-4 w-4" aria-hidden="true" /> {isArchived ? t('pages.agent.botArchived') : sending ? t('pages.agent.groupSending') : t('pages.agent.groupSend')}
         </Button>
       </div>
 
@@ -580,12 +587,12 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
       <Dialog open={memberOpen} onOpenChange={setMemberOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>群成员管理</DialogTitle>
-            <DialogDescription>添加/移除群成员 Bot；管理员 Chief 不可移除。</DialogDescription>
+            <DialogTitle>{t('pages.agent.groupMemberTitle')}</DialogTitle>
+            <DialogDescription>{t('pages.agent.groupMemberDesc')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 px-6 py-2">
             <div className="space-y-2">
-              <div className="text-sm font-medium text-foreground">当前成员</div>
+              <div className="text-sm font-medium text-foreground">{t('pages.agent.groupMemberCurrent')}</div>
               {groupState.members.map((m) => {
                 const b = bots.find((x) => x.id === m.bot_id);
                 return (
@@ -593,24 +600,24 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
                     <div className="flex items-center gap-2 text-sm">
                       <BotAvatar bot={b} size="sm" />
                       <span>{resolveMemberName(m.bot_id)}</span>
-                      {m.role === 'admin' && <Badge variant="secondary" className="text-xs">管理员</Badge>}
+                      {m.role === 'admin' && <Badge variant="secondary" className="text-xs">{t('pages.agent.groupMemberAdmin')}</Badge>}
                     </div>
                     {m.role !== 'admin' && (
                       <button className="text-xs text-muted-foreground hover:text-destructive" onClick={() => void handleRemoveMember(m.bot_id)}>
-                        移除
+                        {t('pages.agent.groupMemberRemove')}
                       </button>
                     )}
                   </div>
                 );
               })}
               {groupState.members.length === 0 && (
-                <div className="text-xs text-muted-foreground">暂无成员</div>
+                <div className="text-xs text-muted-foreground">{t('pages.agent.groupMemberEmpty')}</div>
               )}
             </div>
             <div className="space-y-2">
-              <div className="text-sm font-medium text-foreground">添加成员</div>
+              <div className="text-sm font-medium text-foreground">{t('pages.agent.groupMemberAdd')}</div>
               {nonMemberBots.length === 0 && (
-                <div className="text-xs text-muted-foreground">没有可添加的 Bot（请先创建 Bot）</div>
+                <div className="text-xs text-muted-foreground">{t('pages.agent.groupMemberNoAdd')}</div>
               )}
               <div className="flex flex-wrap gap-2">
                 {nonMemberBots.map((b) => (
@@ -626,7 +633,7 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
             </div>
           </div>
           <div className="flex justify-end">
-            <Button variant="ghost" onClick={() => setMemberOpen(false)}>关闭</Button>
+            <Button variant="ghost" onClick={() => setMemberOpen(false)}>{t('pages.agent.groupClose')}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -642,11 +649,11 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
                   {botDetail.name}
                   {botDetail.is_chief && <Badge>Chief</Badge>}
                 </DialogTitle>
-                <DialogDescription>{botDetail.description || '暂无简介'}</DialogDescription>
+                <DialogDescription>{botDetail.description || t('pages.agent.groupNoDesc')}</DialogDescription>
               </DialogHeader>
               <div className="space-y-3 px-6 py-2">
                 <div className="rounded-lg bg-muted/40 p-3">
-                  <div className="mb-1 text-xs text-muted-foreground">能力白名单</div>
+                  <div className="mb-1 text-xs text-muted-foreground">{t('pages.agent.groupCapabilities')}</div>
                   <div className="flex flex-wrap gap-1">
                     {(botDetail.capabilities || []).map((cap) => (
                       <span key={cap} className="rounded bg-background px-1.5 py-0.5 text-xs text-foreground">
@@ -654,19 +661,19 @@ export function GroupChatView({ group, bots, taskStatus, onBackToTasks }: GroupC
                       </span>
                     ))}
                     {(!botDetail.capabilities || botDetail.capabilities.length === 0) && (
-                      <span className="text-xs text-muted-foreground">未配置（随全局）</span>
+                      <span className="text-xs text-muted-foreground">{t('pages.agent.groupCapabilityNone')}</span>
                     )}
                   </div>
                 </div>
                 <div className="rounded-lg bg-muted/40 p-3">
-                  <div className="mb-1 text-xs text-muted-foreground">人设 Prompt</div>
+                  <div className="mb-1 text-xs text-muted-foreground">{t('pages.agent.groupPersona')}</div>
                   <p className="max-h-48 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-foreground">
                     {botDetail.persona_prompt}
                   </p>
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button variant="ghost" onClick={() => setBotDetailOpen(false)}>关闭</Button>
+                <Button variant="ghost" onClick={() => setBotDetailOpen(false)}>{t('pages.agent.groupClose')}</Button>
               </div>
             </>
           )}

@@ -75,7 +75,7 @@ export function botChatStream(
 
       const decoder = new TextDecoder();
       let buffer = '';
-      const accumulated = '';
+      // 当前 SSE event 名（`event: xxx`），仅在本次 data 行内有效，避免跨 chunk 残留
       let currentEvent = '';
 
       while (true) {
@@ -99,9 +99,10 @@ export function botChatStream(
             if (currentEvent === 'meta' && parsed.model) {
               handlers.onMeta?.(parsed.model);
             } else if (currentEvent === 'content' && typeof parsed.content === 'string') {
-              void accumulated;
               handlers.onContent(parsed.content);
             }
+            // 该 data 行消费完成，清空 event 名，避免下一条裸 data 行误用上一事件的类型
+            currentEvent = '';
           } catch {
             // 忽略无法解析的行
           }

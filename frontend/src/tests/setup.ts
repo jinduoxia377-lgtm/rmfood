@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 import '../components/ai/features/__tests__/matchers/customMatchers';
+// 初始化 i18n（zh-CN 默认），使组件内 useTranslation 的文案断言在测试中解析为真实翻译而非 key
+import '@/i18n';
 
 // jsdom 原生不支持 IndexedDB，而 operationLogger / localStorageService / persistentStore
 // 等模块在加载或调用时会访问 indexedDB。引入 fake-indexeddb（真实的内存实现，行业标准做法），

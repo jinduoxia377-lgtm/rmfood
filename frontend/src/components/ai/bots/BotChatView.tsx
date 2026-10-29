@@ -45,12 +45,14 @@ export function BotChatView({ bot, onOpenDetail }: BotChatViewProps) {
     botApi.getHistory(bot.id)
       .then((items) => {
         if (cancelled) return;
+        // P1-F1 修复：后端 ChatMessage.to_dict() 返回 role/timestamp（ISO 字符串），
+        // 此前误用 sender_type/created_at（恒 undefined）→ 历史全渲染为 AI 侧、时间戳回退。
         const history: BotChatMessage[] = items.map((m) => ({
           id: `h-${m.id}`,
-          role: m.sender_type === 'user' ? 'user' : 'assistant',
+          role: m.role,
           content: m.content,
-          timestamp: m.created_at ? new Date(m.created_at).getTime() : Date.now(),
-          model: m.sender_bot_id ? undefined : undefined,
+          timestamp: new Date(m.timestamp).getTime(),
+          model: undefined,
         }));
         setMessages(history);
       })

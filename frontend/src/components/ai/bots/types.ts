@@ -70,6 +70,19 @@ export interface BotChatMessage {
   error?: string;
 }
 
+/**
+ * Bot 持续会话历史记录（后端 ChatMessage.to_dict() 结构）。
+ * P1-F1 修复：后端返回 role/timestamp（非 GroupMessage 的 sender_type/created_at），
+ * 此前误用 GroupMessage 类型导致历史消息全渲染为 AI 侧、时间戳回退。
+ */
+export interface BotHistoryMessage {
+  id: number;
+  session_id: number;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: string;
+}
+
 export interface BotListQuery {
   status?: string;
   offset?: number;

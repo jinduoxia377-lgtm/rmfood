@@ -2,6 +2,7 @@
  * BotCard — 具名 Bot 卡片（多智能体协作平台）
  */
 import { Sparkles, ShieldCheck, Archive, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui';
 import { BotAvatar } from './BotAvatar';
 import type { Bot as BotType } from './types';
@@ -14,6 +15,7 @@ interface BotCardProps {
 }
 
 export function BotCard({ bot, active, onOpen, onDelete }: BotCardProps) {
+  const { t } = useTranslation();
   return (
     <div
       className={`group relative cursor-pointer rounded-[var(--radius-Apple-md)] border bg-card p-4 transition-all hover:shadow-md ${
@@ -41,22 +43,22 @@ export function BotCard({ bot, active, onOpen, onDelete }: BotCardProps) {
                 </Badge>
               )}
               {bot.is_system && !bot.is_chief && (
-                <Badge variant="secondary" className="text-xs">官方</Badge>
+                <Badge variant="secondary" className="text-xs">{t('pages.agent.botOfficial')}</Badge>
               )}
             </div>
             <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
-              {bot.description || '暂无简介'}
+              {bot.description || t('pages.agent.botNoDesc')}
             </p>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
           {bot.status === 'archived' ? (
             <Badge variant="outline" className="text-xs text-muted-foreground">
-              <Archive className="mr-1 h-3 w-3" /> 已归档
+              <Archive className="mr-1 h-3 w-3" aria-hidden="true" /> {t('pages.agent.botArchived')}
             </Badge>
           ) : (
             <Badge variant="outline" className="text-xs text-success-600">
-              <ShieldCheck className="mr-1 h-3 w-3" /> 运行中
+              <ShieldCheck className="mr-1 h-3 w-3" aria-hidden="true" /> {t('pages.agent.botRunning')}
             </Badge>
           )}
           {bot.model_id && (
@@ -90,7 +92,8 @@ export function BotCard({ bot, active, onOpen, onDelete }: BotCardProps) {
             e.stopPropagation();
             onDelete(bot);
           }}
-          title="删除 Bot"
+          title={t('pages.agent.botDeleteTitle')}
+          aria-label={t('pages.agent.botDeleteTitle')}
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
