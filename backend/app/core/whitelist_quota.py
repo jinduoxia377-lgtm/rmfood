@@ -2,11 +2,11 @@
 
 配额语义（已确认需求）：
 - 仅「批准」消耗名额（-1）；待审核 / 拒绝不消耗；用尽即止（剩余 0 时阻止新批准）。
-- 剩余 = WHITELIST_QUOTA_TOTAL - 已批准数；已批准数 = PreRegisterRequest.status=APPROVED 的计数
-  （与「剩余=500-已批准数」一致；审批钩子在同一事务内置 APPROVED，保证计数原子一致）。
-- 计数来源说明：优先取 PreRegisterRequest.status=APPROVED（而非 Users 归入白名单组织数），
-  因为批准动作即置 APPROVED，与配额消耗一一对应；Users 组织归属计数会受
-  既有存量用户/非白名单用户干扰，不作为配额口径。
+- 剩余 = WHITELIST_QUOTA_TOTAL - 已批准数。
+- **已批准数口径（用户定夺「不含已批用户」）**：仅计**新流程**批准（批准时归入
+  「莱茵分子白名单组织」的用户）；历史已批用户（旧流程、未归入白名单组织）不消耗
+  500 池、不计数——故剩余初始 = 500，每个新流程批准 -1。
+- 计数来源：PreRegisterRequest.status=APPROVED JOIN users（user.organization_id = 白名单组织 id）。
 
 并发安全：consume_quota 用 PostgreSQL 事务级 advisory lock（pg_advisory_xact_lock）
 串行化所有批准：批准方在持有锁的事务内检查剩余，随后（同一事务）置 status=APPROVED，
@@ -17,6 +17,7 @@ from __future__ import annotations
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..models.models import User
 from ..models.pre_register import PreRegisterRequest, PreRegisterStatus
 
 # ── 配额总量（已确认 500）──
@@ -28,11 +29,25 @@ _QUOTA_LOCK_KEY = 0x524D_464F_4F44
 
 
 async def get_approved_count(db: AsyncSession) -> int:
-    """已批准数 = PreRegisterRequest.status=APPROVED 的计数（配额口径）。"""
+    """已批准数 = 归入「莱茵分子白名单组织」的新流程批准数（500 池配额口径）。
+
+    口径（用户定夺「未来新增可批 500（不含已批用户）」）：仅计**新流程**批准——
+    即批准时通过 _approve_one 归入白名单组织的用户；历史已批用户（旧流程，plan 各异、
+    未归入白名单组织）不消耗 500 池，故不计数。
+    """
+    from .whitelist_org import get_whitelist_org_id
+
+    org_id = await get_whitelist_org_id(db)
+    if org_id is None:
+        return 0  # 白名单组织尚未创建 → 尚无新流程批准
     result = await db.execute(
         select(func.count())
         .select_from(PreRegisterRequest)
-        .where(PreRegisterRequest.status == PreRegisterStatus.APPROVED)
+        .join(User, User.id == PreRegisterRequest.user_id)
+        .where(
+            PreRegisterRequest.status == PreRegisterStatus.APPROVED,
+            User.organization_id == org_id,
+        )
     )
     return int(result.scalar() or 0)
 
