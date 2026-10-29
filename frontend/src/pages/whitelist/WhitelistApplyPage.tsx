@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { whitelistApi, type WhitelistApplyResult } from '@/api/whitelist'
+import QuotaBanner from './components/QuotaBanner'
 import { WindowCountdown } from './components/WindowCountdown'
 import { ApplyFormCard, type ApplyFormValues } from './components/ApplyFormCard'
 import { VerifyCodeCard } from './components/VerifyCodeCard'
@@ -154,6 +155,9 @@ export default function WhitelistApplyPage() {
           <p>{t('pages.whitelist.pageSubtitle', { date: APPLY_WINDOW_END ? new Date(APPLY_WINDOW_END).toLocaleString(lang) : '—' })}</p>
           <WindowCountdown deadline={APPLY_WINDOW_END} serverTime={state.serverTime} />
         </header>
+
+        {/* 本轮剩余名额横幅（数据源 GET /auth/whitelist/quota，后端未实现时隐藏） */}
+        <QuotaBanner />
 
         {/* 步骤条 */}
         <nav className="whitelist-stepper" aria-label="whitelist steps">

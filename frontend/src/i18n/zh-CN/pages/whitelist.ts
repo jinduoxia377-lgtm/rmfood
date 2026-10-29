@@ -75,6 +75,13 @@ export default {
       error: '未找到对应申请，请检查 token 是否正确',
     },
 
+    // ── 剩余名额 ──
+    quota: {
+      label: '剩余名额',
+      value: '{{remaining}} / {{total}}',
+      loading: '剩余名额加载中…',
+    },
+
     // ── 错误 ──
     errors: {
       alreadyRegistered: '该邮箱已注册，请直接登录',
