@@ -6,7 +6,6 @@
 - coordination_engine: 配方协调分析（君臣佐使）
 - synergy_engine: 协同作用分析（统一接口）
 """
-import pytest
 
 from app.services.formula.stability_predictor import StabilityPredictor
 from app.services.formula.flavor_engine import FlavorEngine

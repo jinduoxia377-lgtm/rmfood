@@ -729,7 +729,6 @@ def log_ai_request(
 ):
     """记录 AI 请求"""
     logger = get_logger("app.ai")
-    level = "info" if success else "error"
     log_fn = logger.info if success else logger.error
 
     log_fn(

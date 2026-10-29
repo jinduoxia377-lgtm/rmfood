@@ -227,14 +227,11 @@ class PepinventAdapter:
             try:
                 deps = check_dependencies()
                 self._available: bool = deps.get("available", False)
-                missing_deps = deps.get("missing", [])
             except Exception as e:
                 logger.warning(f"检查依赖失败: {e}，使用模拟模式")
                 self._available = False
-                missing_deps = ["配置检查异常"]
         else:
             self._available = False
-            missing_deps = ["依赖检查函数不可用"]
 
         self._simulation_mode: bool = not self._available
 
@@ -714,7 +711,6 @@ class PepinventAdapter:
             await self.initialize()
 
         bs = batch_size or (self._config.rl.batch_size if self._config else 128)
-        lr = learning_rate or (self._config.rl.learning_rate if self._config else 0.0001)
 
         if self._simulation_mode:
             return self._simulate_rl_optimization_enhanced(seed_sequences, objectives, iterations)

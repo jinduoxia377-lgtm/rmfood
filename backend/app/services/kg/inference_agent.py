@@ -319,8 +319,8 @@ class KGVisualizeTool(BaseAgentTool):
         start = time.time()
         try:
             nodes = params.get("nodes", [])
-            include_neighbors = params.get("include_neighbors", True)
-            max_neighbors = params.get("max_neighbors", 10)
+            params.get("include_neighbors", True)
+            params.get("max_neighbors", 10)
 
             # 简化实现：返回模拟可视化数据
             viz_data = {

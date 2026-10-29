@@ -48,7 +48,7 @@ class TestOFFClient:
         mock_http.get.return_value = mock_response
 
         client = OFFClient()
-        result = client.search_by_keyword(
+        client.search_by_keyword(
             "test",
             brand="BrandX",
             category_tag="en:snacks"

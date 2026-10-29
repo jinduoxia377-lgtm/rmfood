@@ -45,12 +45,11 @@ async def test_create_validation_workflow_parallel_custom_order():
     """parallel=True + 自定义 validation_order 分支。"""
     from unittest.mock import AsyncMock
     from app.services.formula_validation_workflow import (
-        FormulaValidationService as FVS,
-        ValidationStage,
+        FormulaValidationService,
     )
 
     db = AsyncMock()
-    svc = FVS(db)
+    svc = FormulaValidationService(db)
     workflow, result = await svc.create_validation_workflow(
         formula_id=2,
         user_id=1,
@@ -118,13 +117,13 @@ async def test_run_validation_pipeline_mock():
     """用 AsyncMock db 覆盖核心验证管线（执行器对 mock db 失败会被捕获并继续）。"""
     from unittest.mock import AsyncMock, MagicMock
     from app.services.formula_validation_workflow import (
-        FormulaValidationService as FVS,
+        FormulaValidationService,
         ValidationStage,
     )
 
     db = AsyncMock()
     db.execute.return_value.scalar_one_or_none.return_value = MagicMock(id=1)
-    svc = FVS(db)
+    svc = FormulaValidationService(db)
     await svc._run_validation_pipeline(
         workflow_id=1,
         validation_id="val-1-123",
@@ -141,13 +140,13 @@ async def test_run_validation_pipeline_mock_with_experiment():
     """带 experiment_id 的管线路径（覆盖数据对比与实验更新分支）。"""
     from unittest.mock import AsyncMock, MagicMock
     from app.services.formula_validation_workflow import (
-        FormulaValidationService as FVS,
+        FormulaValidationService,
         ValidationStage,
     )
 
     db = AsyncMock()
     db.execute.return_value.scalar_one_or_none.return_value = MagicMock(id=1)
-    svc = FVS(db)
+    svc = FormulaValidationService(db)
     await svc._run_validation_pipeline(
         workflow_id=2,
         validation_id="val-2-456",
@@ -163,7 +162,7 @@ async def test_compare_predictions_with_experiment_empty():
     """实验数据为空时，对比结果为 []。"""
     from unittest.mock import AsyncMock, Mock
     from app.services.formula_validation_workflow import (
-        FormulaValidationService as FVS,
+        FormulaValidationService,
         FormulaValidationResult,
         StageResult,
         ValidationStage,
@@ -172,7 +171,7 @@ async def test_compare_predictions_with_experiment_empty():
     db = AsyncMock()
     db.execute.return_value = Mock()
     db.execute.return_value.scalars.return_value.all.return_value = []
-    svc = FVS(db)
+    svc = FormulaValidationService(db)
     result = FormulaValidationResult(formula_id=1, formula_name="F", validation_id="V1")
     result.stages = [
         StageResult(
@@ -192,7 +191,7 @@ async def test_compare_predictions_with_experiment_matched():
     """实验数据含匹配参数时，生成 ComparisonPoint。"""
     from unittest.mock import AsyncMock, MagicMock, Mock
     from app.services.formula_validation_workflow import (
-        FormulaValidationService as FVS,
+        FormulaValidationService,
         FormulaValidationResult,
         StageResult,
         ValidationStage,
@@ -205,7 +204,7 @@ async def test_compare_predictions_with_experiment_matched():
     db = AsyncMock()
     db.execute.return_value = Mock()
     db.execute.return_value.scalars.return_value.all.return_value = [dp]
-    svc = FVS(db)
+    svc = FormulaValidationService(db)
     result = FormulaValidationResult(formula_id=1, formula_name="F", validation_id="V1")
     result.stages = [
         StageResult(
@@ -227,14 +226,14 @@ async def test_run_validation_pipeline_all_stages_mock():
     """全阶段管线（7 个 ValidationStage）覆盖完整循环。"""
     from unittest.mock import AsyncMock, MagicMock
     from app.services.formula_validation_workflow import (
-        FormulaValidationService as FVS,
+        FormulaValidationService,
         ValidationStage,
         DEFAULT_VALIDATION_ORDER,
     )
 
     db = AsyncMock()
     db.execute.return_value.scalar_one_or_none.return_value = MagicMock(id=1)
-    svc = FVS(db)
+    svc = FormulaValidationService(db)
     stages = [ValidationStage(s) for s in DEFAULT_VALIDATION_ORDER]
     await svc._run_validation_pipeline(
         workflow_id=1,
@@ -251,14 +250,14 @@ async def test_update_experiment_validation_result_no_exp():
     """实验不存在时，不写库、不 commit。"""
     from unittest.mock import AsyncMock, Mock
     from app.services.formula_validation_workflow import (
-        FormulaValidationService as FVS,
+        FormulaValidationService,
         FormulaValidationResult,
     )
 
     db = AsyncMock()
     db.execute.return_value = Mock()
     db.execute.return_value.scalar_one_or_none.return_value = None
-    svc = FVS(db)
+    svc = FormulaValidationService(db)
     result = FormulaValidationResult(formula_id=1, formula_name="F", validation_id="V1")
     await svc._update_experiment_validation_result(1, result)
     db.commit.assert_not_awaited()
@@ -269,7 +268,7 @@ async def test_update_experiment_validation_result_with_exp():
     """实验存在时，写入验证结果并 commit。"""
     from unittest.mock import AsyncMock, MagicMock, Mock
     from app.services.formula_validation_workflow import (
-        FormulaValidationService as FVS,
+        FormulaValidationService,
         FormulaValidationResult,
     )
 
@@ -278,7 +277,7 @@ async def test_update_experiment_validation_result_with_exp():
     db = AsyncMock()
     db.execute.return_value = Mock()
     db.execute.return_value.scalar_one_or_none.return_value = exp
-    svc = FVS(db)
+    svc = FormulaValidationService(db)
     result = FormulaValidationResult(formula_id=1, formula_name="F", validation_id="V1")
     await svc._update_experiment_validation_result(1, result)
     assert exp.results["validation_id"] == "V1"

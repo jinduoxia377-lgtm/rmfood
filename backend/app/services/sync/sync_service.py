@@ -255,7 +255,7 @@ class SyncService:
             session.state = SyncState.RESOLVING_CONFLICTS
 
             if push_response.conflicts or pull_response.conflicts:
-                all_conflicts_data = push_response.conflicts + pull_response.conflicts
+                push_response.conflicts + pull_response.conflicts
 
                 conflicts = await self.conflict_detector.detect_conflicts(
                     local_changes=push_changes,

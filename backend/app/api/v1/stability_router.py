@@ -128,7 +128,7 @@ async def calculate_q10(
 @router.get("/health", summary="稳定性引擎健康检查")
 async def health_check() -> dict:
     """验证 Arrhenius 稳定性引擎可用"""
-    engine = get_stability_model()
+    get_stability_model()
     return {
         "status": "healthy",
         "model": "Arrhenius",

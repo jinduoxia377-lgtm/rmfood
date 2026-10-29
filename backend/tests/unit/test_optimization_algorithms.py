@@ -7,7 +7,6 @@ Tests cover:
 
 Uses random.seed(42) for reproducibility where needed.
 """
-import math
 import random
 
 import numpy as np
@@ -389,10 +388,10 @@ class TestSimulatedAnnealingCool:
             cooling_rate=0.99,
             cooling_strategy=CoolingStrategy.EXPONENTIAL,
         )
-        initial_T = opt.T
+        initial_t = opt.T
         opt._cool()
-        assert opt.T < initial_T
-        assert opt.T == pytest.approx(initial_T * 0.99, rel=1e-6)
+        assert opt.T < initial_t
+        assert opt.T == pytest.approx(initial_t * 0.99, rel=1e-6)
 
     def test_linear_cooling_reduces_temperature(self):
         opt = SimulatedAnnealingOptimizer(
@@ -401,9 +400,9 @@ class TestSimulatedAnnealingCool:
             min_temperature=1.0,
             cooling_strategy=CoolingStrategy.LINEAR,
         )
-        initial_T = opt.T
+        initial_t = opt.T
         opt._cool()
-        assert opt.T < initial_T
+        assert opt.T < initial_t
 
     def test_linear_cooling_respects_min_temperature(self):
         opt = SimulatedAnnealingOptimizer(
@@ -504,7 +503,7 @@ class TestSimulatedAnnealingOptimize:
             min_temperature=1.0,
             max_iterations=5,
         )
-        result1 = opt1.optimize(sample_formula, self.simple_objective)
+        opt1.optimize(sample_formula, self.simple_objective)
 
         random.seed(42)
         opt2 = SimulatedAnnealingOptimizer(
@@ -513,7 +512,7 @@ class TestSimulatedAnnealingOptimize:
             min_temperature=1.0,
             max_iterations=5,
         )
-        result2 = opt2.optimize(sample_formula, self.simple_objective)
+        opt2.optimize(sample_formula, self.simple_objective)
 
         # With same seed, best_score should be identical
         assert opt1.best_score == pytest.approx(opt2.best_score, rel=1e-10)

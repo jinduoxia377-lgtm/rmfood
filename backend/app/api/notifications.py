@@ -19,14 +19,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = logging.getLogger(__name__)
 
 
-from ..core.realtime.notification_center import (
+from ..core.realtime.notification_center import (  # noqa: E402
     NotificationCategory,
     NotificationChannel,
     NotificationService,
     UserNotificationPreference,
 )
-from ..models.enums import NotificationType
-from .deps import get_current_user, get_db_session
+from ..models.enums import NotificationType  # noqa: E402
+from .deps import get_current_user, get_db_session  # noqa: E402
 
 router = APIRouter(prefix="/notifications/v2", tags=["notifications"])
 

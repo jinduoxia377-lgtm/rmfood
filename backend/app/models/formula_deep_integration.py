@@ -426,8 +426,8 @@ class SafetyThresholdChangeLog(Base):
 
 
 # 导入关系引用
-from .formula import Formula
-from .user_model import User
+from .formula import Formula  # noqa: E402
+from .user_model import User  # noqa: E402
 
 # 导出所有模型
 __all__ = [

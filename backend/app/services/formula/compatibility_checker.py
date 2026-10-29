@@ -456,7 +456,7 @@ class CompatibilityChecker:
         for ing in ingredients:
             name = ing.get("name", "")
             amount = ing.get("amount_mg", 0)
-            percentage = ing.get("percentage", 0)
+            ing.get("percentage", 0)
 
             if name in GB2760_LIMITS_DB:
                 self.total_checks += 1

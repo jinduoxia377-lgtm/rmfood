@@ -7,7 +7,7 @@
 import pytest
 import time
 import asyncio
-from typing import Dict, Any
+from typing import Dict
 
 
 @pytest.mark.performance
@@ -174,7 +174,7 @@ class TestKGReasoningPerformance:
         from app.services.kg.reasoning_engine import get_reasoning_engine
         engine = get_reasoning_engine()
         start = time.perf_counter()
-        paths = await engine._path_reasoning(["枸杞"], None)
+        await engine._path_reasoning(["枸杞"], None)
         elapsed = (time.perf_counter() - start) * 1000
         assert elapsed < 50, f"路径推理延迟 {elapsed:.0f}ms 超过 50ms 阈值"
 
@@ -184,7 +184,7 @@ class TestKGReasoningPerformance:
         from app.services.kg.reasoning_engine import get_reasoning_engine
         engine = get_reasoning_engine()
         start = time.perf_counter()
-        synergies = await engine._synergy_reasoning(["枸杞", "黄芪"], None)
+        await engine._synergy_reasoning(["枸杞", "黄芪"], None)
         elapsed = (time.perf_counter() - start) * 1000
         assert elapsed < 50, f"协同推理延迟 {elapsed:.0f}ms 超过 50ms 阈值"
 

@@ -227,10 +227,10 @@ class Peptide(Base):
     batch_coas = relationship("PeptideBatchCOA", back_populates="peptide", lazy="selectin")
 
 
-from .batch_record import Batch
-from .experiment import Experiment
-from .ingredient_lot import IngredientLot
-from .user_model import User
+from .batch_record import Batch  # noqa: E402
+from .experiment import Experiment  # noqa: E402
+from .ingredient_lot import IngredientLot  # noqa: E402
+from .user_model import User  # noqa: E402
 
 
 class Comment(Base):

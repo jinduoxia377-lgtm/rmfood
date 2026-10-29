@@ -259,7 +259,7 @@ class TestFunctionalEngine:
         )
         assert result is not None
         # 孕妇需要额外的叶酸强化
-        has_folic = any(
+        any(
             e.get("enhancer_name") == "叶酸"
             for e in result.get("enhancer_recommendations", [])
         )

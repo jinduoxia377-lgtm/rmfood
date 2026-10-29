@@ -10,7 +10,6 @@
 import pytest
 
 from app.services.user import UserService
-from app.models.user_model import User
 from app.models.enums import UserRole
 
 

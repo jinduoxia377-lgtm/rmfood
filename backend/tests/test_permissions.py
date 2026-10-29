@@ -2,7 +2,6 @@
 
 Covers: role checks, permission decorators, access control.
 """
-import pytest
 
 
 class TestRBAC:

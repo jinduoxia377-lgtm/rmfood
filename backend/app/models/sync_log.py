@@ -44,5 +44,5 @@ class SyncLog(Base):
         return f"<SyncLog(id={self.id}, user_id={self.user_id}, action={self.action.value}, entity={self.entity_type}:{self.entity_id}, status={self.status.value})>"
 
 
-from .user_device import UserDevice
-from .user_model import User
+from .user_device import UserDevice  # noqa: E402
+from .user_model import User  # noqa: E402

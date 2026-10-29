@@ -9,7 +9,6 @@ AI 聊天服务单元测试
 """
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
 
 @pytest.mark.asyncio

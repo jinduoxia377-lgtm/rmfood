@@ -147,7 +147,7 @@ class TeamDashboardService:
     async def _get_prompt_stats(self, team_id: int) -> Dict[str, Any]:
         """获取提示词相关统计"""
         now = datetime.now(timezone.utc)
-        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
         total_prompts = 0
         month_new_prompts = 0

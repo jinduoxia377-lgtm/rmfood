@@ -4,7 +4,6 @@
 空 body / 非 JSON body 抛 json.decoder.JSONDecodeError，未捕获导致 500。
 修复：安全解析请求体，解析失败按空 body 处理，由统一校验返回 400。
 """
-import pytest
 
 
 class TestAuthRefreshEmptyBody:

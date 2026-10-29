@@ -292,13 +292,13 @@ class EventHandlerRegistration:
             try:
                 # 异步超时处理
                 if asyncio.iscoroutinefunction(self.handler):
-                    result = await asyncio.wait_for(
+                    await asyncio.wait_for(
                         self.handler(event),
                         timeout=self.timeout_seconds,
                     )
                 else:
                     # 同步函数 -> 在线程池中运行
-                    result = await asyncio.get_running_loop().run_in_executor(
+                    await asyncio.get_running_loop().run_in_executor(
                         None,
                         lambda: self.handler(event),
                     )

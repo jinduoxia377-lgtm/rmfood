@@ -15,11 +15,9 @@ SSS 企业级功能 - 单元测试套件
 """
 
 import pytest
-import json
 import asyncio
 from datetime import datetime, timezone, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Dict, Any
+from unittest.mock import MagicMock, patch
 
 
 # ════════════════════════════════════════════
@@ -103,7 +101,6 @@ class TestNotificationCenter:
         from app.core.notification_center import (
             NotificationService,
             UserNotificationPreference,
-            NotificationChannel,
         )
         
         service = NotificationService(db)
@@ -120,8 +117,6 @@ class TestNotificationCenter:
         from app.core.notification_center import (
             NotificationService,
             UserNotificationPreference,
-            NotificationChannel,
-            NotificationPriority,
         )
         
         service = NotificationService(db)
@@ -195,7 +190,7 @@ class TestAnalyticsEngine:
     @pytest.mark.asyncio
     async def test_get_dashboard_stats_structure(self, db):
         """测试仪表盘数据结构"""
-        from app.core.analytics_engine import AnalyticsService, get_analytics_service
+        from app.core.analytics_engine import get_analytics_service
         
         service = get_analytics_service(db)
         stats = await service.get_dashboard_stats()
@@ -215,7 +210,7 @@ class TestAnalyticsEngine:
     @pytest.mark.asyncio
     async def test_kpi_metrics_format(self, db):
         """测试KPI指标格式"""
-        from app.core.analytics_engine import AnalyticsService, KPIMetric
+        from app.core.analytics_engine import AnalyticsService
         
         service = AnalyticsService(db)
         kpi_list = await service._get_kpi_metrics()
@@ -484,7 +479,7 @@ class TestAuditSystem:
     @pytest.mark.asyncio
     async def test_audit_log_query_filters(self, db):
         """测试审计日志查询筛选"""
-        from app.core.audit_system import AuditService, AuditAction, AuditResourceType, AuditSeverity
+        from app.core.audit_system import AuditService, AuditAction, AuditSeverity
         
         service = AuditService(db)
         
@@ -642,7 +637,7 @@ class TestExtensionFramework:
         
         locales = i18n.get_available_locales()
         
-        codes = [l['code'] for l in locales]
+        codes = [loc['code'] for loc in locales]
         assert 'zh-CN' in codes
         assert 'en-US' in codes
         assert len(locales) >= 4  # 至少支持4种语言

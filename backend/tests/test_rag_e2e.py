@@ -12,7 +12,7 @@ RAG_DIR = os.path.normpath(os.path.join(
 sys.path.insert(0, RAG_DIR)
 
 # 手动注册 rag 包，使相对导入有效
-import importlib, types
+import types  # noqa: E402
 _rag_pkg = types.ModuleType("services.ai.rag")
 _rag_pkg.__path__ = [RAG_DIR]
 _rag_pkg.__package__ = "services.ai.rag"
@@ -23,10 +23,9 @@ sys.modules["services.ai"].__path__ = []
 sys.modules["services.ai.rag"] = _rag_pkg
 
 # 导入 RAG 模块
-import services.ai.rag.models as _models
-import services.ai.rag.document_processor as _dp
-import services.ai.rag.vector_store as _vs
-import services.ai.rag.embedding_service as _emb
+import services.ai.rag.document_processor as _dp  # noqa: E402
+import services.ai.rag.vector_store as _vs  # noqa: E402
+import services.ai.rag.embedding_service as _emb  # noqa: E402
 
 
 async def main():

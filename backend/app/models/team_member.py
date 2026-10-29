@@ -41,5 +41,5 @@ class TeamMember(Base):
         return f"<TeamMember(id={self.id}, team_id={self.team_id}, user_id={self.user_id}, role={self.role.value})>"
 
 
-from .team import Team
-from .user_model import User
+from .team import Team  # noqa: E402
+from .user_model import User  # noqa: E402

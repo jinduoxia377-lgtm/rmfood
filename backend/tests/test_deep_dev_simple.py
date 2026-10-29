@@ -14,7 +14,7 @@ import pytest
 pytestmark = pytest.mark.skip(reason="目标模块 output_filter 存在未修复的构造签名问题，待重写")
 
 sys.path.insert(0, "d:/RMFOODFP/backend")
-import importlib.util
+import importlib.util  # noqa: E402
 
 
 def load_module(name, filepath):

@@ -319,7 +319,7 @@ class StabilityPredictor:
     def _calculate_ph_risk(self, stability: Dict, storage: Dict) -> float:
         """计算pH风险"""
         ph_range = stability.get("ph_stability", {})
-        optimal = ph_range.get("optimal", (5, 7))
+        ph_range.get("optimal", (5, 7))
         # 简化：假设配方pH在6-7之间
         return 0.2  # 默认中等风险
 

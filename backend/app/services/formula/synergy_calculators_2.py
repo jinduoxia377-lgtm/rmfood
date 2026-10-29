@@ -11,7 +11,6 @@ import math
 from typing import Any, Dict, List, Optional, Tuple
 
 try:
-    import numpy as np
     from scipy import stats
     HAS_SCIPY = True
 except ImportError:
@@ -104,19 +103,19 @@ class SynergyCalculatorMixin2:
                 if pathway_intersection:
                     # 超几何检验
                     # N = 总基因数, K = 通路中基因数, n = 靶点并集大小, k = 重叠数
-                    N = total_pathways
-                    K = len(pathway_set)
+                    n_total = total_pathways
+                    k_path = len(pathway_set)
                     n = len(union_targets)
                     k = len(pathway_intersection)
 
                     if HAS_SCIPY:
                         try:
-                            pvalue = stats.hypergeom.sf(k - 1, N, K, n)
+                            pvalue = stats.hypergeom.sf(k - 1, n_total, k_path, n)
                         except Exception as e:
                             logger.debug("超几何检验失败，返回默认 p-value: %s", e)
                             pvalue = 1.0
                     else:
-                        pvalue = self._hypergeometric_test(N, K, n, k)
+                        pvalue = self._hypergeometric_test(n_total, k_path, n, k)
 
                     enrichment_results.append({
                         "pathway": pathway_name,
@@ -189,8 +188,8 @@ class SynergyCalculatorMixin2:
 
     def _hypergeometric_test(
         self,
-        N: int,
-        K: int,
+        n_total: int,
+        k_path: int,
         n: int,
         k: int,
     ) -> float:
@@ -221,15 +220,15 @@ class SynergyCalculatorMixin2:
                 - sum(math.log(i) for i in range(1, k_val + 1))
             )
 
-        log_denom = log_comb(N, n)
+        log_denom = log_comb(n_total, n)
         if log_denom == float('-inf'):
             return 1.0
 
         log_pvalue = float('-inf')
-        max_k = min(K, n)
+        max_k = min(k_path, n)
 
         for i in range(k, max_k + 1):
-            log_numer = log_comb(K, i) + log_comb(N - K, n - i)
+            log_numer = log_comb(k_path, i) + log_comb(n_total - k_path, n - i)
             log_term = log_numer - log_denom
 
             if log_pvalue == float('-inf'):

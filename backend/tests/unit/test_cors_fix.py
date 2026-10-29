@@ -5,7 +5,6 @@
 1. 开发环境允许 localhost 白名单
 2. 生产环境配置不会使用通配符
 """
-import pytest
 
 
 def test_cors_allows_localhost_in_dev():

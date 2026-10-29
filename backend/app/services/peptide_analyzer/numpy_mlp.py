@@ -58,9 +58,9 @@ class NumpyMLP:
         pos_weight: loss weight for positive (label=1) samples.
             None -> sqrt(n_neg / n_pos), a moderate reweighting.
         """
-        X = np.asarray(X, dtype=np.float64)
+        x_data = np.asarray(X, dtype=np.float64)
         y = np.asarray(y, dtype=np.float64).reshape(-1, 1)
-        n = X.shape[0]
+        n = x_data.shape[0]
         n_pos = float(y.sum())
         n_neg = float(n - n_pos)
         if pos_weight is None:
@@ -79,7 +79,7 @@ class NumpyMLP:
             order = rng.permutation(n)
             for start in range(0, n, batch_size):
                 idx = order[start:start + batch_size]
-                xb, yb, wb = X[idx], y[idx], sample_w[idx]
+                xb, yb, wb = x_data[idx], y[idx], sample_w[idx]
                 bs = xb.shape[0]
                 wsum = max(float(wb.sum()), 1e-9)
 

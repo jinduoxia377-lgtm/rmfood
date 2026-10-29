@@ -15,7 +15,6 @@ RMFOOD API 集成测试
 """
 
 import pytest
-import asyncio
 from httpx import AsyncClient, ASGITransport
 from unittest.mock import patch, AsyncMock
 
@@ -117,16 +116,7 @@ class TestFormulaAPI:
     @pytest.mark.asyncio
     async def test_list_formulas(self, client, auth_headers):
         """测试获取配方列表"""
-        with patch('app.api.formulas') as mock_api:
-            mock_result = {
-                "items": [
-                    {"id": 1, "name": "Test Formula 1"},
-                    {"id": 2, "name": "Test Formula 2"},
-                ],
-                "total": 2,
-                "page": 1,
-                "page_size": 20,
-            }
+        with patch('app.api.formulas'):
             
             response = await client.get("/api/v1/formulas", headers=auth_headers)
             
@@ -216,7 +206,7 @@ class TestPerformanceBaselines:
         
         # 发送请求（即使失败也测量响应时间）
         try:
-            response = await client.post("/api/v1/auth/login", json={
+            await client.post("/api/v1/auth/login", json={
                 "username": "test",
                 "password": "test"
             }, timeout=5.0)

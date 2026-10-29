@@ -469,7 +469,7 @@ class TestIntegration:
             with open(filepath, "r", encoding="utf-8") as f:
                 source = f.read()
 
-            tree = ast.parse(source)
+            ast.parse(source)
 
             # Check that hardcoded herb pools are not used as random.choice source
             # (they should reference _herb_db or _BUILTIN_HERBS instead)

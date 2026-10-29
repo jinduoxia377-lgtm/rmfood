@@ -2,7 +2,6 @@
 
 Verifies the custom_aggregation endpoint rejects malicious identifiers.
 """
-import pytest
 
 
 class TestSQLInjectionProtection:

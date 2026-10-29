@@ -2,7 +2,6 @@
 
 import pytest
 from unittest.mock import MagicMock, patch
-import asyncio
 from app.services.openfoodfacts.loader_sync import OFFLoaderSync
 
 
@@ -56,13 +55,13 @@ class TestOFFLoaderSync:
         ]
 
         try:
-            result = await loader.upsert_products_with_progress(
+            await loader.upsert_products_with_progress(
                 sample_data,
                 MagicMock(),
                 MagicMock()
             )
             # 检查是否执行了适当的 SQL 操作
-            cursor_calls = [str(call).upper() for call in mock_cursor.method_calls]
+            [str(call).upper() for call in mock_cursor.method_calls]
             assert any("UPSERT" in str(call) or "INSERT" in str(call) for call in mock_cursor.method_calls)
         finally:
             await loader.disconnect()

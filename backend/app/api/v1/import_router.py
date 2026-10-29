@@ -244,7 +244,7 @@ async def preview_data(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         logger.exception(f"[{task_id}] Preview failed")
         raise HTTPException(status_code=500, detail="预览失败，请稍后重试")
 
@@ -307,7 +307,7 @@ async def run_import(
             "message": "Import started asynchronously. Check progress with /{task_id}",
             "celery_task_id": celery_result.id,
         }
-    except Exception as e:
+    except Exception:
         logger.error("[{task_id}] Failed to start Celery task: {e}")
         task.update({
             "status": "failed",

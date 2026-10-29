@@ -106,7 +106,7 @@ def test_recommend_formulas_with_user_id(client):
         "limit": 3,
     })
     assert response.status_code == 200
-    data = response.json()
+    response.json()
 
 
 def test_recommend_formulas_response_format(client):

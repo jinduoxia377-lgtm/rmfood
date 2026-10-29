@@ -75,7 +75,6 @@ class ImportWorker:
         updated = 0
         error_count = 0
         batch_buffer: list[Dict[str, Any]] = []
-        last_log_count = 0
         row_num_idx = 0
 
         async for raw_row in adapter.iterate():

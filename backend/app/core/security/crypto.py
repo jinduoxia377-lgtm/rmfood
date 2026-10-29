@@ -185,8 +185,8 @@ def rotate_encryption_key(old_key: str, new_key: str) -> dict:
         {"rotated_count": int, "failed_count": int}
     """
 
-    old_fernet = Fernet(old_key)
-    new_fernet = Fernet(new_key)
+    Fernet(old_key)
+    Fernet(new_key)
 
     rotated = 0
     failed = 0

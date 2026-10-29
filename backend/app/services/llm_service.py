@@ -793,7 +793,6 @@ class LLMService:
 
         # 单次自动重试：仅在「连接/建立响应」阶段失败（尚未读取任何数据）时重试 1 次；
         # 读流中途的超时/断连会转成 RuntimeError，不重试，避免已产出内容被重复输出。
-        last_exc: Exception | None = None
         for attempt in range(2):
             try:
                 async with self.client.stream("POST", url, headers=headers, json=payload) as resp:
@@ -878,7 +877,6 @@ class LLMService:
                         f"[chat_stream] 连接/建立响应阶段失败（elapsed={elapsed:.1f}s），500ms 后自动重试: {exc}"
                     )
                     await asyncio.sleep(0.5)
-                    last_exc = exc
                     continue
                 logger.error(
                     f"[chat_stream] 流式对话连接失败（已自动重试仍失败）: elapsed={elapsed:.1f}s, "

@@ -236,7 +236,6 @@ class PermissionService:
         """
         if self.cache:
             try:
-                pattern = f"perm:{user_id}:*"
                 if hasattr(self.cache, 'keys'):
                     keys_to_delete = [
                         k for k in self.cache.keys()

@@ -3,7 +3,6 @@ import pytest
 from unittest.mock import MagicMock, AsyncMock, patch
 from app.services.import_engine.engine import ImportEngine, ImportStatus, ImportReport, ImportStats
 from app.services.import_engine.adapters.base import BaseAdapter, FieldMapper
-from app.services.import_engine.models import AdapterType, ErrorType
 
 
 @pytest.fixture

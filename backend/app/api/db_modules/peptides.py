@@ -11,12 +11,10 @@ from ...models import (
 )
 from ..deps import get_current_user, get_db_session
 
-"""
-Shared router for peptides module.
-"""
-import logging
-
+# Shared router for peptides module.
 from . import router
+
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +192,7 @@ async def get_peptide_detail(
 # ═══════════════════════════════════════════
 
 
-import logging
+import logging  # noqa: E402
 
 logger = logging.getLogger(__name__)
 logger.info("peptides module loaded")

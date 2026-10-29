@@ -848,7 +848,7 @@ async def seed_from_formula(
 @router.get("/health", summary="DOE 引擎健康检查")
 async def health_check() -> dict:
     """验证 DOE 引擎可用"""
-    engine = get_doe_engine()
+    get_doe_engine()
     return {
         "status": "healthy",
         "supported_designs": ["ccd", "bbd", "mixture"],

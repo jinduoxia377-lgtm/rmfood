@@ -10,8 +10,7 @@ RMFOOD 核心模块单元测试 - 认证与授权系统
 """
 
 import pytest
-import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 # ============================================================
@@ -235,7 +234,6 @@ class TestPasswordSecurity:
     
     def test_password_complexity_validation(self):
         """测试密码复杂度规则"""
-        from app.core.security_middleware import InputSanitizer
         
         # 弱密码应该被拒绝
         weak_passwords = [
@@ -329,7 +327,7 @@ class TestSecurityMiddleware:
     
     def test_rate_limiting_basic(self):
         """测试基础速率限制"""
-        from app.core.security_middleware import SlidingWindowRateLimiter, RateLimitConfig, ClientInfo
+        from app.core.security_middleware import SlidingWindowRateLimiter
         
         limiter = SlidingWindowRateLimiter(requests_per_minute=60)
         client_ip = "192.168.1.100"
@@ -343,7 +341,7 @@ class TestSecurityMiddleware:
     
     def test_rate_limiting_different_clients(self):
         """测试不同客户端独立计数"""
-        from app.core.security_middleware import SlidingWindowRateLimiter, RateLimitConfig, ClientInfo
+        from app.core.security_middleware import SlidingWindowRateLimiter
         
         limiter = SlidingWindowRateLimiter(requests_per_minute=5)
         
@@ -377,7 +375,7 @@ class TestSecurityMiddleware:
         from app.core.security.sql_security import SafeQueryBuilder
         
         # 允许的表
-        builder = SafeQueryBuilder("users")  # 不抛异常
+        SafeQueryBuilder("users")  # 不抛异常
         
         # 不允许的表
         with pytest.raises(ValueError):
@@ -395,7 +393,7 @@ class TestExceptionHandling:
     async def test_database_error_handling(self):
         """测试数据库错误正确处理"""
         from sqlalchemy.exc import OperationalError
-        from app.core.exceptions import DatabaseError, handle_database_error
+        from app.core.exceptions import DatabaseError
         
         original_error = OperationalError("connection failed", params={}, orig=None)
         wrapped_error = DatabaseError(original_error, "数据库连接失败")

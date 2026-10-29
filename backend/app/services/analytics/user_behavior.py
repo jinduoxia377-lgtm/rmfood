@@ -190,7 +190,7 @@ class BehaviorAnonymizer:
                 for cat, cnt in f.category_dist.items():
                     combined_cats[cat] = combined_cats.get(cat, 0) + cnt
 
-            label = self._derive_label(combined_cats, label_dist)
+            self._derive_label(combined_cats, label_dist)
 
             # Build fixed-dimension feature vector (top-N categories)
             top_cats = sorted(combined_cats, key=combined_cats.get, reverse=True)[:10]

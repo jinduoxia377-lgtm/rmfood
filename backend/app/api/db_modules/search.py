@@ -11,12 +11,10 @@ from ...services.data_sources.graph_service import graph_service
 from ...services.data_sources.tcmsp_client import tcmsp_service
 from ..deps import get_current_user, get_db_session
 
-"""
-Shared router for search module.
-"""
-import logging
-
+# Shared router for search module.
 from . import router
+
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -455,17 +453,27 @@ async def dashboard_overview(
             dl = h.get("dl_value") or 0
             cat = h.get("category", "未分类")
 
-            if ob < 10: ob_distribution["<10%"] += 1
-            elif ob < 30: ob_distribution["10-30%"] += 1
-            elif ob < 50: ob_distribution["30-50%"] += 1
-            elif ob < 70: ob_distribution["50-70%"] += 1
-            else: ob_distribution[">70%"] += 1
+            if ob < 10:
+                ob_distribution["<10%"] += 1
+            elif ob < 30:
+                ob_distribution["10-30%"] += 1
+            elif ob < 50:
+                ob_distribution["30-50%"] += 1
+            elif ob < 70:
+                ob_distribution["50-70%"] += 1
+            else:
+                ob_distribution[">70%"] += 1
 
-            if dl < 0.1: dl_distribution["<0.1"] += 1
-            elif dl < 0.2: dl_distribution["0.1-0.2"] += 1
-            elif dl < 0.3: dl_distribution["0.2-0.3"] += 1
-            elif dl < 0.5: dl_distribution["0.3-0.5"] += 1
-            else: dl_distribution[">0.5"] += 1
+            if dl < 0.1:
+                dl_distribution["<0.1"] += 1
+            elif dl < 0.2:
+                dl_distribution["0.1-0.2"] += 1
+            elif dl < 0.3:
+                dl_distribution["0.2-0.3"] += 1
+            elif dl < 0.5:
+                dl_distribution["0.3-0.5"] += 1
+            else:
+                dl_distribution[">0.5"] += 1
 
             category_breakdown[cat] = category_breakdown.get(cat, 0) + 1
             if h.get("is_food_homology"):
@@ -608,7 +616,7 @@ async def dashboard_overview(
 
 
 # ── 搜索建议（自动补全）──────────────────────
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field  # noqa: E402
 
 
 class SearchSuggestRequest(BaseModel):
@@ -700,7 +708,7 @@ async def search_suggest(
     return {"suggestions": suggestions[:limit]}
 
 
-import logging
+import logging  # noqa: E402
 
 logger = logging.getLogger(__name__)
 logger.info("search module loaded")

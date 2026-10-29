@@ -3,7 +3,7 @@
 """
 import pytest
 from app.domain.registration import (
-    ComplianceCheckResult, ComplianceReport, ReviewPrediction, RegistrationSubmission,
+    ComplianceReport, RegistrationSubmission,
 )
 from app.infrastructure.registration_engine import (
     RegistrationEngine, RegistrationCategory,

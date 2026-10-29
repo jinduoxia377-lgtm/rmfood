@@ -343,7 +343,7 @@ class CoordinationEngine:
         # ── 1a. 角色完整性 ────────────────────────────────────
         role_scores = {}
         for role in ["君", "臣", "佐", "使"]:
-            members = [name for name, r in role_assignment.items() if r == role]
+            [name for name, r in role_assignment.items() if r == role]
             if role in roles_present:
                 role_scores[role] = 1.0
             elif n >= 3:

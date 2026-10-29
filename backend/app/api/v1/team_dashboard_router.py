@@ -4,13 +4,13 @@ import logging  # A-27：except 分支里用到 logger，原先未定义
 
 提供团队仪表盘、统计和高级功能的RESTful接口。
 """
-from typing import Optional
+from typing import Optional  # noqa: E402
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status  # noqa: E402
 
-from ...api.deps import CurrentUser, DbSession
-from ...services.search.elasticsearch_service import ElasticsearchService, SearchFilters
-from ...services.team.team_dashboard import TeamDashboardService
+from ...api.deps import CurrentUser, DbSession  # noqa: E402
+from ...services.search.elasticsearch_service import ElasticsearchService, SearchFilters  # noqa: E402
+from ...services.team.team_dashboard import TeamDashboardService  # noqa: E402
 
 logger = logging.getLogger(__name__)  # A-27：原缺失
 

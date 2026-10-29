@@ -39,7 +39,6 @@ class TestAnalyzeFormulaEndpoint:
     async def test_returns_real_formula_when_id_provided(self, mock_db, mock_user):
         """传入 formula_id 时应返回真实配方数据"""
         from app.api.ai import analyze_formula
-        from app.models import Formula, Ingredient, Peptide
 
         # 模拟数据库查询结果
         mock_formula = MagicMock()
@@ -86,7 +85,6 @@ class TestRecommendFormulasEndpoint:
     async def test_returns_db_formulas_not_hardcoded(self, mock_db, mock_user):
         """推荐应来自数据库而非硬编码数据"""
         from app.api.ai import recommend_formulas
-        from app.models import Formula
 
         # 模拟数据库查询结果
         mock_formula = MagicMock()
@@ -128,7 +126,6 @@ class TestPredictTrendsEndpoint:
     async def test_uses_real_database_counts(self, mock_db, mock_user):
         """趋势预测应使用数据库真实计数"""
         from app.api.ai import predict_trends
-        from sqlalchemy import func as sql_func
 
         # 模拟 COUNT 查询
         mock_count_result = MagicMock()
@@ -162,7 +159,6 @@ class TestAnalyzeExperimentEndpoint:
     async def test_uses_real_experiment_data(self, mock_db, mock_user):
         """实验分析应使用真实实验数据"""
         from app.api.ai import analyze_experiment
-        from app.models import Experiment, ExperimentData
 
         # 模拟实验查询
         mock_experiment = MagicMock()
@@ -200,7 +196,6 @@ class TestNoHardcodedDates:
     async def test_generated_at_is_dynamic(self, mock_db, mock_user):
         """所有端点的 generated_at 应为动态时间"""
         from app.api.ai import predict_trends, TrendPredictionRequest
-        import datetime
 
         mock_count_result = MagicMock()
         mock_count_result.scalar.return_value = 10

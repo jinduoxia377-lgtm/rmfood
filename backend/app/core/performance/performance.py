@@ -654,7 +654,7 @@ class ConnectionPoolMonitor:
 
             return stats
 
-        except Exception as e:
+        except Exception:
             logger.error("Pool health check failed", exc_info=True)
             return {
                 'error': '连接池健康检查异常',

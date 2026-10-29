@@ -539,7 +539,7 @@ class FeedbackLearningSystem:
     ) -> List[dict]:
         """获取配方改进建议"""
         suggestions = []
-        formula_ingredients = set(formula.get("ingredients", {}).keys())
+        set(formula.get("ingredients", {}).keys())
 
         for ing, weight in self.weight_adjustments.items():
             if weight > 0.7:

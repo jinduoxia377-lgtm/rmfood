@@ -4,9 +4,8 @@ Covers: failed attempt tracking, lockout enforcement, automatic unlock,
 manual unlock, lockout duration expiration, admin override.
 """
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime, timedelta, timezone
-import time
+from unittest.mock import AsyncMock, MagicMock
+from datetime import timedelta
 
 
 # ── Fixtures ──────────────────────────────────────────────────────
@@ -262,7 +261,7 @@ class TestLockoutDurationExpiry:
         """Account auto-unlocks after lockout duration."""
         from app.core.account_lockout import AccountLockout, record_failed_attempt, check_account_lockout
 
-        manager = AccountLockout(max_attempts=2, lockout_duration_minutes=1)
+        AccountLockout(max_attempts=2, lockout_duration_minutes=1)
 
         mock_db.execute = AsyncMock()
         mock_db.commit = AsyncMock()
@@ -286,11 +285,10 @@ class TestAccountLockoutIntegration:
         """Complete flow: attempts -> lock -> unlock."""
         from app.core.account_lockout import (
             AccountLockout, record_failed_attempt,
-            check_account_lockout, reset_login_attempts,
-            manual_unlock
+            check_account_lockout, manual_unlock
         )
 
-        manager = AccountLockout(max_attempts=3, lockout_duration_minutes=2)
+        AccountLockout(max_attempts=3, lockout_duration_minutes=2)
 
         mock_db.execute = AsyncMock()
         mock_db.commit = AsyncMock()

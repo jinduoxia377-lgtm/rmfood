@@ -2,7 +2,7 @@
 数字孪生仿真测试（M3.1）
 """
 import pytest
-from app.domain.digital_twin import ProcessParameter, CostEstimate
+from app.domain.digital_twin import ProcessParameter
 from app.infrastructure.digital_twin_engine import DigitalTwinEngine
 
 
@@ -113,7 +113,7 @@ class TestFullSimulation:
         assert len(result["production_line"]["equipment"]) >= 2
 
     def test_simulation_with_different_scales(self, engine, sample_ingredients, sample_params):
-        r1 = engine.simulate_production(sample_ingredients, sample_params, 1.0, 20.0)
+        engine.simulate_production(sample_ingredients, sample_params, 1.0, 20.0)
         r2 = engine.simulate_production(sample_ingredients, sample_params, 1.0, 500.0)
         # Larger scale should have higher risk
         assert r2["scale_up_prediction"]["risk_level"] != "low" or True  # not always but should be more risky

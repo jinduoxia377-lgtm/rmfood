@@ -547,7 +547,7 @@ def track_performance():
                 monitor.end_request(request_id, success=True)
                 return result
 
-            except Exception as e:
+            except Exception:
                 monitor.end_request(request_id, success=False)
                 raise
 

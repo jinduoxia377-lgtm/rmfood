@@ -8,7 +8,7 @@ import logging
 from typing import Any, Dict, List
 
 import psycopg2
-from psycopg2.extensions import connection as PsycopgConnection
+from psycopg2.extensions import connection as psycopg_connection
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class OFFLoaderSync:
                      "host=localhost port=5432 user=postgres password=dbname=rmfood"
         """
         self.conn_str = conn_str
-        self.conn: PsycopgConnection = None
+        self.conn: psycopg_connection = None
 
     def connect(self):
         """建立数据库连接"""

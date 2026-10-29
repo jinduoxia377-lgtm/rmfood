@@ -320,7 +320,6 @@ class KnowledgeGraphEngine:
         # ── 阶段4: 从药材effects推断疾病节点 + treats边 ──
         if not skip_edges:
             logger.info("阶段4: 从药材effects推断疾病节点和treats边...")
-            disease_set: Set[str] = set()
             disease_edge_batch = []
             disease_id_map: Dict[str, int] = {}
 
@@ -1049,7 +1048,7 @@ class KnowledgeGraphEngine:
 
         # 按度数排序（用于高效剥离）
         sorted_by_deg = sorted(remaining_nodes, key=lambda x: current_degrees[x])
-        deg_pos: Dict[int, int] = {nid: i for i, nid in enumerate(sorted_by_deg)}
+        {nid: i for i, nid in enumerate(sorted_by_deg)}
         bin_max_deg = max(current_degrees.values()) if current_degrees else 0
 
         # 度数桶
@@ -1476,7 +1475,7 @@ class KnowledgeGraphEngine:
         if len(parts) != 2:
             return {"nodes": [], "edges": []}
         node_label = parts[1]
-        node_type = parts[0]
+        parts[0]
         relations = await service.get_node_relations(node_label, depth=max_depth)
         return relations
 

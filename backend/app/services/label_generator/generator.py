@@ -97,7 +97,7 @@ class LabelGenerator:
         """
         self._ensure_deps()
 
-        config = LabelConfig(
+        LabelConfig(
             entity_type=entity_type,
             entity_id=entity_id,
             entity_name=entity_name,

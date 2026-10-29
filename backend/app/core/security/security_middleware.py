@@ -821,7 +821,7 @@ def get_audit_logger() -> SecurityAuditLogger:
 # 8. CSRF 双提交保护中间件
 # ════════════════════════════════════════════
 
-import secrets
+import secrets  # noqa: E402
 
 
 class CsrfProtectMiddleware(BaseHTTPMiddleware):
@@ -945,6 +945,10 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
         # AI 智能对话端点豁免 CSRF（JWT 认证 + SPA 场景，CSRF cookie 在跨端口代理下不可靠）
         if request.url.path.startswith("/api/v1/ai/chat"):
+            return await call_next(request)
+        # AI 推理任务队列端点豁免 CSRF（P2-B1：ai_task_router 用 get_current_user Bearer 认证，
+        # 纯 Bearer POST 实测 403；与 /ai/chat 一致，JWT 认证 + SPA 场景）
+        if request.url.path.startswith("/api/v1/ai/tasks"):
             return await call_next(request)
         # 会话同步端点豁免 CSRF（前端使用 Bearer JWT 认证，无 CSRF cookie）
         if request.url.path.startswith("/api/v1/chat/sync"):

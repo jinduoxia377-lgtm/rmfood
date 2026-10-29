@@ -7,7 +7,6 @@ Tests cover:
 - Empty candidates
 """
 
-import pytest
 
 from app.services.ai.models.formula_selector import FormulaSelector, SelectionPriority
 

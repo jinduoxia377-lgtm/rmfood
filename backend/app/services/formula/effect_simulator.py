@@ -378,13 +378,13 @@ class EffectSimulator:
 
         方程: C(t) = (F × Dose × ka) / (Vd × (ka - ke)) × (e^(-ke×t) - e^(-ka×t))
         """
-        F = pk_params["F"]
+        f = pk_params["F"]
         ka = pk_params["ka"]
-        Vd = pk_params["Vd"]
-        CL = pk_params["CL"]
+        vd = pk_params["Vd"]
+        cl = pk_params["CL"]
         t_lag = pk_params.get("t_lag", 0.0)
 
-        ke = CL / Vd
+        ke = cl / vd
 
         concentrations = []
 
@@ -396,10 +396,10 @@ class EffectSimulator:
             t_adj = t - t_lag
 
             if abs(ka - ke) < 1e-10:
-                conc = (F * dose_mg_kg * ka / Vd) * t_adj * math.exp(-ke * t_adj)
+                conc = (f * dose_mg_kg * ka / vd) * t_adj * math.exp(-ke * t_adj)
             else:
                 try:
-                    term1 = F * dose_mg_kg * ka / (Vd * (ka - ke))
+                    term1 = f * dose_mg_kg * ka / (vd * (ka - ke))
                     term2 = math.exp(-ke * t_adj) - math.exp(-ka * t_adj)
                     conc = term1 * term2
                 except (OverflowError, ValueError):
@@ -419,23 +419,23 @@ class EffectSimulator:
 
         方程: E(t) = E_max × C(t)^γ / (EC50^γ + C(t)^γ)
         """
-        E_max = pd_params["E_max"]
-        EC50 = pd_params["EC50"]
-        Hill = pd_params["Hill"]
+        e_max = pd_params["E_max"]
+        ec50 = pd_params["EC50"]
+        hill = pd_params["Hill"]
 
         effects = []
 
         for c in ct_values:
-            if EC50 <= 0:
-                effects.append(E_max if c > 0 else 0.0)
+            if ec50 <= 0:
+                effects.append(e_max if c > 0 else 0.0)
                 continue
 
             try:
-                numerator = E_max * (c ** Hill)
-                denominator = (EC50 ** Hill) + (c ** Hill)
+                numerator = e_max * (c ** hill)
+                denominator = (ec50 ** hill) + (c ** hill)
                 effect = numerator / denominator
             except (OverflowError, ValueError):
-                effect = E_max if c > EC50 else 0.0
+                effect = e_max if c > ec50 else 0.0
 
             effects.append(max(0.0, min(1.0, effect)))
 
@@ -493,7 +493,7 @@ class EffectSimulator:
             },
             "confidence_band": {
                 "upper": [round(u, 4) for u in upper_band],
-                "lower": [round(l, 4) for l in lower_band]
+                "lower": [round(v, 4) for v in lower_band]
             },
             "export_metadata": {
                 "title": "配方效果预测曲线",

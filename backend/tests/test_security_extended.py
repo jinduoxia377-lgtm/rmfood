@@ -1,5 +1,4 @@
 """Tests for security middleware and configuration."""
-import pytest
 
 
 class TestSecurityHeaders:
@@ -29,7 +28,6 @@ class TestCORS:
     def test_allow_headers_specific(self):
         """Specific headers only, not wildcard."""
         allowed = ["Authorization", "Content-Type", "Accept", "X-Requested-With"]
-        wildcard = ["*"]
 
         # Specific is safer
         assert "*" not in allowed

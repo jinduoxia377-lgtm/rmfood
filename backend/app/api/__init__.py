@@ -1,18 +1,11 @@
 """RMFOOD API 路由模块"""
-__all__ = ["api_router", "register_lazy_routers"]  # 公开接口导出
 
-"""
-路由分两阶段注册:
-1. 关键路由 — 模块导入时立即注册（认证、用户、配方等核心功能）
-2. 非关键路由 — 在 lifespan 启动阶段延迟注册（优化启动速度 + 失败不阻塞）
-"""
+# 路由分两阶段注册:
+# 1. 关键路由 — 模块导入时立即注册（认证、用户、配方等核心功能）
+# 2. 非关键路由 — 在 lifespan 启动阶段延迟注册（优化启动速度 + 失败不阻塞）
 import logging
 
 from fastapi import APIRouter
-
-logger = logging.getLogger(__name__)
-
-api_router = APIRouter()
 
 # ── 阶段1: 关键路由立即注册 ──
 from .auth import router as auth_router
@@ -23,6 +16,12 @@ from .knowledge_graph import (
 )
 from .oauth2_auth import router as oauth2_router
 from .users import router as users_router
+
+__all__ = ["api_router", "register_lazy_routers"]  # 公开接口导出
+
+logger = logging.getLogger(__name__)
+
+api_router = APIRouter()
 
 api_router.include_router(auth_router)
 api_router.include_router(oauth2_router)

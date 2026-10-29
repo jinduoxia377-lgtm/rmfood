@@ -141,7 +141,7 @@ class RMFOODPeptideAnalyzer:
 
             return rmfood_result
 
-        except Exception as e:
+        except Exception:
             logger.error("食品肽分析异常", exc_info=True)
             return self._error_result(sequence, "分析服务异常")
 

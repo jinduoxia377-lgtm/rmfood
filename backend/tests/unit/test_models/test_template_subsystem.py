@@ -7,7 +7,6 @@ Tests cover:
 - Match scoring
 """
 
-import pytest
 
 from app.services.ai.models.template_subsystem import TemplateSubsystem, FormulaTemplate
 
@@ -56,7 +55,7 @@ class TestTemplateSelection:
 
     def test_select_no_match(self):
         subsystem = TemplateSubsystem()
-        template = subsystem.select_template(
+        subsystem.select_template(
             target_effects=["不存在的功效XXX"],
         )
         # Should return None if no good match

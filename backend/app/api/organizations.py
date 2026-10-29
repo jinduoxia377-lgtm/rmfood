@@ -26,13 +26,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = logging.getLogger(__name__)
 
 
-from ..core.multi_tenant.multi_tenant_service import (
+from ..core.multi_tenant.multi_tenant_service import (  # noqa: E402
     PLAN_LIMITS,
     OrganizationPlan,
     OrganizationRole,
     get_org_service,
 )
-from .deps import get_current_active_user, get_db_session
+from .deps import get_current_active_user, get_db_session  # noqa: E402
 
 router = APIRouter(prefix="/organizations", tags=["organizations"])
 

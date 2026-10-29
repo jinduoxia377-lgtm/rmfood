@@ -8,12 +8,12 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-logger = logging.getLogger(__name__)
-
 # 导入核心组件
 from .activity_predictor import get_activity_predictor
 from .converter import PeptideConverter
 from .safety_predictor import get_safety_predictor
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -597,12 +597,12 @@ class FoodPeptideAnalyzer:
 
         # 等电点（pI）近似计算
         # 使用 amino_acid_constants 中每个氨基酸的 pKa 值加权平均
-        pI = self._calculate_isoelectric_point(sequence)
+        iso_point = self._calculate_isoelectric_point(sequence)
 
         return {
             'molecular_weight': round(mw, 2),
             'hydrophobicity': round(hydro, 4),
-            'isoelectric_point': round(pI, 2),
+            'isoelectric_point': round(iso_point, 2),
         }
 
     @staticmethod
@@ -649,13 +649,13 @@ class FoodPeptideAnalyzer:
             return 6.0  # 默认中性
 
         # 二分法计算等电点
-        def net_charge(pH: float) -> float:
+        def net_charge(ph: float) -> float:
             charge = 0.0
             for pka in pkas:
                 if pka >= 7.0:  # 碱性基团
-                    charge += 1.0 / (1.0 + 10.0 ** (pH - pka))
+                    charge += 1.0 / (1.0 + 10.0 ** (ph - pka))
                 else:  # 酸性基团
-                    charge -= 1.0 / (1.0 + 10.0 ** (pka - pH))
+                    charge -= 1.0 / (1.0 + 10.0 ** (pka - ph))
             return charge
 
         lo, hi = 1.0, 14.0

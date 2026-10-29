@@ -13,12 +13,10 @@ from ...models import (
 from ...services.data_sources.graph_service import graph_service
 from ..deps import get_db_session
 
-"""
-Shared router for dashboard module.
-"""
-import logging
-
+# Shared router for dashboard module.
 from . import router
+
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -382,7 +380,6 @@ async def get_search_suggestions(
     }
     include_herbs = context in ("herbs", "all")
     include_peptides = context in ("peptides", "all")
-    include_food = context == "food_material"
     include_graph = context in ("knowledge_graph", "all")
 
     # ── 药材建议（数据库优先 + 内存补充）──
@@ -561,7 +558,7 @@ async def cross_database_search(
         for p in peptides_db:
             relevance_score = 0
             organism = (p.source_organism or "").lower()
-            protein = (p.source_protein or "").lower()
+            (p.source_protein or "").lower()
             activity_type = (p.activity_type or "").lower()
 
             # 来源生物体相关性
@@ -595,7 +592,7 @@ async def cross_database_search(
         for p in DFBP_PEPTIDE_DATABASE:
             relevance_score = 0
             organism = (p.get("source_organism") or "").lower()
-            protein = (p.get("source_protein") or "").lower()
+            (p.get("source_protein") or "").lower()
 
             # 来源生物体相关性
             edible_keywords = ["plant", "food", "soybean", "milk", "egg", "fish", "meat", "rice", "wheat"]
@@ -814,7 +811,7 @@ def _generate_recommendations(hqs, pqs, hh, ph, total_herbs=100, total_peptides=
         recs.append("数据质量整体良好，可正常支持配方研发工作流")
     return recs
 
-import logging
+import logging  # noqa: E402
 
 logger = logging.getLogger(__name__)
 logger.info("dashboard module loaded")

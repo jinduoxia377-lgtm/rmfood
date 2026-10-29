@@ -9,7 +9,7 @@ from decimal import Decimal
 
 pytestmark = pytest.mark.skip(reason="依赖已删除的 app.domain.entities 领域实体，待重写")
 
-from app.infrastructure.event_bus import (
+from app.infrastructure.event_bus import (  # noqa: E402
     InMemoryEventBus, serialize_event,
 )
 

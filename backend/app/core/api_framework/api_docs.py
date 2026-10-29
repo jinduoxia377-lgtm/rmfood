@@ -166,7 +166,7 @@ class SchemaValidationMiddleware:
                         response = await call_next(new_request)
                     else:
                         response = await call_next(request)
-                except json.JSONDecodeError as e:
+                except json.JSONDecodeError:
                     return JSONResponse(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         content={

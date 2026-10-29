@@ -11,7 +11,6 @@
 7. Chief 执行失败 → 群聊出现 ❌ 消息（降级）
 """
 import asyncio
-import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest

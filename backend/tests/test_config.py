@@ -30,7 +30,7 @@ except Exception as e:
     print("[FAIL] Test 1 FAILED:", str(e))
 
 # Test 2: Without SECRET_KEY (should generate random one in dev)
-import subprocess
+import subprocess  # noqa: E402
 result = subprocess.run([sys.executable, '-c', '''
 import os
 import sys

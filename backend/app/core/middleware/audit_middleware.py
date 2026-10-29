@@ -40,7 +40,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-from app.core.database.data_masking import MaskLevel, mask_response
+from app.core.database.data_masking import MaskLevel, mask_response  # noqa: E402
 
 # ============================================================
 # 操作严重性
@@ -447,7 +447,7 @@ def log_sensitive_operation(user_id: int, username: str, action: str,
                             details: Optional[Dict[str, Any]] = None,
                             **kwargs) -> None:
     """直接记录敏感操作（非请求场景下使用）"""
-    now = datetime.now(timezone.utc)
+    datetime.now(timezone.utc)
     masked_details = mask_response(details or {}, MaskLevel.PARTIAL) if details else None
 
     msg = (

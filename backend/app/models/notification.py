@@ -48,7 +48,7 @@ class Notification(Base):
         return f"<Notification(id={self.id}, user_id={self.user_id}, type={self.type.value}, read={self.is_read})>"
 
 
-from .user_model import User
+from .user_model import User  # noqa: E402
 
 
 class NotificationPreference(Base):

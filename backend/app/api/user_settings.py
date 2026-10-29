@@ -399,7 +399,7 @@ async def get_login_history(
             ],
             "total": len(logs),
         }
-    except Exception as e:
+    except Exception:
         # 审计日志表可能不存在
         return {"history": [], "total": 0}
 

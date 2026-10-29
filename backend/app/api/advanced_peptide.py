@@ -15,14 +15,14 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
-
 from ..api.deps import get_db_session
 from ..core.plans import require_plan
 from ..models import User
 from ..services.ai_models.advanced_peptide_analyzer import (
     get_advanced_analyzer,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/ai/peptide/advanced", tags=["PepINVENT高级分析"])
 
@@ -354,7 +354,7 @@ async def custom_optimization(
             "data": result,
         }
 
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(status_code=422, detail="参数无效")
     except (ValueError, RuntimeError, TypeError) as e:
         logger.error("自定义优化失败: %s", e, exc_info=True)
@@ -490,7 +490,7 @@ async def generate_variants(
             },
         }
 
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(status_code=422, detail="参数无效")
     except (ValueError, RuntimeError, TypeError) as e:
         logger.error("变体生成失败: %s", e, exc_info=True)

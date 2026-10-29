@@ -5,8 +5,7 @@ account lockout, token blacklist, cookie settings.
 """
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime, timedelta, timezone
-from httpx import AsyncClient, ASGITransport
+from datetime import datetime, timezone
 
 
 # ── Fixtures ──────────────────────────────────────────────────────
@@ -269,7 +268,7 @@ class TestAccountLockout:
     @pytest.mark.asyncio
     async def test_lockout_after_max_attempts(self, mock_db):
         """Account locks after MAX_LOGIN_ATTEMPTS failures."""
-        from app.core.account_lockout import check_account_lockout, record_failed_attempt, unlock_account
+        from app.core.account_lockout import check_account_lockout, record_failed_attempt
 
         # Simulate max failed attempts
         for i in range(5):
@@ -299,7 +298,6 @@ class TestAccountLockout:
     async def test_lockout_is_temporary(self, mock_db):
         """Lockout expires after LOCKOUT_DURATION."""
         from app.core.account_lockout import record_failed_attempt, check_account_lockout
-        import time
 
         for i in range(5):
             await record_failed_attempt(mock_db, "testuser")
@@ -350,7 +348,7 @@ class TestTokenBlacklist:
     @pytest.mark.asyncio
     async def test_logout_revokes_token(self, mock_db):
         """Logout blacklists the current access token."""
-        from app.utils.auth import decode_token, is_token_blacklisted
+        from app.utils.auth import is_token_blacklisted
         from app.services.auth import create_access_token
 
         token = create_access_token(data={"sub": "1"})

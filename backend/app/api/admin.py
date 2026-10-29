@@ -564,7 +564,7 @@ async def batch_import_users(
     from ..services.auth import get_password_hash
     from ..services.user import UserService
 
-    service = UserService(db)
+    UserService(db)
 
     # 读取 CSV 内容
     content = await file.read()
@@ -578,7 +578,7 @@ async def batch_import_users(
         "errors": [],
     }
 
-    ROLE_MAP = {
+    role_map = {
         "admin": "ADMIN",
         "reviewer": "REVIEWER",
         "researcher": "RESEARCHER",
@@ -605,7 +605,7 @@ async def batch_import_users(
         if not password or len(password) < 8:
             results["errors"].append({"row": row_num, "field": "password", "message": "密码至少8位"})
             continue
-        if role not in ROLE_MAP:
+        if role not in role_map:
             results["errors"].append({"row": row_num, "field": "role", "message": f"无效角色: {role}"})
             continue
 
@@ -626,7 +626,7 @@ async def batch_import_users(
                 email=email,
                 hashed_password=hashed,
                 full_name=full_name,
-                role=UserRole[ROLE_MAP[role]],
+                role=UserRole[role_map[role]],
                 department=department,
             )
             db.add(user)

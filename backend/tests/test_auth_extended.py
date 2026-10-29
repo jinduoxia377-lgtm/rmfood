@@ -4,7 +4,6 @@ Covers: login, register, token refresh, logout, password change,
 token blacklist, account lockout, OAuth2 flows.
 """
 import hashlib
-import pytest
 from datetime import datetime, timedelta, timezone
 
 

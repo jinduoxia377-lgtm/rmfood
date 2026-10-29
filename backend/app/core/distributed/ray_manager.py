@@ -133,7 +133,7 @@ class RayConfig(BaseModel):
     )
 
     @validator("address")
-    def validate_address(cls, v):
+    def validate_address(cls, v):  # noqa: N805 - Pydantic validator (classmethod)
         """验证地址格式"""
         valid_prefixes = ["auto", "ray://", "localhost", "127.0.0.1"]
         if not any(v.startswith(prefix) for prefix in valid_prefixes):

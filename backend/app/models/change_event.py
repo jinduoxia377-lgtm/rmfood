@@ -120,4 +120,4 @@ class ChangeEvent(Base):
         }
 
 
-from .user_model import User
+from .user_model import User  # noqa: E402

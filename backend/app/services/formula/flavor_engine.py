@@ -281,7 +281,7 @@ class FlavorEngine:
         """确定主体香味轮廓"""
         # 找出主导味道
         dominant = max(taste_profile, key=taste_profile.get)
-        dominant_ratio = taste_profile[dominant]
+        taste_profile[dominant]
 
         profiles = {
             "sweet": "甘甜型",

@@ -200,9 +200,9 @@ def arrhenius_factor(k_ref: float, Ea: float, T_celsius: float) -> float:
     Returns:
         在 T°C 下的有效降解速率
     """
-    T_kelvin = T_celsius + 273.15
+    t_kelvin = T_celsius + 273.15
     # Arrhenius 指数项
-    exponent = (Ea / R_GAS) * (1.0 / T_REF - 1.0 / T_kelvin)
+    exponent = (Ea / R_GAS) * (1.0 / T_REF - 1.0 / t_kelvin)
     return k_ref * math.exp(exponent)
 
 
@@ -361,12 +361,12 @@ class ArrheniusStabilityEngine:
             else:
                 props = self._db[resolved]
                 k_25 = props["k_25"]
-                Ea = props["Ea"]
+                ea = props["Ea"]
                 light_f = props["light_factor"]
                 base_sl = props["base_shelf_life"]
 
                 # Arrhenius 温度校正
-                k_eff = arrhenius_factor(k_25, Ea, storage_temp)
+                k_eff = arrhenius_factor(k_25, ea, storage_temp)
 
                 # 综合光照因子
                 effective_light = base_light * light_f * pack_factor
@@ -570,10 +570,10 @@ class ArrheniusStabilityEngine:
 
         # 取第一个已知成分作为代表
         representative_k25 = 0.005  # 默认参考降解速率
-        representative_Ea = 70000    # 默认参考活化能 J/mol
+        representative_ea = 70000    # 默认参考活化能 J/mol
 
-        k1 = arrhenius_factor(representative_k25, representative_Ea, t1)
-        k2 = arrhenius_factor(representative_k25, representative_Ea, t2)
+        k1 = arrhenius_factor(representative_k25, representative_ea, t1)
+        k2 = arrhenius_factor(representative_k25, representative_ea, t2)
 
         q10 = (k2 / k1) ** (10.0 / (t2 - t1))
         return round(q10, 2)

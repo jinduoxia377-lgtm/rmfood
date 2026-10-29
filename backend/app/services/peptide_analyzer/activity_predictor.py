@@ -456,8 +456,6 @@ class ActivityPredictor:
 
     def get_activity_summary(self, sequence: str) -> str:
         """获取活性摘要"""
-        results = {}
-
         ace = self.ace_predictor.predict(sequence)
         antiox = self.antioxidant_predictor.predict(sequence)
         amp = self.antimicrobial_predictor.predict(sequence)

@@ -1,5 +1,4 @@
 """Tests for database session management and connection pooling."""
-import pytest
 
 
 class TestDatabaseConfig:

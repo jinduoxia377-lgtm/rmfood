@@ -14,7 +14,6 @@ from __future__ import annotations
 import logging
 import re
 
-import pytest
 
 from app.core.observability.request_context import (
     RequestContextFilter,

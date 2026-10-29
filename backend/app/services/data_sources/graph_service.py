@@ -1123,14 +1123,14 @@ class KnowledgeGraphService:
         peptide_edges_added = 0
         peptide_nodes_added = 0
         try:
-            from .dfbp_client import PEPTIDE_TARGET_PATHS
+            from .dfbp_client import PEPTIDE_TARGET_PATHS as peptide_target_paths
         except (ImportError, AttributeError):
-            PEPTIDE_TARGET_PATHS = []
+            peptide_target_paths = []
 
         max_peptides = 40
         # 肽代码 → 该肽的所有靶点边
         peptide_targets: dict[str, list[dict[str, Any]]] = defaultdict(list)
-        for ptp in PEPTIDE_TARGET_PATHS:
+        for ptp in peptide_target_paths:
             code = peptide_canonical_code(ptp.get("peptide", ""))
             if code:
                 peptide_targets[code].append(ptp)

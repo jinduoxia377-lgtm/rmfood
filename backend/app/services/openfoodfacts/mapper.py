@@ -128,7 +128,7 @@ class OFFMapper:
         image_urls = self._extract_images(raw_off)
 
         # ── 国家/销售区域 ──
-        countries = raw_off.get("countries", "")
+        raw_off.get("countries", "")
         countries_tags = raw_off.get("countries_tags", [])
         if isinstance(countries_tags, str):
             countries_tags = [c.strip() for c in countries_tags.split(",")]
@@ -280,7 +280,7 @@ class OFFMapper:
 
         labels_tags = raw_off.get("labels_tags", [])
         if isinstance(labels_tags, str):
-            labels_tags = [l.strip() for l in labels_tags.split(",")]
+            labels_tags = [lab.strip() for lab in labels_tags.split(",")]
 
         effect_mapping = {
             "no-added-sugar": "低糖",

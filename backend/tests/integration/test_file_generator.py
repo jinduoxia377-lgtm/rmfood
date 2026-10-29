@@ -10,8 +10,7 @@ import asyncio
 from app.services.file_generator import (
     FileGeneratorService,
     FileFormat,
-    TaskStatus,
-    file_generator_service
+    TaskStatus
 )
 
 

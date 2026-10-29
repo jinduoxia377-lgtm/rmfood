@@ -13,7 +13,6 @@ v3.3 任务驱动自动建群测试
 9. McpBridge 工具注册（命名空间）与 validate_capabilities 放行 mcp:
 """
 import asyncio
-import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -24,8 +23,8 @@ from app.models import User
 from app.models.mcp_server import McpServerConfig
 from app.services.ai.agent.bot_manager import BotManager
 from app.services.ai.agent.group_chat_service import GroupChatService
-from app.services.ai.agent.role_templates import RoleTemplate, ROLE_TEMPLATES, get_role_template
-from app.services.ai.agent.task_planner import TaskPlanner, get_task_planner
+from app.services.ai.agent.role_templates import RoleTemplate, get_role_template
+from app.services.ai.agent.task_planner import TaskPlanner
 from app.services.ai.agent.task_team_service import TaskTeamService
 from app.services.ai.agent.mcp_bridge import McpBridge, get_mcp_bridge, McpAgentTool
 
@@ -261,7 +260,7 @@ class TestMcpServer:
     @pytest.mark.asyncio
     async def test_bridge_registers_tool(self):
         async for db in get_db_session():
-            user = await _create_user(db)
+            await _create_user(db)
             uid = _make_unique_id()
             cfg = McpServerConfig(
                 tenant_id=1, name=f"server_{uid}", transport="http",

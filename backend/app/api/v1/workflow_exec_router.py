@@ -203,7 +203,7 @@ async def execute_workflow(
                 }),
             )
 
-        except HTTPException as e:
+        except HTTPException:
             raise
         except Exception as e:
             logger.error("Workflow execution failed: %s", e, exc_info=True)

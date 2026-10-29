@@ -198,7 +198,7 @@ async def batch_import_experiments(
             })
             success_count += 1
 
-        except Exception as e:
+        except Exception:
             results.append({
                 "experiment_id": exp_data.experiment_id,
                 "error": "导入失败，请检查数据格式",

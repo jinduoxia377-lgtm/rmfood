@@ -9,7 +9,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(backend_dir))
 
 # Set up environment first
-import os
+import os  # noqa: E402
 os.environ['SECRET_KEY'] = 'test-secret-key-32-chars-long-1234567890abcdef'
 os.environ['ENV'] = 'development'
 os.environ['DATABASE_URL'] = 'postgresql+asyncpg://postgres:password@localhost:5432/rmfood'

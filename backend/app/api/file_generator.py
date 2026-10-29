@@ -75,7 +75,7 @@ async def generate_file_async(
 ):
     """生成文件（异步）"""
     try:
-        template_manager = get_template_manager(file_generator_service)
+        get_template_manager(file_generator_service)
 
         # 根据模板生成内容
         if request.template and request.template != "default":

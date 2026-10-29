@@ -354,7 +354,7 @@ class NutritionEngine:
         fiber = nutrients_per_100g.get(NutrientType.DIETARY_FIBER, 0)
         sodium = nutrients_per_100g.get(NutrientType.SODIUM, 0)
         fat = nutrients_per_100g.get(NutrientType.FAT, 0)
-        carbs = nutrients_per_100g.get(NutrientType.CARBOHYDRATE, 0)
+        nutrients_per_100g.get(NutrientType.CARBOHYDRATE, 0)
 
         if protein >= 10:
             score += min(10, protein / 3)

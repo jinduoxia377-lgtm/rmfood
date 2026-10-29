@@ -27,19 +27,19 @@ from __future__ import annotations
 │  PgBouncer  │ (连接池)
 └─────────────┘
 """
-import logging
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Literal, Optional
+import logging  # noqa: E402
+from contextlib import asynccontextmanager  # noqa: E402
+from typing import AsyncGenerator, Literal, Optional  # noqa: E402
 
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import (
+from sqlalchemy import text  # noqa: E402
+from sqlalchemy.ext.asyncio import (  # noqa: E402
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
 
-from ..core.config import settings
+from ..core.config import settings  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

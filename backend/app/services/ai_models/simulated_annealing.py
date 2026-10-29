@@ -112,7 +112,6 @@ class SimulatedAnnealingOptimizer:
         self.best_score = current_score
         self.iteration_history = []
 
-        iteration = 0
         total_iterations = 0
 
         logger.info(f"SA开始: 初始温度={self.T:.2f}, 冷却率={self.cooling_rate}")

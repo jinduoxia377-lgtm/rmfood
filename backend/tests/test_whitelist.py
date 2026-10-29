@@ -134,7 +134,6 @@ async def test_verify_code_success_and_wrong(async_client, db_session):
     request_id = resp.json()["request_id"]
 
     # 直接落库已知验证码哈希（模拟邮件中的验证码内容）
-    from sqlalchemy import select
     from app.models.pre_register import PreRegisterRequest as PR
     await db_session.execute(
         update(PR)

@@ -7,7 +7,6 @@ Tests cover:
 - Save/Load
 """
 
-import pytest
 import torch
 
 from app.services.ai.models.pytorch_generator import (
@@ -115,8 +114,8 @@ class TestPyTorchGeneratorTrain:
             losses.append(result["total_loss"])
 
         # Losses should be finite
-        assert all(isinstance(l, float) for l in losses)
-        assert all(l > 0 for l in losses)
+        assert all(isinstance(loss, float) for loss in losses)
+        assert all(loss > 0 for loss in losses)
 
 
 class TestPyTorchGeneratorSaveLoad:

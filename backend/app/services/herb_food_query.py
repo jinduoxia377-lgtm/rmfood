@@ -302,7 +302,7 @@ class HerbFoodQueryService:
         dis_row = dis_result.fetchone()
         if not dis_row:
             return []
-        dis_id = dis_row[0]
+        dis_row[0]
 
         # 核心查询：展开 疾病→靶点→化合物→中药
         sql = text("""

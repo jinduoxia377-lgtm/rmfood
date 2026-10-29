@@ -2,7 +2,6 @@
 
 覆盖功能性设计引擎的主入口设计流程。
 """
-import pytest
 
 from app.services.formula.functional_engine import FunctionalEngine
 

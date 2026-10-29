@@ -108,11 +108,16 @@ def reset_trace_context(tokens: Dict[str, Any]) -> None:
     """还原 Trace 上下文（防止协程间污染）"""
     for key, token in tokens.items():
         match key:
-            case "trace_id": _trace_id_var.reset(token)
-            case "span_id": _span_id_var.reset(token)
-            case "request_id": _request_id_var.reset(token)
-            case "user_id": _user_id_var.reset(token)
-            case "org_id": _org_id_var.reset(token)
+            case "trace_id":
+                _trace_id_var.reset(token)
+            case "span_id":
+                _span_id_var.reset(token)
+            case "request_id":
+                _request_id_var.reset(token)
+            case "user_id":
+                _user_id_var.reset(token)
+            case "org_id":
+                _org_id_var.reset(token)
 
 
 # ════════════════════════════════════════════════════════════════

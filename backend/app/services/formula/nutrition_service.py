@@ -15,10 +15,9 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-logger = logging.getLogger(__name__)
-
-# 统一使用新模块的营养数据库，消除双数据源
 from app.services.formula.nutrition_database import HERB_NUTRITION_DB
+
+logger = logging.getLogger(__name__)
 
 # ═════════════════════════════════════════════
 # 过敏原映射

@@ -7,6 +7,6 @@ try:
     from app.api.analytics import router
     print('SUCCESS: Analytics module loaded')
     print(f'Routes count: {len(router.routes)}')
-except Exception as e:
+except Exception:
     print('FAILED to load analytics module')
     traceback.print_exc()

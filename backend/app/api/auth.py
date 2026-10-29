@@ -16,8 +16,6 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-logger = logging.getLogger(__name__)
-
 from ..api.deps import get_db_session
 from ..core.config import settings
 from ..models.enums import UserRole
@@ -37,6 +35,8 @@ from ..utils.auth import (
     create_secure_cookie_settings,
     get_cookie_value,
 )
+
+logger = logging.getLogger(__name__)
 
 # 🔒 Cookie 名称常量
 ACCESS_TOKEN_COOKIE = "rmfood_access_token"
@@ -319,7 +319,7 @@ async def upload_current_user_avatar(
     avatar_url = f"/uploads/avatars/{filename}"
     from ..services.user import UserService
     service = UserService(db)
-    user = await service.update_user(
+    await service.update_user(
         current_user.id,
         UserUpdate(avatar_url=avatar_url)
     )

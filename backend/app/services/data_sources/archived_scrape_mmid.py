@@ -32,7 +32,7 @@ def main():
 
             # 中文名
             cn_text = tds[1].get_text(separator="\n", strip=True)
-            lines = [l for l in cn_text.split("\n") if l.strip()]
+            lines = [ln for ln in cn_text.split("\n") if ln.strip()]
             cn = lines[0].strip() if lines else ""
             pinyin = lines[1].strip() if len(lines) >= 2 else ""
 

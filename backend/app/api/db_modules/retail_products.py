@@ -17,10 +17,10 @@ from app.api.deps import get_current_user, get_db_session
 from app.models.food_material import FoodMaterial
 from app.models.user_model import User
 
-logger = logging.getLogger(__name__)
-
 # 使用共享 router 实例
 from . import router
+
+logger = logging.getLogger(__name__)
 
 # Lazy import for RetailProduct (avoids circular imports in service layer)
 _RetailProduct = None

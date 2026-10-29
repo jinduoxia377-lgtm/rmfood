@@ -248,7 +248,7 @@ class KeyManager:
                 ).isoformat(),
             }
 
-        except Exception as e:
+        except Exception:
             return {
                 "success": False,
                 "error": "密钥管理异常",

@@ -4,7 +4,6 @@ RAG 检索增强生成测试（M2.1）
 覆盖：文档分块、向量检索、上下文组装、完整 RAG 流程
 """
 import pytest
-from math import sqrt
 
 from app.domain.rag import (
     DocumentChunk, RetrievalQuery, RetrievalResult, RAGContext,

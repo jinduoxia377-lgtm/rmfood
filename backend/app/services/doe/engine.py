@@ -461,7 +461,7 @@ class ResponseSurfaceFitter:
 
         返回每个响应变量的模型
         """
-        n_factors = len(runs[0].coded_levels) if runs else 0
+        len(runs[0].coded_levels) if runs else 0
         factors = list(runs[0].coded_levels.keys()) if runs else []
 
         models = []
@@ -535,7 +535,7 @@ class ResponseSurfaceFitter:
             )
 
         # 构建 X 矩阵（仅使用有响应值的运行）
-        X = []
+        x_mat = []
         for run in filtered_runs:
             row = [1.0]  # intercept
             coded = run.coded_levels
@@ -548,14 +548,14 @@ class ResponseSurfaceFitter:
             if include_quadratic:
                 for f in factors:
                     row.append(coded.get(f, 0.0) ** 2)
-            X.append(row)
+            x_mat.append(row)
 
         # 最小二乘: beta = (X'X)^{-1} X'y
         try:
-            XtX = self._matrix_multiply_transpose(X, X)
-            XtX_inv = self._matrix_inverse(XtX)
-            Xty = self._matrix_vector_multiply_transpose(X, y)
-            beta = self._matrix_vector_multiply(XtX_inv, Xty)
+            xtx = self._matrix_multiply_transpose(x_mat, x_mat)
+            xtx_inv = self._matrix_inverse(xtx)
+            xty = self._matrix_vector_multiply_transpose(x_mat, y)
+            beta = self._matrix_vector_multiply(xtx_inv, xty)
         except Exception:
             # 退化情况：返回零模型
             return ResponseSurfaceModel(
@@ -570,12 +570,12 @@ class ResponseSurfaceFitter:
             )
 
         # 计算拟合值和统计量
-        y_pred = self._matrix_vector_multiply(X, beta)
+        y_pred = self._matrix_vector_multiply(x_mat, beta)
         y_mean = sum(y) / len(y) if y else 0.0
 
         ss_tot = sum((yi - y_mean) ** 2 for yi in y)
         ss_res = sum((yi - yi_pred) ** 2 for yi, yi_pred in zip(y, y_pred))
-        ss_reg = ss_tot - ss_res
+        ss_tot - ss_res
 
         r_squared = 1 - ss_res / ss_tot if ss_tot > 1e-10 else 0.0
         n_params = len(beta)
@@ -614,50 +614,50 @@ class ResponseSurfaceFitter:
             significant_terms=significant,
         )
 
-    def _matrix_multiply_transpose(self, A: List[List[float]], B: List[List[float]]) -> List[List[float]]:
-        """计算 A^T * B"""
-        m = len(A)        # rows of A
-        n = len(A[0]) if A else 0  # cols of A (= rows of B)
-        p = len(B[0]) if B else 0  # cols of B
-        # A^T is n x m, B is m x p, result is n x p
+    def _matrix_multiply_transpose(self, a: List[List[float]], b: List[List[float]]) -> List[List[float]]:
+        """计算 a^T * b"""
+        m = len(a)        # rows of a
+        n = len(a[0]) if a else 0  # cols of a (= rows of b)
+        p = len(b[0]) if b else 0  # cols of b
+        # a^T is n x m, b is m x p, result is n x p
         result = [[0.0] * p for _ in range(n)]
         for i in range(n):
             for j in range(p):
                 s = 0.0
                 for k in range(m):
-                    s += A[k][i] * B[k][j]  # A^T[i,k] = A[k][i]
+                    s += a[k][i] * b[k][j]  # a^T[i,k] = a[k][i]
                 result[i][j] = s
         return result
 
-    def _matrix_vector_multiply_transpose(self, A: List[List[float]], b: List[float]) -> List[float]:
-        """计算 A^T * b"""
-        m = len(A)
-        n = len(A[0]) if A else 0
+    def _matrix_vector_multiply_transpose(self, a: List[List[float]], b: List[float]) -> List[float]:
+        """计算 a^T * b"""
+        m = len(a)
+        n = len(a[0]) if a else 0
         result = [0.0] * n
         for i in range(n):
             s = 0.0
             for j in range(m):
-                s += A[j][i] * b[j]
+                s += a[j][i] * b[j]
             result[i] = s
         return result
 
-    def _matrix_vector_multiply(self, A: List[List[float]], b: List[float]) -> List[float]:
-        """计算 A * b"""
-        m = len(A)
+    def _matrix_vector_multiply(self, a: List[List[float]], b: List[float]) -> List[float]:
+        """计算 a * b"""
+        m = len(a)
         n = len(b)
         result = [0.0] * m
         for i in range(m):
             s = 0.0
             for j in range(n):
-                s += A[i][j] * b[j]
+                s += a[i][j] * b[j]
             result[i] = s
         return result
 
-    def _matrix_inverse(self, A: List[List[float]]) -> List[List[float]]:
+    def _matrix_inverse(self, a: List[List[float]]) -> List[List[float]]:
         """高斯消元法求逆矩阵"""
-        n = len(A)
-        # 增广矩阵 [A|I]
-        aug = [row[:] + [1.0 if i == j else 0.0 for j in range(n)] for i, row in enumerate(A)]
+        n = len(a)
+        # 增广矩阵 [a|I]
+        aug = [row[:] + [1.0 if i == j else 0.0 for j in range(n)] for i, row in enumerate(a)]
 
         for col in range(n):
             # 选主元
@@ -791,7 +791,7 @@ class InverseSearchEngine:
                 decoded[f] = center + c * half
 
         # 可行性评分
-        predicted_final = self._predict(model, best, factors)
+        self._predict(model, best, factors)
         target_ref = list(target_values.values())[0] if target_values else 1.0
         feasibility = 1.0 - min(1.0, best_error / max(1.0, abs(target_ref)))
 
@@ -1138,7 +1138,7 @@ class DOEEngine:
         for f in factors:
             terms.append(f"X_{f}^2")
 
-        X: List[List[float]] = []
+        x_mat: List[List[float]] = []
         for run in runs:
             coded = run.coded_levels
             row = [1.0]
@@ -1148,14 +1148,14 @@ class DOEEngine:
                 row.append(coded.get(a, 0.0) * coded.get(b, 0.0))
             for f in factors:
                 row.append(coded.get(f, 0.0) ** 2)
-            X.append(row)
+            x_mat.append(row)
 
-        XtX = fitter._matrix_multiply_transpose(X, X)
+        xtx = fitter._matrix_multiply_transpose(x_mat, x_mat)
         try:
-            XtX_inv = fitter._matrix_inverse(XtX)
+            xtx_inv = fitter._matrix_inverse(xtx)
         except Exception:
             return None
-        return XtX_inv
+        return xtx_inv
 
     def _variance_based_runs(
         self,
@@ -1163,7 +1163,7 @@ class DOEEngine:
         factors: List[str],
         factor_range: Dict[str, Tuple[float, float]],
         n_recommend: int,
-        XtX_inv: List[List[float]],
+        xtx_inv: List[List[float]],
         existing_runs: Optional[List[DOERun]] = None,
     ) -> List[DOERun]:
         """在候选网格上计算预测方差，按降序选 n_recommend 个点。
@@ -1217,8 +1217,8 @@ class DOEEngine:
                 x.append(cand.get(a, 0.0) * cand.get(b, 0.0))
             for f in factors:
                 x.append(cand.get(f, 0.0) ** 2)
-            Xt_inv = self.responder._matrix_vector_multiply(XtX_inv, x)
-            var = sum(x[i] * Xt_inv[i] for i in range(len(x)))
+            xt_inv = self.responder._matrix_vector_multiply(xtx_inv, x)
+            var = sum(x[i] * xt_inv[i] for i in range(len(x)))
             # 与已有 run 重合（编码值相同）的候选降权 50%，避免原地打转
             key = tuple(round(cand.get(f, 0.0), 4) for f in factors)
             if key in existing_set:

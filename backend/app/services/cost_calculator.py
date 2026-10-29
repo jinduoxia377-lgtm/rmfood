@@ -382,7 +382,7 @@ class CostCalculator:
         for ing, dos in zip(original_ingredients, original_dosages):
             ing_name = ing.get("name") or ing.get("ingredient_name", "未知原料")
             unit_cost = self.get_unit_cost(ing_name)
-            current_cost = unit_cost * dos
+            unit_cost * dos
 
             if original_cost > 0 and remaining_budget < original_cost * 0.5:
                 adjusted_dosage = dos * 0.9

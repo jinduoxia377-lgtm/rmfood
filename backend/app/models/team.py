@@ -40,5 +40,5 @@ class Team(Base):
         return f"<Team(id={self.id}, name='{self.name}', owner_id={self.owner_id}, archived={self.is_archived})>"
 
 
-from .team_member import TeamMember
-from .user_model import User
+from .team_member import TeamMember  # noqa: E402
+from .user_model import User  # noqa: E402

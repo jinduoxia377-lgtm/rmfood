@@ -10,9 +10,7 @@
 6. 记忆管理（添加/列表/删除）
 """
 import asyncio
-import uuid
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,7 +25,7 @@ from tests._clean_test_users import (
 client = TestClient(app)
 
 # 注册延迟路由（TestClient 不启动 lifespan）
-from app.api import register_lazy_routers
+from app.api import register_lazy_routers  # noqa: E402
 register_lazy_routers()
 
 # CSRF 双提交（bots 已加入豁免，这里仍带上以保证兼容）

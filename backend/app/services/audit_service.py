@@ -1,6 +1,6 @@
 """RMFOOD 审计日志服务"""
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -43,17 +43,6 @@ class AuditService:
         - client_ip: 客户端IP地址
         - user_agent: 用户代理字符串
         """
-        audit_record = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "user_id": user_id,
-            "action_type": action_type,
-            "resource_type": resource_type,
-            "resource_id": resource_id,
-            "changes": changes_snapshot or {},
-            "client_ip": client_ip,
-            "user_agent": user_agent,
-        }
-
         # 当前实现：记录到应用日志（可扩展为数据库存储）
         logger.info(
             f"AUDIT_LOG: {action_type} {resource_type}/{resource_id} "

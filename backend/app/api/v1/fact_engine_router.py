@@ -229,8 +229,8 @@ async def generate_report(
 @router.get("/health", summary="FactEngine 健康检查")
 async def health_check() -> dict:
     """验证 FactEngine 可用"""
-    engine = get_fact_engine()
-    writer = get_report_writer()
+    get_fact_engine()
+    get_report_writer()
     return {
         "status": "healthy",
         "engine_version": "1.0.0",

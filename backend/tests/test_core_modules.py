@@ -15,24 +15,20 @@
 """
 
 import pytest
-import asyncio
 import json
 import time
 import io
 import sys
-from datetime import datetime, timezone
-from typing import Dict, List, Any, Optional
-from unittest.mock import Mock, patch, MagicMock, AsyncMock
 
 # ── 测试依赖 ──
 try:
-    from fastapi import FastAPI
+    from fastapi import FastAPI  # noqa: F401
     HAS_FASTAPI = True
 except ImportError:
     HAS_FASTAPI = False
 
 try:
-    import httpx
+    import httpx  # noqa: F401
     HAS_HTTPX = True
 except ImportError:
     HAS_HTTPX = False
@@ -44,7 +40,6 @@ except ImportError:
     HAS_OPENPYXL = False
 
 # 设置测试路径
-import os
 from pathlib import Path
 BACKEND_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
@@ -168,7 +163,6 @@ class TestDatabasePool:
     @pytest.mark.asyncio
     async def test_stream_large_result_basic(self):
         """测试流式结果分页处理"""
-        from app.core.database_pool import stream_large_result
 
         mock_rows = [{"id": i, "name": f"Item {i}"} for i in range(50)]
 
@@ -222,14 +216,14 @@ class TestHTTPClient:
 
     def test_circuit_breaker_initial_state(self):
         """测试断路器初始状态"""
-        from app.core.http_client import CircuitBreaker, CircuitState, ExternalServiceConfig
+        from app.core.http_client import CircuitBreaker, ExternalServiceConfig
         cb = CircuitBreaker(ExternalServiceConfig(name="test", circuit_breaker_threshold=2))
         # 初始应允许执行
         assert cb.can_execute() == True
 
     def test_circuit_breaker_opening(self):
         """测试断路器在失败后断开"""
-        from app.core.http_client import CircuitBreaker, CircuitState, ExternalServiceConfig
+        from app.core.http_client import CircuitBreaker, ExternalServiceConfig
         cb = CircuitBreaker(ExternalServiceConfig(
             name="test", circuit_breaker_threshold=2, circuit_breaker_recovery_seconds=10
         ))
@@ -590,7 +584,7 @@ class TestCoreIntegration:
     def test_logging_middleware_integration(self):
         """测试日志中间件与应用集成"""
         from app.core.logging_enhanced import (
-            LoggingEnhancedConfig, RequestLoggingMiddleware, StructuredLogger
+            LoggingEnhancedConfig
         )
 
         config = LoggingEnhancedConfig(
@@ -651,7 +645,7 @@ class TestPerformanceAndEdgeCases:
 
     def test_empty_data_export(self):
         """测试空数据导出"""
-        from app.core.export_engine import export_to_csv, export_to_excel
+        from app.core.export_engine import export_to_csv
 
         empty = []
         csv_result = export_to_csv(empty)

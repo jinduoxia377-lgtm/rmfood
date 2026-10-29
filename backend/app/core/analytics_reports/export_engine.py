@@ -135,13 +135,13 @@ class ExcelExporter:
                 ws = self._workbook.create_sheet(title=sheet_name)
 
             # 表头样式
-            header_font = self._Font(bold=True, size=11)
+            self._Font(bold=True, size=11)
             header_fill = self._PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
             header_font_color = self._Font(bold=True, color="FFFFFF", size=11)
             center_align = self._Alignment(horizontal="center", vertical="center")
 
             # 边框
-            thin_border = self._Border(
+            self._Border(
                 left=self._Side(style="thin"),
                 right=self._Side(style="thin"),
                 top=self._Side(style="thin"),
@@ -282,9 +282,6 @@ class PDFExporter:
             from reportlab.lib.pagesizes import A4
             from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
             from reportlab.lib.units import cm, inch
-            from reportlab.pdfbase import pdfmetrics
-            from reportlab.pdfbase.ttfonts import TTFont
-            from reportlab.pdfgen import canvas
             from reportlab.platypus import (
                 PageBreak,
                 Paragraph,
@@ -661,7 +658,7 @@ def create_file_response(
 
 
 # 方便导入 json（被 flatten 中使用
-import json
+import json  # noqa: E402
 
 # ════════════════════════════════════════════
 # 🔒 P4-4: 导出操作记录（审计

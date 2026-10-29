@@ -9,16 +9,13 @@ DiagnosticEngine 三级诊断引擎 — 单元测试
 - report.score 计算: 验证 0-100 分数正确性
 """
 import pytest
-import asyncio
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import patch
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from app.services.ai.shared.diagnostic_engine import (
-    DiagnosticEngine, ConfigChecker, ConnectivityChecker,
-    CapabilityChecker, CheckResult, DiagnosticReport,
+    ConfigChecker,
 )
-from app.core.config import Settings
 
 
 class TestConfigChecker:
@@ -85,7 +82,7 @@ class TestMetricsCollector:
     """MetricsCollector 单元测试"""
 
     def test_empty_summary(self):
-        from app.services.ai.shared.metrics_collector import MetricsCollector, LLMMetricsSnapshot
+        from app.services.ai.shared.metrics_collector import MetricsCollector
         collector = MetricsCollector()
         summary = collector.get_summary(window_seconds=300)
         assert summary["total_calls"] == 0
@@ -111,7 +108,7 @@ class TestMetricsCollector:
             if hasattr(collector, 'record_sync'):
                 collector.record_sync(snapshot)
 
-        summary = collector.get_summary()
+        collector.get_summary()
 
 
 class TestAlertingEngine:

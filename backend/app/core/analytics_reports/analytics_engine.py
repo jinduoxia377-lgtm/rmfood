@@ -331,17 +331,17 @@ class AnalyticsService:
         top = {}
 
         try:
-            CommentAlias = aliased(Comment)
+            comment_alias = aliased(Comment)
             top_query = (
                 select(
                     Formula.id,
                     Formula.name,
                     Formula.created_at,
-                    func.count(CommentAlias.id).label('comment_count'),
+                    func.count(comment_alias.id).label('comment_count'),
                     User.username.label('creator')
                 )
-                .outerjoin(CommentAlias,
-                          CommentAlias.formula_id == Formula.id)
+                .outerjoin(comment_alias,
+                          comment_alias.formula_id == Formula.id)
                 .outerjoin(User, Formula.creator_id == User.id)
                 .where(Formula.status == FormulaStatus.APPROVED)
             )
@@ -350,7 +350,7 @@ class AnalyticsService:
             result = await self.db.execute(
                 top_query
                 .group_by(Formula.id, Formula.name, Formula.created_at, User.username)
-                .order_by(func.count(CommentAlias.id).desc())
+                .order_by(func.count(comment_alias.id).desc())
                 .limit(5)
             )
 

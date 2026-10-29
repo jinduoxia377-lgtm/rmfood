@@ -16,8 +16,6 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-logger = logging.getLogger(__name__)
-
 from ..api.deps import get_db_session
 from ..models.models import Attachment, Experiment, Formula, User
 from ..services.auth import get_current_user
@@ -30,6 +28,8 @@ from ..utils.file_security import (
 from ..utils.file_security import (
     sanitize_filename as file_security_sanitize_filename,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/attachments", tags=["附件"])
 

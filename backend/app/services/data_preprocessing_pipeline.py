@@ -375,17 +375,17 @@ class AutoFeatureEngineer:
 
     def select_features(
         self,
-        X: pd.DataFrame,
+        x: pd.DataFrame,
         y: pd.Series,
         method: str = "correlation",
         threshold: float = 0.1
     ) -> List[str]:
         """特征选择"""
         if method == "correlation":
-            correlations = X.corrwith(y).abs()
+            correlations = x.corrwith(y).abs()
             selected = correlations[correlations > threshold].index.tolist()
         elif method == "variance":
-            variances = X.var()
+            variances = x.var()
             selected = variances[variances > threshold].index.tolist()
         else:
             selected = X.columns.tolist()

@@ -21,9 +21,9 @@ class CQRSHandler:
             self.handlers[event_type](event)
 
     def on_formula_created(self, event):
-        query_model = FormulaQueryModel.from_write_model(event.formula)
+        FormulaQueryModel.from_write_model(event.formula)
         logger.debug("CQRS: Created query model for %s", event.formula.id)
 
     def on_formula_updated(self, event):
-        query_model = FormulaQueryModel.from_write_model(event.formula)
+        FormulaQueryModel.from_write_model(event.formula)
         logger.debug("CQRS: Updated query model for %s", event.formula.id)

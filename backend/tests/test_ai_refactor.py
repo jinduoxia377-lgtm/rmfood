@@ -4,7 +4,6 @@ Copied outside tests/ to avoid conftest.py import issues.
 """
 import sys
 import os
-import random
 
 # Add backend root to path（本文件位于 backend/tests/ 下，真实后端根目录是上一级）
 backend_root = os.path.dirname(os.path.dirname(__file__))
@@ -170,7 +169,7 @@ def test_mcts_candidate_generation():
 def test_scorer_uses_herb_db():
     """Scorer should load herb DB for synergy and safety scoring."""
     from app.services.ai_models.scorer import MultiObjectiveScorer
-    db = get_herb_db()
+    get_herb_db()
 
     scorer = MultiObjectiveScorer()
     assert scorer._herb_db is not None
@@ -251,11 +250,10 @@ def test_no_hardcoded_random_herbs_in_engines():
             continue
         with open(filepath, "r", encoding="utf-8") as f:
             source = f.read()
-        tree = ast.parse(source)
+        ast.parse(source)
 
         # Should reference _herb_db or _BUILTIN_HERBS
         has_herb_db_ref = "_herb_db" in source or "_BUILTIN_HERBS" in source
-        has_hardcoded_pool = "herbs_pool" in source and "self.herbs_pool" not in source
 
         assert has_herb_db_ref, (
             f"{filename} should reference herb_db or _BUILTIN_HERBS"
@@ -265,15 +263,9 @@ def test_no_hardcoded_random_herbs_in_engines():
 
 def test_api_prefixes_fixed():
     """Verify API router prefixes no longer conflict."""
-    import ast
     import os
 
     api_dir = os.path.join(backend_root, "app", "api")
-    expected_prefixes = {
-        "/teams/dashboard",
-        "/notifications/v2",
-        "/comments/likes",
-    }
 
     found_conflicts = []
     for fn in os.listdir(api_dir):

@@ -396,4 +396,4 @@ class GraphQueryService:
 
 
 # 需要导入 String 用于 JSON 字段查询
-from sqlalchemy import String
+from sqlalchemy import String  # noqa: E402

@@ -73,7 +73,7 @@ async def clear_cache(pattern: str = Query(None, description="Optional key patte
 @router.post("/tasks", summary="Submit a task to the queue")
 async def submit_task(request: TaskSubmitRequest):
     """Submit a named function for background execution."""
-    queue = get_task_queue()
+    get_task_queue()
 
     priority_map = {
         "critical": TaskPriority.CRITICAL,
@@ -82,7 +82,7 @@ async def submit_task(request: TaskSubmitRequest):
         "low": TaskPriority.LOW,
         "background": TaskPriority.BACKGROUND,
     }
-    priority = priority_map.get(request.priority, TaskPriority.NORMAL)
+    priority_map.get(request.priority, TaskPriority.NORMAL)
 
     # TODO: resolve function_name to an actual callable in production
     # For now return a pending task_id placeholder

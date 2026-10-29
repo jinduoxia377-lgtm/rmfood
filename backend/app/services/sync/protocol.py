@@ -234,7 +234,7 @@ class SyncProtocol:
 
             for change in changes:
                 try:
-                    entity_key = f"{change.get('entity_type', 'unknown')}:{change.get('entity_id', 'unknown')}"
+                    f"{change.get('entity_type', 'unknown')}:{change.get('entity_id', 'unknown')}"
 
                     change_with_metadata = {
                         **change,
@@ -249,7 +249,7 @@ class SyncProtocol:
 
                     accepted_changes.append(change_with_metadata)
 
-                except Exception as e:
+                except Exception:
                     conflicts.append({
                         "entity_type": change.get("entity_type", "unknown"),
                         "entity_id": change.get("entity_id", "unknown"),
@@ -272,7 +272,7 @@ class SyncProtocol:
                 transfer_id=transfer_id,
             )
 
-        except Exception as e:
+        except Exception:
             if transfer_id in self._active_transfers:
                 self._active_transfers[transfer_id]["status"] = TransferStatus.FAILED
                 self._active_transfers[transfer_id]["error"] = "传输失败"

@@ -326,7 +326,7 @@ class FunctionalEngine:
             }
 
         # 计算均衡度
-        total_gap = sum(gaps.values())
+        sum(gaps.values())
         total_corrected = sum(e["recommended_dosage_mg"] for e in enhancers)
 
         # 均衡度 = 1 - 变异系数

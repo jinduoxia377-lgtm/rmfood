@@ -2,7 +2,6 @@
 
 覆盖统一配方集成服务的请求/响应模型、缓存与两种生成管线。
 """
-import pytest
 
 from app.services.formula.integration_service import (
     FormulaIntegrationService,

@@ -982,7 +982,7 @@ Authorization: Bearer <your_access_token>
     return app
 app = create_app()
 # 修复 OpenAPI JSON 格式问题
-import re
+import re  # noqa: E402
 
 
 @app.get("/openapi.json", include_in_schema=False)

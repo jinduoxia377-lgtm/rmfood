@@ -27,7 +27,6 @@ def export_to_excel(label_data: Dict[str, Any]) -> bytes:
     try:
         from openpyxl import Workbook
         from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-        from openpyxl.utils import get_column_letter
     except ImportError:
         raise ImportError("请安装 openpyxl: pip install openpyxl")
 
@@ -75,7 +74,7 @@ def export_to_excel(label_data: Dict[str, Any]) -> bytes:
     nrv_pct = label_data.get("nrv_percentages", {})
 
     # 中文名称映射
-    CN_NAMES = {
+    cn_names = {
         "energy": "能量", "protein": "蛋白质", "fat": "脂肪",
         "saturated_fat": "饱和脂肪", "carbohydrate": "碳水化合物",
         "sugar": "糖", "dietary_fiber": "膳食纤维", "sodium": "钠",
@@ -86,7 +85,7 @@ def export_to_excel(label_data: Dict[str, Any]) -> bytes:
     row_num = 4
     for item in label_items:
         nutrient = item["nutrient"]
-        cn_name = CN_NAMES.get(nutrient, nutrient)
+        cn_name = cn_names.get(nutrient, nutrient)
         unit = item.get("unit", "g")
         value_100g = per_100g.get(nutrient, 0)
         value_serving = per_serving.get(nutrient, 0) if item.get("per_serving") else ""
@@ -220,7 +219,7 @@ def export_to_pdf(label_data: Dict[str, Any]) -> bytes:
     per_100g = label_data.get("per_100g", {})
     nrv_pct = label_data.get("nrv_percentages", {})
 
-    CN_NAMES = {
+    cn_names = {
         "energy": "能量", "protein": "蛋白质", "fat": "脂肪",
         "saturated_fat": "饱和脂肪", "carbohydrate": "碳水化合物",
         "sugar": "糖", "dietary_fiber": "膳食纤维", "sodium": "钠",
@@ -229,7 +228,7 @@ def export_to_pdf(label_data: Dict[str, Any]) -> bytes:
     y_pos = height - 40 * mm
     for item in label_items[:6]:  # 最多6行
         nutrient = item["nutrient"]
-        cn_name = CN_NAMES.get(nutrient, nutrient)
+        cn_name = cn_names.get(nutrient, nutrient)
         unit = item.get("unit", "g")
         value_100g = per_100g.get(nutrient, 0)
         nrv = nrv_pct.get(nutrient, 0)

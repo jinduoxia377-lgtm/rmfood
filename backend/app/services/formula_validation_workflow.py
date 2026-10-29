@@ -444,7 +444,7 @@ class StabilityPredictionExecutor(BaseValidationExecutor):
 
             for ing in ingredients:
                 name = ing.get("name", "")
-                percentage = ing.get("percentage", 0)
+                ing.get("percentage", 0)
                 prof = db_profiles.get(name)
                 stab = (prof or {}).get("stability")
                 if not stab:
@@ -540,7 +540,7 @@ class TastePredictionExecutor(BaseValidationExecutor):
             db_profiles = await rds.get_herb_profiles(herb_names)
 
             # 按成分百分比加权，仅对 DB 命中的成分累加（未命中跳过，不伪造）
-            total_pct = sum(ing.get("percentage", 0) for ing in ingredients) or 100.0
+            sum(ing.get("percentage", 0) for ing in ingredients) or 100.0
             dims = {"sweet": 0.0, "bitter": 0.0, "sour": 0.0, "astringent": 0.0, "umami": 0.0}
             hit_count, miss_count = 0, 0
             for ing in ingredients:

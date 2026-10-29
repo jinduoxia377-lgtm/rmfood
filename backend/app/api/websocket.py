@@ -51,11 +51,9 @@ async def websocket_endpoint(
         logger.warning("WebSocket: 拒绝匿名连接 — 未提供认证凭据")
         return
 
-    user_data = None
     user_id = None
     try:
         payload = decode_access_token(ws_token)
-        user_data = payload
         user_id = str(payload.get("sub", ""))
         if not user_id:
             raise ValueError("Token missing 'sub' field")

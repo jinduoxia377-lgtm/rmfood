@@ -195,17 +195,17 @@ async def _approve_one(
         await db.commit()
         return {"ok": False, "request_id": request_id, "message": f"邮箱已存在用户(user_id={existing})，已标记为通过"}
 
-    ROLE_MAP = {
+    role_map = {
         "guest": UserRole.GUEST,
         "researcher": UserRole.RESEARCHER,
         "formulator": UserRole.FORMULATOR,
         "reviewer": UserRole.REVIEWER,
         "admin": UserRole.ADMIN,
     }
-    if role not in ROLE_MAP:
+    if role not in role_map:
         await db.rollback()
         return {"ok": False, "request_id": request_id, "message": f"无效角色: {role}"}
-    target_role = ROLE_MAP[role]
+    target_role = role_map[role]
 
     base_username = req.email.split("@")[0].lower()[:32]
     username = base_username

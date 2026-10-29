@@ -243,7 +243,7 @@ async def batch_create_analyses(
 
         return result
 
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(status_code=400, detail="参数无效")
     except (RuntimeError, ValueError, TypeError) as e:
         logger.error("批量创建失败: %s", e, exc_info=True)

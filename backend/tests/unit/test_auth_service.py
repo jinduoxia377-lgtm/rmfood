@@ -8,7 +8,6 @@
 - 密码哈希与验证
 """
 import pytest
-from unittest.mock import AsyncMock, patch
 
 from app.services.auth import AuthService, get_password_hash, verify_password
 from app.utils.auth import (
@@ -19,7 +18,6 @@ from app.utils.auth import (
     is_token_blacklisted,
     validate_password_strength,
 )
-from app.models.user_model import User
 from app.models.enums import UserRole
 from app.schemas.user import Token
 
@@ -228,7 +226,7 @@ class TestAuthService:
 
     async def test_refresh_access_token(self, db_session, create_user):
         """刷新 Token 成功"""
-        user = await create_user(username="refreshuser")
+        await create_user(username="refreshuser")
 
         service = AuthService(db_session)
         token = await service.authenticate("refreshuser", "TestPassword123!")
@@ -239,7 +237,7 @@ class TestAuthService:
 
     async def test_get_current_user(self, db_session, create_user):
         """通过 Token 获取当前用户"""
-        user = await create_user(username="meuser")
+        await create_user(username="meuser")
 
         service = AuthService(db_session)
         token = await service.authenticate("meuser", "TestPassword123!")

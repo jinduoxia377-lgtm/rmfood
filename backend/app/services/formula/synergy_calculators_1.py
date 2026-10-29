@@ -12,8 +12,6 @@ import math
 from typing import List, Optional
 
 try:
-    import numpy as np
-    from scipy import stats
     from scipy.special import expit
     HAS_SCIPY = True
 except ImportError:
@@ -215,7 +213,7 @@ class SynergyCalculatorMixin1:
         pk_score = max(0.0, min(2.0, pk_score))  # 限制范围
 
         # 归一化到 [0, 1] 用于综合 SI
-        normalized_score = pk_score / 2.0
+        pk_score / 2.0
 
         # 置信度计算
         confidence_factors = []
@@ -302,7 +300,7 @@ class SynergyCalculatorMixin1:
             SynergyScore: 结构稳定性分析结果
         """
         # 设置温度
-        T = temperature or self.config.T
+        temp = temperature or self.config.T
 
         # 获取协同系数 γ
         gamma = self.get_coefficient(
@@ -313,7 +311,7 @@ class SynergyCalculatorMixin1:
 
         # 1. 计算 ΔG_complex
         # 注意单位转换: ΔS 通常用 J/(mol·K)，ΔH 用 kJ/mol
-        delta_g_base = delta_h - (T * delta_s / 1000)  # 转换为 kJ/mol
+        delta_g_base = delta_h - (temp * delta_s / 1000)  # 转换为 kJ/mol
 
         # 相互作用项总和
         interaction_sum = sum(interaction_terms) if interaction_terms else 0.0
@@ -329,7 +327,7 @@ class SynergyCalculatorMixin1:
                 if pka > 0:
                     # Henderson-Hasselbalch 方程近似
                     protonation_fraction = 1 / (1 + 10 ** (ph - pka))
-                    ph_correction += 2.303 * self.config.R * T / 1000 * math.log10(
+                    ph_correction += 2.303 * self.config.R * temp / 1000 * math.log10(
                         max(protonation_fraction, 1e-10)
                     )
             ph_correction /= len(pka_values)
@@ -346,7 +344,7 @@ class SynergyCalculatorMixin1:
         delta_g_final = delta_g_ph_corrected
 
         # 4. 稳定性评分 (sigmoid 函数映射到 [0, 1])
-        rt = self.config.R * T / 1000  # 转换为 kJ/mol
+        rt = self.config.R * temp / 1000  # 转换为 kJ/mol
         if rt > 0:
             if HAS_SCIPY:
                 stability_score = expit(-delta_g_final / rt)
@@ -382,7 +380,7 @@ class SynergyCalculatorMixin1:
             "interaction_sum": round(interaction_sum, 4),
             "gamma": gamma,
             "delta_g_complex": round(delta_g_complex, 4),
-            "temperature": T,
+            "temperature": temp,
             "ph": ph,
             "ph_correction": round(ph_correction, 4),
             "ph_sensitivity": round(ph_sensitivity, 4),

@@ -325,6 +325,24 @@ async def run_ga_generation(
         logger.error("[FormulaGenerationService] HerbKnowledgeService 未初始化，拒绝生成（禁止回退硬编码配方）")
         raise HTTPException(status_code=503, detail="AI 服务未初始化，请稍后重试")
 
+    # P0 自愈：HerbKnowledgeService 可能因启动时序载入不完整（服务已有药材但功效索引为空 →
+    # GA 的 _efficacy_index 为空 → _select_herbs 候选<3 → 静默回退规则引擎）。
+    # 检测到「已有药材但功效索引为空」时强制重载一次，确保 GA 基于真实功效数据产出候选。
+    _hk = get_global_herb_knowledge()
+    if _hk is not None:
+        try:
+            if _hk.get_herbs() and not _hk.get_efficacy_to_herbs():
+                logger.warning(
+                    "[FormulaGenerationService] HerbKnowledge 功效索引为空（启动时序不完整），强制重载"
+                )
+                await _hk.load_herbs(force_reload=True)
+                logger.info(
+                    "[FormulaGenerationService] HerbKnowledge 自愈重载完成: %d 味药材, %d 个功效",
+                    len(_hk.get_herbs()), len(_hk.get_efficacy_to_herbs()),
+                )
+        except Exception as e:
+            logger.warning(f"[FormulaGenerationService] HerbKnowledge 自愈重载失败（忽略，GA 按当前数据执行）: {e}")
+
     start_ts = time.perf_counter()
     try:
         from .algorithms.genetic_formula_optimizer import GAConfig, GeneticFormulaOptimizer

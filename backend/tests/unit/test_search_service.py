@@ -2,7 +2,6 @@
 
 覆盖搜索模型与 InMemoryIndexService（开发/测试用降级方案）。
 """
-import pytest
 
 from app.infrastructure.search_service import (
     IndexType,

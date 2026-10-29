@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """测试登录API"""
 import requests
-import json
 import sys
 
 def test_login():

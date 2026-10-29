@@ -521,7 +521,7 @@ class KnowledgeGraphReasoningEngine:
         # 实际项目应查询图谱数据库
 
         # 已知协同组合（经典配伍）
-        SYNERGY_PAIRS = {
+        synergy_pairs = {
             ("黄芪", "枸杞"): SynergyResult(
                 herb_a="黄芪",
                 herb_b="枸杞",
@@ -552,10 +552,10 @@ class KnowledgeGraphReasoningEngine:
         }
 
         # 检查是否在已知协同组合中（不排序，保持原始顺序）
-        if (herb_a, herb_b) in SYNERGY_PAIRS:
-            return SYNERGY_PAIRS[(herb_a, herb_b)]
-        if (herb_b, herb_a) in SYNERGY_PAIRS:
-            return SYNERGY_PAIRS[(herb_b, herb_a)]
+        if (herb_a, herb_b) in synergy_pairs:
+            return synergy_pairs[(herb_a, herb_b)]
+        if (herb_b, herb_a) in synergy_pairs:
+            return synergy_pairs[(herb_b, herb_a)]
 
         # 未知组合，返回不确定结果
         return SynergyResult(

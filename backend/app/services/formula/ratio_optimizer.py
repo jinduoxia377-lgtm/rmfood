@@ -239,7 +239,7 @@ class RatioOptimizer:
     ) -> List[OptimizationResult]:
         """初始化种群"""
         population = []
-        names = [ing.name for ing in ingredients]
+        [ing.name for ing in ingredients]
 
         for _ in range(self.config.population_size):
             ratios = self._generate_random_ratios(ingredients, constraints)
@@ -817,7 +817,7 @@ def quick_test():
             random_seed=trial
         ))
         t_start = time.time()
-        res = opt.optimize_ratio(ingredients)
+        opt.optimize_ratio(ingredients)
         elapsed = time.time() - t_start
         times.append(elapsed)
         logger.info(f"  第 {trial+1} 次: {elapsed:.3f}s")

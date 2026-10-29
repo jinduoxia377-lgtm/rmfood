@@ -267,7 +267,7 @@ async def archive_team(
     只有Owner可以执行此操作。
     归档后团队将变为只读状态。
     """
-    member = await _check_team_permission(db, team_id, current_user.id, [TeamRole.OWNER])
+    await _check_team_permission(db, team_id, current_user.id, [TeamRole.OWNER])
 
     result = await db.execute(select(Team).where(Team.id == team_id))
     team = result.scalar_one_or_none()
@@ -528,6 +528,6 @@ async def generate_invite_link(
     )
 
 
-from ...core.config import settings
+from ...core.config import settings  # noqa: E402
 
 logger = logging.getLogger(__name__)  # A-27：原缺失

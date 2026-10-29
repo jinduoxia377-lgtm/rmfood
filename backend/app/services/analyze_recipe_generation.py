@@ -42,7 +42,7 @@ async def generate_analysis_report():
             for i, line in enumerate(lines):
                 if "@router." in line and "/generate" in line:
                     # 找到路由定义
-                    method = line.split('"')[1] if '"' in line else "unknown"
+                    line.split('"')[1] if '"' in line else "unknown"
                     path_line = lines[i+1] if i+1 < len(lines) else ""
                     summary = path_line.split('"')[1] if '"' in path_line else ""
                     endpoints.append({
@@ -77,12 +77,6 @@ async def generate_analysis_report():
     report["data_layer"]["models"] = [m.name for m in models]
 
     # 5. 问题清单
-    issues = {
-        "critical": [],
-        "high": [],
-        "medium": [],
-        "low": []
-    }
 
     # 检查关键问题
     # 问题1: API端点不一致

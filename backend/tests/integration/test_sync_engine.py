@@ -12,10 +12,8 @@
 """
 import asyncio
 import pytest
-import json
 import time
-from datetime import datetime, timezone, timedelta
-from typing import Dict, List, Any
+from datetime import datetime, timezone
 
 # 导入被测试模块
 import sys
@@ -23,7 +21,6 @@ sys.path.insert(0, "d:/RMFOOD配方平台/backend")
 
 from app.services.sync.diff_detector import (
     DiffDetector,
-    SyncChange,
     ChangeType,
     batch_detect_changes,
 )
@@ -38,23 +35,18 @@ from app.services.sync.conflict_detector import (
     ConflictType,
     MergeStrategy,
     Conflict,
-    ResolvedEntity,
 )
 from app.services.sync.protocol import (
     SyncProtocol,
-    ProtocolVersion,
-    TransferStatus,
     HeartbeatMessage,
 )
 from app.services.sync.sync_service import (
     SyncService,
     SyncResult,
-    SyncMode,
-    SyncState,
 )
 try:
-    from app.utils.encryption import EncryptionUtils, EncryptionError, DecryptionError
-    from app.utils.key_manager import KeyManager, KeyMetadata
+    from app.utils.encryption import EncryptionUtils, DecryptionError
+    from app.utils.key_manager import KeyManager
     ENCRYPTION_AVAILABLE = True
 except ImportError:
     ENCRYPTION_AVAILABLE = False
@@ -62,7 +54,6 @@ except ImportError:
 
 from app.middleware.data_masking import (
     DataMasker,
-    DataMaskingRule,
     mask_sync_log_payload,
     mask_device_info_for_logging,
     mask_conflict_for_display,
@@ -756,7 +747,7 @@ class TestKeyManager:
 
     def test_key_version_control(self, manager):
         """测试密钥版本控制"""
-        key_v1 = manager.get_data_encryption_key(user_id="user_1", version=1)
+        manager.get_data_encryption_key(user_id="user_1", version=1)
         
         history = manager.get_user_key_history("user_1")
         

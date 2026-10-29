@@ -73,7 +73,6 @@ class RRF_Fusion:
             if item_id is None:
                 continue
             rrf_score = 1.0 / (K_RRF + rank + 1)
-            bm25_score = item.get("rank", 0.0)
 
             if item_id not in items_map:
                 items_map[item_id] = SearchResultItem(

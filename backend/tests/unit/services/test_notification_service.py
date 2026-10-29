@@ -15,7 +15,7 @@ Covers:
 from __future__ import annotations
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from datetime import datetime, timezone
 
 from app.models.enums import NotificationType
@@ -87,7 +87,7 @@ class TestCreateNotification:
         db.add.side_effect = capture_add
         db.refresh.side_effect = lambda obj: None
 
-        result = await service.create_notification(
+        await service.create_notification(
             recipient_id=10,
             type_="system",
             title="New alert",
@@ -105,7 +105,7 @@ class TestCreateNotification:
         db.refresh.side_effect = lambda obj: None
 
         metadata = {"formula_id": 42, "action": "updated"}
-        result = await service.create_notification(
+        await service.create_notification(
             recipient_id=5,
             type_="prompt_updated",
             title="Formula changed",
@@ -547,7 +547,6 @@ class TestBulkCreate:
 
         # First call raises, second succeeds
         call_count = 0
-        original_commit = db.commit
 
         async def failing_commit():
             nonlocal call_count

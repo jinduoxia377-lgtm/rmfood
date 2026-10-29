@@ -8,24 +8,19 @@
 - 搜索功能（Elasticsearch mock）
 """
 import pytest
-import asyncio
-from datetime import datetime, timezone, timedelta
-from typing import AsyncGenerator
+from datetime import datetime, timezone
 from unittest.mock import Mock, AsyncMock, MagicMock
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import select, text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import sys
 sys.path.insert(0, 'd:/RMFOOD配方平台/backend')
 
 from app.services.team.team_impl import TeamService
-from app.services.team.team_dashboard import TeamDashboardService
 from app.services.version.version_impl import VersioningService, SemanticVersion
 from app.services.notification import NotificationService
 from app.services.search.elasticsearch_service import ElasticsearchService, SearchFilters, SearchResult
-from app.websockets.notification_handler import NotificationWebSocketHandler, ws_handler
+from app.websockets.notification_handler import NotificationWebSocketHandler
 
 pytestmark = pytest.mark.skip(reason="app.services.auth.* 已迁移到 app.core.rbac，通知服务已迁移，测试待重写")
 
@@ -598,7 +593,6 @@ class TestWebSocketHandler:
     @pytest.mark.asyncio
     async def test_push_notification_to_room(self, ws_handler_instance):
         """测试推送通知到房间"""
-        from datetime import datetime, timezone
         
         ws_mocks = []
         for i in range(3):

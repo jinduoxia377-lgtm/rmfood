@@ -105,5 +105,5 @@ class ExperimentData(Base):
     experiment: Mapped["Experiment"] = relationship("Experiment", back_populates="data_points")
 
 
-from .formula import Formula
-from .user_model import User
+from .formula import Formula  # noqa: E402
+from .user_model import User  # noqa: E402

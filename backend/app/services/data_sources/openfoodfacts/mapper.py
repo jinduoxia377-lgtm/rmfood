@@ -142,7 +142,7 @@ class OFFMapper:
             key_ingredients["nutrition_grade"] = nutriscore
 
         # 标签
-        labels = [l.strip() for l in (raw.get("labels") or "").split(",") if l.strip()]
+        labels = [lab.strip() for lab in (raw.get("labels") or "").split(",") if lab.strip()]
         if labels:
             key_ingredients["labels"] = labels
 

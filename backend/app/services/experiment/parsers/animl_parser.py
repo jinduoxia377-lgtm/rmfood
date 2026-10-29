@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import logging
 import re
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -140,7 +140,7 @@ class AnIMLParser:
                 text = content.decode("latin-1")
 
         # 检测命名空间
-        root = ET.fromstring(text)
+        root = ElementTree.fromstring(text)
         self._detect_namespace(root)
 
         # 解析各部分
@@ -155,7 +155,7 @@ class AnIMLParser:
         )
         return result
 
-    def _detect_namespace(self, root: ET.Element) -> None:
+    def _detect_namespace(self, root: ElementTree.Element) -> None:
         """检测 XML 命名空间"""
         tag = root.tag
         if "animl-2.0" in tag:
@@ -170,7 +170,7 @@ class AnIMLParser:
                 ns = tag.split("}")[0].strip("{")
                 self._ns_map = {"": ns}
 
-    def _find(self, element: ET.Element, path: str) -> List[ET.Element]:
+    def _find(self, element: ElementTree.Element, path: str) -> List[ElementTree.Element]:
         """带命名空间的元素查找"""
         if self._ns_map:
             ns = self._ns_map.get("", "")
@@ -178,7 +178,7 @@ class AnIMLParser:
                 path = path.replace("/", "{%s}/" % ns, 1) if "/" in path else "{%s}%s" % (ns, path)
         return element.findall(path)
 
-    def _get_text(self, element: ET.Element, path: str, default: str = "") -> str:
+    def _get_text(self, element: ElementTree.Element, path: str, default: str = "") -> str:
         """获取文本内容"""
         found = self._find(element, path)
         if found:
@@ -186,7 +186,7 @@ class AnIMLParser:
             return text.strip() if text else default
         return default
 
-    def _parse_metadata(self, root: ET.Element) -> Dict[str, Any]:
+    def _parse_metadata(self, root: ElementTree.Element) -> Dict[str, Any]:
         """解析元数据"""
         meta: Dict[str, Any] = {}
 
@@ -215,7 +215,7 @@ class AnIMLParser:
 
         return meta
 
-    def _parse_samples(self, root: ET.Element) -> List[AnIMLSample]:
+    def _parse_samples(self, root: ElementTree.Element) -> List[AnIMLSample]:
         """解析样品信息"""
         samples = []
 
@@ -258,7 +258,7 @@ class AnIMLParser:
 
         return samples
 
-    def _parse_measurements(self, root: ET.Element) -> List[AnIMLMeasurement]:
+    def _parse_measurements(self, root: ElementTree.Element) -> List[AnIMLMeasurement]:
         """解析测量结果"""
         measurements = []
 
@@ -276,7 +276,7 @@ class AnIMLParser:
 
         return measurements
 
-    def _parse_single_measurement(self, elem: ET.Element) -> Optional[AnIMLMeasurement]:
+    def _parse_single_measurement(self, elem: ElementTree.Element) -> Optional[AnIMLMeasurement]:
         """解析单个测量结果"""
         name = self._get_text(elem, "name|@name", "measurement")
         measurement = AnIMLMeasurement(name=name)
@@ -315,7 +315,7 @@ class AnIMLParser:
 
         return measurement if (measurement.value is not None or measurement.points) else None
 
-    def _parse_spectral_data(self, elem: ET.Element) -> List[AnIMLPoint]:
+    def _parse_spectral_data(self, elem: ElementTree.Element) -> List[AnIMLPoint]:
         """解析谱图数据点 (x/y 对)"""
         points: List[AnIMLPoint] = []
 
@@ -355,7 +355,7 @@ class AnIMLParser:
 
         return points[:10000]  # 限制最多10000个点
 
-    def _parse_method(self, root: ET.Element) -> Optional[AnIMLMethod]:
+    def _parse_method(self, root: ElementTree.Element) -> Optional[AnIMLMethod]:
         """解析分析方法"""
         method_elem = self._find(root, ".//method")[0] if self._find(root, ".//method") else None
         if not method_elem:

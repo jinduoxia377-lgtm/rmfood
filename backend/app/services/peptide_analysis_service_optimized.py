@@ -550,7 +550,7 @@ class OptimizedPeptideAnalysisService:
 
 
 # 导入asyncio (在文件末尾以避免循环依赖)
-import asyncio
+import asyncio  # noqa: E402
 
 # 向后兼容别名
 PeptideAnalysisService = OptimizedPeptideAnalysisService

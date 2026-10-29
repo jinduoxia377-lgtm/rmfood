@@ -447,7 +447,6 @@ class DocumentExtractor:
         # 1. 先判断是否为纯文本文件（避免对 .txt 跑 pdfminer/docx 的异常噪声）
         is_pdf = document_bytes[:4] == b"%PDF"
         is_docx = document_bytes[:4] == b"PK\x03\x04"
-        is_txt = not is_pdf and not is_docx
 
         # 2. 按文件类型提取文本
         text = ""

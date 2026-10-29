@@ -595,7 +595,7 @@ class AIModelManager:
                     latency_ms=(time.time() - start_time) * 1000,
                 )
 
-            except Exception as e:
+            except Exception:
                 # 记录失败
                 if breaker:
                     breaker.record_failure()

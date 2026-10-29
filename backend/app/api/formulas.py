@@ -1907,7 +1907,7 @@ async def import_formulas(
                     comp[seg[0].strip()] = {"weight_g": float(seg[1].strip()) if seg[1].strip().replace(".", "").isdigit() else seg[1].strip()}
         return comp
 
-    _STATUS_MAP = {
+    _status_map = {
         "草稿": "draft", "待审核": "pending_review", "已通过": "approved", "通过": "approved",
         "已发布": "published", "已驳回": "rejected", "已归档": "archived", "已取消": "cancelled",
     }
@@ -1918,8 +1918,8 @@ async def import_formulas(
         text = str(raw).strip().lower()
         if text in {s.value for s in FormulaStatus}:
             return FormulaStatus(text)
-        if str(raw).strip() in _STATUS_MAP:
-            return FormulaStatus(_STATUS_MAP[str(raw).strip()])
+        if str(raw).strip() in _status_map:
+            return FormulaStatus(_status_map[str(raw).strip()])
         return FormulaStatus(fallback)
 
     for idx, row in df.iterrows():
@@ -2058,7 +2058,7 @@ async def export_formulas_batch(
         from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=landscape(A4))
-        styles = getSampleStyleSheet()
+        getSampleStyleSheet()
         elements = []
         if rows:
             headers = list(rows[0].keys())

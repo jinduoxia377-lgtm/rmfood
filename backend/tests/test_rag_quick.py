@@ -12,9 +12,9 @@ import pytest
 pytestmark = pytest.mark.skip(reason="依赖已移除的 EmbeddingService._embed_fallback API，待重写")
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app", "services", "ai"))
-import rag.document_processor as _dp
-import rag.vector_store as _vs
-import rag.embedding_service as _emb
+import rag.document_processor as _dp  # noqa: E402
+import rag.vector_store as _vs  # noqa: E402
+import rag.embedding_service as _emb  # noqa: E402
 
 async def main():
     emb = _emb.EmbeddingService(provider="local", api_key="", model="", base_url="")

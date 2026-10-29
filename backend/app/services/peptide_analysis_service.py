@@ -359,7 +359,7 @@ class PeptideAnalysisService:
                     # 复用单个创建逻辑
                     await self.create_analysis(item)
                     success_count += 1
-                except Exception as e:
+                except Exception:
                     failed_items.append({
                         "index": idx,
                         "error": "处理异常",

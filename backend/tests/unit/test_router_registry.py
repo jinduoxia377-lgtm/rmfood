@@ -15,10 +15,8 @@ application stack (auth, database, etc.).
 from __future__ import annotations
 
 import importlib.util
-import sys
 from pathlib import Path
 
-import pytest
 
 # ── Load router_registry in isolation (bypass app.api __init__.py) ──
 _MODULE_PATH = Path(__file__).resolve().parents[2] / "app" / "api" / "router_registry.py"

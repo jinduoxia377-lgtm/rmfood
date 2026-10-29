@@ -381,7 +381,7 @@ class FileGeneratorService:
             story.append(Paragraph("目录", styles["ChineseTitle"]))
             for item in toc:
                 level = item.get("level", 1)
-                indent = (level - 1) * 20
+                (level - 1) * 20
                 story.append(Paragraph(item.get("title", ""), styles["ChineseBody"]))
             story.append(PageBreak())
 

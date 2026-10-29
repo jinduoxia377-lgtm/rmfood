@@ -244,7 +244,7 @@ class FactEngine:
             batch_size_kg: 批次目标产量(kg)
             processing_cost_per_kg: 加工成本(元/kg)
         """
-        scale_factor = batch_size_kg * 1000  # kg → g → 除以单次用量(g)
+        batch_size_kg * 1000  # kg → g → 除以单次用量(g)
         ingredient_cost = 0.0
 
         for ing in ingredients:

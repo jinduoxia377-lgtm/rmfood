@@ -366,13 +366,13 @@ class PeptideRankerModel:
     def train(self):
         """使用示例数据训练模型"""
         # 训练数据（来自DBAASP和ICE数据库的简化版）
-        X_train = [
+        x_train = [
             AminoAcidEncoder.extract_features(seq)
             for seq in self._get_training_data()
         ]
         y_train = [1] * 20 + [0] * 20  # 前20条为活性阳性
 
-        self.model.train(X_train, y_train, epochs=50, lr=0.01)
+        self.model.train(x_train, y_train, epochs=50, lr=0.01)
         self._trained = True
         logger.info("PeptideRanker 模型训练完成")
 
@@ -487,13 +487,13 @@ class BPFunModel:
 
     def train(self):
         """训练模型"""
-        X_train = [
+        x_train = [
             AminoAcidEncoder.extract_features(seq)
             for seq in self._get_training_data()
         ]
         y_train = [1] * 20 + [0] * 20
 
-        self.model.train(X_train, y_train, epochs=50, lr=0.01)
+        self.model.train(x_train, y_train, epochs=50, lr=0.01)
         self._trained = True
         logger.info("BPFun 模型训练完成")
 

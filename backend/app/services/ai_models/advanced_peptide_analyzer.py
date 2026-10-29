@@ -19,12 +19,12 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
-logger = logging.getLogger(__name__)
-
 from .pepinvent_adapter import (
     _STANDARD_AMINO_ACIDS,
     PepinventAdapter,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SecondaryStructure(Enum):
@@ -549,7 +549,7 @@ class AdvancedPeptideAnalyzer:
             ph_values = [ph_range[0] + i * (ph_range[1] - ph_range[0]) / 9 for i in range(10)]
 
             for ph in ph_values:
-                solubility = base_solubility * self._pH_factor(seq, ph, temp_celsius)
+                solubility = base_solubility * self._ph_factor(seq, ph, temp_celsius)
                 charge_state = self._estimate_charge_at_ph(seq, ph)
 
                 ph_profiles.append({
@@ -565,7 +565,7 @@ class AdvancedPeptideAnalyzer:
                 "sequence": seq,
                 "base_solubility": round(base_solubility, 3),
                 "optimal_ph": self._find_optimal_ph(ph_profiles),
-                "isoelectric_point": round(self._estimate_pI(seq), 2),
+                "isoelectric_point": round(self._estimate_pi(seq), 2),
                 "ph_profiles": ph_profiles,
                 "temperature_effect": {
                     "temp_celsius": temp_celsius,
@@ -769,8 +769,6 @@ class AdvancedPeptideAnalyzer:
     def _predict_secondary_structure_simple(self, sequence: str) -> Dict[str, Any]:
         helix_promoters = set("ALMEKQR")
         sheet_promoters = set("VIFYWT")
-        coil_promoters = set("GNPSD")
-
         structure = ""
         for aa in sequence:
             if aa in helix_promoters:
@@ -801,7 +799,7 @@ class AdvancedPeptideAnalyzer:
 
         net_charge = self._calculate_net_charge(sequence, ph=7.4)
 
-        isoelectric_point = self._estimate_pI(sequence)
+        isoelectric_point = self._estimate_pi(sequence)
 
         extinction_coefficient = self._calc_extinction_coefficient(sequence)
 
@@ -930,7 +928,6 @@ class AdvancedPeptideAnalyzer:
         }
 
     def _find_pareto_optimal(self, points: List[ParetoPoint]) -> List[ParetoPoint]:
-        n = len(points)
         for i, p1 in enumerate(points):
             dominated_count = 0
             for j, p2 in enumerate(points):
@@ -1289,18 +1286,18 @@ class AdvancedPeptideAnalyzer:
         solubility = 10 ** log_s
         return max(0.001, min(100, solubility))
 
-    def _pH_factor(self, sequence: str, ph: float, temp: float) -> float:
-        pI = self._estimate_pI(sequence)
-        distance_from_pI = abs(ph - pI)
-        factor = 1.0 / (1.0 + distance_from_pI * 0.3)
+    def _ph_factor(self, sequence: str, ph: float, temp: float) -> float:
+        iso_point = self._estimate_pi(sequence)
+        distance_from_iso_point = abs(ph - iso_point)
+        factor = 1.0 / (1.0 + distance_from_iso_point * 0.3)
         temp_factor = 1.0 + (temp - 25) * 0.02
         return factor * temp_factor
 
     def _estimate_charge_at_ph(self, sequence: str, ph: float) -> str:
-        pI = self._estimate_pI(sequence)
-        if abs(ph - pI) < 0.5:
+        iso_point = self._estimate_pi(sequence)
+        if abs(ph - iso_point) < 0.5:
             return "neutral"
-        elif ph < pI:
+        elif ph < iso_point:
             return "positive"
         else:
             return "negative"
@@ -1321,7 +1318,7 @@ class AdvancedPeptideAnalyzer:
         best = max(profiles, key=lambda p: p["solubility_mg_ml"])
         return {"ph": best["ph"], "max_solubility": best["solubility_mg_ml"]}
 
-    def _estimate_pI(self, sequence: str) -> float:
+    def _estimate_pi(self, sequence: str) -> float:
         acidic = set("DE")
         basic = set("KRH")
         n_acidic = sum(1 for aa in sequence if aa in acidic)
@@ -1334,8 +1331,8 @@ class AdvancedPeptideAnalyzer:
         if n_basic == 0:
             return 3.5
 
-        pI = 7.0 + (n_basic - n_acidic) * 0.5
-        return max(2.0, min(11.0, pI))
+        iso_point = 7.0 + (n_basic - n_acidic) * 0.5
+        return max(2.0, min(11.0, iso_point))
 
     def _temperature_factor(self, temp: float) -> float:
         return 1.0 + (temp - 25) * 0.03
@@ -1470,8 +1467,8 @@ class AdvancedPeptideAnalyzer:
             aa2 = sequence[i + 1]
             di += instability_weights.get(aa1, 1.0) * instability_weights.get(aa2, 1.0)
 
-        L = len(sequence) - 1
-        return di / L if L > 0 else 0
+        length = len(sequence) - 1
+        return di / length if length > 0 else 0
 
     def _calc_aliphatic_index(self, sequence: str) -> float:
         aliphatic = set("AILMV")

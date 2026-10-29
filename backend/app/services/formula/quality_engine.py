@@ -222,7 +222,7 @@ class QualityEngine:
     def _predict_texture(self, framework_result: Dict, product_form: str) -> Dict:
         """质构预测（简化模型）"""
         herbs = framework_result.get("herbs", [])
-        total_dosage = framework_result.get("total_dosage_g", 100.0)
+        framework_result.get("total_dosage_g", 100.0)
 
         # 基于药材数量和产品形态预测质构
         n_herbs = len(herbs)

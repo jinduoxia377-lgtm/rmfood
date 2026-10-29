@@ -513,7 +513,7 @@ class UniProtClient:
             "scientificName": org.get("scientificName", ""),
             "commonName": org.get("commonName", ""),
             "taxonId": org.get("taxonId"),
-            "lineage": [l.get("scientificName") for l in org.get("lineage", [])]
+            "lineage": [item.get("scientificName") for item in org.get("lineage", [])]
         }
 
         # 序列信息

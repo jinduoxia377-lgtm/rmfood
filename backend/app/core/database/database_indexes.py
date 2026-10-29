@@ -165,7 +165,7 @@ async def apply_indexes(session):
                 "status": "success",
                 "reason": idx['reason']
             })
-        except Exception as e:
+        except Exception:
             logger.error(f"[DBIndexes] 索引检查失败: {idx['name']}", exc_info=True)
             results.append({
                 "index": idx['name'],

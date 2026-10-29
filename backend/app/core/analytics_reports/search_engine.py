@@ -628,13 +628,6 @@ class SearchEngine:
 
     def _get_model_class(self, model_type: str) -> Optional[type]:
         """根据类型字符串获取ORM模型类"""
-        model_map = {
-            "formula": None,  # 将在运行时动态导入
-            "experiment": None,
-            "ingredient": None,
-            "workflow": None,
-            "user": None,
-        }
 
         try:
             # 模型都在 app.models 下。本文件位于 app.core.analytics_reports，
