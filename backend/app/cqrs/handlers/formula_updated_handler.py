@@ -21,7 +21,7 @@ class FormulaUpdatedEventHandler:
 
     def handle(self, event: Any) -> None:
         """Handle a formula update event.
-        
+
         Args:
             event: Domain event containing formula data
                 Expected attributes: formula_id, formula_data
@@ -54,7 +54,7 @@ class FormulaCreatedEventHandler(FormulaUpdatedEventHandler):
 
 def register_event_handlers(event_bus, query_service):
     """Register event handlers with the event bus.
-    
+
     Args:
         event_bus: Event bus instance that can publish/sub events
         query_service: QueryService instance to use for handling

@@ -64,20 +64,20 @@ class KeyArchiveEntry:
 class KeyManager:
     """
     密钥管理器
-    
+
     功能：
     - 生成和管理主密钥（master key）
     - 派生用户专属数据加密密钥（HKDF）
     - 密钥版本控制（支持多版本共存）
     - 定期密钥轮换（默认90天）
     - 密钥归档和恢复（用于回滚）
-    
+
     安全设计：
     - 主密钥从环境变量或安全配置加载
     - 用户密钥通过HKDF从主密钥派生，不单独存储
     - 轮换时使用新密钥重新加密所有数据
     - 旧密钥归档保留30天用于紧急回滚
-    
+
     使用示例：
         >>> km = KeyManager(master_key=b"...")
         >>> user_key = km.get_data_encryption_key(user_id="123")
@@ -96,7 +96,7 @@ class KeyManager:
     ):
         """
         初始化密钥管理器
-        
+
         Args:
             master_key: 主加密密钥（32字节）。如果为None则自动生成。
             key_rotation_days: 密钥轮换周期（天）
@@ -132,20 +132,20 @@ class KeyManager:
     ) -> bytes:
         """
         派生用户专属的数据加密密钥
-        
+
         使用HKDF（HMAC-based Extract-and-Expand Key Derivation Function）
         从主密钥安全地派生用户密钥。
-        
+
         每个用户的密钥都是唯一的，即使主密钥泄露，
         攻击者也需要针对每个用户单独破解。
-        
+
         Args:
             user_id: 用户ID（作为盐值）
             version: 密钥版本号（None表示最新版本）
-            
+
         Returns:
             32字节的用户专属加密密钥
-            
+
         Example:
             >>> km = KeyManager(master_key=...)
             >>> key = km.get_data_encryption_key(user_id="user_123")
@@ -191,19 +191,19 @@ class KeyManager:
     ) -> Dict[str, Any]:
         """
         执行密钥轮换
-        
+
         流程：
         1. 生成新的主密钥版本
         2. 归档当前主密钥
         3. 更新版本号
         4. 清理过期的归档密钥
-        
+
         注意：实际的数据重新加密需要在应用层完成，
         此方法只负责密钥层面的轮换。
-        
+
         Args:
             force: 是否强制轮换（忽略周期检查）
-            
+
         Returns:
             轮换结果信息
         """
@@ -268,12 +268,12 @@ class KeyManager:
     ) -> bool:
         """
         撤销用户的当前密钥
-        
+
         撤销后，用户需要重新登录或重新同步以获取新密钥。
-        
+
         Args:
             user_id: 用户ID
-            
+
         Returns:
             是否成功撤销
         """
@@ -294,7 +294,7 @@ class KeyManager:
     ) -> bool:
         """
         验证密钥是否有效且未被篡改
-        
+
         通过重新派生并比较来验证。
         """
         expected_key = self.get_data_encryption_key(user_id)
@@ -325,7 +325,7 @@ class KeyManager:
     ) -> List[Dict[str, Any]]:
         """
         导出密钥元数据（不包含实际密钥值）
-        
+
         用于审计和安全监控。
         """
         if user_id:
@@ -346,7 +346,7 @@ class KeyManager:
     ) -> bytes:
         """
         使用HKDF派生子密钥
-        
+
         HKDF是RFC 5869标准的密钥派生函数，
         基于HMAC，安全性经过严格验证。
         """
@@ -370,7 +370,7 @@ class KeyManager:
     ) -> bytes:
         """
         简化版KDF（当cryptography库不可用时使用）
-        
+
         使用多次哈希迭代作为后备方案。
         """
         prk = hmac.new(salt, master_key, hashlib.sha256).digest()

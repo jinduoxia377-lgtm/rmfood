@@ -41,7 +41,7 @@ class NotificationPayload:
 class NotificationWebSocketHandler:
     """
     WebSocket连接管理器
-    
+
     管理团队实时通知的WebSocket连接：
     - 每个团队一个room
     - 维护在线用户列表（Presence）
@@ -64,13 +64,13 @@ class NotificationWebSocketHandler:
     ) -> ConnectionInfo:
         """
         客户端连接，加入房间
-        
+
         Args:
             websocket: WebSocket连接对象
             team_id: 团队ID
             user_id: 用户ID
             username: 用户名
-            
+
         Returns:
             ConnectionInfo连接信息
         """
@@ -115,7 +115,7 @@ class NotificationWebSocketHandler:
     async def disconnect(self, websocket: WebSocket, team_id: int, user_id: int):
         """
         断开连接，清理状态
-        
+
         Args:
             websocket: WebSocket连接
             team_id: 团队ID
@@ -146,14 +146,14 @@ class NotificationWebSocketHandler:
     ) -> Dict[str, bool]:
         """
         推送通知到团队房间
-        
+
         只推送给在线且未屏蔽该类型的成员
-        
+
         Args:
             team_id: 团队ID
             notification: 通知载荷
             exclude_user_ids: 排除的用户ID集合
-            
+
         Returns:
             推送结果 {user_id: success}
         """
@@ -199,7 +199,7 @@ class NotificationWebSocketHandler:
     async def broadcast_presence(self, team_id: int):
         """
         广播在线状态变化
-        
+
         Args:
             team_id: 团队ID
         """
@@ -235,12 +235,12 @@ class NotificationWebSocketHandler:
     async def handle_heartbeat(self, websocket: WebSocket, team_id: int, user_id: int) -> bool:
         """
         处理心跳检测
-        
+
         Args:
             websocket: WebSocket连接
             team_id: 团队ID
             user_id: 用户ID
-            
+
         Returns:
             是否心跳正常
         """

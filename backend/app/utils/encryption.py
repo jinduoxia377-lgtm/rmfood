@@ -27,18 +27,18 @@ except ImportError:
 class EncryptionUtils:
     """
     AES-256-GCM 加密工具
-    
+
     功能：
     - 生成随机加密密钥（256位）
     - AES-256-GCM 加密/解密
     - 字典敏感字段递归加密
     - 完整性验证（GCM认证标签）
-    
+
     安全特性：
     - 每次加密使用随机nonce（96位）
     - GCM模式提供认证加密（加密+完整性验证）
     - 密钥长度固定为32字节（256位）
-    
+
     使用示例：
         >>> utils = EncryptionUtils()
         >>> key = utils.generate_key()
@@ -71,10 +71,10 @@ class EncryptionUtils:
     def generate_key() -> bytes:
         """
         生成随机加密密钥
-        
+
         Returns:
             32字节的随机密钥（AES-256）
-            
+
         Example:
             >>> key = EncryptionUtils.generate_key()
             >>> len(key)
@@ -86,10 +86,10 @@ class EncryptionUtils:
     def generate_nonce() -> bytes:
         """
         生成随机nonce（一次性数字）
-        
+
         在GCM模式下，同一个密钥+nonce组合绝不能重复使用，
         否则会严重损害安全性。
-        
+
         Returns:
             12字节随机nonce
         """
@@ -103,20 +103,20 @@ class EncryptionUtils:
     ) -> Tuple[bytes, bytes]:
         """
         AES-256-GCM 加密
-        
+
         Args:
             plaintext: 明文字节数据
             key: 32字节加密密钥
             associated_data: 关联数据（AAD，不加密但参与认证）
-            
+
         Returns:
             (ciphertext_with_tag, nonce) 元组
             - ciphertext_with_tag 包含密文 + 16字节认证标签
-            
+
         Raises:
             ValueError: 如果密钥长度不正确
             EncryptionError: 如果加密失败
-            
+
         Security:
         - 每次调用生成新的随机nonce
         - GCM模式同时提供机密性和完整性
@@ -153,20 +153,20 @@ class EncryptionUtils:
     ) -> bytes:
         """
         AES-256-GCM 解密
-        
+
         Args:
             ciphertext: 密文（包含认证标签）
             nonce: 加密时使用的nonce（必须相同）
             key: 32字节解密密钥
             associated_data: 加密时使用的关联数据（必须相同）
-            
+
         Returns:
             明文字节数据
-            
+
         Raises:
             ValueError: 如果参数无效
             DecryptionError: 如果解密失败或数据被篡改
-            
+
         Security:
         - 自动验证认证标签
         - 如果数据被篡改或密钥/nonce错误，会抛出异常
@@ -199,18 +199,18 @@ class EncryptionUtils:
     ) -> Dict[str, Any]:
         """
         加密字典中的敏感字段（递归处理JSON结构）
-        
+
         自动识别敏感字段并加密其值，非敏感字段保持原样。
-        
+
         Args:
             data: 要加密的字典
             key: 加密密钥
             encrypt_all: 是否加密所有字段（不仅限敏感字段）
-            
+
         Returns:
             新字典，敏感字段值替换为加密后的base64字符串
             格式：{"encrypted": true, "value": base64_encrypted, "nonce": base64_nonce}
-            
+
         Example:
             >>> data = {"name": "test", "password": "secret123"}
             >>> encrypted = EncryptionUtils.encrypt_dict(data, key)
@@ -266,14 +266,14 @@ class EncryptionUtils:
     ) -> Dict[str, Any]:
         """
         解密由 encrypt_dict 加密的字典
-        
+
         Args:
             encrypted_data: 加密后的字典
             key: 解密密钥（必须与加密时相同）
-            
+
         Returns:
             解密后的原始字典
-            
+
         Raises:
             DecryptionError: 如果任何字段解密失败
         """
@@ -318,13 +318,13 @@ class EncryptionUtils:
     ) -> str:
         """
         计算HMAC-SHA256消息认证码
-        
+
         用于验证数据完整性和真实性。
-        
+
         Args:
             data: 要计算的数据
             key: HMAC密钥
-            
+
         Returns:
             十六进制HMAC字符串
         """
@@ -338,14 +338,14 @@ class EncryptionUtils:
     ) -> bool:
         """
         验证HMAC签名
-        
+
         使用恒定时间比较防止时序攻击。
-        
+
         Args:
             data: 原始数据
             key: HMAC密钥
             expected_hmac: 预期的HMAC值
-            
+
         Returns:
             签名是否有效
         """
@@ -359,11 +359,11 @@ class EncryptionUtils:
     ) -> Tuple[str, str]:
         """
         安全的密码哈希（PBKDF2-HMAC-SHA256）
-        
+
         Args:
             password: 明文密码
             salt: 盐值（如果为None则自动生成）
-            
+
         Returns:
             (hashed_password_hex, salt_base64) 元组
         """

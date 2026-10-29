@@ -33,13 +33,13 @@ class DataMaskingRule:
 class DataMasker:
     """
     数据脱敏器
-    
+
     功能：
     - 字段级脱敏（基于规则匹配）
     - 支持多种脱敏策略（遮盖、截断、哈希等）
     - 递归处理嵌套结构（dict/list）
     - 可配置的保留策略
-    
+
     脱敏规则：
     1. payload内容：显示前100字符 + "..."
     2. device_id：部分遮盖 abc12******xy
@@ -86,7 +86,7 @@ class DataMasker:
     ):
         """
         初始化数据脱敏器
-        
+
         Args:
             custom_rules: 自定义脱敏规则列表
             enabled: 是否启用脱敏
@@ -105,11 +105,11 @@ class DataMasker:
     ) -> Any:
         """
         对数据进行脱敏处理
-        
+
         Args:
             data: 原始数据（支持dict/list/str等类型）
             context: 上下文信息（如用户角色、请求路径等）
-            
+
         Returns:
             脱敏后的数据
         """
@@ -258,10 +258,10 @@ def _mask_sensitive_fields(data: Any) -> Any:
 def mask_sync_log_payload(log_entry: Dict[str, Any]) -> Dict[str, Any]:
     """
     专用函数：脱敏同步日志条目
-    
+
     Args:
         log_entry: 同步日志字典
-        
+
     Returns:
         脱敏后的日志条目
     """
@@ -272,7 +272,7 @@ def mask_sync_log_payload(log_entry: Dict[str, Any]) -> Dict[str, Any]:
 def mask_device_info_for_logging(device: Dict[str, Any]) -> Dict[str, Any]:
     """
     专用函数：脱敏设备信息用于日志输出
-    
+
     保留必要信息但隐藏完整标识符。
     """
     if not isinstance(device, dict):
@@ -291,7 +291,7 @@ def mask_device_info_for_logging(device: Dict[str, Any]) -> Dict[str, Any]:
 def mask_conflict_for_display(conflict: Dict[str, Any]) -> Dict[str, Any]:
     """
     专用函数：脱敏冲突信息用于前端显示
-    
+
     保留冲突元数据，脱敏具体数据内容。
     """
     if not isinstance(conflict, dict):
@@ -313,7 +313,7 @@ def mask_conflict_for_display(conflict: Dict[str, Any]) -> Dict[str, Any]:
 class SyncDataMaskingMiddleware:
     """
     FastAPI中间件：自动对同步API响应进行数据脱敏
-    
+
     使用方式：
         app.add_middleware(SyncDataMaskingMiddleware)
     """

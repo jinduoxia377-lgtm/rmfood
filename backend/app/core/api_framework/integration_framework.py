@@ -16,8 +16,8 @@ import hmac
 import json
 import logging
 import secrets
-import uuid
 import urllib.parse
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from enum import Enum
