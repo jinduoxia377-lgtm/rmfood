@@ -110,7 +110,7 @@ export default function DocumentExtractPage() {
     try {
       const res = await documentApi.extractText(textInput, docType)
       // 后端返回 { status, data: ExtractionResult }，axios res.data 即该对象
-      const data = (res.data as any)?.data ?? res.data
+      const data = (res.data as unknown as { data: ExtractionResult })?.data ?? res.data
       setResult(data)
       // Save to history
       const count = Object.keys(data?.extracted_fields ?? {}).length
@@ -170,7 +170,7 @@ export default function DocumentExtractPage() {
     setArchivesLoading(true)
     try {
       const res = await documentArchiveApi.list({ limit: 50 })
-      const data = (res.data as any)?.data ?? []
+      const data = (res.data as unknown as { data: ArchiveRecord[] })?.data ?? []
       setArchives(data)
     } catch {
       setArchives([])
@@ -185,7 +185,7 @@ export default function DocumentExtractPage() {
     try {
       await documentArchiveApi.save({
         document_type: result.document_type,
-        ingredient_id: (result as any)?.metadata?.ingredient_id ?? null,
+        ingredient_id: (result as unknown as { metadata?: { ingredient_id?: number | null } })?.metadata?.ingredient_id ?? null,
         extracted_fields: result.extracted_fields,
         confidence_scores: result.confidence_scores,
         inspection_items: result.inspection_items,
@@ -216,7 +216,7 @@ export default function DocumentExtractPage() {
   const handleGeneratePeptideCoa = async (id: number) => {
     try {
       const res = await documentArchiveApi.toPeptideCoa(id)
-      const coa = (res.data as any)?.data
+      const coa = (res.data as unknown as { data: { id: number } })?.data
       if (coa?.id) {
         setLastGeneratedCoaId(coa.id)
         addToast({ type: 'success', message: t('pages.document.peptideCoaGenerated', { id: coa.id }) })
@@ -243,7 +243,7 @@ export default function DocumentExtractPage() {
   const openArchiveReview = async (archiveId: number) => {
     try {
       const res = await documentArchiveApi.detail(archiveId)
-      const detail = (res.data as any)?.data
+      const detail = (res.data as unknown as { data: ExtractionResult })?.data
       if (!detail?.extracted_fields) {
         addToast({ type: 'error', message: t('pages.document.cannotReadArchive') })
         return
@@ -251,7 +251,7 @@ export default function DocumentExtractPage() {
       setReviewArchiveId(archiveId)
       const draft: Record<string, string> = {}
       for (const [key, field] of Object.entries(detail.extracted_fields) as Array<[string, { value?: unknown }]>) {
-        draft[key] = String((field as any)?.value ?? '')
+        draft[key] = String(field?.value ?? '')
       }
       setReviewDraft(draft)
       setReviewOpen(true)
@@ -265,7 +265,7 @@ export default function DocumentExtractPage() {
       // 备案记录复核：读取详情，更新后写回后端
       try {
         const res = await documentArchiveApi.detail(reviewArchiveId)
-        const detail = (res.data as any)?.data
+        const detail = (res.data as unknown as { data: ExtractionResult })?.data
         if (!detail?.extracted_fields) {
           addToast({ type: 'error', message: t('pages.document.cannotReadArchive') })
           return

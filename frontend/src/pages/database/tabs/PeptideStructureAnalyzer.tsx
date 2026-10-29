@@ -2878,7 +2878,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                         {molecule3D && (
                           <select
                             value={renderingMode}
-                            onChange={(e) => setRenderingMode(e.target.value as any)}
+                            onChange={(e) => setRenderingMode(e.target.value as 'ball-stick'|'space-filling'|'tube')}
                             className="text-xs bg-[var(--bg-tertiary)] border-none rounded px-2 py-0.5 text-[var(--text-secondary)]"
                           >
                             <option value="ball-stick">球棍模型</option>
@@ -2928,7 +2928,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                               </span>
                               <select
                                 value={renderingMode}
-                                onChange={(e) => setRenderingMode(e.target.value as any)}
+                                onChange={(e) => setRenderingMode(e.target.value as 'ball-stick'|'space-filling'|'tube')}
                                 className="text-xs bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded px-2 py-1 text-[var(--text-secondary)]"
                               >
                                 <option value="ball-stick">球棍模型</option>
