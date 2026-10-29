@@ -294,7 +294,7 @@ def retry_with_backoff(config: Optional[RetryConfig] = None):
                             await asyncio.sleep(delay)
 
                     except Exception as retry_err:
-                        logger.warning("断路操作 %s 非可重试异常，直接抛出: %s", name, retry_err)
+                        logger.warning("断路操作 %s 非可重试异常，直接抛出: %s", func.__name__, retry_err)
                         # 非可重试异常，直接抛出
                         raise
 

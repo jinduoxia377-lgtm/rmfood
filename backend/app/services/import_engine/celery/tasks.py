@@ -4,7 +4,7 @@
 该任务从数据库中读取配置，执行导入并实时更新进度。
 """
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 

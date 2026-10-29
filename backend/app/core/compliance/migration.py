@@ -54,6 +54,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
 
+from app.utils.error_sanitize import sanitize_error
+
 logger = logging.getLogger(__name__)
 
 # ═════════════════════════════════════════════

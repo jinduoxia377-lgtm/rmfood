@@ -17,7 +17,10 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+if TYPE_CHECKING:
+    from .signal_encoder import EncodedSignal
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +136,7 @@ class UnifiedFormulaEngine:
 
     def _generate_candidate(
         self,
-        signal: "EncodedSignal",
+        signal: "EncodedSignal",  # noqa: F821 -- future annotations 下字符串注解不求值；EncodedSignal 由 signal_encoder 提供
         template: Any,
         constraints: Optional[Dict],
     ) -> Optional[Dict[str, float]]:

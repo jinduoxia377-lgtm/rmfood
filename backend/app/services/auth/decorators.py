@@ -11,6 +11,7 @@ from typing import Callable, Dict, Optional
 
 from fastapi import HTTPException, status
 
+from app.api.deps import CurrentUser, DbSession
 from app.models.enums import TeamRole
 from app.services.auth.permissions import (
     check_role_permission,

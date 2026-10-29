@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.middleware.exceptions import ConflictError, NotFoundError
+from app.core.middleware.exceptions import ConflictError
 
 from ..models.peptide_design import PeptideDesign, PeptideDesignCandidate, PeptideDesignStatus
 from ..schemas.peptide_design import (
@@ -262,37 +262,6 @@ class PeptideDesignService:
             await self.db.rollback()
             logger.warning("批量创建候选肽段失败: %s", e)
             raise
-        """
-        获取项目详情
-
-        可选择是否预加载candidates（按rank排序）
-        """
-        from sqlalchemy.orm import selectinload
-
-        query = select(PeptideDesign).where(PeptideDesign.id == design_id)
-
-        if include_candidates:
-            query = query.options(
-                selectinload(PeptideDesign.candidates)
-            )
-
-        result = await self.db.execute(query)
-        project = result.scalar_one_or_none()
-
-        if not project:
-            raise NotFoundError(
-                resource="PeptideDesign",
-                resource_id=design_id
-            )
-
-        # 对candidates按rank排序（如果在内存中）
-        if include_candidates and hasattr(project, 'candidates'):
-            project.candidates = sorted(
-                project.candidates,
-                key=lambda x: x.rank or 999
-            )
-
-        return project
 
     async def list_projects(
         self,

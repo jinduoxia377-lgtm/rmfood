@@ -262,7 +262,7 @@ class RedisResultStore(InferenceResultStore):
             await pipe.hset(key, mapping=data)
             await pipe.expire(key, self._ttl)
             await pipe.execute()
-        logger.debug("[RedisStore] put: %s", task_id)
+        logger.debug("[RedisStore] put: %s", result.task_id)
 
     async def get(self, task_id: str) -> Optional[InferenceResult]:
         redis = await self._get_redis()

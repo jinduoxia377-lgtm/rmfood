@@ -237,6 +237,8 @@ class BM25Searcher:
         if not tsquery_str:
             return []
 
+        regconfig = OFFConfig.FTS_REGCONFIG
+
         sql = text("""
             SELECT rp.id, rp.brand, rp.product_name, rp.product_line,
                    rp.category, rp.sub_category, rp.formulation_type,
