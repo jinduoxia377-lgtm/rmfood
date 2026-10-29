@@ -14,7 +14,7 @@ from __future__ import annotations
 import threading
 from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.organization import Organization
@@ -69,11 +69,50 @@ async def get_whitelist_org_id(db: AsyncSession) -> Optional[int]:
     return int(org_id)
 
 
+async def _ensure_whitelist_org_members(db: AsyncSession, org_id: int, owner_id: Optional[int]) -> None:
+    """确保白名单组织有「owner + 全部 admin 用户」成员（角色 owner，幂等）。
+
+    背景：白名单组织由白名单功能创建时无任何成员，owner（admin，user 1）访问
+    GET /organizations/{id} 与 /organizations/{id}/members 时因「非成员」返回 403
+    （详情/成员端点要求组织成员资格，见 api/organizations.py get_organization /
+    get_members）。列表端点虽有 admin 特殊显示 whitelist-org，但详情仍 403。
+
+    本函数只补 organization_members 成员行（角色 owner），不改 user.organization_id
+    （租户归入仍由 assign_user_to_whitelist_org 处理）与 User.plan（org-grant 判定不变）。
+
+    幂等：依赖 organization_members 唯一约束 uq_org_member (organization_id, user_id)
+    的 ON CONFLICT DO NOTHING —— 重复 ensure 不重复插成员；用户不存在（FK 校验）时
+    直接不出现在查询结果中，不会触发外键错误。
+    """
+    if org_id is None:
+        return
+    member_user_ids = (
+        await db.execute(
+            text("""
+                SELECT id FROM users
+                WHERE id = :owner_id OR LOWER(role::text) = 'admin'
+            """),
+            {"owner_id": owner_id},
+        )
+    ).scalars().all()
+    for uid in member_user_ids:
+        await db.execute(
+            text("""
+                INSERT INTO organization_members (organization_id, user_id, role, is_active)
+                VALUES (:org_id, :uid, 'owner', TRUE)
+                ON CONFLICT (organization_id, user_id) DO NOTHING
+            """),
+            {"org_id": org_id, "uid": int(uid)},
+        )
+
+
 async def ensure_whitelist_org(db: AsyncSession) -> Organization:
     """按名称查找白名单组织，不存在则创建（幂等）。返回组织对象。
 
     调用方决定事务边界（本函数只 flush 拿到 org.id 并回填缓存，不 commit），
     确保与批准流程在同一事务内原子提交。
+    同时确保组织 owner + 全部 admin 为成员（角色 owner，幂等），
+    避免 admin 访问组织详情/成员端点时因非成员返回 403。
     """
     org = (
         await db.execute(
@@ -91,6 +130,7 @@ async def ensure_whitelist_org(db: AsyncSession) -> Organization:
         db.add(org)
         await db.flush()  # 拿到 org.id
     _set_cached_org_id(int(org.id))
+    await _ensure_whitelist_org_members(db, int(org.id), org.owner_id)
     return org
 
 
