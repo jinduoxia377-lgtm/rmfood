@@ -40,6 +40,7 @@ from app.core.analytics_reports.schemas import (
     TimeGranularity,
 )
 from app.models import Comment, Experiment, Formula, User
+from app.models.formula import Category, formula_categories
 from app.models.enums import ExperimentStatus, FormulaStatus
 
 logger = logging.getLogger(__name__)
@@ -340,8 +341,7 @@ class AnalyticsService:
                     User.username.label('creator')
                 )
                 .outerjoin(CommentAlias,
-                          (CommentAlias.formula_id == Formula.id) &
-                          (CommentAlias.resource_type == 'formula'))
+                          CommentAlias.formula_id == Formula.id)
                 .outerjoin(User, Formula.creator_id == User.id)
                 .where(Formula.status == FormulaStatus.APPROVED)
             )
@@ -871,10 +871,10 @@ class AnalyticsService:
         )
 
     async def _get_storage_usage(self, org_id: Optional[int] = None) -> float:
-        # 存储用量是平台级指标（files 表无 ORM organization_id 建模），保持全局聚合。
+        # 存储用量是平台级指标（attachments 表无 ORM organization_id 建模），保持全局聚合。
         try:
             result = await self.db.execute(
-                text("SELECT COALESCE(SUM(file_size), 0) FROM files")
+                text("SELECT COALESCE(SUM(file_size), 0) FROM attachments")
             )
             bytes_total = result.scalar() or 0
             return round(bytes_total / 1024 / 1024, 2)
@@ -1078,11 +1078,15 @@ class AnalyticsService:
 
     async def _get_formula_category_labels(self, org_id: Optional[int] = None) -> List[str]:
         try:
-            query = select(Formula.category).where(Formula.category.is_not(None))
+            query = (
+                select(Category.name)
+                .join(formula_categories, formula_categories.c.category_id == Category.id)
+                .join(Formula, Formula.id == formula_categories.c.formula_id)
+            )
             if org_id is not None:
                 query = query.where(Formula.organization_id == org_id)
-            result = await self.db.execute(query.distinct().order_by(Formula.category).limit(10))
-            return [row.category for row in result.fetchall()]
+            result = await self.db.execute(query.distinct().order_by(Category.name).limit(10))
+            return [row.name for row in result.fetchall()]
         except Exception as e:
             await self._rollback_quietly()
             logger.warning(f"Warning: _get_formula_category_labels failed: {e}")
@@ -1090,11 +1094,15 @@ class AnalyticsService:
 
     async def _get_formula_category_counts(self, org_id: Optional[int] = None) -> List[int]:
         try:
-            query = select(Formula.category, func.count(Formula.id)).where(Formula.category.is_not(None))
+            query = (
+                select(Category.name, func.count(formula_categories.c.formula_id))
+                .join(formula_categories, formula_categories.c.category_id == Category.id)
+                .join(Formula, Formula.id == formula_categories.c.formula_id)
+            )
             if org_id is not None:
                 query = query.where(Formula.organization_id == org_id)
             result = await self.db.execute(
-                query.group_by(Formula.category).order_by(func.count(Formula.id).desc()).limit(10)
+                query.group_by(Category.name).order_by(Category.name).limit(10)
             )
             return [row[1] for row in result.fetchall()]
         except Exception as e:
