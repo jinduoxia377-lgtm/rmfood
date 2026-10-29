@@ -255,7 +255,7 @@ class NutritionCache:
                 nutrients_per_100g=dict(nutrition),
                 total_cost_per_100g=herb_costs.get(hid, 0.0),
                 allergens=herb_allergens.get(hid, []) if herb_allergens else [],
-                total_dosage_used=float(len(herb_list)) if herb_list else 1.0,
+                total_dosage_used=1.0,
                 computed_at=time.monotonic(),
             )
             with self._lock:

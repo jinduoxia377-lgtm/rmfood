@@ -9,6 +9,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from redis.asyncio import Redis
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 

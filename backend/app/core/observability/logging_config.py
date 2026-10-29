@@ -52,7 +52,7 @@ import uuid
 from contextvars import ContextVar
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # ═════════════════════════════════════════════
 # 🟡 P3-3: 全局上下文（用于链路追踪）

@@ -14,6 +14,7 @@ tcm_compounds），不再使用代码内硬编码占位值。DB 缺失的字段�
   协同      → tcm_herbs.extra_knowledge.synergy_partners（DB 真实协同对象列表）
   稳定性    → tcm_compounds.logp（成分脂溶性，稳定性真实判据）
 """
+import json
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy import text as sql_text

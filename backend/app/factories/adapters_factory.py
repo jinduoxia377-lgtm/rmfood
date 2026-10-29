@@ -214,9 +214,9 @@ def create_microservice_registry() -> MicroServiceRegistry:
         service_name="ai-conversation-service",
         port_name="chat",
         variants={
-            "prod": InMemoryChatAdapter,  # Will be replaced by RemoteChatClientAdapter in actual microservice
-            "dev": LocalChatAdapter,      # In-process adapter during development
-            "test": MockChatAdapter,      # Test mock
+            "prod": InMemoryChatAdapter,  # Will be replaced by RemoteChatClientAdapter in actual microservice  # noqa: F821
+            "dev": LocalChatAdapter,      # In-process adapter during development  # noqa: F821
+            "test": MockChatAdapter,      # Test mock  # noqa: F821
         },
         env_mapping={"prod": "production", "dev": "development", "test": "testing"},
         default_variant="dev"
@@ -227,9 +227,9 @@ def create_microservice_registry() -> MicroServiceRegistry:
         service_name="formula-calculation-service",
         port_name="optimizer",
         variants={
-            "prod": RayClusterOptimizerClient,
-            "dev": LocalOptimizerAdapter,
-            "test": MockOptimizerAdapter,
+            "prod": RayClusterOptimizerClient,  # noqa: F821
+            "dev": LocalOptimizerAdapter,  # noqa: F821
+            "test": MockOptimizerAdapter,  # noqa: F821
         },
         default_variant="dev"
     )
@@ -239,9 +239,9 @@ def create_microservice_registry() -> MicroServiceRegistry:
         service_name="authz-service",
         port_name="auth",
         variants={
-            "prod": RemoteAuthClient,
-            "dev": LocalAuthProvider,
-            "test": MockAuthProvider,
+            "prod": RemoteAuthClient,  # noqa: F821
+            "dev": LocalAuthProvider,  # noqa: F821
+            "test": MockAuthProvider,  # noqa: F821
         },
         default_variant="dev"
     )

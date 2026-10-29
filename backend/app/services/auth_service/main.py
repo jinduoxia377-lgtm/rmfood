@@ -7,6 +7,9 @@ from .auth_handler import AuthHandler
 
 app = FastAPI()
 
+# 模块级单例，供 read_current_user 的默认依赖表达式在定义期引用
+auth_handler = AuthHandler()
+
 class Credentials(BaseModel):
     username: str
     password: str

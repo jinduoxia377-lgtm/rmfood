@@ -20,6 +20,7 @@ import time
 from typing import Any, Dict, List, Optional, Tuple
 
 from .models import (
+    MOGAResult,
     MultiObjectiveIndividual,
     OptimizationConfig,
     OptimizationObjective,
@@ -432,7 +433,7 @@ class NSGAIIOptimizer:
             population = new_population
             population.sort(key=lambda x: x.fitness, reverse=True)
 
-            prev_best = best_fitness
+            _ = best_fitness
             if population[0].fitness > best_fitness:
                 best_fitness = population[0].fitness
                 no_improve_count = 0
@@ -988,7 +989,7 @@ class NSGAIIOptimizer:
 
     def generate_with_result(self, target_effects: List[str] = None,
                              constraints: Dict = None,
-                             _cancel_signal: Optional[threading.Event] = None) -> 'MOGAResult':
+                             _cancel_signal: Optional[threading.Event] = None) -> 'MOGAResult':  # noqa: F821 -- 字符串注解，MOGAResult 由函数内 from .models 延迟导入（:1042）
         """带结果包装的入口方法"""
         start_time = time.perf_counter()
 

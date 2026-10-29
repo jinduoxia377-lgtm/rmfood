@@ -71,7 +71,7 @@ def _mark_reset_token_used(token: str) -> bool:
             del _used_reset_tokens[k]
 
     if token in _used_reset_tokens:
-        logger.warning(f"⚠️ 检测到 reset token 重用攻击: email={to_email}")
+        logger.warning(f"⚠️ 检测到 reset token 重用攻击: token={token}")
         return False
 
     _used_reset_tokens[token] = current_time
@@ -284,7 +284,7 @@ def build_password_reset_email(
     """
 
     plain_body = f"""
-    {subject if False else '🔐 密码重置请求'}
+    🔐 密码重置请求
     ========================================
     您好，{username}：
 

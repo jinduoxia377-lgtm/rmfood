@@ -26,6 +26,7 @@ RMFOOD 性能优化与缓存管理系统
         result = expensive_operation()
 """
 
+import asyncio
 import functools
 import hashlib
 import json
