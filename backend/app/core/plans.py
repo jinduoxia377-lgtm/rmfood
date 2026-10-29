@@ -75,14 +75,17 @@ def require_plan(feature: str) -> Callable:
     不满足 → 403，detail 含 error_code="PLAN_REQUIRED" 与 upgrade_required 提示。
 
     Args:
-        feature: 功能 key（须在 PLAN_FEATURES 中）。
+        feature: 功能 key。建议使用 PLAN_FEATURES 中矩阵 key；矩阵外的未知 key
+            由 has_plan 放行（基础功能对 free 开放），不阻断既有 free 流程。
     """
     from fastapi import Depends, HTTPException, status
 
     from ..api.deps import get_current_active_user
     from ..models import User
 
-    # 功能未在矩阵中时，默认要求 pro（防御：避免把未知 key 放行成免费）
+    # required_plan 仅用于 403 错误详情展示；矩阵外的未知 key 由 has_plan 放行
+    # （基础功能对 free 开放，return True），故该默认值不构成未知 key 的门控，
+    # 仅当 feature 在矩阵中且用户不满足时，用于 detail.required_plan 的呈现。
     required_plan = PLAN_FEATURES.get(feature, "pro")
 
     async def _plan_checker(
