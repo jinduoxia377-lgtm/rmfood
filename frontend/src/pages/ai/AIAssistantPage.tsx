@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AI智能助手中心 v3.0 - 专业级 UI/UX 优化版
  *
  * 基于 UI/UX Pro Max 专业规范的全面优化
@@ -64,7 +64,7 @@ import { useKeyboardSearch } from '@/hooks/useKeyboardSearch';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import { SearchModal } from '@/components/ai/SearchModal';
 import { Menu, X } from 'lucide-react';
-import { RequirePlan } from '@/utils/plan';
+import { PlanGate } from '@/utils/plan';
 
 // 懒加载非首屏 Tab 组件 — 使用命名导出模式，兼容各组件的 export 方式
 const GenerateTab = lazy(() => import('@/components/ai/features/GenerateTab').then(m => ({ default: m.GenerateTab })));
@@ -857,9 +857,9 @@ export default function AIAssistantPage() {
 
                   <div role="tabpanel" id="panel-generate" aria-label={t('ai.page.panelGenerate')}>
                     <ErrorBoundary moduleName={t('ai.page.tabs.generate')}>
-                    <RequirePlan feature="ai_formula_generation">
+                    <PlanGate feature="ai_formula_generation">
                       <GenerateTab llmAvailable={llmAvailable} modelStatus={modelStatus || {}} />
-                    </RequirePlan>
+                    </PlanGate>
                   </ErrorBoundary>
 
                   </div>
@@ -896,20 +896,20 @@ export default function AIAssistantPage() {
                         </TabsTrigger>
                       </TabsList>
                       <TabsContent value="single">
-                        <RequirePlan feature="ai_formula_generation">
+                        <PlanGate feature="ai_formula_generation">
                           <GeneticAlgorithmPanel />
-                        </RequirePlan>
+                        </PlanGate>
                       </TabsContent>
                       <TabsContent value="multi">
-                        <RequirePlan feature="ai_formula_generation">
+                        <PlanGate feature="ai_formula_generation">
                           <MultiObjectivePanel />
-                        </RequirePlan>
+                        </PlanGate>
                       </TabsContent>
                       <TabsContent value="formula">
                         <Suspense fallback={<TabLoadingSkeleton />}>
-                          <RequirePlan feature="ai_formula_generation">
+                          <PlanGate feature="ai_formula_generation">
                             <FormulaInputWithOptimization />
-                          </RequirePlan>
+                          </PlanGate>
                         </Suspense>
                       </TabsContent>
                       </Tabs>
