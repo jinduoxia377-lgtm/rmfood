@@ -139,7 +139,7 @@ class StatisticalTests:
     """统计检验工具"""
 
     @staticmethod
-    def t_test两组样本(*args):
+    def t_test_two_sample(*args):
         """独立样本t检验（简化实现）"""
         pass
 
@@ -173,7 +173,7 @@ class StatisticalTests:
         pos_ranks = sum(r for r, s in zip(ranks, signs) if s > 0)
         neg_ranks = sum(r for r, s in zip(ranks, signs) if s < 0)
 
-        W = min(pos_ranks, neg_ranks)
+        W = min(pos_ranks, neg_ranks)  # noqa: N806  # Wilcoxon W 统计量（数学符号约定）
         n = len(non_zero)
 
         # 大样本近似
