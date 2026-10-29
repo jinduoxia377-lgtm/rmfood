@@ -49,5 +49,8 @@ export default {
       published: 'Veröffentlicht',
       archived: 'Archiviert',
     },
+    loadFailed: 'Laden fehlgeschlagen',
+    loadFailedDesc: 'Analysedaten konnten nicht geladen werden. Prüfen Sie Ihre Netzwerkverbindung und versuchen Sie es erneut.',
+    loadFailedForbiddenDesc: 'Ihr Konto hat keine Organisation oder Zugriffsberechtigung. Bitte kontaktieren Sie Ihren Administrator.',
   },
 }

@@ -49,5 +49,8 @@ export default {
       published: 'Published',
       archived: 'Archived',
     },
+    loadFailed: 'Load failed',
+    loadFailedDesc: 'Unable to load analytics data. Check your network connection and retry.',
+    loadFailedForbiddenDesc: 'Your account has no organization or access permission. Please contact your administrator.',
   },
 }
