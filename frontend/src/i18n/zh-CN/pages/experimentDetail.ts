@@ -3,7 +3,7 @@
  */
 export default {
   experimentDetail: {
-    notExist: '实验不存在',
+    notExist: '实验不存在或您没有访问权限',
     backToList: '返回列表',
     startExperiment: '开始实验',
     completeExperiment: '完成实验',

@@ -3,7 +3,7 @@
  */
 export default {
   experimentDetail: {
-    notExist: 'Experiment nicht gefunden',
+    notExist: 'Experiment nicht gefunden oder Sie haben keine Zugriffsberechtigung',
     backToList: 'Zurück zur Liste',
     startExperiment: 'Experiment starten',
     completeExperiment: 'Experiment abschließen',
