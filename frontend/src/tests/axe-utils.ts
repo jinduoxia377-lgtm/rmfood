@@ -3,10 +3,9 @@ import { render } from '@testing-library/react';
 import axe from '@axe-core/react';
 import type { AxeResults } from 'axe-core';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const axeCore = (axe as any).core as
-  | { run: (container: HTMLElement, options?: Record<string, unknown>) => Promise<AxeResults> }
-  | undefined;
+const axeCore = (axe as unknown as {
+  core: { run: (container: HTMLElement, options?: Record<string, unknown>) => Promise<AxeResults> } | undefined;
+}).core;
 
 export async function renderWithAxe(ui: React.ReactElement, options?: Parameters<typeof render>[1]) {
   const container = document.createElement('div');
@@ -21,6 +20,7 @@ export async function renderWithAxe(ui: React.ReactElement, options?: Parameters
     if (axeCore) {
       await axeCore.run(container);
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       await axe(React, require('react-dom'), 0);
     }
 
@@ -34,7 +34,8 @@ export async function checkA11y(container: HTMLElement): Promise<void> {
    
   const results: AxeResults = axeCore
     ? await axeCore.run(container)
-    : ((await (axe as any)(React, require('react-dom'), 0)) as AxeResults);
+    : // eslint-disable-next-line @typescript-eslint/no-require-imports
+      ((await axe(React, require('react-dom'), 0)) as unknown as AxeResults);
 
   if (results.violations.length > 0) {
     const violationMessages = results.violations
