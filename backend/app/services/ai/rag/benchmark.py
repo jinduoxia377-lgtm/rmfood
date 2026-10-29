@@ -143,7 +143,7 @@ class RAGBenchmark:
         for query in queries:
             try:
                 await self._run_single_query(query, user_id=user_id)
-            except:
+            except Exception:
                 pass
         logger.info("预热完成")
 
@@ -157,7 +157,7 @@ class RAGBenchmark:
         # 真实模式：调用 RAG 服务
         start = time.time()
         result = await self.rag_service.augment_query(query.query, top_k=5, user_id=user_id)
-        latency = (time.time() - start) * 1000
+        _ = (time.time() - start) * 1000
 
         # 记录检索指标
         metrics = self._evaluate_retrieval(query, result)

@@ -68,7 +68,7 @@ class TastePredictTool(BaseAgentTool):
             target_taste: str = params.get("target_taste", "综合")
 
             taste_scores: Dict[str, float] = {"甘": 0.0, "苦": 0.0, "酸": 0.0, "辛": 0.0, "淡": 0.0}
-            taste_breakdown = []
+            _ = []
 
             for herb in ingredients:
                 rule = _TASTE_RULES.get(herb)

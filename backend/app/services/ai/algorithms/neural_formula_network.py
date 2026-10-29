@@ -1,3 +1,4 @@
+# ruff: noqa: N806
 """
 神经网络配方预测引擎 (Neural Formula Network)
 

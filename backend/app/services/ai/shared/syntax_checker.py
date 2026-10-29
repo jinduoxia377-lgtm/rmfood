@@ -140,7 +140,7 @@ class PromptSyntaxChecker:
             发现的问题列表
         """
         issues = []
-        lines = prompt_text.split('\n')
+        _ = prompt_text.split('\n')
 
         for rule in self._compiled_rules:
             pattern = rule["compiled_pattern"]

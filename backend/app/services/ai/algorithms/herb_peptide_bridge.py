@@ -128,7 +128,7 @@ class TargetBridgeCalculator:
                 for row in result:
                     compound_id = row[0]
                     target_id = row[1]
-                    confidence = row[2] or 0.5
+                    _ = row[2] or 0.5
 
                     herb_result = await session.execute(text("""
                         SELECT hc.herb_id FROM tcm_herb_compounds hc

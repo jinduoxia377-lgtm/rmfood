@@ -12,6 +12,7 @@ MCP 客户端桥（v3.3）
 """
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
@@ -253,7 +254,7 @@ class McpBridge:
         )
         try:
             # 1. initialize 握手
-            init_result = await self._stdio_call(
+            _ = await self._stdio_call(
                 proc, "initialize",
                 {"protocolVersion": _PROTOCOL_VERSION, "capabilities": {}, "clientInfo": {"name": "rmfood", "version": "1.0"}},
             )

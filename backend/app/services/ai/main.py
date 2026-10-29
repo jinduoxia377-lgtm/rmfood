@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 """
 ⚠️ DEPRECATED - 此文件已废弃，保留仅用于向后兼容
 

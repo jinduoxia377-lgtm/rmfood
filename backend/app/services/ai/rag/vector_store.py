@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 """向量存储 — ChromaDB 封装
 
 提供文档向量的增删查操作，使用 ChromaDB PersistentClient

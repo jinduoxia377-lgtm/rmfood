@@ -256,7 +256,7 @@ class LLMProviderFactory:
             async for chunk in provider.stream_generate(messages, **kwargs):
                 yield chunk
             self._record_success(provider_name)
-        except Exception as e:
+        except Exception as _:
             self._record_failure(provider_name)
             raise
 

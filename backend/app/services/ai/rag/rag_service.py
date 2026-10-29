@@ -1,3 +1,4 @@
+# ruff: noqa: E402, N806
 """RAG 主服务 — 文档处理 + 向量检索 + Prompt 增强
 
 增强版 (v2.0):
@@ -64,9 +65,8 @@ TCM_SYNONYMS = {
     "酸枣仁": ["suan zao ren", "sour jujube", "枣仁", "炒酸枣仁"],
     "莲子": ["lian zi", "lotus seed", "莲米", "莲心"],
     "百合": ["bai he", "lily", "百合干", "百合片"],
-    "芡实": ["qian shi", "euryale", "鸡头米", "芡实米"],
+    "芡实": ["qian shi", "euryale", "鸡头米", "芡实米", "gordon euryale", "鸡头肉"],
     "薏苡仁": ["yi yi ren", "coix", "薏米", "苡米"],
-    "芡实": ["qian shi", "gordon euryale", "鸡头肉"],
 }
 
 # 英文→中文反向映射（用于英文查询扩展为中文）

@@ -35,7 +35,7 @@ class AsyncSQLAlchemyFormulaRepository(FormulaRepository):
         await self.session.refresh(model)
 
         # Emit creation event
-        event = FormulaCreatedEvent(
+        _ = FormulaCreatedEvent(
             formula_id=model.id,
             user_id=data.get("user_id", "system"),
             creator=data.get("creator", "system"),
@@ -71,7 +71,7 @@ class AsyncSQLAlchemyFormulaRepository(FormulaRepository):
         await self.session.commit()
 
         # Emit update event
-        event = FormulaUpdatedEvent(
+        _ = FormulaUpdatedEvent(
             formula_id=formula_id,
             user_id=data.get("user_id", "system"),
             updater=data.get("updater", "system"),

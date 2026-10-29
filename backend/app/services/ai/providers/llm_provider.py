@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 """RMFOOD LLM Provider抽象层
 
 定义统一的LLM接口，支持多种提供商：
@@ -591,7 +592,7 @@ class LocalLlamaProvider(LLMProvider):
             data = resp.json()
             content = data.get("message", {}).get("content", "")
 
-            prompt_eval_count = data.get("prompt_eval_count", 0)
+            _ = data.get("prompt_eval_count", 0)
             eval_count = data.get("eval_count", 0)
 
             self._total_tokens_used += eval_count

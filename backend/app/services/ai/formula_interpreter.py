@@ -140,7 +140,7 @@ class FormulaInterpreter:
         """
         names = [h["name"] for h in herbs if h.get("name")]
         intel = await self._gather_herb_intel(names)
-        intel_by_name = {i.name: i for i in intel}
+        _ = {i.name: i for i in intel}
 
         total_dosage = sum(float(h.get("dosage_g") or 0) for h in herbs)
 

@@ -181,9 +181,9 @@ class FormulaTrainer:
             train_stats = self._train_epoch(train_loader)
 
             # 验证（如果有）
-            val_loss = None
+            _ = None
             if val_dataset is not None:
-                val_loss = self._validate(val_dataset)
+                _ = self._validate(val_dataset)
 
             # 记录统计
             elapsed_ms = (time.perf_counter() - epoch_start) * 1000

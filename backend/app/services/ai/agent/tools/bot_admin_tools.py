@@ -97,12 +97,12 @@ class CreateBotTool(BaseAgentTool):
                     error="name 与 persona_prompt 不能为空", latency_ms=0,
                 )
 
-            from ...domain.bots import BotVisibility as BV
+            from ...domain.bots import BotVisibility
             vis = params.get("visibility", "private")
             try:
-                visibility = BV(vis)
+                visibility = BotVisibility(vis)
             except ValueError:
-                visibility = BV.PRIVATE
+                visibility = BotVisibility.PRIVATE
 
             bot = AIBot(
                 tenant_id=tenant_id,

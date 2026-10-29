@@ -213,7 +213,6 @@ class ReActToTEngine:
 
     async def _generate_thought(self, trace: ReasoningTrace, node: ThoughtNode) -> str:
         """生成思维（简化版，实际可接入 LLM）"""
-        parent_thought = node.parent.thought if node.parent else ""
         return f"基于之前推理，我考虑：{node.thought}"
 
     async def _generate_candidates(

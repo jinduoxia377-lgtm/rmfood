@@ -85,8 +85,7 @@ class FormulaEvaluator:
         flavor_map = {
             "hq": "sweet", "ds": "sweet", "gz": "sweet", "rs": "sweet",
             "gq": "sweet", "dcx": "sweet",
-            "lk": "bitter", "cyh": "bitter", "fz": "bitter", "cs": "bitter",
-            "mld": "bitter", "jgh": "bitter", "bq": "bitter",
+            "cyh": "bitter", "fz": "bitter", "mld": "bitter", "jgh": "bitter", "bq": "bitter",
             "sj": "pungent", "cx": "pungent", "cs": "pungent", "lk": "pungent",
             "fp": "neutral", "yq": "neutral",
             "dg": "other", "gh": "other",

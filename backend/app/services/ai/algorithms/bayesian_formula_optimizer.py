@@ -1,3 +1,4 @@
+# ruff: noqa: N806, N803
 """
 贝叶斯优化配方生成引擎 (Bayesian Formula Optimizer)
 
@@ -302,10 +303,6 @@ _EXTRA_EFFICACY_MAPPINGS = {
     "消食化积": ["cx", "fp", "bq", "ds", "hq"],
     # 温阳散寒类
     "温阳散寒": ["fz", "rs", "hq", "ds", "gz"],
-    # 补肾益气类
-    "补肾益气": ["hq", "ds", "gz", "rs", "fz", "bq", "fp", "cs"],
-    # 补气养血类
-    "补气养血": ["hq", "ds", "dg", "gz", "bq", "fp", "rs", "cs"],
     # 活血化瘀类
     "活血化瘀": ["cs", "dg", "fz", "hq", "ds"],
     # 健脾养胃类
@@ -778,7 +775,7 @@ class BayesianFormulaOptimizer:
         """口感评分 (基于药材组合经验规则)"""
         sweet_herbs = {"dcx", "gq", "gz", "hq"}
         bitter_herbs = {"lk", "cyh", "cs"}
-        aromatic_herbs = {"cx", "sj", "bq"}
+        _ = {"cx", "sj", "bq"}
 
         sweet_ratio = sum(1 for h in dosages if h in sweet_herbs and dosages[h] > 0) / max(1, len(dosages))
         bitter_ratio = sum(1 for h in dosages if h in bitter_herbs and dosages[h] > 0) / max(1, len(dosages))

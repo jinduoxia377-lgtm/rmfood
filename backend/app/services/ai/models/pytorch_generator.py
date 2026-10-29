@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812 -- PyTorch 惯例缩写
 
 logger = logging.getLogger(__name__)
 

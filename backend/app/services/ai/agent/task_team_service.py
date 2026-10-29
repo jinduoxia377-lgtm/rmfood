@@ -105,7 +105,7 @@ class TaskTeamService:
             if bot is None and not github_recruit_names:
                 from .github_supply_service import recruit_expert_from_github
                 bot, recruited, source = await recruit_expert_from_github(
-                    db, role.name, item.get("task") or content, tenant_id, user_id,
+                    self._db, role.name, item.get("task") or content, tenant_id, user_id,
                 )
                 if bot is not None:
                     github_recruit_names.append(bot.name)

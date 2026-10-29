@@ -260,7 +260,7 @@ class TrainingPipeline:
 
     def _generate_structured_dosages(self, herbs: List[str]) -> List[float]:
         """生成符合君臣佐使结构的剂量"""
-        n = len(herbs)
+        _ = len(herbs)
         total = 60.0  # 总剂量 60g
 
         dosages = []

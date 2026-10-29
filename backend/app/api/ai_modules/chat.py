@@ -1,3 +1,4 @@
+# ruff: noqa: E402  -- 延迟/条件导入（debug 端点守卫、懒加载）属模块组织约定
 """Chat module - /chat, /chat/stream"""
 import asyncio
 import datetime

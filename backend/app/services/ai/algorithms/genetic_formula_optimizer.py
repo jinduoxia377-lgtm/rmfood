@@ -1,3 +1,4 @@
+# ruff: noqa: N806, E402
 """
 遗传算法配方优化引擎 (Genetic Formula Optimizer)
 
@@ -673,7 +674,7 @@ class GeneticFormulaOptimizer:
             population = new_population
             population.sort(key=lambda x: x.fitness, reverse=True)
 
-            prev_best_fitness = best_fitness
+            _ = best_fitness
             if population[0].fitness > best_fitness:
                 best_fitness = population[0].fitness
                 no_improve_count = 0
@@ -1204,7 +1205,7 @@ def bridge_to_multi_objective(target_effects: List[str], constraints: Dict = Non
         get_nsga2_optimizer,
     )
 
-    optimizer = get_nsga2_optimizer()
+    _ = get_nsga2_optimizer()
     config = OptimizationConfig(
         objectives=[
             OptimizationObjective("功效最大化", "efficacy", "maximize", 0.40),

@@ -1,3 +1,4 @@
+# ruff: noqa: N806
 """
 统一配方优化调度器 (Unified Formula Optimizer Scheduler)
 

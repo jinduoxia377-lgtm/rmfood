@@ -127,9 +127,12 @@ class MultimodalOutput:
             if t == "text":
                 s = block.get("style", "normal")
                 content = block.get("content", "")
-                if s == "heading": md.append(f"## {content}")
-                elif s == "highlight": md.append(f"> **{content}**")
-                else: md.append(content)
+                if s == "heading":
+                    md.append(f"## {content}")
+                elif s == "highlight":
+                    md.append(f"> **{content}**")
+                else:
+                    md.append(content)
             elif t == "formula_card":
                 md.append(f"\n### 📋 {block.get('name')}\n")
                 md.append(f"**算法**: {block.get('algorithm', 'N/A')}\n")
@@ -174,13 +177,13 @@ class MultimodalEngine:
                     "功效": c.efficacy_score if hasattr(c, 'efficacy_score') else 0,
                     "安全": c.safety_score if hasattr(c, 'safety_score') else 0,
                 }
-                cfg = getattr(c, 'confidence', 0.5)
+                _ = getattr(c, 'confidence', 0.5)
                 alg = algorithm_name
                 desc = getattr(c, 'explanation', "")
             elif isinstance(c, dict):
                 ing = c.get("ingredients", {})
                 score_map = {k: v for k, v in c.items() if k.endswith("_score")}
-                cfg = c.get("confidence", 0.5)
+                _ = c.get("confidence", 0.5)
                 alg = c.get("algorithm", algorithm_name)
                 desc = c.get("explanation", "")
             else:

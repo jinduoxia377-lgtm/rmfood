@@ -199,7 +199,7 @@ class PubMedAdapter:
 
     def _parse_pubmed_xml(self, xml_content: str) -> list[dict]:
         """解析 PubMed XML 响应"""
-        import xml.etree.ElementTree as ET
+        import xml.etree.ElementTree as ET  # noqa: N817 -- xml 标准惯例缩写
 
         try:
             root = ET.fromstring(xml_content)
