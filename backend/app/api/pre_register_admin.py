@@ -31,12 +31,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session, require_role
 from ..core.rbac.permission import Permission, PermissionChecker
-from ..core.whitelist_org import assign_user_to_whitelist_org
-from ..core.whitelist_quota import (
-    WHITELIST_QUOTA_TOTAL,
-    consume_quota,
-    get_approved_count,
-)
 from ..models.models import User, UserRole
 from ..models.pre_register import PreRegisterRequest, PreRegisterStatus
 from ..services import whitelist as whitelist_service
@@ -93,20 +87,12 @@ class PreRegisterRequestOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class WhitelistQuotaOut(BaseModel):
-    """白名单 500 名额配额（实时显示剩余）。"""
-    total: int
-    approved: int
-    remaining: int
-
-
 class PreRegisterListResponse(BaseModel):
     items: list[PreRegisterRequestOut]
     total: int
     page: int
     page_size: int
     status_counts: dict[str, int] = {}
-    whitelist_quota: WhitelistQuotaOut
 
 
 class ApproveRequest(BaseModel):
@@ -221,18 +207,6 @@ async def _approve_one(
         return {"ok": False, "request_id": request_id, "message": f"无效角色: {role}"}
     target_role = role_map[role]
 
-    # ── 白名单 500 名额配额：仅批准消耗；剩余 0 时阻止新批准（原子防超发）──
-    # 注意：此刻尚未 commit（claim 的 reviewed_by/reviewed_at 也未提交），
-    # 配额不足时 rollback 回滚整个 claim，申请保持 pending，管理员可在名额释放后重试。
-    if not await consume_quota(db):
-        await db.rollback()
-        return {
-            "ok": False,
-            "request_id": request_id,
-            "message": f"白名单名额已满（{WHITELIST_QUOTA_TOTAL}/{WHITELIST_QUOTA_TOTAL}）",
-            "quota_full": True,
-        }
-
     base_username = req.email.split("@")[0].lower()[:32]
     username = base_username
     for _ in range(5):
@@ -262,13 +236,10 @@ async def _approve_one(
         role=target_role,
         department=req.department,
         is_active=True,
-        # 白名单通过 → 免费版基础（白名单用户仍 free）+ 组织授予子集
-        # （专业版功能由「莱茵分子白名单组织」组织级授予，见 core/plans.py has_plan org-grant）。
-        plan="free",
+        # 白名单通过 → 授予专业版（规格 tenant-isolation-segmentation-plan.md 3.4）
+        plan="pro",
     )
     db.add(user)
-    # 新批用户归入「莱茵分子白名单组织」，参与租户数据隔离（数据仅组织内可见）。
-    await assign_user_to_whitelist_org(db, user)
     await db.flush()
 
     req.status = PreRegisterStatus.APPROVED
@@ -429,11 +400,6 @@ async def list_pre_register_requests(
         page=page,
         page_size=page_size,
         status_counts=status_counts,
-        whitelist_quota=WhitelistQuotaOut(
-            total=WHITELIST_QUOTA_TOTAL,
-            approved=await get_approved_count(db),
-            remaining=max(0, WHITELIST_QUOTA_TOTAL - await get_approved_count(db)),
-        ),
     )
 
 
@@ -454,19 +420,6 @@ async def approve_pre_register_request(
 
     result = await _approve_one(db, request_id, data.role, data.password, data.note, current_user)
     if not result["ok"]:
-        if result.get("quota_full"):
-            # 白名单名额已满（500/500）：409，前端据此展示「名额已满」状态
-            raise HTTPException(
-                status_code=409,
-                detail={
-                    "error_code": "WHITELIST_QUOTA_FULL",
-                    "message": result["message"],
-                    "quota_full": True,
-                    "quota_total": WHITELIST_QUOTA_TOTAL,
-                    "quota_approved": WHITELIST_QUOTA_TOTAL,
-                    "quota_remaining": 0,
-                },
-            )
         raise HTTPException(status_code=400, detail=result["message"])
     return ApproveResponse(
         detail=result["message"],

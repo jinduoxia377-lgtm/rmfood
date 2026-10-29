@@ -6,7 +6,6 @@
  * - POST /auth/whitelist/verify-code  校验 6 位验证码
  * - POST /auth/whitelist/resend-code  60s 冷却重发验证码
  * - GET  /auth/whitelist/status       凭状态 token 查询申请状态
- * - GET  /auth/whitelist/quota        本轮白名单剩余名额（公开，申请页展示）
  */
 import api from './client'
 
@@ -45,18 +44,6 @@ export interface WhitelistStatusResult {
   approved_at: string | null
   reject_reason: string | null
   cooldown_until: string | null
-  server_time: string
-}
-
-/**
- * 本轮白名单剩余名额（GET /auth/whitelist/quota）。
- * 契约：{ total: 名额总量, approved: 已获批数, remaining: 剩余名额, server_time }。
- * 后端未实现时该端点 404 → 前端 QuotaBanner 降级隐藏（fail-open，不阻断申请流程）。
- */
-export interface WhitelistQuotaResult {
-  total: number
-  approved: number
-  remaining: number
   server_time: string
 }
 
@@ -103,8 +90,4 @@ export const whitelistApi = {
     api
       .get<WhitelistStatusResult>('/auth/whitelist/status', { params: { token } })
       .then((r) => r.data),
-
-  /** 获取本轮白名单剩余名额（公开；后端未实现时 404 → 调用方降级隐藏） */
-  getQuota: () =>
-    api.get<WhitelistQuotaResult>('/auth/whitelist/quota').then((r) => r.data),
 }

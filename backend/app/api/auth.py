@@ -211,20 +211,9 @@ async def refresh_token(
 
 
 @router.get("/me", response_model=UserResponse, summary="获取当前用户信息")
-async def get_me(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db_session),
-):
-    """获取当前登录用户的详细信息（含组织名，供前端 org-grant 判定）。"""
-    result = UserResponse.model_validate(current_user)
-    org_id = getattr(current_user, "organization_id", None)
-    if org_id:
-        from ..models.organization import Organization
-
-        org = await db.get(Organization, org_id)
-        if org is not None:
-            result.organization_name = org.name
-    return result
+async def get_me(current_user: User = Depends(get_current_user)):
+    """获取当前登录用户的详细信息"""
+    return current_user
 
 
 @router.put("/password", response_model=SuccessResponse, summary="修改密码")

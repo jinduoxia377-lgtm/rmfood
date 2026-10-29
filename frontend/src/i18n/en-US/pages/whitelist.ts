@@ -70,12 +70,6 @@ export default {
       error: 'No application found. Please check your token.',
     },
 
-    quota: {
-      label: 'Remaining Slots',
-      value: '{{remaining}} / {{total}}',
-      loading: 'Loading remaining slots…',
-    },
-
     errors: {
       alreadyRegistered: 'This email is already registered. Please log in.',
       alreadyApplied: 'This email has already applied. Please wait for review.',

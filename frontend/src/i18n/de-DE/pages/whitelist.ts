@@ -70,12 +70,6 @@ export default {
       error: 'Keine Bewerbung gefunden. Bitte überprüfen Sie Ihr Token.',
     },
 
-    quota: {
-      label: 'Verbleibende Plätze',
-      value: '{{remaining}} / {{total}}',
-      loading: 'Verbleibende Plätze werden geladen…',
-    },
-
     errors: {
       alreadyRegistered: 'Diese E-Mail ist bereits registriert. Bitte melden Sie sich an.',
       alreadyApplied: 'Diese E-Mail hat sich bereits beworben. Bitte warten Sie auf die Prüfung.',

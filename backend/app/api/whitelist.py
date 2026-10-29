@@ -199,27 +199,3 @@ async def whitelist_status(
     if "error" in result:
         _raise_error(result["error"])
     return result
-
-
-@router.get("/quota", summary="查询白名单剩余名额（公开）")
-async def whitelist_quota(
-    db: AsyncSession = Depends(get_db_session),
-):
-    """查询白名单 500 名额配额（实时显示剩余名额，公开）。
-
-    契约：{ total, approved, remaining, server_time }
-    - remaining = max(0, WHITELIST_QUOTA_TOTAL - approved_count)
-    - approved_count = PreRegisterRequest.status=APPROVED 计数（仅批准消耗，待审核/拒绝不消耗）
-    """
-    from ..core.whitelist_quota import (
-        WHITELIST_QUOTA_TOTAL,
-        get_approved_count,
-    )
-
-    approved = await get_approved_count(db)
-    return {
-        "total": WHITELIST_QUOTA_TOTAL,
-        "approved": approved,
-        "remaining": max(0, WHITELIST_QUOTA_TOTAL - approved),
-        "server_time": whitelist_service.utc_iso(whitelist_service._now()),
-    }
