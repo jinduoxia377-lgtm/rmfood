@@ -22,7 +22,7 @@ async def main():
 
     import types
     _rag_pkg = types.ModuleType("services.ai.rag")
-    _rag_pkg.__path__ = [RAG_DIR]
+    _rag_pkg.__path__ = [rag_dir]
     _rag_pkg.__package__ = "services.ai.rag"
     sys.modules["services"] = types.ModuleType("services")
     sys.modules["services"].__path__ = []
