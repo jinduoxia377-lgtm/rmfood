@@ -1,0 +1,16 @@
+# RAG Cross-Encoder 精排可选依赖（非默认）
+#
+# 启用 bge-reranker-base 精排需安装本文件；未安装时 reranker.py 自动降级为原始 RRF 顺序，
+# 不影响核心 RAG（混合检索/RRF/Prompt 增强）。默认不随 requirements.txt 安装。
+#
+# 安装：
+#   pip install -r requirements-rerank.txt
+#
+# 模型下载（HuggingFace 被墙时使用 hf-mirror 镜像）：
+#   $env:HF_ENDPOINT = "https://hf-mirror.com"
+#   python -c "from app.services.ai.rag.reranker import get_reranker; get_reranker()"   # 首次触发模型下载
+#
+# 说明：rerankers[cross-encoders] 依赖约 278MB 模型 BAAI/bge-reranker-base，首次运行需网络下载。
+# 建议以可选依赖安装，避免阻塞核心部署。
+# 注：rerankers>=0.5 已将 extra 从 cross-encoders 更名为 transformers（HF 后端），此处按现行包名声明。
+rerankers[transformers]>=0.4.0

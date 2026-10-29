@@ -12,11 +12,12 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-REM 优先使用 .venv（uv 管理，Python 3.12+）
-if exist ".venv\Scripts\python.exe" (
-    set PYTHON=.venv\Scripts\python.exe
-) else if exist "venv\Scripts\python.exe" (
+REM 优先使用 venv（实际依赖环境，301 包）；.venv 为过期空壳（无 fastapi），仅作最后兜底
+if exist "venv\Scripts\python.exe" (
     set PYTHON=venv\Scripts\python.exe
+) else if exist ".venv\Scripts\python.exe" (
+    echo Warning: venv not found, falling back to .venv (stale shell, may lack deps)
+    set PYTHON=.venv\Scripts\python.exe
 ) else (
     echo Error: No virtual environment found
     pause

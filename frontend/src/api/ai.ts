@@ -17,8 +17,14 @@ import type {
   PepinventStatusResponse,
   GeneticGenerateResponse,
   GeneticHybridResponse,
+  GeneticCandidate,
+  GenerationRecord,
   MultiObjectiveResponse,
   MOPresetInfo,
+  MOParetoPoint,
+  MOBestByObjective,
+  NutritionObjectiveConfig,
+  RAGEvidence,
   GAHistoryRecord,
   GADetailResponse,
   PeptideAnalysisData,
@@ -44,6 +50,7 @@ export type {
   SampleResponse,
   PepinventStatusResponse,
   GeneticGenerateResponse,
+  GeneticCandidate,
   MOObjective,
   MOParetoPoint,
   MOCandidate,
@@ -69,6 +76,7 @@ export type {
   MILPResult,
   NutritionConstraint,
   NutritionObjectiveConfig,
+  RAGEvidence,
 } from '@/types/ai.api';
 
 /** 高级优化生成响应（标准化 generator 值） */
@@ -76,9 +84,827 @@ export interface AdvancedGenerateResponse {
   candidates: AICandidate[];
   total: number;
   generator: string;
+  execution_time_ms?: number;
+  strategy?: string;
+  best_score?: number;
+  /** 知识库 RAG 检索证据（响应级；缺失时前端显示「暂无知识库证据」占位） */
+  rag_evidence?: RAGEvidence;
+}
+
+// ===== AI 配方校验 / 药材知识检索 =====
+
+/** AI 配方校验成分输入 */
+export interface AiFormulaValidationIngredient {
+  name: string
+  dosage_g?: number
+}
+
+/** AI 配方校验请求 */
+export interface AiFormulaValidationRequest {
+  formula_name?: string
+  ingredients: AiFormulaValidationIngredient[]
+  target_effects?: string[]
+}
+
+/** AI 配方校验预警项 */
+export interface AiFormulaValidationAlert {
+  level: 'info' | 'warning' | 'critical'
+  ingredient?: string
+  parameter?: string
+  current_value?: number
+  threshold_value?: number
+  percentage?: number
+  message: string
+  recommendation?: string
+  blocking?: boolean
+}
+
+/** AI 配方校验响应 */
+export interface AiFormulaValidationResponse {
+  /** 是否通过校验（后端返回字段） */
+  valid?: boolean
+  /** 是否被 CRITICAL 级别阻断 */
+  blocked_by_critical: boolean
+  /** 风险评分 0-100 */
+  risk_score?: number
+  /** 安全预警列表 */
+  alerts: AiFormulaValidationAlert[]
+  /** 成分级校验明细 */
+  ingredients?: Array<Record<string, unknown>>
+  /** 配伍兼容性问题（十八反/十九畏/CompatibilityChecker/过敏原） */
+  compatibility_issues?: Array<{
+    level?: string
+    category?: string
+    description?: string
+    suggestion?: string
+    affected_ingredients?: string[]
+    source?: string
+  }>
+  /** 校验建议（追加到配方备注，【AI校验】前缀） */
+  suggestions?: string[]
+  recommendations?: string[]
+  /** 非阻断性预警文本 */
+  warnings?: string[]
+  /** 阻断性错误文本 */
+  errors?: string[]
+  /** 目标功效匹配结果 */
+  matched_effects?: Array<{ effect?: string; matched_in?: string }>
+  /** 已检查成分数 */
+  checked_ingredients_count?: number
+  /** 兼容旧字段：是否安全（旧版后端/模拟响应） */
+  is_safe?: boolean
+}
+
+/** AI 药材知识条目 */
+export interface AiHerbKnowledgeItem {
+  name_cn: string
+  name_latin?: string
+  name_en?: string
+  aliases?: string[]
+  effects?: string[]
+  active_ingredients?: string[]
+  safe_dose_range?: { min_g?: number | null; max_g?: number | null } | null
+  contraindications?: string[]
+  interactions?: string[]
+  food_homology?: boolean
+  data_quality?: number
+  source?: string
+}
+
+/** AI 药材知识检索结果 */
+export interface AiHerbKnowledgeResult {
+  query: string
+  total?: number
+  items: AiHerbKnowledgeItem[]
+}
+
+/**
+ * AI 配方保存前安全校验（超限/违禁成分检测）
+ * POST /api/v1/ai/formula/validate
+ */
+export async function validateAiFormula(
+  payload: AiFormulaValidationRequest,
+): Promise<AiFormulaValidationResponse> {
+  const res = await api.post<AiFormulaValidationResponse>('/ai/formula/validate', payload)
+  return res.data
+}
+
+/**
+ * AI 药材知识检索（药食同源信息/现代药理）
+ * POST /api/v1/ai/formula/knowledge
+ */
+export async function retrieveHerbKnowledge(query: string): Promise<AiHerbKnowledgeResult> {
+  const res = await api.post<AiHerbKnowledgeResult>('/ai/formula/knowledge', { query })
+  return res.data
+}
+
+// ===== AI 结构化输出兜底（repair-structured）/ 反馈闭环（feedback） =====
+
+/** 修复后的结构化内容 block（结构与一期 default.yaml 的 blocks 一致） */
+export interface RepairStructuredBlock {
+  type: string
+  data: Record<string, unknown>
+}
+
+/** 修复后的结构化内容 */
+export interface RepairStructuredContent {
+  blocks: RepairStructuredBlock[]
+}
+
+/** POST /ai/formula/repair-structured 响应 */
+export interface RepairStructuredResponse {
+  /** 是否修复成功 */
+  success: boolean
+  /** 修复后的结构化 JSON；失败时为 null/缺失 */
+  structured?: RepairStructuredContent | null
+  /** 失败原因（LLM 不可用 / 解析失败等），成功时可能为空 */
+  message?: string
+}
+
+/** 反馈指标复查条目（metric_updates 元素） */
+export interface FormulaMetricUpdate {
+  /** 指标名称（如 空腹血糖 / 甘油三酯） */
+  metric_name?: string
+  /** 调理前基线值 */
+  baseline_value?: string | number | null
+  /** 复查当前值 */
+  current_value?: string | number | null
+  /** 单位（mmol/L / mg/dL 等） */
+  unit?: string
+  /** 变化方向或状态描述 */
+  status?: string
+  /** 补充说明 */
+  notes?: string
+}
+
+/** POST /ai/formula/feedback 请求 payload */
+export interface FormulaFeedbackPayload {
+  /** 配方 ID */
+  formula_id: number
+  /** 效果评分 1-5 */
+  rating: number
+  /** 症状变化文本 */
+  symptom_change?: string
+  /** 指标复查列表 */
+  metric_updates?: FormulaMetricUpdate[]
+  /** 备注 */
+  notes?: string
+}
+
+/** POST /ai/formula/feedback 响应 */
+export interface FormulaFeedbackSubmitResponse {
+  success: boolean
+  /** 新建反馈记录 ID（兼容约定字段） */
+  feedback_id?: number
+  /** 新建的反馈记录完整对象（task-5 后端实际返回字段） */
+  feedback?: FormulaFeedbackItem
+  message?: string
+}
+
+/** GET /ai/formula/{formula_id}/feedback 返回的历史反馈条目 */
+export interface FormulaFeedbackItem {
+  id?: number
+  feedback_id?: number
+  formula_id: number
+  rating: number
+  symptom_change?: string | null
+  metric_updates?: FormulaMetricUpdate[] | null
+  notes?: string | null
+  created_at?: string
+  updated_at?: string
+  user_id?: number
+  organization_id?: number
+}
+
+/** GET /ai/formula/{formula_id}/feedback 响应 */
+export interface FormulaFeedbackListResponse {
+  formula_id?: number
+  total?: number
+  items: FormulaFeedbackItem[]
+}
+
+/**
+ * 结构化输出兜底：将非结构化配方文本修复为 blocks 结构化 JSON
+ * POST /api/v1/ai/formula/repair-structured
+ */
+export async function repairStructuredFormula(
+  content: string,
+  formula_name?: string,
+): Promise<RepairStructuredResponse> {
+  const res = await api.post<RepairStructuredResponse>('/ai/formula/repair-structured', {
+    content,
+    ...(formula_name ? { formula_name } : {}),
+  })
+  return res.data
+}
+
+/**
+ * 提交配方效果反馈（评分/症状变化/指标复查/备注）
+ * POST /api/v1/ai/formula/feedback
+ */
+export async function submitFormulaFeedback(
+  payload: FormulaFeedbackPayload,
+): Promise<FormulaFeedbackSubmitResponse> {
+  const res = await api.post<FormulaFeedbackSubmitResponse>('/ai/formula/feedback', payload)
+  return res.data
+}
+
+/**
+ * 获取指定配方的历史反馈列表
+ * GET /api/v1/ai/formula/{formula_id}/feedback
+ */
+export async function getFormulaFeedback(
+  formulaId: number | string,
+): Promise<FormulaFeedbackListResponse> {
+  const res = await api.get<FormulaFeedbackListResponse>(`/ai/formula/${formulaId}/feedback`)
+  return res.data
+}
+
+// ═══════════════════════════════════════════════
+// 响应归一化适配（P0 前端响应契约）
+//
+// 后端 genetic / multi-objective / hybrid 实际返回：
+//   candidates[].herb_combination[{name,dosage_mg}] + fitness/efficacy/safety/taste/cost
+// 而前端类型与渲染期望：
+//   candidates[].ingredients[{id,name_cn,dosage}] + overall_score/confidence/explanation
+// 这些函数在 API 返回前将后端响应归一化为前端类型，保证字段不缺、不出现 NaN/undefined。
+// ═══════════════════════════════════════════════
+
+type UnknownRecord = Record<string, unknown>
+
+function asRecord(value: unknown): UnknownRecord {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as UnknownRecord)
+    : {}
+}
+
+function toFiniteNumber(value: unknown, fallback = 0): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return fallback
+}
+
+function toStringOrNull(value: unknown): string | null {
+  return typeof value === 'string' && value.length > 0 ? value : null
+}
+
+/**
+ * 将 herb_combination 的 dosage 字符串/数值统一换算为克（g）。
+ *
+ * ⚠️ 契约修正（task-4）：后端 genetic 系列端点历史上用 `dosage_mg` 字段名
+ * 承载**克**数值（如 12 表示 12g，并非 12mg），因此数值型 dosage_mg 不再除以 1000。
+ * 后端已同步将字段改名为 `dosage_g`，此处同时兼容两种形态：
+ *   - dosage_mg 数值 → 按克直接使用（不再 /1000）
+ *   - dosage_g 数值 → 按克直接使用
+ *   - dosage 数值/字符串 → 按克解析；仅字符串显式携带 "mg" 单位时做 /1000 换算。
+ */
+function parseDosageGrams(item: UnknownRecord): number {
+  const dosageMg = item.dosage_mg
+  // 数值型 dosage_mg 实际是克（GA 系列字段名历史遗留），直接使用，不再 /1000
+  if (typeof dosageMg === 'number' && Number.isFinite(dosageMg)) return dosageMg
+  const dosageG = item.dosage_g
+  if (typeof dosageG === 'number' && Number.isFinite(dosageG)) return dosageG
+  const dosage = item.dosage
+  if (typeof dosage === 'number' && Number.isFinite(dosage)) return dosage
+  if (typeof dosage === 'string') {
+    const match = dosage.match(/-?\d+(\.\d+)?/)
+    if (match) {
+      const val = parseFloat(match[0])
+      // 兼容 "500mg" / "10.0g" / "10 克" 等字符串；"mg" 后缀字符串仍按毫克换算
+      if (/mg/i.test(dosage)) return val / 1000
+      return val
+    }
+  }
+  return 0
+}
+
+/** 归一化 ingredients：兼容后端 herb_combination[{name,name_cn,dosage_mg,dosage_g}] 与前端已有 ingredients。 */
+export function normalizeIngredients(value: unknown): GeneticCandidate['ingredients'] {
+  if (!Array.isArray(value)) return []
+  const result: GeneticCandidate['ingredients'] = []
+  value.forEach((raw, index) => {
+    const item = asRecord(raw)
+    const name =
+      (typeof item.name_cn === 'string' && item.name_cn ? item.name_cn : '') ||
+      (typeof item.name === 'string' && item.name ? item.name : '') ||
+      (typeof item.id === 'string' ? item.id : '')
+    const id = (typeof item.id === 'string' && item.id ? item.id : '') || name || `herb_${index}`
+    result.push({
+      id,
+      name_cn: name || '未知药材',
+      dosage: parseDosageGrams(item),
+    })
+  })
+  return result
+}
+
+/** 基于综合评分估算置信度（0.5 ~ 0.95），避免缺省 0.8 与评分脱节。 */
+export function estimateConfidence(overallScore: number): number {
+  const base = 0.5 + overallScore * 0.4
+  return Math.round(Math.min(0.95, Math.max(0.5, base)) * 100) / 100
+}
+
+/** 生成缺省中文说明（不伪造具体功效数据）。 */
+export function buildDefaultExplanation(
+  overallScore: number,
+  ingredientNames: string[],
+  sourceLabel: string,
+): string {
+  const names = ingredientNames.length > 0 ? ingredientNames.join('、') : '（后端未返回成分明细）'
+  return (
+    `${sourceLabel}自动优化生成的候选配方，综合评分 ${overallScore.toFixed(4)}，药材组成：${names}。` +
+    '本结果由算法计算得出，仅供参考，建议在专业人员指导下使用。'
+  )
+}
+
+export interface GeneticCandidateNormalizeOptions {
+  defaultConfidence?: number
+  explanationPrefix?: string
+}
+
+/** 归一化单个 GA 候选方案：herb_combination → ingredients，fitness → overall_score。 */
+export function normalizeGeneticCandidate(
+  rawCandidate: unknown,
+  options: GeneticCandidateNormalizeOptions = {},
+): GeneticCandidate {
+  const c = asRecord(rawCandidate)
+
+  const ingredients: GeneticCandidate['ingredients'] = Array.isArray(c.ingredients)
+    ? (c.ingredients as unknown[]).map((raw, idx) => {
+        const item = asRecord(raw)
+        const name =
+          (typeof item.name_cn === 'string' && item.name_cn ? item.name_cn : '') ||
+          (typeof item.name === 'string' && item.name ? item.name : '') ||
+          (typeof item.id === 'string' ? item.id : '')
+        const id = (typeof item.id === 'string' && item.id ? item.id : '') || name || `herb_${idx}`
+        return { id, name_cn: name || '未知药材', dosage: toFiniteNumber(item.dosage, 0) }
+      })
+    : normalizeIngredients(c.herb_combination)
+
+  const fitness = toFiniteNumber(c.fitness, 0)
+  const efficacy = toFiniteNumber(c.efficacy, 0)
+  const safety = toFiniteNumber(c.safety, 0)
+  const taste = toFiniteNumber(c.taste, 0)
+  const cost = toFiniteNumber(c.cost, 0)
+
+  const overallScore = toFiniteNumber(c.overall_score, fitness)
+  const confidence = toFiniteNumber(
+    c.confidence,
+    options.defaultConfidence ?? estimateConfidence(overallScore),
+  )
+  const explanation =
+    toStringOrNull(c.explanation) ??
+    buildDefaultExplanation(
+      overallScore,
+      ingredients.map((i) => i.name_cn),
+      options.explanationPrefix ?? '遗传算法',
+    )
+
+  return {
+    ingredients,
+    efficacy_score: toFiniteNumber(c.efficacy_score, efficacy),
+    safety_score: toFiniteNumber(c.safety_score, safety),
+    taste_score: toFiniteNumber(c.taste_score, taste),
+    cost_score: toFiniteNumber(c.cost_score, cost),
+    overall_score: overallScore,
+    confidence,
+    explanation,
+    milp_result: c.milp_result as GeneticCandidate['milp_result'],
+    nutrition_score: typeof c.nutrition_score === 'number' ? c.nutrition_score : undefined,
+    nutrition_matrix:
+      typeof c.nutrition_matrix === 'object' && c.nutrition_matrix !== null
+        ? (c.nutrition_matrix as Record<string, number>)
+        : undefined,
+    // 保留后端原始字段，便于调试/导出
+    rank: typeof c.rank === 'number' ? c.rank : undefined,
+    herb_combination: Array.isArray(c.herb_combination)
+      ? (c.herb_combination as GeneticCandidate['herb_combination'])
+      : undefined,
+    fitness: typeof c.fitness === 'number' ? c.fitness : undefined,
+    efficacy: typeof c.efficacy === 'number' ? c.efficacy : undefined,
+    safety: typeof c.safety === 'number' ? c.safety : undefined,
+    taste: typeof c.taste === 'number' ? c.taste : undefined,
+    cost: typeof c.cost === 'number' ? c.cost : undefined,
+  }
+}
+
+/** 归一化遗传算法响应。 */
+export function normalizeGeneticResponse(rawData: unknown): GeneticGenerateResponse {
+  const data = asRecord(rawData)
+  const rawCandidates = Array.isArray(data.candidates) ? data.candidates : []
+  const candidates = rawCandidates.map((c) => normalizeGeneticCandidate(c))
+  const history = Array.isArray(data.history) ? (data.history as GenerationRecord[]) : []
+  const maxCandidateScore = candidates.reduce((max, c) => Math.max(max, c.overall_score), 0)
+
+  return {
+    candidates,
+    history,
+    algorithm: typeof data.algorithm === 'string' ? data.algorithm : 'genetic_algorithm',
+    total_generations: toFiniteNumber(data.total_generations, history.length),
+    total_evaluations: toFiniteNumber(data.total_evaluations, 0),
+    best_score: toFiniteNumber(data.best_score, maxCandidateScore),
+    execution_time_ms: typeof data.execution_time_ms === 'number' ? data.execution_time_ms : undefined,
+    convergence_generation:
+      typeof data.convergence_generation === 'number' ? data.convergence_generation : undefined,
+    hybrid_mode: typeof data.hybrid_mode === 'boolean' ? data.hybrid_mode : undefined,
+    run_id: typeof data.run_id === 'string' ? data.run_id : undefined,
+    total_candidates: typeof data.total_candidates === 'number' ? data.total_candidates : undefined,
+    stop_reason: typeof data.stop_reason === 'string' ? data.stop_reason : undefined,
+  }
+}
+
+/** 归一化单个多目标优化候选方案。 */
+export function normalizeMOCandidate(rawCandidate: unknown): MultiObjectiveResponse['candidates'][0] {
+  const c = asRecord(rawCandidate)
+
+  const ingredients: MultiObjectiveResponse['candidates'][0]['ingredients'] = Array.isArray(
+    c.ingredients,
+  )
+    ? (c.ingredients as unknown[]).map((raw, idx) => {
+        const item = asRecord(raw)
+        const name =
+          (typeof item.name_cn === 'string' && item.name_cn ? item.name_cn : '') ||
+          (typeof item.name === 'string' && item.name ? item.name : '') ||
+          (typeof item.id === 'string' ? item.id : '')
+        const id = (typeof item.id === 'string' && item.id ? item.id : '') || name || `herb_${idx}`
+        return { id, name_cn: name || '未知药材', dosage: toFiniteNumber(item.dosage, 0) }
+      })
+    : normalizeIngredients(c.herb_combination)
+
+  const rawScores =
+    typeof c.objective_scores === 'object' && c.objective_scores !== null
+      ? (c.objective_scores as UnknownRecord)
+      : typeof c.scores === 'object' && c.scores !== null
+        ? (c.scores as UnknownRecord)
+        : {}
+  const objectiveScores: Record<string, number> = {}
+  Object.entries(rawScores).forEach(([key, value]) => {
+    objectiveScores[key] = toFiniteNumber(value, 0)
+  })
+
+  const fitness = toFiniteNumber(c.fitness, 0)
+  const overallFitness = toFiniteNumber(c.overall_fitness, fitness)
+  const paretoRank = toFiniteNumber(c.pareto_rank, 1)
+  const crowdingDistance = toFiniteNumber(c.crowding_distance, 0)
+  const explanation =
+    toStringOrNull(c.explanation) ??
+    buildDefaultExplanation(overallFitness, ingredients.map((i) => i.name_cn), '多目标优化')
+
+  const complianceStatus = c.compliance_status
+  const isKnownComplianceStatus =
+    complianceStatus === 'compliant' || complianceStatus === 'warning' || complianceStatus === 'violation'
+
+  return {
+    ingredients,
+    objective_scores: objectiveScores,
+    overall_fitness: overallFitness,
+    pareto_rank: paretoRank,
+    crowding_distance: crowdingDistance,
+    explanation,
+    nutrition_score: typeof c.nutrition_score === 'number' ? c.nutrition_score : undefined,
+    nutrition_matrix:
+      typeof c.nutrition_matrix === 'object' && c.nutrition_matrix !== null
+        ? (c.nutrition_matrix as Record<string, number>)
+        : undefined,
+    compliance_status: isKnownComplianceStatus
+      ? (complianceStatus as MultiObjectiveResponse['candidates'][0]['compliance_status'])
+      : undefined,
+    // 保留后端原始字段
+    rank: typeof c.rank === 'number' ? c.rank : undefined,
+    herb_combination: Array.isArray(c.herb_combination)
+      ? (c.herb_combination as MultiObjectiveResponse['candidates'][0]['herb_combination'])
+      : undefined,
+    scores: typeof c.scores === 'object' && c.scores !== null ? (c.scores as Record<string, number>) : undefined,
+    fitness: typeof c.fitness === 'number' ? c.fitness : undefined,
+    is_pareto_optimal: typeof c.is_pareto_optimal === 'boolean' ? c.is_pareto_optimal : undefined,
+  }
+}
+
+export interface MOMormalizeOptions {
+  /** 调用方传入的优化目标，用于在缺失 objectives_config 时构建配置。 */
+  objectives?: Array<{ name?: string; key: string; direction?: string; weight?: number }>
+}
+
+/** 归一化多目标优化响应。 */
+export function normalizeMultiObjectiveResponse(
+  rawData: unknown,
+  options: MOMormalizeOptions = {},
+): MultiObjectiveResponse {
+  const data = asRecord(rawData)
+  const rawCandidates = Array.isArray(data.candidates) ? data.candidates : []
+  const candidates = rawCandidates.map((c) => normalizeMOCandidate(c))
+  const history = Array.isArray(data.history) ? (data.history as GenerationRecord[]) : []
+
+  // objectives_config：优先后端返回 → 其次调用方传入 objectives → 最后从候选 scores 键推导
+  let objectivesConfig: MultiObjectiveResponse['objectives_config']
+  if (Array.isArray(data.objectives_config)) {
+    objectivesConfig = (data.objectives_config as unknown[]).map((o) => {
+      const rec = asRecord(o)
+      return {
+        name: typeof rec.name === 'string' ? rec.name : typeof rec.key === 'string' ? rec.key : '',
+        key: typeof rec.key === 'string' ? rec.key : '',
+        direction: typeof rec.direction === 'string' ? rec.direction : 'maximize',
+        weight: toFiniteNumber(rec.weight, 1),
+      }
+    })
+  } else if (options.objectives && options.objectives.length > 0) {
+    objectivesConfig = options.objectives.map((o) => ({
+      name: o.name ?? o.key,
+      key: o.key,
+      direction: o.direction ?? 'maximize',
+      weight: o.weight ?? 1,
+    }))
+  } else if (candidates.length > 0) {
+    objectivesConfig = Object.keys(candidates[0].objective_scores).map((key) => ({
+      name: key,
+      key,
+      direction: 'maximize',
+      weight: 1,
+    }))
+  } else {
+    objectivesConfig = []
+  }
+
+  const paretoFront: MOParetoPoint[] = Array.isArray(data.pareto_front)
+    ? (data.pareto_front as MOParetoPoint[])
+    : candidates.map((c) => ({
+        objective_values: c.objective_scores,
+        rank: c.pareto_rank,
+        crowding_distance: c.crowding_distance,
+      }))
+
+  const bestByObjective: MOBestByObjective[] = Array.isArray(data.best_by_objective)
+    ? (data.best_by_objective as MOBestByObjective[])
+    : []
+
+  return {
+    candidates,
+    pareto_front: paretoFront,
+    best_by_objective: bestByObjective,
+    history,
+    algorithm: typeof data.algorithm === 'string' ? data.algorithm : 'nsga2_genetic_algorithm',
+    mode: typeof data.mode === 'string' ? data.mode : 'pareto',
+    objectives_config: objectivesConfig,
+    nutrition_objectives: Array.isArray(data.nutrition_objectives)
+      ? (data.nutrition_objectives as NutritionObjectiveConfig[])
+      : undefined,
+    total_generations: toFiniteNumber(data.total_generations, history.length),
+    total_evaluations: typeof data.total_evaluations === 'number' ? data.total_evaluations : undefined,
+    execution_time_ms: typeof data.execution_time_ms === 'number' ? data.execution_time_ms : undefined,
+    convergence_generation:
+      typeof data.convergence_generation === 'number' ? data.convergence_generation : undefined,
+    stop_reason: typeof data.stop_reason === 'string' ? data.stop_reason : 'completed',
+    run_id: typeof data.run_id === 'string' ? data.run_id : undefined,
+    total_candidates: typeof data.total_candidates === 'number' ? data.total_candidates : undefined,
+    best_score: typeof data.best_score === 'number' ? data.best_score : undefined,
+  }
+}
+
+/** 归一化 GA+MILP 混合优化响应（兼容后端 ga_candidates/mo_candidates/combined_results）。 */
+export function normalizeGeneticHybridResponse(rawData: unknown): GeneticHybridResponse {
+  const data = asRecord(rawData)
+  const rawCandidates = Array.isArray(data.candidates) ? data.candidates : []
+  const combinedResults = Array.isArray(data.combined_results)
+    ? (data.combined_results as UnknownRecord[])
+    : []
+
+  let candidates: GeneticHybridResponse['candidates']
+  if (rawCandidates.length > 0) {
+    candidates = rawCandidates.map((c) =>
+      normalizeGeneticCandidate(c, { explanationPrefix: 'GA+MILP混合优化' }),
+    )
+  } else if (combinedResults.length > 0) {
+    // 后端非流式 hybrid 仅返回汇总（fitness + herbs 代码列表，无剂量明细）。
+    // 诚实降级：不伪造剂量；药材代码写入 explanation，成分区由前端显示“暂无成分数据”。
+    candidates = combinedResults.map((r) => {
+      const herbs = Array.isArray(r.herbs)
+        ? (r.herbs as unknown[]).filter((h): h is string => typeof h === 'string')
+        : []
+      const fitness = toFiniteNumber(r.fitness, 0)
+      const herbCombination = Array.isArray(r.herb_combination)
+        ? (r.herb_combination as GeneticCandidate['herb_combination'])
+        : undefined
+      const ingredients = herbCombination ? normalizeIngredients(herbCombination) : []
+      const explanation = herbCombination
+        ? buildDefaultExplanation(fitness, ingredients.map((i) => i.name_cn), 'GA+MILP混合优化')
+        : `混合优化汇总方案（来源：${typeof r.type === 'string' ? r.type : 'unknown'}，排名 ${
+            toFiniteNumber(r.rank, 0)
+          }）。` +
+          (herbs.length > 0 ? `药材代码：${herbs.join('、')}（后端未返回剂量明细）。` : '后端未返回成分明细。') +
+          '本结果由算法计算得出，仅供参考。'
+
+      return {
+        ingredients,
+        efficacy_score: fitness,
+        safety_score: fitness,
+        taste_score: fitness,
+        cost_score: fitness,
+        overall_score: fitness,
+        confidence: estimateConfidence(fitness),
+        explanation,
+        rank: typeof r.rank === 'number' ? r.rank : undefined,
+        herb_combination: herbCombination,
+        fitness: typeof r.fitness === 'number' ? r.fitness : undefined,
+      }
+    })
+  } else {
+    candidates = []
+  }
+
+  const maxCandidateScore = candidates.reduce((max, c) => Math.max(max, c.overall_score), 0)
+  const history = Array.isArray(data.history)
+    ? (data.history as GeneticHybridResponse['history'])
+    : []
+  const gaHistoryLength = toFiniteNumber(data.ga_history_length, 0)
+  const moHistoryLength = toFiniteNumber(data.mo_history_length, 0)
+
+  return {
+    candidates,
+    history,
+    total_generations: toFiniteNumber(
+      data.total_generations,
+      Math.max(gaHistoryLength, moHistoryLength),
+    ),
+    total_evaluations: typeof data.total_evaluations === 'number' ? data.total_evaluations : undefined,
+    best_score: toFiniteNumber(data.best_score, maxCandidateScore),
+    execution_time_ms: typeof data.execution_time_ms === 'number' ? data.execution_time_ms : undefined,
+    convergence_generation:
+      typeof data.convergence_generation === 'number' ? data.convergence_generation : undefined,
+    algorithm: typeof data.algorithm === 'string' ? data.algorithm : 'genetic_hybrid',
+    hybrid_mode: typeof data.hybrid_mode === 'boolean' ? data.hybrid_mode : true,
+    nutrition_constraints_met:
+      typeof data.nutrition_constraints_met === 'boolean' ? data.nutrition_constraints_met : undefined,
+    constraint_violations:
+      typeof data.constraint_violations === 'object' && data.constraint_violations !== null
+        ? (data.constraint_violations as Record<string, number>)
+        : undefined,
+    ga_candidates: typeof data.ga_candidates === 'number' ? data.ga_candidates : undefined,
+    ga_history_length:
+      typeof data.ga_history_length === 'number' ? data.ga_history_length : undefined,
+    mo_candidates: typeof data.mo_candidates === 'number' ? data.mo_candidates : undefined,
+    mo_history_length:
+      typeof data.mo_history_length === 'number' ? data.mo_history_length : undefined,
+    combined_results: Array.isArray(data.combined_results)
+      ? (data.combined_results as GeneticHybridResponse['combined_results'])
+      : undefined,
+  }
+}
+
+/** 归一化统一优化响应：兼容 GA / MO / hybrid 三种实际返回结构。 */
+export function normalizeUnifiedOptimizeResponse(rawData: unknown): GeneticGenerateResponse {
+  const data = asRecord(rawData)
+  // hybrid 汇总结构（无 candidates 数组）→ 先转 hybrid 再映射为 GA 响应
+  if (!Array.isArray(data.candidates) && Array.isArray(data.combined_results)) {
+    const hybrid = normalizeGeneticHybridResponse(rawData)
+    return {
+      candidates: hybrid.candidates,
+      history: hybrid.history ?? [],
+      algorithm: hybrid.algorithm,
+      total_generations: hybrid.total_generations,
+      total_evaluations: hybrid.total_evaluations ?? 0,
+      best_score: hybrid.best_score,
+      execution_time_ms: hybrid.execution_time_ms,
+      convergence_generation: hybrid.convergence_generation,
+      hybrid_mode: hybrid.hybrid_mode,
+    }
+  }
+  return normalizeGeneticResponse(rawData)
+}
+
+/**
+ * 归一化 /ai/generate 主端点返回的单个候选。
+ *
+ * 后端 _format_ga_candidates / _fallback_rule_engine 实际返回：
+ *   { id, formula_name, name, herb_combination:[{name,dosage,role}], synergy_score,
+ *     taste_score, stability_score, safety_score, cost_score, efficacy_score,
+ *     overall_score, effects, generated_by, generated_at }
+ * 而前端 AICandidate 类型与渲染期望 ingredients/score/safety_passed。
+ * 此处补齐：
+ *   - score          = overall_score（缺失时回退 0）
+ *   - safety_passed  = safety_score >= 0.7
+ *   - ingredients    = herb_combination 映射（兼容后端新字段 name_cn / dosage_g）
+ * 后端原始字段（herb_combination / overall_score / *_score）保留透传，便于调试/导出。
+ */
+export function normalizeGenerateCandidate(rawCandidate: unknown, index = 0): AICandidate {
+  const c = asRecord(rawCandidate)
+
+  const herbCombination = Array.isArray(c.herb_combination)
+    ? (c.herb_combination as NonNullable<AICandidate['herb_combination']>)
+    : undefined
+
+  const overallScore = toFiniteNumber(c.overall_score, 0)
+  const safetyScore = toFiniteNumber(c.safety_score, 0)
+
+  // 已有 ingredients 直接透传；否则从 herb_combination 映射为 AICandidate.ingredients 形态
+  let ingredients: AICandidate['ingredients']
+  if (Array.isArray(c.ingredients) && c.ingredients.length > 0) {
+    ingredients = (c.ingredients as unknown[]).map((raw) => {
+      const item = asRecord(raw)
+      const dosageNum = toFiniteNumber(item.dosage_g ?? item.dosage, 0)
+      return {
+        name:
+          (typeof item.name === 'string' && item.name ? item.name : '') ||
+          (typeof item.name_cn === 'string' && item.name_cn ? item.name_cn : '') ||
+          '未知药材',
+        dosage:
+          (typeof item.dosage === 'string' && item.dosage ? item.dosage : '') ||
+          (dosageNum > 0 ? `${dosageNum}g` : ''),
+        unit: (typeof item.unit === 'string' && item.unit ? item.unit : '') || 'g',
+        dosage_g: typeof item.dosage_g === 'number' ? item.dosage_g : undefined,
+        amount_mg: typeof item.amount_mg === 'number' ? item.amount_mg : undefined,
+      }
+    })
+  } else if (herbCombination && herbCombination.length > 0) {
+    ingredients = herbCombination.map((h) => {
+      const dosageG =
+        h.dosage_g ??
+        (typeof h.dosage_mg === 'number' && Number.isFinite(h.dosage_mg)
+          ? h.dosage_mg
+          : undefined) ??
+        (typeof h.dosage === 'number' && Number.isFinite(h.dosage) ? h.dosage : undefined)
+      const dosageStr =
+        (typeof h.dosage === 'string' && h.dosage ? h.dosage : '') ||
+        (typeof dosageG === 'number' && Number.isFinite(dosageG) ? `${dosageG}g` : '')
+      return {
+        name:
+          (typeof h.name_cn === 'string' && h.name_cn ? h.name_cn : '') ||
+          (typeof h.name === 'string' && h.name ? h.name : '') ||
+          '未知药材',
+        dosage: dosageStr,
+        unit: 'g',
+        dosage_g: typeof dosageG === 'number' ? dosageG : undefined,
+      }
+    })
+  }
+
+  const id = (typeof c.id === 'string' && c.id ? c.id : '') || `candidate_${index}_${Date.now()}`
+  const name =
+    (typeof c.name === 'string' && c.name ? c.name : '') ||
+    (typeof c.formula_name === 'string' && c.formula_name ? c.formula_name : '') ||
+    `配方方案${index + 1}`
+
+  const effects = Array.isArray(c.effects) ? (c.effects as string[]) : []
+
+  return {
+    ...(c as unknown as AICandidate),
+    id,
+    name,
+    ingredients,
+    score: toFiniteNumber(c.score, overallScore),
+    effects,
+    formula_name: typeof c.formula_name === 'string' ? c.formula_name : undefined,
+    herb_combination: herbCombination,
+    safety_passed:
+      typeof c.safety_passed === 'boolean' ? c.safety_passed : safetyScore >= 0.7,
+    overall_score: overallScore,
+    safety_score: safetyScore,
+    synergy_score: typeof c.synergy_score === 'number' ? c.synergy_score : undefined,
+    taste_score: typeof c.taste_score === 'number' ? c.taste_score : undefined,
+    stability_score: typeof c.stability_score === 'number' ? c.stability_score : undefined,
+    cost_score: typeof c.cost_score === 'number' ? c.cost_score : undefined,
+    efficacy_score: typeof c.efficacy_score === 'number' ? c.efficacy_score : undefined,
+    generated_by: typeof c.generated_by === 'string' ? c.generated_by : undefined,
+    generated_at: typeof c.generated_at === 'string' ? c.generated_at : undefined,
+  }
+}
+
+/** 归一化 /ai/generate 主端点响应。 */
+export function normalizeGenerateResponse(rawData: unknown): AdvancedGenerateResponse {
+  const data = asRecord(rawData)
+  const rawCandidates = Array.isArray(data.candidates) ? data.candidates : []
+  const ragEvidence = (data.rag_evidence ?? undefined) as RAGEvidence | undefined
+  // P1：响应级 rag_evidence 透传到每个候选（FormulaResultsPro 只持有 generateResult，
+  // 从候选读取；同时保留到响应级便于 AdvancedGeneratePanel 直接消费）
+  const candidates = rawCandidates.map((c, i) => {
+    const candidate = normalizeGenerateCandidate(c, i)
+    if (ragEvidence) candidate.rag_evidence = ragEvidence
+    return candidate
+  })
+  return {
+    candidates,
+    total: typeof data.total === 'number' ? data.total : candidates.length,
+    generator: typeof data.generator === 'string' ? data.generator : 'rule_engine',
+    execution_time_ms: typeof data.execution_time_ms === 'number' ? data.execution_time_ms : undefined,
+    strategy: typeof data.strategy === 'string' ? data.strategy : undefined,
+    best_score: typeof data.best_score === 'number' ? data.best_score : undefined,
+    rag_evidence: ragEvidence,
+  }
 }
 
 export const aiApi = {
+  /** AI 配方保存前安全校验（超限/违禁成分检测） */
+  validateAiFormula,
+  /** AI 药材知识检索（药食同源信息/现代药理） */
+  retrieveHerbKnowledge,
+  /** 结构化输出兜底：将非结构化配方文本修复为 blocks 结构化 JSON */
+  repairStructuredFormula,
+  /** 提交配方效果反馈（评分/症状变化/指标复查/备注） */
+  submitFormulaFeedback,
+  /** 获取指定配方的历史反馈列表 */
+  getFormulaFeedback,
   /** AI 配方生成（支持 LLM 模式，自动路由到遗传算法引擎） */
   generate: async (
     targetEffects: string[],
@@ -87,25 +913,26 @@ export const aiApi = {
     signal?: AbortSignal,
     algorithmConfig?: Record<string, unknown>,
   ) => {
-    const result = await api.post<{
-      candidates: AICandidate[];
-      total: number;
-      generator: string;
-      execution_time_ms?: number;
-      strategy?: string;
-      best_score?: number;
-    }>('/ai/generate', {
+    // 后端 /ai/generate（generation_v2.FormulaGenerateRequest）只接受顶层
+    // target_effects / constraints / use_llm：算法参数（population_size、
+    // generations、mutation_rate、crossover_rate、total_dosage_g 等）与个人约束
+    // 合并为单层 constraints，避免 constraints:{..., constraints:{...}} 双层嵌套。
+    const mergedConstraints: Record<string, unknown> = {
+      ...(constraints ?? {}),
+      ...(algorithmConfig ?? {}),
+    }
+    const result = await api.post<AdvancedGenerateResponse>('/ai/generate', {
       target_effects: targetEffects,
-      constraints: {
-        ...constraints,
-        ...algorithmConfig,
-      },
+      constraints: mergedConstraints,
       use_llm: useLlm,
       description: targetEffects.length > 0
         ? `基于${targetEffects.join('、')}功效需求，生成中药配方方案`
         : undefined,
     }, { timeout: 120000, signal });
-    return result.data;
+    // P1 契约适配：后端主端点返回 herb_combination + overall_score（无 score/
+    // safety_passed/ingredients），归一化补齐这三个字段（参考 normalizeGeneticCandidate），
+    // 使排序/安全统计/学术报告等组件不再拿到 undefined。
+    return normalizeGenerateResponse(result.data);
   },
 
   /** 智能配方推荐（基于数据库用户历史 + 协同配伍网络） */
@@ -195,7 +1022,8 @@ export const aiApi = {
       },
       { signal, timeout: 120000 },
     );
-    return res.data as GeneticGenerateResponse;
+    // P0 契约适配：后端返回 herb_combination + fitness，归一化为前端类型
+    return normalizeGeneticResponse(res.data);
   },
 
   // 多目标优化 (NSGA-II)
@@ -232,7 +1060,8 @@ export const aiApi = {
       },
       { signal, timeout: 180000 },
     );
-    return res.data as MultiObjectiveResponse;
+    // P0 契约适配：后端返回 herb_combination + scores + fitness，归一化为前端类型
+    return normalizeMultiObjectiveResponse(res.data, { objectives: params.objectives });
   },
 
   // 获取预设场景列表
@@ -279,10 +1108,11 @@ export const aiApi = {
       },
       { signal, timeout: 180000 },
     );
-    return res.data as GeneticHybridResponse;
+    // P0 契约适配：后端 hybrid 实际返回 ga_candidates/mo_candidates/combined_results
+    return normalizeGeneticHybridResponse(res.data);
   },
 
-  // 统一优化调度器
+  // 统一优化调度器（后端将新增 /ai/generate/unified）
   unifiedOptimize: async (
     params: {
       targetEffects: string[];
@@ -298,7 +1128,7 @@ export const aiApi = {
       maxCost?: number;
     },
     signal?: AbortSignal,
-  ) => {
+  ): Promise<GeneticGenerateResponse> => {
     const res = await api.post(
       '/ai/generate/unified',
       {
@@ -316,7 +1146,8 @@ export const aiApi = {
       },
       { signal, timeout: 180000 },
     );
-    return res.data;
+    // P0 契约适配：统一优化可能返回 GA / MO / hybrid 任一结构，统一归一化
+    return normalizeUnifiedOptimizeResponse(res.data);
   },
 
   // GA 运行历史 (数据库版)

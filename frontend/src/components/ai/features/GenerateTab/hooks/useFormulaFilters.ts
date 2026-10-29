@@ -28,7 +28,8 @@ export function useFormulaFilters() {
 
         switch (sortBy) {
           case 'score':
-            comparison = (a.score || 0) - (b.score || 0)
+            // P2-3：后端 GA 候选没有 `score` 字段（恒 0），改用 overall_score ?? synergy_score ?? 0
+            comparison = (a.overall_score ?? a.synergy_score ?? 0) - (b.overall_score ?? b.synergy_score ?? 0)
             break
           case 'name':
             comparison = (a.formula_name || '').localeCompare(b.formula_name || '')

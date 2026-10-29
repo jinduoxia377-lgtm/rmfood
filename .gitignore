@@ -185,6 +185,10 @@ backend/logs/
 data/chromadb/
 data/test_chromadb*/
 
+# ---- RAG 模型缓存 / 嵌入缓存（运行产物，绝不入库） ----
+backend/data/models/
+fastembed_cache/
+
 # ---- TCMS 原始数据（大文件，不应提交） ----
 tcmsp_data/data/
 tcmsp_data/reports/

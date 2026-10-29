@@ -14,13 +14,14 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-REM 优先使用 .venv（uv 管理，Python 3.12+）
-if exist ".venv\Scripts\python.exe" (
-    set PYTHON=.venv\Scripts\python.exe
-) else if exist "venv\Scripts\python.exe" (
+REM 优先使用 venv（实际依赖环境，301 包）；.venv 为过期空壳（无 fastapi），仅作最后兜底
+if exist "venv\Scripts\python.exe" (
     set PYTHON=venv\Scripts\python.exe
+) else if exist ".venv\Scripts\python.exe" (
+    echo 警告: 未找到 venv，使用 .venv（过期空壳，可能缺依赖）
+    set PYTHON=.venv\Scripts\python.exe
 ) else (
-    echo 错误: 未找到虚拟环境，请运行: uv venv && uv pip install -r requirements.txt
+    echo 错误: 未找到虚拟环境，请运行: python -m venv venv ^&^& venv\Scripts\pip install -r requirements.txt
     pause
     exit /b 1
 )

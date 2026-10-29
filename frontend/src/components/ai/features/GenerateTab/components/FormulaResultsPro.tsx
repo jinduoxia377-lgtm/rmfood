@@ -10,7 +10,7 @@ import {
   Filter, Lightbulb, Share2, TrendingUp, CheckCircle,
   ChevronDown, Download, RefreshCw, BookOpen, Sparkles, FlaskConical,
 } from 'lucide-react'
-import { Badge, Button } from '@/components/ui'
+import { Badge, Button, useToast } from '@/components/ui'
 import { NeuralResultCard } from '@/components/ai/NeuralResultCard'
 import { MultiCandidateCompare } from '@/components/ai/MultiCandidateCompare'
 import { ResultsViewSwitcher } from './ResultsViewSwitcher'
@@ -50,6 +50,8 @@ interface FormulaResultsProProps {
   onSaveAll?: () => void
   /** 单个候选保存成功回调（透传给 NeuralResultCard，触发保存成功反馈） */
   onSaveSuccess?: (formulaId: number, candidateId: string) => void
+  /** 已保存候选映射（候选 ID → 配方 ID），用于卡片「已保存」标记（跨 tab 保留） */
+  savedFormulas?: Map<string, { formulaId: number; savedAt: number }>
   className?: string
 }
 
@@ -74,9 +76,11 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
   onCompareVersions,
   onSaveAll,
   onSaveSuccess,
+  savedFormulas = new Map(),
   className = '',
 }) => {
   const { t } = useTranslation()
+  const { info: toastInfo } = useToast()
   const [showOptimizationAdvisor, setShowOptimizationAdvisor] = React.useState(false)
   const [showSharePanel, setShowSharePanel] = React.useState(false)
   const [showStats, setShowStats] = React.useState(true)
@@ -92,6 +96,53 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
     const passedSafety = generateResult.filter(c => c.safety_passed).length
     return { total, avgScore, maxScore, passedSafety }
   }, [generateResult])
+
+  // P1-4：从 generateResult[0].herb_combination 映射真实 ingredients 与评分，
+  // 删除空成分与硬编码 taste:80/stability:75 占位数据；缺失时由 UI 标注「暂无数据」。
+  const topCandidate = generateResult?.[0] ?? null
+  // P1：rag_evidence 为响应级字段（归一化层已透传到每个候选），取顶部候选即可
+  const ragEvidence = topCandidate?.rag_evidence
+
+  const mappedIngredients = useMemo(() => {
+    if (!topCandidate) return []
+    return (topCandidate.herb_combination ?? [])
+      .filter(h => h.name)
+      .map(h => ({
+        name: String(h.name),
+        dosage: typeof h.dosage === 'string' && h.dosage
+          ? h.dosage
+          : typeof h.dosage_g === 'number' && h.dosage_g > 0
+            ? `${h.dosage_g}g`
+            : typeof h.dosage_mg === 'number' && h.dosage_mg > 0
+              ? `${h.dosage_mg}g`
+              : typeof h.dosage === 'number' && h.dosage > 0
+                ? `${h.dosage}g`
+                : '',
+        role: h.role || '',
+      }))
+  }, [topCandidate])
+
+  const topScores = useMemo(() => {
+    if (!topCandidate) return null
+    return {
+      synergy: topCandidate.synergy_score ?? 0,
+      taste: topCandidate.taste_score ?? 0,
+      stability: topCandidate.stability_score ?? 0,
+      safety: topCandidate.safety_passed == null ? 0 : (topCandidate.safety_passed ? 1 : 0),
+      cost: topCandidate.cost_score ?? 0,
+      overall: topCandidate.overall_score ?? 0,
+    }
+  }, [topCandidate])
+
+  const scoreMissing = useMemo(() => {
+    if (!topCandidate) return false
+    return (
+      topCandidate.taste_score == null ||
+      topCandidate.stability_score == null ||
+      topCandidate.synergy_score == null ||
+      topCandidate.overall_score == null
+    )
+  }, [topCandidate])
 
   const getGeneratorLabel = (gen: GeneratorType | undefined): string => {
     switch (gen) {
@@ -136,6 +187,69 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
             <ChevronDown className="w-3 h-3" />{t('ai.formula.generateTab.collapse')}
           </button>
         </div>
+      )}
+
+      {/* P1：RAG 知识库证据摘要（后端 formula_generation_service 返回 rag_evidence） */}
+      {generateResult && generateResult.length > 0 && (
+        ragEvidence ? (
+          <div className="mb-4 p-4 rounded-xl border border-border bg-surface/60">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <BookOpen className="w-4 h-4 text-primary" />
+              <span className="text-title-sm font-semibold">
+                {t('ai.formula.generateTab.ragEvidenceTitle')}
+              </span>
+              {ragEvidence.enabled ? (
+                <Badge variant="success" className="text-caption">
+                  {t('ai.formula.generateTab.ragEvidenceEnabled')}
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-caption">
+                  {t('ai.formula.generateTab.ragEvidenceDisabled')}
+                </Badge>
+              )}
+              {ragEvidence.chunks.length > 0 && (
+                <span className="text-caption text-muted-foreground">
+                  {t('ai.formula.generateTab.ragEvidenceChunks', { count: ragEvidence.chunks.length })}
+                </span>
+              )}
+            </div>
+            {ragEvidence.query && (
+              <p className="text-caption text-muted-foreground mb-2">
+                {t('ai.formula.generateTab.ragEvidenceQuery', { query: ragEvidence.query })}
+              </p>
+            )}
+            {ragEvidence.whitelist.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                <span className="text-caption text-muted-foreground mr-1">
+                  {t('ai.formula.generateTab.ragEvidenceWhitelist')}
+                </span>
+                {ragEvidence.whitelist.map((name) => (
+                  <Badge key={`rag-wl-${name}`} variant="success" className="text-caption">{name}</Badge>
+                ))}
+              </div>
+            )}
+            {ragEvidence.blacklist.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                <span className="text-caption text-muted-foreground mr-1">
+                  {t('ai.formula.generateTab.ragEvidenceBlacklist')}
+                </span>
+                {ragEvidence.blacklist.map((name) => (
+                  <Badge key={`rag-bl-${name}`} variant="destructive" className="text-caption">{name}</Badge>
+                ))}
+              </div>
+            )}
+            {ragEvidence.summary && (
+              <p className="text-body-sm text-muted-foreground leading-relaxed">{ragEvidence.summary}</p>
+            )}
+          </div>
+        ) : (
+          <div className="mb-4 p-3 rounded-xl border border-dashed border-border bg-muted/20 flex items-center gap-2">
+            <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-caption text-muted-foreground">
+              {t('ai.formula.generateTab.ragEvidenceNone')}
+            </span>
+          </div>
+        )
       )}
 
       {/* Toolbar */}
@@ -191,7 +305,8 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
               <div className="py-1">
                 <button onClick={() => onExportFormula('json')} className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted">JSON</button>
                 <button onClick={() => onExportFormula('csv')} className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted">CSV</button>
-                <button className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted opacity-50 cursor-not-allowed">{t('ai.formula.generateTab.pdfComingSoon')}</button>
+                {/* P2-4/P3-3：PDF 导出逻辑已实现（useExportFormula），启用菜单项并移除「即将推出」 */}
+                <button onClick={() => onExportFormula('pdf')} className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted">导出 PDF</button>
               </div>
             </div>
           </div>
@@ -201,10 +316,19 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
       {/* Optimization panel */}
       {showOptimizationAdvisor && generateResult && generateResult.length > 0 && (
         <div className="mb-4">
+          {scoreMissing && (
+            <div role="status" className="mb-2 px-3 py-2 rounded-lg text-xs font-medium bg-warning/10 text-warning border border-warning/20">
+              ⚠ 部分评分数据暂不可用（暂无数据），以下优化建议基于现有数据生成。
+            </div>
+          )}
           <Suspense fallback={<div className="animate-pulse p-4 bg-muted rounded-xl h-32"></div>}>
             <OptimizationAdvisor
-              formula={{ formulaName: generateResult?.[0]?.formula_name || '当前配方', effects: effectLabels, ingredients: [], scores: { synergy: generateResult[0]?.synergy_score || 0, taste: 80, stability: 75, safety: 90, cost: 70, overall: generateResult[0]?.overall_score || 0 } }}
-              onApplySuggestion={() => {}}
+              formula={{ formulaName: generateResult?.[0]?.formula_name || '当前配方', effects: effectLabels, ingredients: mappedIngredients, scores: topScores || { synergy: 0, taste: 0, stability: 0, safety: 0, cost: 0, overall: 0 } }}
+              onApplySuggestion={(suggestion) => {
+                // P2：优化建议应用后给出明确反馈（当前建议为记录型，不伪造配方数据）
+                const value = suggestion.suggestedValue ? `（建议值：${suggestion.suggestedValue}）` : ''
+                toastInfo(`已记录优化建议：${suggestion.title}${value}`)
+              }}
             />
           </Suspense>
         </div>
@@ -213,9 +337,14 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
       {/* Share panel */}
       {showSharePanel && generateResult && generateResult.length > 0 && (
         <div className="mb-4">
+          {scoreMissing && (
+            <div role="status" className="mb-2 px-3 py-2 rounded-lg text-xs font-medium bg-warning/10 text-warning border border-warning/20">
+              ⚠ 部分评分数据暂不可用（暂无数据），分享卡片将基于现有数据生成。
+            </div>
+          )}
           <Suspense fallback={<div className="animate-pulse p-4 bg-muted rounded-xl h-32"></div>}>
             <FormulaSharePanel
-              formula={{ formulaName: generateResult?.[0]?.formula_name || '当前配方', effects: effectLabels, ingredients: [], scores: { synergy: generateResult[0]?.synergy_score || 0, taste: 80, stability: 75, overall: generateResult[0]?.overall_score || 0 } }}
+              formula={{ formulaName: generateResult?.[0]?.formula_name || '当前配方', effects: effectLabels, ingredients: mappedIngredients, scores: { synergy: topScores?.synergy || 0, taste: topScores?.taste || 0, stability: topScores?.stability || 0, overall: topScores?.overall || 0 } }}
               onClose={() => setShowSharePanel(false)}
               onShare={() => setShowSharePanel(false)}
             />
@@ -243,6 +372,7 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
               onSelect={() => onSelectCandidate(candidate)}
               isSelected={selectedCompareIndex === index}
               onSaveSuccess={onSaveSuccess}
+              savedFormulas={savedFormulas}
             />
           ))}
         </div>

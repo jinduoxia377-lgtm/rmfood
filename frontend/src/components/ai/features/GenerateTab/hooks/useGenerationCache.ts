@@ -128,9 +128,19 @@ export function useGenerationCache() {
 
 /**
  * 生成缓存键
+ *
+ * P2：除功效列表外，加入算法关键参数（population_size/generations/useLlm/
+ * max_candidates/strategy/taste_preference 等），与 GenerateTab 实际传参一致，
+ * 避免修改算法参数后仍命中旧缓存。options 键按字典序排列，保证键稳定。
  */
-export function generateCacheKey(effects: string[], options?: Record<string, any>): string {
+export function generateCacheKey(effects: string[], options?: Record<string, unknown>): string {
   const sortedEffects = [...effects].sort().join(',')
-  const optionsStr = options ? JSON.stringify(options) : ''
+  let optionsStr = ''
+  if (options) {
+    optionsStr = Object.keys(options)
+      .sort()
+      .map((k) => `${k}:${JSON.stringify(options[k])}`)
+      .join('|')
+  }
   return `generate_${sortedEffects}_${optionsStr}`
 }

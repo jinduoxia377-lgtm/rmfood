@@ -1,33 +1,29 @@
-import { useState, useRef, useCallback } from 'react'
-import { DEFAULTS, VALIDATION } from '@/config'
+import { useCallback } from 'react'
+import { DEFAULTS } from '@/config'
 import { HERB_ROLES } from '../config/generateTabConfig'
 import { logger } from '@/utils/safeLogger'
 import type { AICandidate } from '@/api/ai'
-
-interface FormulaVersionData {
-  id: string
-  versionNumber: number
-  formulaName: string
-  effects: string[]
-  ingredients: { name: string; dosage: string; role: string }[]
-  scores: { synergy: number; taste: number; stability: number; overall: number }
-  createdAt: number
-  remark: string
-}
+import { useGenerationStore, type FormulaVersionData } from '@/stores/generationStore'
 
 export function useFormulaVersions() {
-  const [formulaVersions, setFormulaVersions] = useState<FormulaVersionData[]>([])
-  const versionCounterRef = useRef(0)
+  // P3：版本历史提升到全局 Zustand store，切换 tab 后保留
+  const formulaVersions = useGenerationStore((s) => s.formulaVersions)
+  const addFormulaVersion = useGenerationStore((s) => s.addFormulaVersion)
+  const setFormulaVersions = useGenerationStore((s) => s.setFormulaVersions)
 
   const addVersion = useCallback((candidates: AICandidate[], effects: string[]) => {
     if (candidates.length === 0) return
 
     const topCandidate = candidates[0]
-    versionCounterRef.current += 1
+    // 从现有版本推导下一个版本号（避免切 tab 重挂载后 ref 重置导致版本号冲突）
+    const nextVersionNumber =
+      formulaVersions.length > 0
+        ? Math.max(...formulaVersions.map((v) => v.versionNumber)) + 1
+        : 1
 
     const newVersion: FormulaVersionData = {
       id: `version_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
-      versionNumber: versionCounterRef.current,
+      versionNumber: nextVersionNumber,
       formulaName: typeof topCandidate.formula_name === 'string'
         ? topCandidate.formula_name
         : DEFAULTS.PLACEHOLDER_TEXTS.UNKNOWN_FORMULA,
@@ -47,15 +43,13 @@ export function useFormulaVersions() {
       remark: `${DEFAULTS.PLACEHOLDER_TEXTS.VERSION_REMARK_PREFIX} [${effects.join(', ')}] ${DEFAULTS.PLACEHOLDER_TEXTS.VERSION_REMARK_SUFFIX}`,
     }
 
-    setFormulaVersions(prev =>
-      [newVersion, ...prev].slice(0, VALIDATION.maxFormulaVersions),
-    )
+    addFormulaVersion(newVersion)
 
     logger.info('添加新配方版本', {
       versionNumber: newVersion.versionNumber,
       formulaName: newVersion.formulaName,
     })
-  }, [])
+  }, [formulaVersions, addFormulaVersion])
 
   return {
     formulaVersions,

@@ -1,15 +1,16 @@
-import { useState, useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { aiApi } from '@/api/ai'
 import type { AICandidate } from '@/api/ai'
 import { useGenerationProgress } from '@/hooks/useGenerationProgress'
 import { useOperationFeedback } from '@/hooks/useOperationFeedback'
+import { useGenerationStore, type GenerationGeneratorType } from '@/stores/generationStore'
 import { DEFAULTS, ERROR_MESSAGES } from '@/config'
 import { logger } from '@/utils/safeLogger'
 import { AppError, ErrorFactory } from '@/utils/errorHandler'
 import { getUserMessage } from '@/constants/errorCodes'
 
-type GeneratorType = 'rule_engine' | 'ga' | 'llm' | 'neural_network'
+type GeneratorType = GenerationGeneratorType
 
 /** 后端返回的 generator 值 → 前端标准类型 的映射 */
 function normalizeGenerator(raw: string | undefined | null): GeneratorType {
@@ -52,7 +53,7 @@ interface UseFormulaGenerationOptions {
 interface GenerationResult {
   candidates: AICandidate[]
   total: number
-  generator: string
+  generator: GeneratorType
   algorithm_info?: {
     strategy: string
     generation: number
@@ -71,15 +72,20 @@ export function useFormulaGeneration({
   const {
     progress,
     startProgress,
-    updateProgress,
     completeProgress,
     errorProgress,
     resetProgress,
   } = useGenerationProgress()
 
-  const [generateResult, setGenerateResult] = useState<AICandidate[] | null>(null)
-  const [generator, setGenerator] = useState<GeneratorType>('rule_engine')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  // P3：生成结果/生成中状态提升到全局 Zustand store，切换 tab 后结果仍在
+  const generateResult = useGenerationStore((s) => s.generateResult)
+  const setGenerateResult = useGenerationStore((s) => s.setGenerateResult)
+  const generator = useGenerationStore((s) => s.generator)
+  const setGenerator = useGenerationStore((s) => s.setGenerator)
+  const errorMessage = useGenerationStore((s) => s.errorMessage)
+  const setErrorMessage = useGenerationStore((s) => s.setErrorMessage)
+  const storedIsGenerating = useGenerationStore((s) => s.isGenerating)
+  const setIsGenerating = useGenerationStore((s) => s.setIsGenerating)
   const abortControllerRef = useRef<AbortController | null>(null)
   const generateTimer = useRef<ReturnType<typeof logger.startTimer> | null>(null)
 
@@ -93,11 +99,11 @@ export function useFormulaGeneration({
       const startTime = performance.now()
       setErrorMessage(null)
 
+      // P1-1：启动后进入「不确定进度」（indeterminate）模式，等待真实 API 返回，
+      // 不再在响应到达后同步伪造 30/60/80/100 的阶段跳变。
       startProgress(DEFAULTS.PLACEHOLDER_TEXTS.GENERATION_PREPARING)
 
       try {
-        updateProgress('preparing', 10, DEFAULTS.PLACEHOLDER_TEXTS.GENERATION_PARSING, 5)
-
         const result = await aiApi.generate(
           effects,
           constraints,
@@ -105,12 +111,6 @@ export function useFormulaGeneration({
           abortControllerRef.current.signal,
           algorithmConfig,
         )
-
-        updateProgress('generating', 30, DEFAULTS.PLACEHOLDER_TEXTS.GENERATION_PROCESSING, 10)
-
-        updateProgress('optimizing', 60, DEFAULTS.PLACEHOLDER_TEXTS.GENERATION_OPTIMIZING, 8)
-
-        updateProgress('validating', 80, DEFAULTS.PLACEHOLDER_TEXTS.GENERATION_VALIDATING, 5)
 
         const endTime = performance.now()
         logger.info('配方生成API响应时间', {
@@ -195,11 +195,13 @@ export function useFormulaGeneration({
 
     onMutate: () => {
       generateTimer.current = logger.startTimer('配方生成总耗时')
+      setIsGenerating(true)
     },
 
     onSuccess: (data) => {
       generateTimer.current?.end()
       completeProgress()
+      setIsGenerating(false)
 
       if (!data?.candidates || !Array.isArray(data.candidates) || data.candidates.length === 0) {
         const appError = ErrorFactory.ai.responseEmpty()
@@ -210,7 +212,8 @@ export function useFormulaGeneration({
       }
 
       setGenerateResult(data.candidates)
-      setGenerator(normalizeGenerator(data.generator))
+      // mutationFn 已对 generator 归一化（如 'ga_optimizer' → 'ga'），这里直接使用，避免双重归一化
+      setGenerator(data.generator)
 
       feedback.showSuccess(
         DEFAULTS.PLACEHOLDER_TEXTS.GENERATION_SUCCESS_TITLE,
@@ -222,6 +225,7 @@ export function useFormulaGeneration({
 
     onError: (error: unknown) => {
       generateTimer.current?.end()
+      setIsGenerating(false)
 
       let errorMsg: string = ERROR_MESSAGES.FORMULA_GENERATION_FAILED
       let recoverySuggestion = ''
@@ -306,18 +310,25 @@ export function useFormulaGeneration({
     },
   })
 
+  // 将 react-query 的 isPending 同步到全局 store，保证切 tab 重挂载后生成中状态可恢复
+  useEffect(() => {
+    setIsGenerating(mutation.isPending)
+  }, [mutation.isPending, setIsGenerating])
+
   const handleCancelGeneration = useCallback(() => {
     abortControllerRef.current?.abort()
     mutation.reset()
     resetProgress()
-  }, [mutation, resetProgress])
+    setIsGenerating(false)
+  }, [mutation, resetProgress, setIsGenerating])
 
   const handleReset = useCallback(() => {
     setGenerateResult(null)
     setErrorMessage(null)
+    setIsGenerating(false)
     mutation.reset()
     resetProgress()
-  }, [mutation, resetProgress])
+  }, [mutation, resetProgress, setGenerateResult, setErrorMessage, setIsGenerating])
 
   return {
     generateResult,
@@ -330,6 +341,6 @@ export function useFormulaGeneration({
     progress,
     handleCancelGeneration,
     handleReset,
-    isGenerating: mutation.isPending,
+    isGenerating: storedIsGenerating || mutation.isPending,
   }
 }

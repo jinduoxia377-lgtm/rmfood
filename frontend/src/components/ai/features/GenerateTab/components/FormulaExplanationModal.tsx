@@ -163,12 +163,6 @@ export function FormulaExplanationModal({ candidate, isOpen, onClose }: FormulaE
           <Button variant="outline" onClick={onClose}>
             {t('ai.formula.generateTab.close')}
           </Button>
-          <Button variant="default" onClick={() => {
-            // 可以添加收藏或分享逻辑
-            onClose()
-          }}>
-            {t('ai.formula.ui.favoriteFormula')}
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

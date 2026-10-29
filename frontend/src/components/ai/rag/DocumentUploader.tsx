@@ -31,13 +31,13 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
     // 验证类型
     const ext = '.' + file.name.split('.').pop()?.toLowerCase()
     if (!ACCEPTED_TYPES.includes(ext)) {
-      setUploadResult({ type: 'error', message: `不支持的文件类型 "${ext}"，仅支持 ${ACCEPTED_TYPES_LABEL}` })
+      setUploadResult({ type: 'error', message: t('ai.knowledge.unsupportedType', { ext, types: ACCEPTED_TYPES_LABEL }) })
       return
     }
 
     // 验证大小
     if (file.size > maxSizeMB * 1024 * 1024) {
-      setUploadResult({ type: 'error', message: `文件大小超过 ${maxSizeMB}MB 限制` })
+      setUploadResult({ type: 'error', message: t('ai.knowledge.fileTooLarge', { maxSize: maxSizeMB }) })
       return
     }
 
@@ -47,10 +47,10 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
 
     try {
       const doc = await uploadDocument(file, (p) => setProgress(p))
-      setUploadResult({ type: 'success', message: `"${doc.filename}" 上传成功，共 ${doc.chunk_count} 个文档块` })
+      setUploadResult({ type: 'success', message: t('ai.knowledge.uploadSuccess', { filename: doc.filename, count: doc.chunk_count }) })
       onUploadSuccess?.(doc)
     } catch (err: any) {
-      const msg = err?.response?.data?.detail || err?.message || '上传失败'
+      const msg = err?.response?.data?.detail || err?.message || t('ai.knowledge.uploadFailed')
       setUploadResult({ type: 'error', message: msg })
     } finally {
       setIsUploading(false)
@@ -92,7 +92,7 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
           accept={ACCEPTED_TYPES}
           onChange={handleChange}
           className="hidden"
-          aria-label="选择文档文件"
+          aria-label={t('ai.knowledge.selectFileLabel')}
         />
 
         {isUploading ? (

@@ -47,6 +47,9 @@ vi.mock('jspdf', () => ({
 
 describe('AcademicReportV2', () => {
   const mockCandidate: AICandidate = {
+    id: 'cand-001',
+    name: '测试配方',
+    effects: [],
     formula_name: '测试配方',
     herb_combination: [],
     peptide_candidates: [],
@@ -112,6 +115,16 @@ describe('AcademicReportV2', () => {
       expect(enabledModules.length).toBeGreaterThan(0)
     })
 
+    it('should only enable modules contained in the template (P1-1)', () => {
+      const report = new AcademicReportV2(mockCandidate, mockEffects, 'journal')
+      const enabledModules = report.getEnabledModules()
+      // 期刊论文模板不包含 LITERATURE_REVIEW 与 APPENDIX
+      expect(enabledModules).not.toContain(ReportModuleType.LITERATURE_REVIEW)
+      expect(enabledModules).not.toContain(ReportModuleType.APPENDIX)
+      expect(enabledModules).toContain(ReportModuleType.ABSTRACT)
+      expect(enabledModules).toContain(ReportModuleType.REFERENCES)
+    })
+
     it('should update module configuration', () => {
       const report = new AcademicReportV2(mockCandidate, mockEffects)
       
@@ -140,6 +153,18 @@ describe('AcademicReportV2', () => {
       const config = report.getConfig()
       expect(config.metadata.reportType).toBe('thesis')
     })
+
+    it('should reset generation state when switching template (P1-4)', async () => {
+      const report = new AcademicReportV2(mockCandidate, mockEffects)
+      await report.generateReport()
+      expect(report.getState().status).toBe('success')
+
+      report.switchTemplate('thesis')
+      const state = report.getState()
+      expect(state.status).toBe('idle')
+      expect(state.progress).toBe(0)
+      expect(state.completedModules).toEqual([])
+    })
   })
 
   describe('Report Generation', () => {
@@ -156,6 +181,29 @@ describe('AcademicReportV2', () => {
       
       const state = report.getState()
       expect(state.status).toBe('success')
+    })
+  })
+
+  describe('getGeneratedModules (P0-2)', () => {
+    it('should return empty array before generation', () => {
+      const report = new AcademicReportV2(mockCandidate, mockEffects)
+      expect(report.getGeneratedModules()).toEqual([])
+    })
+
+    it('should return generated modules in enabled order after generation', async () => {
+      const report = new AcademicReportV2(mockCandidate, mockEffects, 'journal')
+      await report.generateReport()
+
+      const modules = report.getGeneratedModules()
+      expect(modules.length).toBeGreaterThan(0)
+      // 按启用顺序返回：首个应为 ABSTRACT
+      expect(modules[0]!.type).toBe(ReportModuleType.ABSTRACT)
+      // 不包含模板外模块
+      expect(modules.some(m => m.type === ReportModuleType.APPENDIX)).toBe(false)
+      // 数据为副本，修改返回数据不影响内部模块
+      modules[0]!.data.content = '被修改的内容'
+      const again = report.getGeneratedModules()
+      expect(again[0]!.data.content).not.toBe('被修改的内容')
     })
   })
 

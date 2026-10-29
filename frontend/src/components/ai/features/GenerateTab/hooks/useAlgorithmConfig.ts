@@ -127,9 +127,13 @@ export function useAlgorithmConfig() {
   }, [setConfig, setConstraints])
 
   // 构建 API 请求参数
+  // 后端 /ai/generate（generation_v2.FormulaGenerateRequest）只接受顶层
+  // target_effects / constraints / use_llm，算法参数与个人约束统一放入
+  // 单层 constraints 对象（不嵌套 constraints.constraints 双层结构），
+  // 确保后端 run_ga_generation 可消费 max_candidates / total_dosage_g 等键。
   const toApiParams = useMemo(() => {
     return {
-      // 算法参数
+      // 算法参数（单层 constraints 键）
       population_size: config.populationSize,
       generations: config.generations,
       mutation_rate: config.mutationRate,
@@ -137,16 +141,17 @@ export function useAlgorithmConfig() {
       elite_ratio: config.eliteRatio,
       tournament_size: config.tournamentSize,
       strategy: config.strategy,
-      
-      // 约束条件
-      constraints: {
-        age_group: constraints.ageGroup,
-        allergies: constraints.allergies,
-        contraindications: constraints.contraindications,
-        conditions: constraints.conditions,
-        cooking_method: constraints.cookingMethod,
-        taste_preference: config.tastePreference,
-      },
+      // 后端 /ai/generate 实际消费的约束键
+      max_candidates: 5,
+      total_dosage_g: 100.0,
+
+      // 个人约束（与算法参数合并为同一层，避免双层嵌套）
+      age_group: constraints.ageGroup,
+      allergies: constraints.allergies,
+      contraindications: constraints.contraindications,
+      conditions: constraints.conditions,
+      cooking_method: constraints.cookingMethod,
+      taste_preference: config.tastePreference,
     }
   }, [config, constraints])
 

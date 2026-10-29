@@ -41,7 +41,7 @@ export function TerminologyLookup() {
           onClick={() => setExpanded(v => !v)}
           className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] flex items-center gap-1"
         >
-          {expanded ? '收起' : '展开'} <ChevronDown className="w-3 h-3" />
+          {expanded ? t('ai.knowledge.collapseDetails') : t('ai.knowledge.expand')} <ChevronDown className="w-3 h-3" />
         </button>
       </div>
 

@@ -125,17 +125,23 @@ export const DEFAULTS = {
 } as const
 
 // 分类对应的功效列表
+//
+// ⚠️ 契约对齐（task-4）：后端 build_tcm_keywords 以「精确 label」作为
+// EFFECT_LABEL_TO_TCM_KEYWORD 的索引键（如「增强免疫」），且候选响应 effects
+// 原样回显前端传入的 label。因此这里必须使用前端 EFFECT_OPTIONS 的精确 label
+// （config/ai/effects.ts），否则分类筛选（candidate.effects 命中 targetEffects）
+// 会因「增强免疫力」≠「增强免疫」而筛出空列表。
 export const CATEGORY_EFFECTS: Record<FormulaCategory, readonly string[]> = {
-  IMMUNITY: ['增强免疫力', '免疫调节', '提高抵抗力'],
+  IMMUNITY: ['增强免疫', '免疫调节', '提高抵抗力'],
   ANTI_FATIGUE: ['抗疲劳', '缓解疲劳', '提升精力'],
   DIGESTION: ['健脾养胃', '促进消化', '调理脾胃'],
-  SLEEP: ['安神助眠', '改善睡眠', '安神定志'],
-  BEAUTY: ['美容养颜', '延缓衰老', '美容护肤'],
-  CARDIOVASCULAR: ['心血管健康', '调节血脂', '保护心血管'],
-  BONE_JOINT: ['骨骼关节', '强健筋骨', '关节保健'],
-  VISION: ['明目护眼', '保护视力', '缓解眼疲劳'],
-  RESPIRATORY: ['呼吸系统', '润肺止咳', '清咽利喉'],
-  METABOLISM: ['代谢调节', '控制体重', '调节代谢'],
+  SLEEP: ['改善睡眠', '安神定志', '缓解焦虑'],
+  BEAUTY: ['美容养颜', '护肤保湿', '抗氧化', '延缓衰老'],
+  CARDIOVASCULAR: ['降血压', '降血脂', '辅助降血脂', '保护血管', '促进循环'],
+  BONE_JOINT: ['强健筋骨', '补钙健骨'],
+  VISION: ['明目护眼', '缓解眼疲劳'],
+  RESPIRATORY: ['润肺止咳', '清咽利喉'],
+  METABOLISM: ['降血糖', '辅助降尿酸', '调节代谢', '控制体重'],
 } as const
 
 // 配方分类列表（用于UI展示）

@@ -23,33 +23,86 @@ export interface PatentSynergyScores {
   confidence: number;
 }
 
+/**
+ * 知识库 RAG 检索证据（配方生成响应级字段，后端 formula_generation_service 注入）。
+ * 归一化层（api/ai.ts normalizeGenerateResponse）会将其透传到每个候选，
+ * 供 FormulaResultsPro 渲染「知识库证据」摘要；缺失时 UI 显示「暂无知识库证据」占位。
+ */
+export interface RAGEvidence {
+  /** RAG 检索是否真正返回了知识块 */
+  enabled: boolean;
+  /** 实际检索查询 */
+  query: string;
+  /** 检索到的知识块（source/score/content） */
+  chunks: Array<{ source: string; score: number; content: string }>;
+  /** 命中正向知识条目的药材中文名 */
+  whitelist: string[];
+  /** 命中禁忌/毒性/用量限制的药材中文名 */
+  blacklist: string[];
+  /** 知识摘要 */
+  summary: string;
+  /** 检索异常信息（可选） */
+  error?: string | null;
+}
+
+/**
+ * 配方候选统一类型（权威定义，见 types/index.ts 的 re-export）。
+ *
+ * 合并自原 types/index.ts 的 AICandidate（模型管理域字段：provider/model/maxTokens/...）
+ * 与原 types/ai.api.ts 的 AICandidate（配方生成域字段），保留双方字段并集。
+ * 配方生成主域字段（id/name/effects）保持必填，模型管理域字段全部可选。
+ */
 export interface AICandidate {
   id: string;
   name: string;
-  ingredients: {
+  /**
+   * 成分列表。
+   * 注意：后端 /ai/generate 主端点实际返回 `herb_combination`（[{name,name_cn,dosage,dosage_g,role}]），
+   * 归一化层（api/ai.ts normalizeGenerateCandidate）会将其映射到此字段；
+   * 直接消费原始响应时该字段可能缺失，请用 `herb_combination ?? []` 兜底。
+   */
+  ingredients?: {
     name: string;
     dosage: string;
     unit: string;
     amount_mg?: number;
     dosage_g?: number;
   }[];
-  score: number;
+  /**
+   * 综合评分。
+   * 后端主端点返回 `overall_score`，归一化层会补 `score = overall_score`；
+   * 直接消费原始响应时该字段可能缺失，请用 `overall_score ?? synergy_score ?? 0` 兜底。
+   */
+  score?: number;
   effects: string[];
   formula_name?: string;
   herb_combination?: Array<{
     name?: string;
+    /** 后端 genetic 系列字段改名后的中文名（task-1 后端同步），归一化层优先读取 */
+    name_cn?: string;
+    id?: string;
+    /** 显示剂量字符串（如 "12g"）；数值剂量请用 dosage_g / dosage_mg */
     dosage?: string;
     dosage_g?: number;
+    /** 历史字段名：GA 系列数值即克（不再 /1000），归一化层按克处理 */
+    dosage_mg?: number;
     role?: string;
   }>;
   synergy_score?: number;
   patent_synergy_scores?: PatentSynergyScores;
   peptide_candidates?: { name: string; sequence: string }[];
   safety_passed?: boolean;
+  /** 归一化层（api/ai.ts normalizeGenerateCandidate）补充的安全性得分（0-1） */
+  safety_score?: number;
+  /** 成本/功效得分（后端 /ai/generate 主端点返回，归一化层透传保留） */
+  cost_score?: number;
+  efficacy_score?: number;
   safety_details?: { warnings: string[]; contraindications: string[]; summary: string };
   taste_score?: number;
   stability_score?: number;
   overall_score?: number;
+  /** 部分评估服务失败时为 true（降级标志，UI 应明示「部分评估暂不可用」，禁止伪造默认分） */
+  degraded?: boolean;
   generated_by?: string;
   generated_at?: string;
   description?: string;
@@ -69,6 +122,28 @@ export interface AICandidate {
     usage_instructions: string;
     monitoring_suggestions: string;
   };
+  /**
+   * 知识库 RAG 检索证据（响应级，归一化层 normalizeGenerateResponse 透传到每个候选）。
+   * 缺失时 UI 显示「暂无知识库证据」占位，不报错。
+   */
+  rag_evidence?: RAGEvidence;
+
+  // ── 模型管理域字段（合并自原 types/index.ts AICandidate；配方生成域通常不使用）──
+  provider?: string;
+  model?: string;
+  version?: string;
+  capabilities?: string[];
+  maxTokens?: number;
+  costPerToken?: number;
+  latencyMs?: number;
+  accuracyScore?: number;
+  safetyRating?: 'safe' | 'moderate' | 'risky' | 'unknown';
+  isAvailable?: boolean;
+  documentationUrl?: string;
+  config?: Record<string, unknown>;
+  target_population?: string;
+  contraindications?: string;
+  candidateId?: string;
 }
 
 export interface GenerationRecord {
@@ -79,20 +154,45 @@ export interface GenerationRecord {
   diversity: number;
 }
 
-export interface GeneticGenerateResponse {
-  candidates: Array<{
-    ingredients: Array<{ id: string; name_cn: string; dosage: number }>;
-    efficacy_score: number;
-    safety_score: number;
-    taste_score: number;
-    cost_score: number;
-    overall_score: number;
-    confidence: number;
-    explanation: string | null;
-    milp_result?: MILPResult;
-    nutrition_score?: number;
-    nutrition_matrix?: Record<string, number>;
+/**
+ * 遗传算法候选方案（前端统一使用归一化后的字段）。
+ * 后端 genetic.py 实际返回 candidates[].herb_combination[{name,dosage_mg}] +
+ * fitness/efficacy/safety/taste/cost，由 api/ai.ts 归一化为 ingredients/
+ * efficacy_score/.../overall_score/confidence/explanation；原始字段保留便于调试/导出。
+ */
+export interface GeneticCandidate {
+  ingredients: Array<{ id: string; name_cn: string; dosage: number }>;
+  efficacy_score: number;
+  safety_score: number;
+  taste_score: number;
+  cost_score: number;
+  overall_score: number;
+  confidence: number;
+  explanation: string | null;
+  milp_result?: MILPResult;
+  nutrition_score?: number;
+  nutrition_matrix?: Record<string, number>;
+  // ── 后端原始字段（兼容实际响应，归一化时保留）──
+  rank?: number;
+  herb_combination?: Array<{
+    name?: string;
+    /** 后端 genetic 系列字段改名后的中文名 */
+    name_cn?: string;
+    id?: string;
+    dosage_mg?: number;
+    dosage?: string | number;
+    dosage_g?: number;
+    role?: string;
   }>;
+  fitness?: number;
+  efficacy?: number;
+  safety?: number;
+  taste?: number;
+  cost?: number;
+}
+
+export interface GeneticGenerateResponse {
+  candidates: GeneticCandidate[];
   history: GenerationRecord[];
   algorithm: string;
   total_generations: number;
@@ -101,6 +201,10 @@ export interface GeneticGenerateResponse {
   execution_time_ms?: number;
   convergence_generation?: number;
   hybrid_mode?: boolean;
+  // ── 后端原始顶层字段 ──
+  run_id?: string;
+  total_candidates?: number;
+  stop_reason?: string;
 }
 
 // ===== 多目标优化 =====
@@ -126,6 +230,21 @@ export interface MOCandidate {
   pareto_rank: number;
   crowding_distance: number;
   explanation: string | null;
+  // ── 后端原始字段（兼容实际响应，归一化时保留）──
+  rank?: number;
+  herb_combination?: Array<{
+    name?: string;
+    /** 后端 genetic 系列字段改名后的中文名 */
+    name_cn?: string;
+    id?: string;
+    dosage_mg?: number;
+    dosage?: string | number;
+    dosage_g?: number;
+    role?: string;
+  }>;
+  scores?: Record<string, number>;
+  fitness?: number;
+  is_pareto_optimal?: boolean;
 }
 
 export interface MOBestByObjective {
@@ -142,18 +261,22 @@ export interface MultiObjectiveResponse {
     nutrition_matrix?: Record<string, number>;
     compliance_status?: 'compliant' | 'warning' | 'violation';
   }>;
-  pareto_front: MOParetoPoint[];
-  best_by_objective: MOBestByObjective[];
-  history: GenerationRecord[];
-  algorithm: string;
-  mode: string;
-  objectives_config: Array<{ name: string; key: string; direction: string; weight: number }>;
+  pareto_front?: MOParetoPoint[];
+  best_by_objective?: MOBestByObjective[];
+  history?: GenerationRecord[];
+  algorithm?: string;
+  mode?: string;
+  objectives_config?: Array<{ name: string; key: string; direction: string; weight: number }>;
   nutrition_objectives?: NutritionObjectiveConfig[];
   total_generations: number;
-  total_evaluations: number;
-  execution_time_ms: number;
-  convergence_generation: number;
-  stop_reason: string;
+  total_evaluations?: number;
+  execution_time_ms?: number;
+  convergence_generation?: number;
+  stop_reason?: string;
+  // ── 后端原始顶层字段 ──
+  run_id?: string;
+  total_candidates?: number;
+  best_score?: number;
 }
 
 export interface MOPresetInfo {
@@ -579,29 +702,20 @@ export interface GeneticHybridRequest {
   min_ingredients?: number;        // 最小药材数
 }
 
-/** 扩展的遗传算法响应（包含MILP结果） */
+/**
+ * 扩展的遗传算法响应（包含MILP结果）
+ *
+ * 后端 hybrid 实际返回 ga_candidates / mo_candidates / combined_results 汇总结构，
+ * 前端由 api/ai.ts 归一化填充 candidates；原 MILP 字段（dosage_lp/milp_result/
+ * nutrition_*）后端暂未返回，全部改为可选。
+ */
 export interface GeneticHybridResponse {
-  candidates: Array<{
-    ingredients: Array<{
-      id: string;
-      name_cn: string;
-      dosage: number;
-      dosage_lp: number;       // MILP精确配比
-      dosage_raw: number;      // GA原始剂量
-      difference: number;      // 差异量
-    }>;
-    overall_score: number;
-    efficacy_score: number;
-    safety_score: number;
-    taste_score: number;
-    cost_score: number;
-    confidence: number;
-    explanation?: string;
-    milp_result?: MILPResult;  // MILP精确求解结果
-    nutrition_score?: number;  // 营养评分
-    nutrition_matrix?: Record<string, number>;
+  candidates: Array<GeneticCandidate & {
+    dosage_lp?: number;       // MILP精确配比（后端暂未返回）
+    dosage_raw?: number;      // GA原始剂量
+    difference?: number;      // 差异量
   }>;
-  history: Array<{
+  history?: Array<{
     generation: number;
     best_fitness: number;
     avg_fitness: number;
@@ -611,14 +725,36 @@ export interface GeneticHybridResponse {
     milp_solve_time_ms?: number;
   }>;
   total_generations: number;
-  total_evaluations: number;
+  total_evaluations?: number;
   best_score: number;
-  execution_time_ms: number;
-  convergence_generation: number;
+  execution_time_ms?: number;
+  convergence_generation?: number;
   algorithm: string;
-  hybrid_mode: boolean;
-  nutrition_constraints_met: boolean;
+  hybrid_mode?: boolean;
+  nutrition_constraints_met?: boolean;
   constraint_violations?: Record<string, number>;
+  // ── 后端 hybrid 实际响应字段 ──
+  ga_candidates?: number;
+  ga_history_length?: number;
+  mo_candidates?: number;
+  mo_history_length?: number;
+  combined_results?: Array<{
+    type?: string;
+    rank?: number;
+    fitness?: number;
+    herbs?: string[];
+    scores?: Record<string, number>;
+    herb_combination?: Array<{
+      name?: string;
+      /** 后端 genetic 系列字段改名后的中文名 */
+      name_cn?: string;
+      id?: string;
+      dosage_mg?: number;
+      dosage?: string | number;
+      dosage_g?: number;
+      role?: string;
+    }>;
+  }>;
 }
 
 /** 营养偏差目标配置（用于多目标优化） */

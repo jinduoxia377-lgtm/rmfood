@@ -52,8 +52,8 @@ export function ExportDialog({ report }: ExportDialogProps) {
           includeReferences: true,
         });
 
-        if (result.success && result.data) {
-          AcademicExportService.downloadBlob(result.data, result.filename);
+        if (result.success) {
+          // PDF 采用浏览器打印方案（用户选择「另存为 PDF」），无需下载 Blob
           setShowSuccess(true);
         }
       } else {
@@ -120,7 +120,7 @@ export function ExportDialog({ report }: ExportDialogProps) {
                     </svg>
                   </div>
                   <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">导出成功！</h3>
-                  <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4">文件已开始下载</p>
+                  <p className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-4">文件已开始下载，或打印窗口已打开</p>
                   <button onClick={handleReset} className="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
                     继续导出
                   </button>

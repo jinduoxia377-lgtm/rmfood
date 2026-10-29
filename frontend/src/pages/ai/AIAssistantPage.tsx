@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AI智能助手中心 v3.0 - 专业级 UI/UX 优化版
  *
  * 基于 UI/UX Pro Max 专业规范的全面优化
@@ -24,16 +24,20 @@ import { Link, useNavigate } from 'react-router-dom';
 // 保留 ErrorBoundary 作为全局容错边界。
 
 import { useQuery } from '@tanstack/react-query';
-import { ModelClient } from '@/api/modelClient';
+import { ModelClient, type ModelStatus } from '@/api/modelClient';
 import { Badge, Tabs, TabsList, TabsTrigger, TabsContent, StatCard, Input } from '@/components/ui';
 import { Skeleton as SkeletonComp } from '@/components/ui/Skeleton';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 // 全局 Toast 已由 App.tsx 提供，页面内不再重复渲染 ToastContainer（避免 toast 双重叠加）
 // ModelConfigPanel 改用下方懒加载版本（ModelConfigPanelLazy），此前的即时导入从未被引用。
-import { ConfigManagementPanel } from '@/components/ai/ConfigManagementPanel';
+// ⚡ P3 性能优化：ConfigManagementPanel 属「管理」分组下的非首屏 Tab —— 改为懒加载，缩小 AI 页首屏 bundle
+const ConfigManagementPanel = lazy(() => import('@/components/ai/ConfigManagementPanel').then(m => ({ default: m.ConfigManagementPanel })));
 // ModelSelector 在本页从未使用，已移除（模型选择由各 Tab 内部自行持有）。
 import { ChatTab } from '@/components/ai/features';
 import { ChatStateProvider } from '@/components/ai/features/ChatStateProvider';
+// P0-6: RAG 知识库共享 Context —— 单一 Provider 挂载于页面顶层，ChatStateProvider 与
+// knowledge tab 的 KnowledgeBasePanel 共用同一实例，消除「面板注入后 TopBar 不同步」。
+import { RAGContextProvider } from '@/hooks/useRAGContext';
 import {
   Search,
   Settings,
@@ -62,7 +66,8 @@ import { useFeedbackSystem, useAccessibility, useResponsive } from '@/utils/uiux
 import { useAISummaryStats } from '@/hooks/useAISummaryStats';
 import { useKeyboardSearch } from '@/hooks/useKeyboardSearch';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
-import { SearchModal } from '@/components/ai/SearchModal';
+// ⚡ P3 性能优化：SearchModal（Ctrl+K 全局搜索）仅在打开时渲染 —— 改为懒加载
+const SearchModal = lazy(() => import('@/components/ai/SearchModal').then(m => ({ default: m.SearchModal })));
 import { Menu, X } from 'lucide-react';
 import { PlanGate } from '@/utils/plan';
 
@@ -229,8 +234,24 @@ export default function AIAssistantPage() {
     }
   }, [isModelStatusError, modelStatusError, showError, t]);
 
+  // P2-5：modelStatus 实际为 Record<string, ModelStatus>（按模型名/类别为键）。
+  // 归一化结构，确保 llmAvailable 判断可靠（优先取 llm 键，缺失时取首个 active 模型）。
+  const normalizedModelStatus = useMemo(() => {
+    const statusMap = (modelStatus ?? {}) as Record<string, ModelStatus>
+    const llmEntry = statusMap.llm ?? Object.values(statusMap).find(m => m.status === 'active') ?? Object.values(statusMap)[0]
+    const neuralEntry = statusMap.neural
+    return {
+      llm: llmEntry
+        ? { provider: llmEntry.provider || 'local', model: llmEntry.model || '', available: llmEntry.status === 'active' }
+        : undefined,
+      neural: neuralEntry
+        ? { available: neuralEntry.status === 'active', version: neuralEntry.version || '' }
+        : undefined,
+    }
+  }, [modelStatus])
+
   // 安全访问 modelStatus.llm 属性，添加类型守卫
-  const llmAvailable = modelStatus?.llm ? modelStatus.llm.status === 'active' : false;
+  const llmAvailable = normalizedModelStatus.llm?.available ?? false;
 
   // ===== 真实统计数据 (useAISummaryStats hook) =====
   const {
@@ -839,6 +860,9 @@ export default function AIAssistantPage() {
                 })}
               </div>
             {/* Tab Panels — 条件渲染，避免 Radix Tabs 状态冲突 */}
+            {/* P0-6: RAGContextProvider 包裹全部 Tab Panels（含 chat 的 ChatStateProvider
+               与 knowledge 的 KnowledgeBasePanel），确保两处共享同一 RAG Context 实例。 */}
+            <RAGContextProvider>
             <div className="mt-[var(--space-apple-md)]">
               {tab === 'chat' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
@@ -846,7 +870,9 @@ export default function AIAssistantPage() {
                   <div role="tabpanel" id="panel-chat" aria-label={t('ai.page.panelChat')}>
                     <ErrorBoundary moduleName={t('ai.page.tabs.chat')}>
                       <ChatStateProvider>
-                        <ChatTab />
+                        {/* P1-4 合并：chat tab 的「知识库」按钮跳转到 knowledge tab 的单一知识库页面，
+                            不再打开重复的管理模态框（RAGKnowledgePanel 已并入 KnowledgeBasePanel）。 */}
+                        <ChatTab onOpenKnowledgeTab={() => handleTabChange('knowledge')} />
                       </ChatStateProvider>
                     </ErrorBoundary>
                   </div>
@@ -858,7 +884,7 @@ export default function AIAssistantPage() {
                   <div role="tabpanel" id="panel-generate" aria-label={t('ai.page.panelGenerate')}>
                     <ErrorBoundary moduleName={t('ai.page.tabs.generate')}>
                     <PlanGate feature="ai_formula_generation">
-                      <GenerateTab llmAvailable={llmAvailable} modelStatus={modelStatus || {}} />
+                      <GenerateTab llmAvailable={llmAvailable} modelStatus={normalizedModelStatus} />
                     </PlanGate>
                   </ErrorBoundary>
 
@@ -1006,11 +1032,14 @@ export default function AIAssistantPage() {
                 </Suspense>
               )}
             </div>
+            </RAGContextProvider>
           </nav>
         </main>
 
-        {/* 全局搜索模态框 */}
-        <SearchModal isOpen={searchOpen} onClose={closeSearch} />
+        {/* 全局搜索模态框（懒加载：仅 Ctrl+K 打开时才下载） */}
+        <Suspense fallback={null}>
+          <SearchModal isOpen={searchOpen} onClose={closeSearch} />
+        </Suspense>
       </div>
     </ErrorBoundary>
   );

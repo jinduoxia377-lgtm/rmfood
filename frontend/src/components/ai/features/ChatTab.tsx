@@ -27,28 +27,34 @@ import ComposerStatusBar from './components/pro/ComposerStatusBar'
 import DetailsPanel from './components/pro/DetailsPanel'
 import FollowUpSuggestionsBar from './components/pro/FollowUpSuggestionsBar'
 import type { DraftAttachment } from './components/pro/ChatInput'
+import { RAGSourcesBanner } from '@/components/ai/rag/RAGSourcesBanner'
 
 // ===== 视觉设计系统 =====
 import { scenarioSwitcher } from './services/scenarioSwitcher'
+import { useScenarioStore } from '@/stores/scenarioStore'
+import { useModelStore } from '@/stores/modelStore'
 import { sessionCapability } from './capabilities/session/SessionCapability'
 
 // ===== UI 组件 =====
 import { Button } from '@/components/ui'
 
-// ===== 专业内容组件 =====
-import { ProfessionalReport as ProfessionalReportModal, type ProfessionalReportProps as ProfessionalReportModalProps } from '@/components/ai/components/ProfessionalReport'
+// ===== 专业内容组件（⚡ P3 性能优化：仅打开模态框时才下载，含 recharts 依赖） =====
+import type { ProfessionalReportProps as ProfessionalReportModalProps } from '@/components/ai/components/ProfessionalReport'
+const ProfessionalReportModal = React.lazy(() => import('@/components/ai/components/ProfessionalReport').then(m => ({ default: m.ProfessionalReport })))
 
-// ===== 新功能组件 =====
-import { UserProfileSettingsPanel } from './components/UserProfileSettingsPanel'
-import { FormulaShareModal } from './components/FormulaShareModal'
-import { ChatSearchOverlay } from './components/ChatSearchOverlay'
+// ===== 新功能组件（⚡ P3 性能优化：均为条件渲染的模态框，改为懒加载缩小 ChatTab 首屏 bundle） =====
+const UserProfileSettingsPanel = React.lazy(() => import('./components/UserProfileSettingsPanel').then(m => ({ default: m.UserProfileSettingsPanel })))
+const FormulaShareModal = React.lazy(() => import('./components/FormulaShareModal').then(m => ({ default: m.FormulaShareModal })))
+const FormulaPanel = React.lazy(() => import('./components/FormulaPanel').then(m => ({ default: m.FormulaPanel })))
+const ChatSearchOverlay = React.lazy(() => import('./components/ChatSearchOverlay').then(m => ({ default: m.ChatSearchOverlay })))
 import { detectStructuredContent } from './components/structured/utils'
 import * as formulaExtractorService from './services/formulaExtractorService'
 import { createFormula } from '@/api/formula'
 import { validateAiFormula, repairStructuredFormula, type AiFormulaValidationResponse } from '@/api/ai'
+import { parseDosageToGramsOrZero } from './utils/dosage'
 import { FormulaStatus } from '@/types'
 import type { FormulaCreatePayload } from '@/types/formula'
-import { FeedbackModal } from './components/FeedbackModal'
+const FeedbackModal = React.lazy(() => import('./components/FeedbackModal').then(m => ({ default: m.FeedbackModal })))
 
 // ===== 图标库 =====
 import { AlertTriangle, Pause, Leaf, Wand2 } from 'lucide-react'
@@ -57,7 +63,6 @@ import { AlertTriangle, Pause, Leaf, Wand2 } from 'lucide-react'
 import { QUICK_QUESTIONS } from '@/config/ai'
 
 // ===== RAG / UI =====
-import { RAGKnowledgePanel } from './components/RAGKnowledgePanel'
 import { FormulaValidationModal } from './components/FormulaValidationModal'
 
 interface ChatTabProps {
@@ -67,6 +72,11 @@ interface ChatTabProps {
   onSelectAll?: () => void
   onToggleSelect?: (id: string, sel?: boolean) => void
   onImport?: (data: unknown[]) => void
+  /**
+   * P1-4 合并：点击 TopBar「知识库」按钮时跳转到 knowledge tab 的单一知识库页面，
+   * 不再打开与 KnowledgeBasePanel 重复的管理模态框。
+   */
+  onOpenKnowledgeTab?: () => void
 }
 
 /**
@@ -92,7 +102,7 @@ export function buildValidationErrorSummary(validation: AiFormulaValidationRespo
   return summary ? `校验未通过：${summary}` : '配方存在安全性问题，已阻止保存'
 }
 
-export function ChatTab(_props: ChatTabProps) {
+export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
   const { t } = useTranslation()
   // ===== 从 Context 获取所有状态 =====
   const ctx = useChatContext()
@@ -105,17 +115,23 @@ export function ChatTab(_props: ChatTabProps) {
     historySessions, activeSessionId, historyVisible,
     // UI
     highlightedMessageId,
-    attachments, detailsCall, detailsOpen, showKBPanel,
+    attachments, detailsCall, detailsOpen,
     // 引擎
     llmAvailable, llmModel, scenarioMode,
     assistantCount, elapsedSeconds,
     // RAG
     ragEnabled, ragIsSeeded, ragIsSeeding,
     onToggleRAG, onTriggerSeed,
+    ragChunks, ragLastSources, ragClearChunks,
     // 配方
-    formulaCount,
+    formulaCount, formulas, expandedIds, selectedIds,
+    formulaActions, onClearStorage,
+    // UI（配方列表面板）
+    showFormulaList, setShowFormulaList, searchQuery,
     // 报告
     showReportModal, setShowReportModal, reportData, isGeneratingReport,
+    // 思考过程
+    thinkingSteps,
     // 方法
     handleNewSession, handleSelectSession, handleDeleteSession,
     handleRenameSession, handleClearChat, handleRetry, handleSend, handleForkMessage,
@@ -126,7 +142,6 @@ export function ChatTab(_props: ChatTabProps) {
   // ===== 本地 UI 状态 =====
   const [detailsCallLocal, setDetailsCall] = React.useState<typeof detailsCall>(null)
   const [detailsOpenLocal, setDetailsOpen] = React.useState(false)
-  const [showKBPanelLocal, setShowKBPanelLocal] = React.useState(false)
 
   // ===== 新功能：设置/分享/搜索 =====
   const [showUserProfileSettings, setShowUserProfileSettings] = React.useState(false)
@@ -172,10 +187,6 @@ export function ChatTab(_props: ChatTabProps) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 镜像 Context 状态到本地，保持现有同步逻辑不变
     if (detailsOpen !== detailsOpenLocal) setDetailsOpen(detailsOpen)
   }, [detailsOpen])
-  React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 镜像 Context 状态到本地，保持现有同步逻辑不变
-    if (showKBPanel !== showKBPanelLocal) setShowKBPanelLocal(showKBPanel)
-  }, [showKBPanel])
 
   // ── 从结构化内容提取配方并真正保存到后端 /formulas ──
   // 保存前调用 AI 配方校验（/ai/formula/validate）：
@@ -197,19 +208,16 @@ export function ChatTab(_props: ChatTabProps) {
       return
     }
 
-    // 剂量字符串 -> 数值（"10g" / "10-15g" / "约15克"）。区间取上限。
-    const parseDosage = (raw: string): number => {
-      const range = /(\d+(?:\.\d+)?)\s*[-–~至]\s*(\d+(?:\.\d+)?)/.exec(raw)
-      const val = range ? Number(range[2]) : Number((/^[\s约]*([\d.]+)/.exec(raw) || [0, '0'])[1])
-      return Number.isFinite(val) ? val : 0
-    }
+    // 剂量字符串 -> 克数（"10g" / "500mg" / "10-15g" / "约15克"）。区间取上限，
+    // 单位统一归一化为克（g），非法单位返回 0（不阻断保存）。
+    const parseDosage = (raw: string): number => parseDosageToGramsOrZero(raw)
     const totalAmount = extracted.ingredients.reduce((s, i) => s + parseDosage(i.dosage), 0)
     const ingredients = extracted.ingredients.map((i) => {
       const amount = parseDosage(i.dosage)
       return {
         name: i.name,
         amount,
-        unit: /斤/.test(i.dosage) ? 'kg' : 'g',
+        unit: 'g', // 剂量已统一换算为克
         percentage: totalAmount > 0 ? Number(((amount / totalAmount) * 100).toFixed(2)) : 0,
         role: i.role,
       }
@@ -424,13 +432,12 @@ export function ChatTab(_props: ChatTabProps) {
           llmAvailable={llmAvailable}
           llmModel={llmModel}
           onModelChange={(model) => {
-            // 后端没有"按对话切换模型"的端点，聊天始终走 /models/status 的默认模型。
-            // 此前这里只打日志，用户以为切换生效了。
-            logger.debug('[ChatTab] Model changed:', model)
-            showNotice('warning', t('ai.chat.notice.modelSwitchUnavailable'))
+            // 模型切换：更新 store 并持久化，后续对话自动使用新模型
+            useModelStore.getState().setSelectedModel(model)
+            logger.debug('[ChatTab] Model switched to:', model)
           }}
           scenarioMode={scenarioMode}
-          onScenarioSwitch={(mode) => scenarioSwitcher.switchTo(mode, 'user_selected')}
+          onScenarioSwitch={(mode) => useScenarioStore.getState().setMode(mode)}
           historyVisible={historyVisible}
           historySessions={historySessions}
           onToggleHistory={toggleHistory}
@@ -440,10 +447,10 @@ export function ChatTab(_props: ChatTabProps) {
           onToggleRAG={handleToggleRAG}
           onTriggerSeed={handleTriggerSeed}
           formulaCount={formulaCount}
-          onShowFormulaList={() => setShowKBPanelLocal(true)}
+          onShowFormulaList={() => setShowFormulaList(true)}
           messageCount={messages.length}
           onClearChat={handleClearChat}
-          onOpenKBPanel={() => setShowKBPanelLocal(true)}
+          onOpenKBPanel={() => onOpenKnowledgeTab?.()}
           onOpenUserProfile={() => setShowUserProfileSettings(true)}
           onToggleSearch={() => setSearchOpen(v => !v)}
           searchOpen={searchOpen}
@@ -519,10 +526,18 @@ export function ChatTab(_props: ChatTabProps) {
               onRetractMessage={retractMessage}
               onForkMessage={handleForkMessage}
               onDetailsMessage={(call) => { setDetailsCall(call); setDetailsOpen(true) }}
-              thinkingSteps={[]}
+              thinkingSteps={thinkingSteps}
               onStructureSave={handleStructureSave}
               onStructureShare={handleStructureShare}
               onStructureRepair={handleStructureRepair}
+            />
+
+            {/* RAG 知识库检索来源横幅 */}
+            <RAGSourcesBanner
+              isEnabled={ragEnabled}
+              chunks={ragChunks}
+              sources={ragLastSources}
+              onDismiss={ragClearChunks}
             />
 
             {/* 追问建议栏 */}
@@ -588,13 +603,17 @@ export function ChatTab(_props: ChatTabProps) {
               setInput('/' + cmd + ' ')
               handleSend()
             }}
+            onModelChange={(model) => {
+              useModelStore.getState().setSelectedModel(model)
+              logger.debug('[ChatTab] Model switched to:', model)
+            }}
           />
           <ComposerStatusBar
             messageCount={messages.length}
             assistantCount={assistantCount}
             elapsedSeconds={elapsedSeconds}
             modelName={llmModel || undefined}
-            ragStatus={null}
+            ragStatus={ragEnabled ? (ragIsSeeded ? t('ai.chat.composer.ragReady') : null) : null}
           />
         </div>
 
@@ -609,61 +628,90 @@ export function ChatTab(_props: ChatTabProps) {
           </div>
         )}
 
-        {/* RAG 知识库管理面板 */}
-        {showKBPanelLocal && (
-          <RAGKnowledgePanel
-            onClose={() => setShowKBPanelLocal(false)}
-            onSeedComplete={() => setShowKBPanelLocal(false)}
-          />
-        )}
-
-        {/* 健康画像设置面板 */}
+        {/* 健康画像设置面板（懒加载） */}
         {showUserProfileSettings && (
-          <UserProfileSettingsPanel
-            onClose={() => setShowUserProfileSettings(false)}
-          />
+          <React.Suspense fallback={null}>
+            <UserProfileSettingsPanel
+              onClose={() => setShowUserProfileSettings(false)}
+            />
+          </React.Suspense>
         )}
 
-        {/* 配方分享模态框 */}
+        {/* 配方分享模态框（懒加载） */}
         {shareModalContent && (
-          <FormulaShareModal
-            content={detectStructuredContent(shareModalContent.content) ?? { blocks: [], responseType: 'general' as any}}
-            onClose={() => setShareModalContent(null)}
-          />
+          <React.Suspense fallback={null}>
+            <FormulaShareModal
+              content={detectStructuredContent(shareModalContent.content) ?? { blocks: [], responseType: 'general' as any}}
+              onClose={() => setShareModalContent(null)}
+            />
+          </React.Suspense>
         )}
 
-        {/* 聊天消息搜索浮层 */}
+        {/* 配方列表面板（懒加载）— 点击 TopBar「配方面板」打开 */}
+        {showFormulaList && (
+          <React.Suspense fallback={null}>
+            <FormulaPanel
+              formulas={formulas}
+              formulaCount={formulaCount}
+              expandedIds={expandedIds}
+              selectedIds={selectedIds}
+              searchQuery={searchQuery}
+              onToggleExpand={formulaActions.handleToggleExpand}
+              onToggleSelect={formulaActions.handleToggleSelect}
+              onShowDetail={formulaActions.handleShowDetail}
+              onGenerateReport={formulaActions.handleGenerateReportFromFormula}
+              onExport={formulaActions.handleExportData}
+              onImport={formulaActions.handleImportData}
+              onClearStorage={onClearStorage}
+              onClearMemory={onClearStorage}
+              isGeneratingReport={isGeneratingReport}
+              onClose={() => setShowFormulaList(false)}
+              onBatchExport={formulaActions.handleBatchExport}
+              onBatchDelete={formulaActions.handleBatchDelete}
+              onBatchTag={formulaActions.handleBatchTag}
+              onSelectAll={formulaActions.handleSelectAll}
+            />
+          </React.Suspense>
+        )}
+
+        {/* 聊天消息搜索浮层（懒加载） */}
         {searchOpen && (
-          <ChatSearchOverlay
-            messages={messages}
-            onGoToMessage={(id) => {
-              setSearchOpen(false)
-              // 滚动到对应消息
-              const el = document.querySelector(`[data-message-id="${id}"]`)
-              el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            }}
-            onClose={() => setSearchOpen(false)}
-          />
+          <React.Suspense fallback={null}>
+            <ChatSearchOverlay
+              messages={messages}
+              onGoToMessage={(id) => {
+                setSearchOpen(false)
+                // 滚动到对应消息
+                const el = document.querySelector(`[data-message-id="${id}"]`)
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }}
+              onClose={() => setSearchOpen(false)}
+            />
+          </React.Suspense>
         )}
 
-        {/* 专业配方报告模态框
+        {/* 专业配方报告模态框（懒加载）
             注意：ProfessionalReport 内部 report.sections / report.title 无空值守卫，
             所以必须同时要求 reportData 存在才渲染，不能只看 showReportModal。 */}
         {showReportModal && !!reportData && (
-          <ProfessionalReportModal
-            report={reportData as ProfessionalReportModalProps['report']}
-            isLoading={isGeneratingReport}
-            onClose={() => setShowReportModal(false)}
-          />
+          <React.Suspense fallback={null}>
+            <ProfessionalReportModal
+              report={reportData as ProfessionalReportModalProps['report']}
+              isLoading={isGeneratingReport}
+              onClose={() => setShowReportModal(false)}
+            />
+          </React.Suspense>
         )}
 
-        {/* 配方效果反馈模态框 */}
+        {/* 配方效果反馈模态框（懒加载） */}
         {feedbackTarget && (
-          <FeedbackModal
-            formulaId={feedbackTarget.formulaId}
-            formulaName={feedbackTarget.formulaName}
-            onClose={() => setFeedbackTarget(null)}
-          />
+          <React.Suspense fallback={null}>
+            <FeedbackModal
+              formulaId={feedbackTarget.formulaId}
+              formulaName={feedbackTarget.formulaName}
+              onClose={() => setFeedbackTarget(null)}
+            />
+          </React.Suspense>
         )}
 
         {/* 成分级配方校验报告弹窗：用户确认后才真正保存 */}

@@ -17,8 +17,11 @@ import { GenerationProgressPanel } from '@/components/ai/GenerationProgressPanel
 import { FormulaInputWindow } from '@/components/ai/FormulaInputWindow'
 import { EFFECT_OPTIONS, EFFECT_CATEGORIES } from '@/config/ai/effects'
 import { VALIDATION } from '@/config'
-import { useGenerationShortcuts } from '../hooks/useGenerationShortcuts'
+import { aiApi } from '@/api/ai'
+import type { AICandidate } from '@/api/ai'
+import { formulaIntelligenceService } from '../../services/formulaIntelligenceService'
 import type { InputMode } from '../config/generateTabConfig'
+import { logger } from '@/utils/safeLogger'
 import { AlgorithmConfigPanel } from './AlgorithmConfigPanel'
 import { ConstraintPanel } from './ConstraintPanel'
 import type { AlgorithmConfig } from './AlgorithmConfigPanel'
@@ -33,6 +36,69 @@ const QUICK_TEMPLATES = [
   { id: 'beauty', nameKey: 'ai.formula.generateTab.templateBeauty', icon: '✨', effects: ['beauty_skin', 'antioxidant'] },
   { id: 'cardio', nameKey: 'ai.formula.generateTab.templateCardio', icon: '❤️', effects: ['blood_lipid', 'vascular_protection'] },
 ]
+
+/**
+ * 常见口语描述 → 前端功效标签（EFFECT_OPTIONS.label）的别名映射。
+ * 用于聊天模式意图解析：把用户自然语言收敛为后端可识别的功效标签，
+ * 禁止将自由文本直接作为 target_effects 直传 /ai/generate。
+ */
+const EFFECT_TEXT_ALIASES: Record<string, string[]> = {
+  '增强免疫': ['增强免疫', '免疫力', '提高免疫', '抵抗力', '免疫'],
+  '免疫调节': ['免疫调节'],
+  '提高抵抗力': ['提高抵抗力', '增强抵抗'],
+  '抗氧化': ['抗氧化', '自由基', '氧化'],
+  '延缓衰老': ['延缓衰老', '抗衰老', '衰老', '逆龄'],
+  '清除自由基': ['清除自由基'],
+  '抗疲劳': ['抗疲劳', '疲劳', '乏力', '疲惫', '提神', '恢复体力'],
+  '缓解疲劳': ['缓解疲劳'],
+  '提升精力': ['提升精力', '精力', '活力'],
+  '补气养阴': ['补气养阴', '补气', '养阴'],
+  '滋阴补肾': ['滋阴补肾', '滋阴', '补肾'],
+  '健脾益气': ['健脾益气', '益气'],
+  '补血养血': ['补血养血', '补血', '养血'],
+  '补气养血': ['补气养血'],
+  '降血压': ['降血压', '降压', '血压高'],
+  '降血脂': ['降血脂', '血脂'],
+  '辅助降血脂': ['辅助降血脂'],
+  '保护血管': ['保护血管', '血管'],
+  '促进循环': ['促进循环', '活血', '循环'],
+  '降血糖': ['降血糖', '降糖', '血糖'],
+  '辅助降尿酸': ['辅助降尿酸', '尿酸'],
+  '调节代谢': ['调节代谢', '代谢'],
+  '控制体重': ['控制体重', '减肥', '瘦身', '体重'],
+  '改善睡眠': ['改善睡眠', '睡眠', '失眠', '助眠', '入睡'],
+  '安神定志': ['安神定志', '安神'],
+  '缓解焦虑': ['缓解焦虑', '焦虑', '紧张', '压力'],
+  '健脾养胃': ['健脾养胃', '健脾', '养胃', '脾胃'],
+  '促进消化': ['促进消化', '消化', '积食', '食欲'],
+  '调理脾胃': ['调理脾胃'],
+  '润肺止咳': ['润肺止咳', '润肺', '止咳', '咳嗽'],
+  '清咽利喉': ['清咽利喉', '咽喉', '利喉', '咽炎'],
+  '明目护眼': ['明目护眼', '明目', '护眼', '视力', '眼睛'],
+  '缓解眼疲劳': ['缓解眼疲劳', '眼疲劳'],
+  '美容养颜': ['美容养颜', '美容', '养颜', '皮肤', '护肤', '美白'],
+  '护肤保湿': ['护肤保湿', '保湿'],
+  '强健筋骨': ['强健筋骨', '强健', '筋骨'],
+  '补钙健骨': ['补钙健骨', '补钙', '健骨', '骨骼', '骨质疏松'],
+}
+
+/**
+ * 从用户自然语言中提取已知功效标签（EFFECT_OPTIONS.label）。
+ * 返回空数组表示无法解析，调用方应引导用户选择功效标签而不是直传自由文本。
+ */
+function extractEffectLabelsFromText(text: string): string[] {
+  const lower = text.toLowerCase()
+  const matched = new Set<string>()
+  // 1) 直接命中前端功效标签
+  for (const opt of EFFECT_OPTIONS) {
+    if (lower.includes(opt.label.toLowerCase())) matched.add(opt.label)
+  }
+  // 2) 通过常见口语别名命中
+  for (const [label, keywords] of Object.entries(EFFECT_TEXT_ALIASES)) {
+    if (keywords.some(kw => lower.includes(kw.toLowerCase()))) matched.add(label)
+  }
+  return Array.from(matched)
+}
 
 interface EffectOption {
   id: string
@@ -67,6 +133,8 @@ interface GenerationInputProProps {
   onAlgorithmConfigChange?: (config: AlgorithmConfig) => void
   constraints?: PersonalConstraints
   onConstraintsChange?: (constraints: PersonalConstraints) => void
+  /** Chat 模式真实生成完成后，将候选配方同步给父组件用于结果面板展示 */
+  onChatCandidates?: (candidates: AICandidate[]) => void
   className?: string
 }
 
@@ -94,6 +162,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
   onAlgorithmConfigChange,
   constraints,
   onConstraintsChange,
+  onChatCandidates,
   className = '',
 }) => {
   const { t } = useTranslation()
@@ -104,13 +173,6 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
   const [activeCategory, setActiveCategory] = useState<string>('All')
   const chatEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-
-  const { shortcuts } = useGenerationShortcuts({
-    onGenerate: () => onGenerate(effectLabels),
-    onCancel: onCancelGeneration,
-    onReset: onFullReset,
-    onSwitchToChat: () => onInputModeChange('chat'),
-  })
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -142,42 +204,92 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
 
   const handleChatSend = useCallback(async () => {
     if (!chatInput.trim() || isChatProcessing) return
-    
+
     const userMessage = chatInput.trim()
     setChatHistory(prev => [...prev, { role: 'user', content: userMessage, timestamp: Date.now() }])
     setChatInput('')
     setIsChatProcessing(true)
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1200))
+      // P1 契约修复：禁止把用户自由文本直接作为 target_effects 直传 /ai/generate。
+      // 先做意图解析 + 功效标签提取；无法解析出已知功效时，明确引导用户选择功效标签。
+      const intent = formulaIntelligenceService.detectIntent(userMessage)
+      const matchedLabels = extractEffectLabelsFromText(userMessage)
 
-      const assistantMessage = `已理解您的需求："${userMessage}"
+      if (matchedLabels.length === 0) {
+        logger.info('[GenerationInputPro] 无法从聊天文本解析功效标签', { intent, userMessage })
+        const guidance =
+          '抱歉，我无法从您的描述中识别出明确的功效方向。请切换到「功效模式」直接选择功效标签，' +
+          '或在聊天中描述具体功效，例如：「增强免疫」「改善睡眠」「抗疲劳」。'
+        setChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: guidance,
+          timestamp: Date.now(),
+        }])
+        return
+      }
 
-根据您的描述，推荐以下功效组合：
-- 增强免疫
-- 改善睡眠
-- 健脾养胃`
+      // 用解析出的功效标签（而非原始自由文本）调用真实后端生成
+      const result = await aiApi.generate(matchedLabels, undefined, false)
 
-      setChatHistory(prev => [...prev, { role: 'assistant', content: assistantMessage, timestamp: Date.now() }])
+      const candidates: AICandidate[] = result?.candidates ?? []
+      if (candidates.length === 0) {
+        setChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: '未生成候选配方，请稍后重试或更换描述。',
+          timestamp: Date.now(),
+        }])
+        return
+      }
 
-      const recommendedEffects = ['immune_enhancement', 'sleep_improvement', 'spleen_stomach']
-        .map(id => EFFECT_OPTIONS.find(e => e.id === id))
-        .filter((e): e is EffectOption => e !== undefined)
-
+      // 用真实返回的候选映射推荐功效（仅在返回的 effects 命中已知功效时选择，不硬编码）
+      const recommendedEffects: EffectOption[] = []
+      const seenEffectIds = new Set<string>()
+      for (const candidate of candidates) {
+        for (const effect of candidate.effects ?? []) {
+          const matched = EFFECT_OPTIONS.find(e => e.id === effect || e.label === effect)
+          if (matched && !seenEffectIds.has(matched.id)) {
+            seenEffectIds.add(matched.id)
+            recommendedEffects.push(matched)
+          }
+        }
+      }
       if (recommendedEffects.length > 0) {
         onSetSelectedEffects(recommendedEffects)
       }
+
+      // 用真实候选驱动配方展示
+      const candidateLines = candidates.map((candidate, index) => {
+        const herbs = (candidate.herb_combination ?? [])
+          .map(h => `${h.name || '未知药材'}${h.dosage ? ` ${h.dosage}` : ''}`)
+          .join('、')
+        const score = typeof candidate.overall_score === 'number'
+          ? `（综合评分 ${candidate.overall_score.toFixed(4)}）`
+          : ''
+        return `${index + 1}. ${candidate.formula_name || candidate.name || '候选配方'}${score}${herbs ? `\n   ${herbs}` : ''}`
+      })
+
+      const assistantMessage = `已根据您的需求「${userMessage}」识别功效方向「${matchedLabels.join('、')}」，生成 ${candidates.length} 个候选配方：\n${candidateLines.join('\n')}`
+
+      setChatHistory(prev => [...prev, { role: 'assistant', content: assistantMessage, timestamp: Date.now() }])
+
+      // 将真实候选同步到结果面板，便于保存/对比/报告
+      onChatCandidates?.(candidates)
     } catch (error) {
-      console.error('Chat processing failed:', error)
-      setChatHistory(prev => [...prev, { role: 'assistant', content: '出错了，请重试。', timestamp: Date.now() }])
+      logger.error('[GenerationInputPro] Chat processing failed:', error)
+      const errorMsg = error instanceof Error ? error.message : '生成失败，请稍后重试。'
+      setChatHistory(prev => [...prev, { role: 'assistant', content: `出错了：${errorMsg}`, timestamp: Date.now() }])
     } finally {
       setIsChatProcessing(false)
     }
-  }, [chatInput, isChatProcessing, onSetSelectedEffects])
+  }, [chatInput, isChatProcessing, onSetSelectedEffects, onChatCandidates])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // 回车（含 Ctrl+Enter）发送聊天：阻止冒泡，避免同时触发顶层文档级
+    // Ctrl+Enter 快捷键导致重复生成。
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
+      e.stopPropagation()
       handleChatSend()
     }
   }, [handleChatSend])
@@ -459,7 +571,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-2 text-caption text-muted-foreground">
-            <kbd className="px-1.5 py-0.5 bg-muted rounded border border-border font-mono text-xs">{shortcuts.generate}</kbd>
+            <kbd className="px-1.5 py-0.5 bg-muted rounded border border-border font-mono text-xs">Ctrl+Enter</kbd>
             <span>{t('ai.formula.generateTab.generateFormula')}</span>
           </div>
           <button onClick={onFullReset} className="px-3 py-1.5 text-body-sm text-muted-foreground hover:text-foreground">{t('ai.formula.generateTab.reset')}</button>

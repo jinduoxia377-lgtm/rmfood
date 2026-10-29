@@ -1,17 +1,22 @@
 /**
  * 增强版学术报告组件
- * 完整支持模块化结构、模板切换、多格式导出、进度反馈
+ * 完整支持模块化结构、模板切换、多格式导出、进度反馈、正文预览，
+ * 并支持将报告联动写入学术报告库（/academic-report）后继续编辑完善。
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { AICandidate as APIAICandidate } from '@/api/ai';
 import type { AICandidate as TypesAICandidate } from '@/types';
-import type { ModuleConfig, ReportMetadata } from '@/types/academicReportModules';
+import type { ModuleConfig, ModuleData, ReportMetadata } from '@/types/academicReportModules';
 import { ReportModuleType, MODULE_TITLE_MAP } from '@/types/academicReportModules';
 import AcademicReportV2, { REPORT_TEMPLATES } from '@/services/academicReportServiceV2';
 import type { ExportFormat } from '@/services/academicReportServiceV2';
 import { errorHandler, ErrorCategory } from '@/services/errorHandler';
 import { feedbackService } from '@/services/feedbackService';
+import { useAcademicReportStore } from '@/stores/academicReportStore';
+import { v2ReportToReportItemData } from '@/utils/academicReportLinkage';
+import MarkdownRenderer from '@/components/ai/features/components/pro/MarkdownRenderer';
 
 import {
   FileDown,
@@ -22,6 +27,7 @@ import {
   Loader2,
   ArrowLeftRight,
   Sparkles,
+  ExternalLink,
 } from 'lucide-react';
 
 interface AcademicReportEnhancedProps {
@@ -30,18 +36,20 @@ interface AcademicReportEnhancedProps {
   onClose?: () => void;
 }
 
-// 导出选项
+// 导出选项（中文文案，无 emoji）
 const EXPORT_OPTIONS: { value: ExportFormat; label: string; icon: React.ReactNode }[] = [
-  { value: 'markdown', label: 'Markdown', icon: <FileDown className="w-4 h-4" /> },
-  { value: 'html', label: 'HTML', icon: <FileDown className="w-4 h-4" /> },
-  { value: 'word', label: 'Word', icon: <FileDown className="w-4 h-4" /> },
-  { value: 'pdf', label: 'PDF', icon: <FileDown className="w-4 h-4" /> },
+  { value: 'markdown', label: 'Markdown 文档', icon: <FileDown className="w-4 h-4" /> },
+  { value: 'html', label: 'HTML 文档', icon: <FileDown className="w-4 h-4" /> },
+  { value: 'word', label: 'Word 文档', icon: <FileDown className="w-4 h-4" /> },
+  { value: 'pdf', label: 'PDF 文档', icon: <FileDown className="w-4 h-4" /> },
 ];
 
 export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ candidate, effects, onClose }) => {
+  const navigate = useNavigate();
   const reportRef = useRef<AcademicReportV2 | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isLinking, setIsLinking] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [currentTemplate, setCurrentTemplate] = useState('research_report');
   const [reportGenerated, setReportGenerated] = useState(false);
@@ -51,6 +59,15 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
   const [moduleConfigs, setModuleConfigs] = useState<Partial<Record<ReportModuleType, ModuleConfig>>>({});
   const [metadata, setMetadata] = useState<Partial<ReportMetadata>>({});
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [generatedModules, setGeneratedModules] = useState<{ type: ReportModuleType; data: ModuleData }[]>([]);
+
+  // 导出菜单外部点击关闭
+  useEffect(() => {
+    if (!showExportMenu) return;
+    const handler = () => setShowExportMenu(false);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [showExportMenu]);
 
   // 初始化报告
   const initializeReport = useCallback(() => {
@@ -69,6 +86,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
       setMetadata({ ...config.metadata });
       setModuleConfigs({ ...config.modules });
       setEnabledModules(report.getEnabledModules());
+      setGeneratedModules([]);
 
       // 监听状态变化
       const removeListener = report.addStateListener((state) => {
@@ -79,6 +97,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
         if (state.status === 'success') {
           setReportGenerated(true);
           setEnabledModules(report.getEnabledModules());
+          setGeneratedModules(report.getGeneratedModules());
         }
       });
 
@@ -162,6 +181,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
 
       setCurrentTemplate(templateType);
       setReportGenerated(false);
+      setGeneratedModules([]);
 
       if (reportRef.current) {
         reportRef.current.switchTemplate(templateType);
@@ -207,6 +227,57 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
     }));
   }, []);
 
+  // 保存设置后自动重新生成
+  const handleSaveSettings = useCallback(() => {
+    // eslint-disable-next-line react-hooks/refs
+    if (reportRef.current) {
+      const report = reportRef.current;
+      report.updateMetadata(metadata);
+      Object.entries(moduleConfigs).forEach(([type, config]) => {
+        if (config) {
+          report.updateModuleConfig(type as ReportModuleType, config);
+        }
+      });
+    }
+    setShowSettings(false);
+    feedbackService.showInfo('设置已保存', '设置已保存，报告已重新生成');
+    void handleGenerateReport();
+  }, [metadata, moduleConfigs, handleGenerateReport]);
+
+  // 联动：将报告写入学术报告库并跳转 /academic-report 编辑
+  const handleLinkToAcademicReport = useCallback(async () => {
+    if (!reportRef.current || !reportGenerated || isLinking) return;
+
+    const report = reportRef.current;
+    const modules = report.getGeneratedModules();
+    if (modules.length === 0) {
+      feedbackService.showError('无法联动', '报告尚未生成有效内容，请先生成报告');
+      return;
+    }
+
+    setIsLinking(true);
+    try {
+      const data = v2ReportToReportItemData({
+        metadata: report.getMetadata(),
+        modules,
+        candidate: candidate as TypesAICandidate,
+        templateId: currentTemplate,
+      });
+      const reportId = await useAcademicReportStore.getState().syncReport(data);
+      onClose?.();
+      navigate(`/academic-report?reportId=${reportId}`);
+    } catch (error: any) {
+      errorHandler.handleError(error as Error, {
+        category: ErrorCategory.RUNTIME,
+        context: { operation: 'linkToAcademicReport' },
+        userFriendlyMessage: '联动到学术报告失败，请重试',
+      });
+      feedbackService.showError('联动失败', '写入学术报告库失败，请重试');
+    } finally {
+      setIsLinking(false);
+    }
+  }, [candidate, currentTemplate, navigate, onClose, reportGenerated, isLinking]);
+
   // 渲染设置面板
   const renderSettingsPanel = () => (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -236,8 +307,8 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                   value={metadata.title || ''}
                   onChange={(e) => updateMetadataField('title', e.target.value)}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600"
-        aria-label="报告标题"
-      />
+                  aria-label="报告标题"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">作者</label>
@@ -246,8 +317,8 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                   value={Array.isArray(metadata.authors) ? metadata.authors.join('、') : metadata.authors || ''}
                   onChange={(e) => updateMetadataField('authors', e.target.value.split('、'))}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600"
-        aria-label="作者"
-      />
+                  aria-label="作者"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">单位</label>
@@ -256,8 +327,8 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                   value={metadata.institution || ''}
                   onChange={(e) => updateMetadataField('institution', e.target.value)}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600"
-        aria-label="单位"
-      />
+                  aria-label="单位"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">关键词</label>
@@ -266,8 +337,8 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                   value={Array.isArray(metadata.keywords) ? metadata.keywords.join('、') : metadata.keywords || ''}
                   onChange={(e) => updateMetadataField('keywords', e.target.value.split('、'))}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600"
-        aria-label="关键词"
-      />
+                  aria-label="关键词"
+                />
               </div>
             </div>
           </section>
@@ -294,31 +365,35 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
             </div>
           </section>
 
-          {/* 模块设置 */}
+          {/* 模块设置：仅展示当前模板启用的模块 */}
           <section>
             <h3 className="text-lg font-semibold mb-4 text-neutral-800 dark:text-neutral-200">章节管理</h3>
             <div className="space-y-2">
-              {Object.values(ReportModuleType).map((type) => {
-                const config = moduleConfigs[type];
-                const isEnabled = config?.enabled !== false;
-                return (
-                  <div
-                    key={type}
-                    className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={isEnabled}
-                        onChange={() => toggleModule(type)}
-                        className="w-4 h-4 text-primary-700 rounded focus:ring-primary-500"
-                      />
-                      <span className="font-medium">{MODULE_TITLE_MAP[type]}</span>
+              {enabledModules.length === 0 ? (
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">当前模板没有启用的章节</p>
+              ) : (
+                enabledModules.map((type) => {
+                  const config = moduleConfigs[type];
+                  const isEnabled = config?.enabled !== false;
+                  return (
+                    <div
+                      key={type}
+                      className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isEnabled}
+                          onChange={() => toggleModule(type)}
+                          className="w-4 h-4 text-primary-700 rounded focus:ring-primary-500"
+                        />
+                        <span className="font-medium">{MODULE_TITLE_MAP[type]}</span>
+                      </div>
+                      <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{config?.priority || '-'}</span>
                     </div>
-                    <span className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{config?.priority || '-'}</span>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </section>
         </div>
@@ -331,20 +406,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
             关闭
           </button>
           <button
-            onClick={() => {
-              // eslint-disable-next-line react-hooks/refs
-              if (reportRef.current) {
-                const report = reportRef.current;
-                report.updateMetadata(metadata);
-                Object.entries(moduleConfigs).forEach(([type, config]) => {
-                  if (config) {
-                    report.updateModuleConfig(type as ReportModuleType, config);
-                  }
-                });
-              }
-              setShowSettings(false);
-              feedbackService.showSuccess('设置已保存', '报告设置已保存');
-            }}
+            onClick={handleSaveSettings}
             className="px-4 py-2 bg-primary-container text-primary-main rounded-lg hover:bg-primary-container transition-colors"
           >
             保存设置
@@ -379,6 +441,61 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
     </div>
   );
 
+  // 渲染报告正文（Markdown 预览）
+  const renderReportBody = () => (
+    <div className="bg-neutral-50 dark:bg-neutral-700 rounded-xl p-6">
+      <h3 className="text-lg font-semibold mb-4 text-neutral-800 dark:text-neutral-200">报告预览</h3>
+      {generatedModules.length === 0 ? (
+        <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+          <FileDown className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p>报告内容为空，请重新生成</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {generatedModules.map(({ type, data }) => (
+            <div key={type} className="bg-white dark:bg-neutral-800 rounded-lg p-5 shadow-sm border border-neutral-200 dark:border-neutral-600">
+              <h4 className="text-base font-semibold mb-3 text-neutral-900 dark:text-neutral-100 border-b border-neutral-200 dark:border-neutral-600 pb-2">
+                {data.title}
+              </h4>
+              <MarkdownRenderer content={data.content} />
+              {data.tables && data.tables.length > 0 && (
+                <div className="mt-4 space-y-4">
+                  {data.tables.map((table, i) => (
+                    <div key={i} className="overflow-x-auto">
+                      <h5 className="text-sm font-semibold mb-2 text-neutral-700 dark:text-neutral-300">{table.title}</h5>
+                      <table className="w-full text-sm border-collapse">
+                        <thead>
+                          <tr>
+                            {table.headers.map((h, hi) => (
+                              <th key={hi} className="border border-neutral-300 dark:border-neutral-600 px-2 py-1.5 bg-neutral-100 dark:bg-neutral-700 text-left font-medium">
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {table.rows.map((row, ri) => (
+                            <tr key={ri}>
+                              {row.map((cell, ci) => (
+                                <td key={ci} className="border border-neutral-300 dark:border-neutral-600 px-2 py-1.5 text-neutral-700 dark:text-neutral-300">
+                                  {cell}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl overflow-hidden">
       {/* 标题栏 */}
@@ -408,7 +525,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
       {/* 操作栏 */}
       <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {/* 重新生成 */}
             <button
               onClick={handleGenerateReport}
@@ -431,7 +548,10 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
             {/* 导出菜单 */}
             <div className="relative">
               <button
-                onClick={() => setShowExportMenu(!showExportMenu)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowExportMenu(!showExportMenu);
+                }}
                 disabled={!reportGenerated || isGenerating || isExporting}
                 className="flex items-center gap-2 px-6 py-3 bg-success-600 text-white rounded-xl hover:bg-success-700 disabled:opacity-50 transition-all"
               >
@@ -449,7 +569,10 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
               </button>
 
               {showExportMenu && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-neutral-700 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-600 z-40">
+                <div
+                  className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-neutral-700 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-600 z-40"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {EXPORT_OPTIONS.map((option) => (
                     <button
                       key={option.value}
@@ -463,6 +586,26 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
                 </div>
               )}
             </div>
+
+            {/* 联动：在学术报告中修改完善 */}
+            <button
+              onClick={handleLinkToAcademicReport}
+              disabled={!reportGenerated || isGenerating || isExporting || isLinking}
+              className="flex items-center gap-2 px-4 py-3 bg-secondary-600 text-white rounded-xl hover:bg-secondary-700 disabled:opacity-50 transition-all"
+              title="将报告写入学术报告库，并在编辑器中继续修改完善"
+            >
+              {isLinking ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  正在联动...
+                </>
+              ) : (
+                <>
+                  <ExternalLink className="w-5 h-5" />
+                  在学术报告中修改完善
+                </>
+              )}
+            </button>
           </div>
 
           {/* 状态指示 */}
@@ -495,14 +638,7 @@ export const AcademicReportEnhanced: React.FC<AcademicReportEnhancedProps> = ({ 
             </button>
           </div>
         ) : (
-          <div className="bg-neutral-50 dark:bg-neutral-700 rounded-xl p-6">
-            <h3 className="text-lg font-semibold mb-4 text-neutral-800 dark:text-neutral-200">报告预览</h3>
-            <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-              <FileDown className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>报告已生成，请使用"导出报告"功能下载完整报告</p>
-              <p className="text-sm mt-2">已启用章节：{enabledModules.map((m) => MODULE_TITLE_MAP[m]).join('、')}</p>
-            </div>
-          </div>
+          renderReportBody()
         )}
       </div>
 

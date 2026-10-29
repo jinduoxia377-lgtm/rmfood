@@ -70,7 +70,8 @@ export function useExportFormula(generateResult: AICandidate[] | null) {
       } else if (format === 'csv') {
         exportToCSV(exportItems)
       } else if (format === 'pdf') {
-        handlePDFExport(feedback)
+        // 打印窗口方案：使用与 JSON/CSV 相同的规范化行数据生成 HTML 表格
+        handlePDFExport(exportItems, feedback)
       }
 
       feedback.showSuccess('导出成功', `已成功导出 ${generateResult.length} 条配方数据`)
@@ -98,13 +99,41 @@ export function useExportFormula(generateResult: AICandidate[] | null) {
     downloadBlob(blob, `RMFOOD_配方数据_${getCurrentDate()}.csv`)
   }
 
-  const handlePDFExport = async (feedback: ReturnType<typeof useOperationFeedback>) => {
+  /**
+   * PDF 导出（打印窗口方案）：
+   * 用与 JSON/CSV 相同的规范化行数据生成 HTML 表格，打开打印窗口后由用户在
+   * 打印对话框中选择「另存为 PDF」。修复早期版本误用 feedback 对象生成表头、
+   * 嵌套对象显示为 [object Object] 的问题。
+   */
+  const handlePDFExport = async (
+    exportItems: any[],
+    feedback: ReturnType<typeof useOperationFeedback>,
+  ) => {
     try {
+      if (exportItems.length === 0) {
+        feedback.showError('PDF 导出失败', '没有可导出的配方数据')
+        return
+      }
+
       const printWindow = window.open('', '_blank')
       if (!printWindow) {
         feedback.showError('PDF 导出失败', '请允许弹出窗口以生成 PDF')
         return
       }
+
+      const headers = Object.keys(exportItems[0] || {})
+      const rowsHtml = exportItems
+        .map(
+          (row) =>
+            `<tr>${headers
+              .map(h => {
+                const v = row[h]
+                const cell = v === null || typeof v === 'undefined' ? '' : String(v)
+                return `<td>${cell.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`
+              })
+              .join('')}</tr>`,
+        )
+        .join('')
 
       const html = `
         <!DOCTYPE html>
@@ -120,10 +149,8 @@ export function useExportFormula(generateResult: AICandidate[] | null) {
           <h1>RMFOOD 配方数据导出</h1>
           <p>导出时间: ${new Date().toLocaleString('zh-CN')}</p>
           <table>
-            <thead><tr>${Object.keys(feedback).map(k => `<th>${k}</th>`).join('')}</tr></thead>
-            <tbody>${(generateResult as unknown as Record<string, unknown>[]).map((row: Record<string, unknown>) =>
-              `<tr>${Object.values(row).map(v => `<td>${v}</td>`).join('')}</tr>`
-            ).join('')}</tbody>
+            <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+            <tbody>${rowsHtml}</tbody>
           </table>
         </body></html>
       `
