@@ -508,7 +508,6 @@ def setup_logging(
 
     # 5. 文件处理器
     if enable_file and log_dir:
-        import os
         os.makedirs(log_dir, exist_ok=True)
 
         # 普通日志
