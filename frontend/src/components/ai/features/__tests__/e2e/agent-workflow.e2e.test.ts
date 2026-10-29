@@ -267,8 +267,10 @@ test.describe('Agent 工作流 - 性能测试', () => {
 // ── 测试计数辅助 ────────────────────────────────────────────
 
 expect.extend({
-  toHaveCountGreaterThan(received: any, expected: number) {
-    const actual = received.count();
+  // P2-F3 修复：received.count() 返回 Promise，原代码 Promise > number 恒为 false。
+  // 改为 async 并 await，使元素计数断言真正生效。
+  async toHaveCountGreaterThan(received: any, expected: number) {
+    const actual = await received.count();
     const pass = actual > expected;
     return {
       pass,

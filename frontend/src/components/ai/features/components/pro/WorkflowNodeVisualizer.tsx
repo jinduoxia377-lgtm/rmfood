@@ -6,6 +6,7 @@
  * @version 1.0.0
  */
 import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   CheckCircle2,
   XCircle,
@@ -25,32 +26,41 @@ interface WorkflowNodeVisualizerProps {
   workflowType: string
 }
 
-const WORKFLOW_STAGES: Record<string, { label: string; icon: React.ReactNode; desc: string }> = {
+/** 工作流类型 → pages.agent.workflowStage* 的 key（标题/描述） */
+const WORKFLOW_STAGES: Record<string, { titleKey: string; descKey: string; icon: React.ReactNode }> = {
   formula_design: {
-    label: '配方设计',
+    titleKey: 'workflowStageFormula',
+    descKey: 'workflowStageFormulaDesc',
     icon: <FlaskConical className="w-4 h-4" />,
-    desc: 'RAG检索 → 配方生成 → 合规检查 → 报告输出',
   },
   compliance_check: {
-    label: '合规预审',
+    titleKey: 'workflowStageCompliance',
+    descKey: 'workflowStageComplianceDesc',
     icon: <ShieldCheck className="w-4 h-4" />,
-    desc: '多维度合规检查 + 自动修复建议',
   },
   experiment_plan: {
-    label: '实验方案',
+    titleKey: 'workflowStageExperiment',
+    descKey: 'workflowStageExperimentDesc',
     icon: <FileText className="w-4 h-4" />,
-    desc: '配方 → 体外/体内实验设计 → 指标体系',
   },
   ingredient_lookup: {
-    label: '原料查询',
+    titleKey: 'workflowStageIngredient',
+    descKey: 'workflowStageIngredientDesc',
     icon: <Search className="w-4 h-4" />,
-    desc: '药材功效/法规/配伍禁忌查询',
   },
   full_pipeline: {
-    label: '全流程',
+    titleKey: 'workflowStageFull',
+    descKey: 'workflowStageFullDesc',
     icon: <FlaskConical className="w-4 h-4" />,
-    desc: 'RAG→配方→合规→实验→报告完整链路',
   },
+}
+
+/** 已知节点标签 → pages.agent.workflowNode* 的 key；未知节点回退原始值 */
+const NODE_LABEL_KEYS: Record<string, string> = {
+  'RAG检索': 'workflowNodeRag',
+  '配方生成': 'workflowNodeFormula',
+  '合规检查': 'workflowNodeCompliance',
+  '报告输出': 'workflowNodeReport',
 }
 
 const STAGE_COLORS: Record<string, string> = {
@@ -61,7 +71,11 @@ const STAGE_COLORS: Record<string, string> = {
 }
 
 export function WorkflowNodeVisualizer({ stages, isRunning, workflowType }: WorkflowNodeVisualizerProps) {
+  const { t } = useTranslation()
   const currentWorkflow = WORKFLOW_STAGES[workflowType] || WORKFLOW_STAGES.formula_design
+  /** 节点标签本地化：已知节点用 i18n，未知回退原始 */
+  const nodeLabel = (label: string) =>
+    NODE_LABEL_KEYS[label] ? t(`pages.agent.${NODE_LABEL_KEYS[label]}`) : label
 
   const renderedStages = useMemo(() => {
     if (stages.length === 0) {
@@ -90,12 +104,12 @@ export function WorkflowNodeVisualizer({ stages, isRunning, workflowType }: Work
       <div className="flex items-center gap-2 mb-4">
         {currentWorkflow.icon}
         <span className="text-sm font-semibold text-neutral-900 dark:text-white">
-          {currentWorkflow.label}工作流
+          {t(`pages.agent.${currentWorkflow.titleKey}`)}
         </span>
         {isRunning && (
           <span className="flex items-center gap-1 text-xs text-secondary-500 animate-pulse">
             <Loader2 className="w-3 h-3 animate-spin" />
-            执行中
+            {t('pages.agent.workflowRunning')}
           </span>
         )}
       </div>
@@ -113,7 +127,7 @@ export function WorkflowNodeVisualizer({ stages, isRunning, workflowType }: Work
                 {stage.status === 'failed' && <XCircle className="w-4 h-4" />}
                 {stage.status === 'running' && <Loader2 className="w-4 h-4 animate-spin" />}
                 {stage.status === 'pending' && <Circle className="w-4 h-4" />}
-                <span className="text-xs font-medium text-center leading-tight">{stage.label}</span>
+                <span className="text-xs font-medium text-center leading-tight">{nodeLabel(stage.label)}</span>
                 {stage.latencyMs > 0 && (
                   <span className="text-xs opacity-60">{stage.latencyMs}ms</span>
                 )}
@@ -128,7 +142,7 @@ export function WorkflowNodeVisualizer({ stages, isRunning, workflowType }: Work
 
       {/* 执行描述 */}
       <p className="mt-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-        {currentWorkflow.desc}
+        {t(`pages.agent.${currentWorkflow.descKey}`)}
       </p>
     </div>
   )

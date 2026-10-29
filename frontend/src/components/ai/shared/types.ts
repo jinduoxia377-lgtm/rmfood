@@ -1,7 +1,7 @@
 /**
- * 鏇存柊 shared/types.ts - 娣诲姞缂哄け鐨勭被鍨嬪畾涔? */
+ * 共享类型定义：消息 / 工具调用 / 执行阶段 / 工作流 / Turn-Step / Hook 等 */
 
-// 鈹€鈹€ 娑堟伅绫诲瀷 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══ 消息类型 ═══════════════════════════════════════════════
 
 export type MessageRole = 'user' | 'assistant' | 'system';
 
@@ -15,7 +15,7 @@ export interface AgentMessage {
   metadata?: Record<string, unknown>;
 }
 
-// 鈹€鈹€ 宸ュ叿璋冪敤绫诲瀷 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══ 工具调用类型 ═══════════════════════════════════════════
 
 export type ToolCallStatus = 'running' | 'success' | 'failed';
 
@@ -37,7 +37,7 @@ export interface ToolResultData {
   latencyMs: number;
 }
 
-// 鈹€鈹€ 鎵ц闃舵绫诲瀷 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══════════ 执行阶段类型 ══════════
 
 export interface ExecutionStage {
   stage: string;
@@ -48,7 +48,7 @@ export interface ExecutionStage {
   output?: unknown;
 }
 
-// 鈹€鈹€ 鎵ц鐘舵€佺被鍨?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══════════ 执行状态类型 ══════════
 
 export interface ExecutionState {
   isRunning: boolean;
@@ -59,7 +59,7 @@ export interface ExecutionState {
   error?: string;
 }
 
-// 鈹€鈹€ 宸ヤ綔娴佹ā鏉跨被鍨?鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══════════ 工作流模板类型 ══════════
 
 export interface WorkflowTemplate {
   template_id: string;
@@ -77,7 +77,7 @@ export interface WorkflowTemplate {
   preset_config?: Record<string, unknown>;
 }
 
-// 鈹€鈹€ Agent 宸ュ叿绫诲瀷 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══════════ Agent 工具类型 ══════════
 
 export interface AgentTool {
   name: string;
@@ -85,7 +85,7 @@ export interface AgentTool {
   parameters?: Record<string, unknown>;
 }
 
-// 鈹€鈹€ Turn/Step 绫诲瀷 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══════════ Turn/Step 类型 ══════════
 
 export type TurnStatus = 'running' | 'completed' | 'cancelled' | 'timeout';
 export type StepType = 'llm_request' | 'tool_call' | 'compaction' | 'final_response';
@@ -112,7 +112,7 @@ export interface StepState {
   result?: unknown;
 }
 
-// 鈹€鈹€ Session 浜嬩欢绫诲瀷 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══════════ Session 事件类型 ══════════
 
 export type SessionEventType =
   | 'turn/start'
@@ -174,10 +174,10 @@ export interface RequestHeader {
   reasoningEffort: string;
   maxTokens?: number;
   timestamp: number;
-  series?: string; // 娣诲姞 series 鏀寔
+  series?: string; // 添加 series 支持
 }
 
-// 鈹€鈹€ Waterfall 浜嬩欢绫诲瀷 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══════════ Waterfall 事件类型 ══════════
 
 export type WaterfallEvent =
   | 'agent/pre-step'
@@ -203,7 +203,7 @@ export interface SerialEventData {
   'agent/turn-stopping': { turnId: string; reason: 'completed' | 'cancelled' | 'timeout' };
 }
 
-// 鈹€鈹€ Compaction 绫诲瀷 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══════════ Compaction 类型 ══════════
 
 export type CompactionTrigger = 'pressure' | 'context-overflow';
 
@@ -214,7 +214,7 @@ export interface CompactionDecision {
   messageCount: number;
 }
 
-// 鈹€鈹€ Tool Schema 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══════════ Tool Schema ══════════
 
 export interface ToolSchema {
   name: string;
@@ -223,7 +223,7 @@ export interface ToolSchema {
   isConcurrencySafe?: boolean;
 }
 
-// 鈹€鈹€ LLM Adapter 绫诲瀷 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══════════ LLM Adapter 类型 ══════════
 
 export interface LlmFailure {
   message: string;
@@ -314,7 +314,7 @@ export interface ModelRequest {
   stream?: boolean;
 }
 
-// 鈹€鈹€ Hook 杩斿洖绫诲瀷 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// ══════════ Hook 返回类型 ══════════
 
 export interface UseUnifiedAgentOptions {
   initialWorkflowType?: string;

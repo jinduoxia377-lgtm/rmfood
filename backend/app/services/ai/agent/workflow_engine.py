@@ -29,6 +29,10 @@ from app.services.compliance.preset_constraints import get_constraint_engine
 
 logger = logging.getLogger(__name__)
 
+# P2-B4：工作流执行记录内存上限（镜像 agent_router._MAX_EXECUTIONS），
+# 防止无上限 in-memory dict 导致进程内存无界增长。
+_MAX_WORKFLOW_EXECUTIONS = 100
+
 
 class WorkflowStage(str, Enum):
     """工作流阶段"""
@@ -187,6 +191,10 @@ class WorkflowEngine:
         if context:
             execution.shared_context.update(context)
         self._executions[execution_id] = execution
+        # P2-B4：限制执行记录内存占用，超出时淘汰最旧记录
+        if len(self._executions) > _MAX_WORKFLOW_EXECUTIONS:
+            oldest = next(iter(self._executions))
+            del self._executions[oldest]
 
         # 安全检查：Prompt 注入检测
         guard_result = check_prompt(user_query)
@@ -238,6 +246,9 @@ class WorkflowEngine:
         execution.completed_at = datetime.now(timezone.utc)
         execution.total_latency_ms = (time.time() - total_start) * 1000
 
+        # P3-B-usage：记录工作流执行产生的 LLM token 用量（非致命）
+        await self._record_usage(execution, context)
+
         # 发布完成事件
         await self._event_bus.publish(Event(
             event_type=EventType.AGENT_EXECUTION_DONE,
@@ -254,6 +265,35 @@ class WorkflowEngine:
             execution.total_latency_ms,
         )
         return execution
+
+    async def _record_usage(self, execution: WorkflowExecution, context: Optional[dict]) -> None:
+        """将工作流执行产生的 LLM token 用量写入 ai_bot_usage（Phase 3，非致命）。
+
+        P3-B-usage 修复：此前仅 bot_manager（Bot 对话）写入用量，
+        workflow/agent 路径不写 → /usage/stats 恒为 0。此方法覆盖工作流路径，
+        token 用量来自 _stage_report_generation 捕获的辨证 LLM。
+        """
+        try:
+            db = (context or {}).get("db")
+            if db is None:
+                return
+            from ....models.usage import AiBotUsage
+            tenant_id = int((context or {}).get("tenant_id") or 1)
+            user_id = int((context or {}).get("user_id") or 0)
+            tu = execution.shared_context.get("_token_usage") or {}
+            db.add(AiBotUsage(
+                tenant_id=tenant_id,
+                bot_id=None,  # 工作流级执行，无单 Bot
+                user_id=user_id,
+                model="workflow",
+                prompt_tokens=int(tu.get("prompt_tokens", 0) or 0),
+                completion_tokens=int(tu.get("completion_tokens", 0) or 0),
+                endpoint="workflow",
+                task_execution_id=execution.execution_id,
+            ))
+            await db.commit()
+        except Exception as e:
+            logger.warning(f"[Usage] 工作流用量记录失败（非致命）: {e}")
 
     async def execute_stream(
         self,
@@ -640,7 +680,15 @@ class WorkflowEngine:
                 logger.warning(f"[WorkflowEngine] KG 协同推理失败（忽略）: {kg_err}")
 
             # 生成完整五段式报告（含方解机理、合规建议）
-            context["formula_result"] = orch._build_response(query, mock_steps)
+            # P1-B1 修复：_build_response 是 async def，必须 await。
+            # 历史缺陷：缺失 await 使此处存入 coroutine，下游 len() 抛
+            # TypeError 被 except 静默吞掉，5 段式报告恒降级为占位。
+            # P3-B-usage：捕获辨证 LLM token 用量，供 execute 记录 ai_bot_usage。
+            _wf_token_usage: dict = {}
+            context["formula_result"] = await orch._build_response(
+                query, mock_steps, token_usage=_wf_token_usage,
+            )
+            context["_token_usage"] = _wf_token_usage
 
             # 报告生成阶段直接使用 orchestrator 输出的完整五段式报告
             report = context["formula_result"]
@@ -664,7 +712,16 @@ class WorkflowEngine:
                                 f"({h.get('role','')})\n"
                             )
             context["report"] = "\n".join(parts)
-            return {"success": True, "output": {"report_length": len(context["report"])}}
+            # P1-B1：保持 success=True（不中止整个工作流，降级报告仍可交付），
+            # 但将 error/degraded 写入 output 透明暴露，不再掩盖故障。
+            return {
+                "success": True,
+                "output": {
+                    "report_length": len(context["report"]),
+                    "degraded": True,
+                    "error": str(e),
+                },
+            }
 
     async def _stage_final_answer(
         self, execution: WorkflowExecution

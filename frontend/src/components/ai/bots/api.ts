@@ -9,6 +9,7 @@ import type {
   AvailableModel,
   Bot,
   BotCreatePayload,
+  BotHistoryMessage,
   BotListQuery,
   BotMemory,
   BotUpdatePayload,
@@ -105,7 +106,8 @@ export const botApi = {
 
   /** Bot 对话历史（最近持续会话消息） */
   getHistory: async (botId: number) => {
-    const res = await api.get<{ success: boolean; session_id: number | null; items: GroupMessage[] }>(
+    // P1-F1：后端返回 ChatMessage.to_dict()（role/timestamp），非 GroupMessage。
+    const res = await api.get<{ success: boolean; session_id: number | null; items: BotHistoryMessage[] }>(
       `/bots/${botId}/history`,
     );
     return res.data.items;

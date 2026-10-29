@@ -191,7 +191,13 @@ class AgentOrchestrator:
         # P2-B5 修复：原在 _build_response 之前设 total_latency_ms，导致
         # 辨证 LLM / 报告生成耗时未计入（fast 实测 wall 49s 只上报 2331ms）。
         # 现将计时移到 _build_response 之后，计入全部真实工作耗时。
-        execution.final_response = await self._build_response(query, execution.steps)
+        # P3-B-usage：捕获辨证 LLM token 用量并回写 execution。
+        _token_usage: dict = {}
+        execution.final_response = await self._build_response(
+            query, execution.steps, token_usage=_token_usage,
+        )
+        execution.prompt_tokens += int(_token_usage.get("prompt_tokens", 0) or 0)
+        execution.completion_tokens += int(_token_usage.get("completion_tokens", 0) or 0)
         execution.total_latency_ms = (time.time() - total_start) * 1000
 
         logger.info(

@@ -14,6 +14,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Bot, Send, Brain, FlaskConical, FileText,
   Loader2, Circle, CheckCircle2, XCircle, Activity, Trash2,
@@ -27,16 +28,35 @@ import { useAgentSmartRouter } from './hooks/useAgentSmartRouter';
 // ── 默认工作流模板 ──────────────────────────────────────────
 
 const DEFAULT_WORKFLOW_TEMPLATES = [
-  { id: 'formula_design', label: '配方设计', desc: 'RAG检索 → 配方生成 → 合规检查 → 报告输出' },
-  { id: 'compliance_check', label: '合规预审', desc: '多维度合规检查 + 自动修复建议' },
-  { id: 'experiment_plan', label: '实验方案', desc: '配方 → 体外/体内实验设计 → 指标体系' },
-  { id: 'ingredient_lookup', label: '原料查询', desc: '药材功效/法规/配伍禁忌查询' },
-  { id: 'full_pipeline', label: '全流程', desc: 'RAG→配方→合规→实验→报告完整链路' },
+  { id: 'formula_design', labelKey: 'workflowTemplateFormula', descKey: 'workflowTemplateFormulaDesc' },
+  { id: 'compliance_check', labelKey: 'workflowTemplateCompliance', descKey: 'workflowTemplateComplianceDesc' },
+  { id: 'experiment_plan', labelKey: 'workflowTemplateExperiment', descKey: 'workflowTemplateExperimentDesc' },
+  { id: 'ingredient_lookup', labelKey: 'workflowTemplateIngredient', descKey: 'workflowTemplateIngredientDesc' },
+  { id: 'full_pipeline', labelKey: 'workflowTemplateFull', descKey: 'workflowTemplateFullDesc' },
 ] as const;
+
+/** 工作流类型 → pages.agent.workflowTemplate* 的 key 后缀（智能路由推荐徽标用） */
+const WORKFLOW_TYPE_LABEL_KEY: Record<string, string> = {
+  formula_design: 'workflowTemplateFormula',
+  compliance_check: 'workflowTemplateCompliance',
+  experiment_plan: 'workflowTemplateExperiment',
+  ingredient_lookup: 'workflowTemplateIngredient',
+  full_pipeline: 'workflowTemplateFull',
+};
+
+/** 快捷提示：工作流类型 → pages.agent.workflowQuick* 的 key 后缀列表 */
+const QUICK_PROMPT_KEYS: Record<string, string[]> = {
+  formula_design: ['workflowQuickFormula1', 'workflowQuickFormula2'],
+  compliance_check: ['workflowQuickCompliance1', 'workflowQuickCompliance2'],
+  experiment_plan: ['workflowQuickExperiment1', 'workflowQuickExperiment2'],
+  ingredient_lookup: ['workflowQuickIngredient1', 'workflowQuickIngredient2'],
+  full_pipeline: ['workflowQuickFull1'],
+};
 
 // ── Step 状态徽章 ────────────────────────────────────────────
 
 function StepBadge({ step }: { step: import('@/components/ai/shared/types').StepState }) {
+  const { t } = useTranslation();
   const iconMap = {
     running: <Loader2 className="w-3 h-3 animate-spin" />,
     success: <CheckCircle2 className="w-3 h-3 text-success-500" />,
@@ -52,10 +72,10 @@ function StepBadge({ step }: { step: import('@/components/ai/shared/types').Step
   };
 
   const labelMap: Record<string, string> = {
-    llm_request: 'LLM',
-    tool_call: step.toolName ?? 'Tool',
-    compaction: '压缩',
-    final_response: '输出',
+    llm_request: t('pages.agent.workflowStepLLM'),
+    tool_call: step.toolName ?? t('pages.agent.workflowStepTool'),
+    compaction: t('pages.agent.workflowStepCompaction'),
+    final_response: t('pages.agent.workflowStepFinal'),
   };
 
   return (
@@ -70,6 +90,7 @@ function StepBadge({ step }: { step: import('@/components/ai/shared/types').Step
 // ── 组件 ────────────────────────────────────────────────────
 
 export function AgentWorkflowTab() {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -112,9 +133,11 @@ export function AgentWorkflowTab() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (input.trim() && !isRunning) {
+        // P1-F2 修复：将智能路由推荐类型直接作为 workflowTypeParam 传入 execute，
+        // 避免 setWorkflowType 异步更新未生效导致提交旧类型（stale-closure）。
         const result = route(input.trim());
         if (result.workflowType) setWorkflowType(result.workflowType);
-        sendMessage(input.trim());
+        sendMessage(input.trim(), result.workflowType);
         setInput('');
       }
     }
@@ -129,6 +152,16 @@ export function AgentWorkflowTab() {
   const selectedTemplate = DEFAULT_WORKFLOW_TEMPLATES.find((t) => t.id === workflowType)
     ?? workflowTemplates.find((t) => t.id === workflowType)
     ?? DEFAULT_WORKFLOW_TEMPLATES[0];
+
+  // 模板展示解析：DEFAULT 用 labelKey/descKey，hook 返回用 label/name/desc/description
+  const templateLabel = (tpl: unknown) => {
+    const o = tpl as { labelKey?: string; label?: string; name?: string } | null | undefined;
+    return o ? (o.labelKey ? t(`pages.agent.${o.labelKey}`) : o.label ?? o.name ?? '') : '';
+  };
+  const templateDesc = (tpl: unknown) => {
+    const o = tpl as { descKey?: string; desc?: string; description?: string } | null | undefined;
+    return o ? (o.descKey ? t(`pages.agent.${o.descKey}`) : o.desc ?? o.description ?? '') : '';
+  };
 
   // 清空对话
   const handleClear = useCallback(() => {
@@ -145,13 +178,13 @@ export function AgentWorkflowTab() {
         </div>
         <div className="flex-1">
           <h2 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-            AI 研发助手
+            {t('pages.agent.workflowTitle')}
             <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-accent-100 dark:bg-accent-300/25 text-accent-700 dark:text-accent-700">
-              Agent v3.0
+              {t('pages.agent.workflowBadge')}
             </span>
           </h2>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Turn/Step 驱动 · Waterfall 事件 · IndexedDB 持久化 · CompactionLock
+            {t('pages.agent.workflowSubtitle')}
           </p>
         </div>
 
@@ -160,15 +193,13 @@ export function AgentWorkflowTab() {
           <button
             onClick={handleRecommendedRouteClick}
             className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-50 dark:bg-accent-300/20 border border-accent-200 dark:border-accent-800 hover:bg-accent-100 dark:hover:bg-accent-900/40 transition-colors cursor-pointer"
-            title="点击切换到此工作流模式"
+            title={t('pages.agent.workflowSwitchMode')}
           >
             <Brain className="w-3.5 h-3.5 text-accent-600 dark:text-accent-700" />
             <span className="text-xs text-accent-700 dark:text-accent-700">
-              {recommendedRoute.workflowType === 'formula_design' && '配方设计'}
-              {recommendedRoute.workflowType === 'compliance_check' && '合规检查'}
-              {recommendedRoute.workflowType === 'experiment_plan' && '实验方案'}
-              {recommendedRoute.workflowType === 'ingredient_lookup' && '原料查询'}
-              {recommendedRoute.workflowType === 'full_pipeline' && '全流程'}
+              {recommendedRoute.workflowType && WORKFLOW_TYPE_LABEL_KEY[recommendedRoute.workflowType]
+                ? t(`pages.agent.${WORKFLOW_TYPE_LABEL_KEY[recommendedRoute.workflowType]}`)
+                : recommendedRoute.workflowType}
             </span>
           </button>
         )}
@@ -178,35 +209,35 @@ export function AgentWorkflowTab() {
           {executedCount > 0 && (
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-700">
               <CheckCircle2 size={12} />
-              <span>已执行 {executedCount} 次</span>
+              <span>{t('pages.agent.workflowExecuted', { count: executedCount })}</span>
             </div>
           )}
           <button
             onClick={() => setShowCompactionInfo(!showCompactionInfo)}
             className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
-            title="查看 Token 使用情况"
+            title={t('pages.agent.workflowTokenTitle')}
             data-testid="token-indicator"
           >
             <Activity size={12} />
-            <span>{tokenCount.toLocaleString()} tokens</span>
+            <span>{t('pages.agent.workflowTokens', { count: tokenCount.toLocaleString() })}</span>
           </button>
           <button
             onClick={handleClear}
             disabled={isRunning}
             className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-error-50 dark:hover:bg-error-900/20 text-neutral-500 hover:text-error-500 transition-colors disabled:opacity-50"
-            title="清空对话"
+            title={t('pages.agent.workflowClearTitle')}
           >
             <Trash2 size={12} />
           </button>
           <button
             onClick={() => setExpanded((v) => !v)}
             className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 transition-colors"
-            title={expanded ? '退出全屏' : '放大对话框'}
-            aria-label={expanded ? '退出全屏' : '放大对话框'}
+            title={expanded ? t('pages.agent.workflowExitFullscreen') : t('pages.agent.workflowExpandTitle')}
+            aria-label={expanded ? t('pages.agent.workflowExitFullscreen') : t('pages.agent.workflowExpandTitle')}
             data-testid="workflow-expand"
           >
             {expanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
-            <span>{expanded ? '退出全屏' : '放大'}</span>
+            <span>{expanded ? t('pages.agent.workflowExitFullscreen') : t('pages.agent.workflowExpand')}</span>
           </button>
         </div>
       </div>
@@ -215,8 +246,8 @@ export function AgentWorkflowTab() {
       {showCompactionInfo && (
         <div className="px-6 py-2 bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
-            <span>已用: {tokenCount.toLocaleString()} tokens</span>
-            <span>消息数: {messages.length}</span>
+            <span>{t('pages.agent.workflowUsed', { count: tokenCount.toLocaleString() })}</span>
+            <span>{t('pages.agent.workflowMsgCount', { count: messages.length })}</span>
             <div className="flex-1 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${
@@ -226,7 +257,7 @@ export function AgentWorkflowTab() {
                 style={{ width: `${Math.min(tokenRatio * 100, 100)}%` }}
               />
             </div>
-            <span>阈值: 80% / 95%</span>
+            <span>{t('pages.agent.workflowThreshold')}</span>
           </div>
         </div>
       )}
@@ -239,30 +270,21 @@ export function AgentWorkflowTab() {
               <FlaskConical className="w-8 h-8 text-white" />
             </div>
             <p className="text-sm text-neutral-600 dark:text-neutral-300 font-medium mb-2">
-              AI 研发助手就绪 (v3.0)
+              {t('pages.agent.workflowReadyTitle')}
             </p>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-md mb-6">
-              Turn/Step 驱动 · Waterfall 事件拦截 · 有界并行调度(10) · IndexedDB 持久化 · CompactionLock
+              {t('pages.agent.workflowReadyDesc')}
             </p>
             <div className="flex flex-wrap gap-2 justify-center max-w-lg">
-              {(() => {
-                const quickPrompts: Record<string, string[]> = {
-                  formula_design: ['帮我设计一款针对高血糖人群的饮品配方', '生成一款抗氧化配方的实验方案'],
-                  compliance_check: ['查询黄芪的功效和合规用量', '检测枸杞和黄芪搭配的协同效应'],
-                  experiment_plan: ['生成一款抗氧化配方的实验方案', '设计体外细胞实验验证流程'],
-                  ingredient_lookup: ['查询黄芪的功效和合规用量', '查一下当归的性味归经'],
-                  full_pipeline: ['帮我设计一款针对高血糖人群的饮品配方，并完成合规检查'],
-                };
-                return (quickPrompts[workflowType] || quickPrompts.formula_design).map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => { setInput(s); inputRef.current?.focus(); }}
-                    className="text-xs px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-accent-400 hover:text-accent-600 dark:hover:border-accent-500 dark:hover:text-accent-400 hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-all"
-                  >
-                    {s}
-                  </button>
-                ));
-              })()}
+              {(QUICK_PROMPT_KEYS[workflowType] || QUICK_PROMPT_KEYS.formula_design).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => { setInput(t(`pages.agent.${key}`)); inputRef.current?.focus(); }}
+                  className="text-xs px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-accent-400 hover:text-accent-600 dark:hover:border-accent-500 dark:hover:text-accent-400 hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-all"
+                >
+                  {t(`pages.agent.${key}`)}
+                </button>
+              ))}
             </div>
 
             {/* 模板说明 */}
@@ -272,10 +294,10 @@ export function AgentWorkflowTab() {
                   <FileText className="w-6 h-6 text-accent-600 dark:text-accent-700" />
                   <div className="text-left">
                     <p className="text-sm font-medium text-neutral-900 dark:text-white">
-                      {selectedTemplate?.label ?? selectedTemplate?.name ?? ''}
+                      {templateLabel(selectedTemplate)}
                     </p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                      {selectedTemplate?.desc ?? selectedTemplate?.description ?? ''}
+                      {templateDesc(selectedTemplate)}
                     </p>
                   </div>
                 </div>
@@ -291,7 +313,7 @@ export function AgentWorkflowTab() {
           <div className="mt-4 p-3 rounded-xl bg-accent-50 dark:bg-accent-300/15 border border-accent-200 dark:border-accent-800">
             <div className="flex items-center gap-2 text-xs text-accent-700 dark:text-accent-700 mb-2">
               <Activity className="w-3 h-3 animate-pulse" />
-              <span>Turn: {currentTurn.turnId.slice(-8)}</span>
+              <span>{t('pages.agent.workflowTurn', { id: currentTurn.turnId.slice(-8) })}</span>
               <span className="ml-auto">{currentTurn.status}</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -315,7 +337,7 @@ export function AgentWorkflowTab() {
           <div className="flex justify-start mt-4">
             <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-sm text-neutral-500 shadow-sm">
               <span className="inline-block w-2 h-2 rounded-full bg-accent-500 mr-2 animate-pulse" />
-              Agent 思考中...
+              {t('pages.agent.workflowThinking')}
             </div>
           </div>
         )}
@@ -331,23 +353,29 @@ export function AgentWorkflowTab() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="描述你的研发需求，AI 将自动检索知识、生成配方并检查合规性…"
+            placeholder={t('pages.agent.workflowPlaceholder')}
             rows={2}
+            aria-label={t('pages.agent.workflowPlaceholder')}
             className="flex-1 resize-none rounded-xl border border-neutral-200 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-700 px-4 py-3 text-sm text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent transition-all"
             disabled={isRunning}
             data-testid="agent-input"
           />
           <button
-            onClick={() => sendMessage(input.trim())}
+            onClick={() => {
+              // P1-F2：发送按钮与 Enter 行为一致，将智能路由推荐类型作为
+              // workflowTypeParam 传入 execute，避免读到旧类型。
+              const result = route(input.trim());
+              sendMessage(input.trim(), result.workflowType);
+            }}
             disabled={isRunning || !input.trim()}
             className="px-4 py-3 rounded-xl bg-gradient-to-r from-[var(--color-accent-surface)] to-[var(--color-accent-surface-deep)] hover:from-[var(--color-accent-surface-deep)] hover:to-[var(--color-accent-surface-deep)] disabled:bg-neutral-300 dark:disabled:bg-neutral-600 text-white text-sm font-medium transition-all disabled:cursor-not-allowed shadow-lg shadow-accent-500/20 hover:shadow-accent-500/30 flex items-center gap-2"
           >
-            <Send size={16} />
-            <span className="hidden sm:inline">发送</span>
+            <Send size={16} aria-hidden="true" />
+            <span className="hidden sm:inline">{t('pages.agent.workflowSend')}</span>
           </button>
         </div>
         <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-2 text-center">
-          Enter 发送 · Shift+Enter 换行 · 并行工具 max=10 · IndexedDB 持久化 · CompactionLock
+          {t('pages.agent.workflowHint')}
         </p>
       </div>
     </div>

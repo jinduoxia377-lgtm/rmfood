@@ -45,7 +45,7 @@ export interface UseUnifiedAgentReturn {
   turnHistory: TurnState[];
   tokenCount: number;
   setWorkflowType: (type: string) => void;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string, workflowTypeParam?: string) => Promise<void>;
   clearMessages: () => void;
   reloadTemplates: () => Promise<void>;
   execute: (query: string, workflowTypeParam?: string) => Promise<void>;
@@ -254,7 +254,9 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
       offRequestError();
       offTurnStopping();
       session.close();
-      emitter.setEnabled(false);
+      // P2-F1 修复：原调用 emitter.setEnabled(false) 禁用的是全局单例 waterfall
+      // emitter，用户从 Chief 视图切走后被永久禁用，再次进入时事件失效。
+      // 订阅者已在上方 off*() 注销，无需也不应禁用全局单例。
     };
   }, []);
 
@@ -309,11 +311,17 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
   // ── 加载工作流模板 ───────────────────────────────────────
   const reloadTemplates = useCallback(async () => {
     try {
-      const res = await workflowApi.listTemplates();
+      // 必须使用 Agent 工作流模板（listAgentTemplates → /agent/workflows/templates），
+      // 与 execute()（→ /agent/workflow/{type}/execute）同源，保证模板展示与执行类型一致。
+      // 不能改用 listTemplates()（→ /workflows/templates，那是 workflow_exec 模板，
+      // 且 WorkflowVisualEditor 依赖它，二者类型/用途不同）。
+      const res = await workflowApi.listAgentTemplates();
       setWorkflowTemplates(
         (res.items || []).map((t) => ({
           template_id: t.template_id,
-          id: t.id,
+          // Agent 工作流模板接口仅返回 template_id，无 id；回退到 template_id 保证
+          // AgentWorkflowTab 的 `t.id === workflowType` 比较命中。
+          id: t.id ?? t.template_id,
           name: t.name,
           label: t.name,
           description: t.description ?? undefined,
@@ -625,6 +633,10 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
       const turnId = startTurn(query, wfType);
       addMessage('assistant', '', { executionId: turnId, workflowType: wfType });
 
+      // 真实 stepId 跟踪：addStep 生成 `step-<ts>-<rand>`，completeStep 必须复用同一个 id，
+      // 不能再用字面量 'final-response'（否则找不到对应 step，步骤状态/耗时无法更新）。
+      let finalStepId: string | null = null;
+
       try {
         const emitter = emitterRef.current;
         await emitter?.emit('agent/request', { turnId, model: 'deepseek-chat' }).catch(() => {});
@@ -653,6 +665,7 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
         // 工作流失败时使用 smart 模式（含 LLM 调用）
         if (!workflowSucceeded) {
           const stepId = addStep('llm_request');
+          finalStepId = stepId;
           const exec = await executeStep(turnId, stepId, query);
 
           // 将 smart 模式的工具调用结果呈现给 UI，避免详情丢失
@@ -668,12 +681,14 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
  await executeToolCalls(toolCalls);
           }
         } else {
-          // 工作流成功时补全 final-response step
-          addStep('final_response');
+          // 工作流成功时补全 final-response step（记录真实 stepId 供 completeStep 使用）
+          finalStepId = addStep('final_response');
         }
 
         // 若工作流成功但未获取到 result（异常），降级到 smart 模式
         if (!result) {
+          // 兜底 smart 模式：若此前没有可追踪的 step，为其补建一个（避免 completeStep 空转）
+          if (!finalStepId) finalStepId = addStep('llm_request');
           const smartRes = await agentApi.execute({ query, mode: 'smart', max_steps: 5 });
           result = smartRes.data;
 
@@ -696,7 +711,7 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
             : '')) || '执行完成';
 
         updateLastAssistantMessage(finalContent, { executionId: turnId });
-        completeStep('final-response', true, undefined, finalContent);
+        if (finalStepId) completeStep(finalStepId, true, undefined, finalContent);
 
         setExecutedCount((c) => c + 1);
         onComplete?.(undefined);
@@ -708,7 +723,7 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
         logger.error('[useUnifiedAgent] Execution failed:', err);
         const errorMsg = err instanceof Error ? err.message : String(err);
         updateLastAssistantMessage(`执行失败：${errorMsg}`);
-        completeStep('final-response', false, errorMsg);
+        if (finalStepId) completeStep(finalStepId, false, errorMsg);
         onError?.(err instanceof Error ? err : new Error(String(err)));
         endTurn(turnId, 'cancelled');
       } finally {
@@ -722,8 +737,10 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
     ]
   );
 
-  const sendMessage = useCallback(async (content: string): Promise<void> => {
-    await execute(content);
+  const sendMessage = useCallback(async (content: string, workflowTypeParam?: string): Promise<void> => {
+    // P1-F2：允许调用方显式传入智能路由推荐的工作流类型，
+    // 避免 setWorkflowType 异步未生效导致 execute 读到旧类型（stale-closure）。
+    await execute(content, workflowTypeParam);
   }, [execute]);
 
   const clearMessages = useCallback(async () => {

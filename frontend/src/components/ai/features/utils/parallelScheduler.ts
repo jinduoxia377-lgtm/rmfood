@@ -142,13 +142,34 @@ async function executeFormulaGeneration(call: ToolCall): Promise<unknown> {
 /**
  * 合规检查执行
  *
- * 后端有 /compliance/check/realtime，但其入参是 current_ingredients: IngredientItem[]
- * （结构化成分对象），与 LLM 工具调用传来的自由输入不一致，不能直接透传。
- * 先显式失败，等入参映射明确后再接。
+ * P2-F2 修复：接入真实后端端点 /api/v1/compliance/check/realtime。
+ * 后端入参为 current_ingredients: {name, dosage_mg}[] + population
+ * （adults|children|elderly），与 LLM 工具调用传来的 ingredients/target_population
+ * 做最佳努力映射。
  */
 async function executeComplianceCheck(call: ToolCall): Promise<unknown> {
-  void call;
-  throw new Error('工具暂不可用：合规检查入参映射未定义（后端 /compliance/check/realtime 需要结构化成分表）');
+  const input = (call.input ?? {}) as Record<string, unknown>;
+  const rawIngredients = Array.isArray(input.ingredients)
+    ? (input.ingredients as Array<Record<string, unknown>>)
+    : [];
+  const current_ingredients = rawIngredients
+    .filter((i) => typeof i?.name === 'string')
+    .map((i) => ({
+      name: i.name as string,
+      dosage_mg: Number(i.dosage_mg ?? i.dosage ?? 0) || 0,
+    }));
+  if (!current_ingredients.length) {
+    throw new Error('合规检查失败：ingredients 不能为空');
+  }
+  const popRaw =
+    (input.target_population as string | undefined) ??
+    (input.population as string | undefined) ??
+    'adults';
+  const population = ['adults', 'children', 'elderly'].includes(popRaw) ? popRaw : 'adults';
+  return fetchWithCsrf('/api/v1/compliance/check/realtime', {
+    method: 'POST',
+    body: JSON.stringify({ current_ingredients, population }),
+  });
 }
 
 /**
