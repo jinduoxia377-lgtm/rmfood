@@ -25,7 +25,6 @@ const RADIUS: Record<string, number> = {
 
 // ─── 主题色板 ────────────────────────────────────────────────
 const BOND_COLOR = '#4a6fa5';
-const BOND_EMISSIVE = '#1a3a6a';
 const THEME_METALNESS = 0.65;
 const THEME_ROUGHNESS = 0.25;
 const THEME_CLEARCOAT = 0.4;
@@ -52,7 +51,7 @@ function LightingSystem() {
       <directionalLight position={[0, -8, 2]} intensity={0.3} color="#4060a0" />
       <ambientLight intensity={0.25} color="#c0d8ff" />
       <pointLight position={[5, 5, 8]} intensity={0.6} distance={30} />
-      <hemisphereLight {...({ skyColor: '#1a3060', groundColor: '#0a0a1a', intensity: 0.3 } as any)} />
+      <hemisphereLight {...({ skyColor: '#1a3060', groundColor: '#0a0a1a', intensity: 0.3 })} />
     </>
   );
 }
@@ -101,11 +100,13 @@ function BallAndStickModel({ atoms, bonds }: { atoms: Atom[]; bonds: Bond[] }) {
         return (
           <mesh key={`a-${idx}`} position={[atom.x, atom.y, atom.z]}>
             <sphereGeometry args={[r, 24, 24]} />
-            <meshStandardMaterial
+            <meshPhysicalMaterial
               color={CPK[atom.element] || '#888888'}
               metalness={THEME_METALNESS}
               roughness={THEME_ROUGHNESS}
-              {...({ clearcoat: THEME_CLEARCOAT, clearcoatRoughness: THEME_CLEARCOAT_ROUGH, reflectivity: 0.8 } as any)}
+              clearcoat={THEME_CLEARCOAT}
+              clearcoatRoughness={THEME_CLEARCOAT_ROUGH}
+              reflectivity={0.8}
             />
           </mesh>
         );
@@ -134,11 +135,13 @@ function SpaceFillingModel({ atoms }: { atoms: Atom[] }) {
         return (
           <mesh key={`sf-${idx}`} position={[atom.x, atom.y, atom.z]}>
             <sphereGeometry args={[r, 28, 28]} />
-            <meshStandardMaterial
+            <meshPhysicalMaterial
               color={CPK[atom.element] || '#888888'}
               metalness={0.1}
               roughness={0.15}
-              {...({ clearcoat: 1.0, clearcoatRoughness: 0.05, reflectivity: 1.0 } as any)}
+              clearcoat={1.0}
+              clearcoatRoughness={0.05}
+              reflectivity={1.0}
             />
           </mesh>
         );
@@ -154,11 +157,11 @@ function TubeModel({ atoms, bonds }: { atoms: Atom[]; bonds: Bond[] }) {
       {atoms.map((atom, idx) => (
         <mesh key={`t-a-${idx}`} position={[atom.x, atom.y, atom.z]}>
           <sphereGeometry args={[0.18, 12, 12]} />
-          <meshStandardMaterial
+          <meshPhysicalMaterial
             color={CPK[atom.element] || '#888888'}
             metalness={THEME_METALNESS}
             roughness={THEME_ROUGHNESS}
-            {...({ clearcoat: 0.5 } as any)}
+            clearcoat={0.5}
           />
         </mesh>
       ))}
@@ -252,7 +255,7 @@ export function MoleculeViewer3D({
             console.log('[MoleculeViewer3D] WebGL context restored');
           },
           dpr: [1, 2],
-        } as any)}
+        })}
         style={{ background: 'transparent' }}
       >
         {/* 深空背景 */}
