@@ -1,6 +1,8 @@
 """
 仪表盘、排行、趋势与搜索建议 API
 """
+import logging
+
 from fastapi import Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy import func, select, text
@@ -15,8 +17,6 @@ from ..deps import get_db_session
 
 # Shared router for dashboard module.
 from . import router
-
-import logging
 
 logger = logging.getLogger(__name__)
 

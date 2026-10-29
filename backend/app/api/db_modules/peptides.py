@@ -1,6 +1,8 @@
 """
 活性肽与知识图谱检索 API
 """
+import logging
+
 from fastapi import Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,8 +15,6 @@ from ..deps import get_current_user, get_db_session
 
 # Shared router for peptides module.
 from . import router
-
-import logging
 
 logger = logging.getLogger(__name__)
 

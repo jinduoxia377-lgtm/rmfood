@@ -388,7 +388,7 @@ class AutoFeatureEngineer:
             variances = x.var()
             selected = variances[variances > threshold].index.tolist()
         else:
-            selected = X.columns.tolist()
+            selected = x.columns.tolist()
 
         self.selected_features = selected
         return selected

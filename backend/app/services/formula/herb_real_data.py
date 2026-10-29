@@ -139,7 +139,7 @@ class HerbRealDataService:
             scores = row[3]
             if isinstance(scores, str):
                 try:
-                    scores = json.loads(scores)
+                    scores = json.loads(scores)  # noqa: F823
                 except Exception:
                     scores = None
             return {

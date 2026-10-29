@@ -32,7 +32,7 @@ class SearchResultItem:
     extra: Dict[str, Any] = field(default_factory=dict)
 
 
-class RRF_Fusion:
+class RRFFusion:
     """RRF 融合算法"""
 
     def __init__(
@@ -155,7 +155,7 @@ class HybridSearchService:
     """混合搜索服务 (BM25 + Vector + RRF)"""
 
     def __init__(self, bm25_weight: float = 0.4, vector_weight: float = 0.3, rule_weight: float = 0.3):
-        self.fusion = RRF_Fusion(bm25_weight, vector_weight, rule_weight)
+        self.fusion = RRFFusion(bm25_weight, vector_weight, rule_weight)
 
     def search_food_materials(
         self,
