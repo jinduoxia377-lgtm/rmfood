@@ -640,7 +640,7 @@ export default function UserManagementPage() {
       result = result.filter((u) => (statusFilter === 'active' ? u.is_active : !u.is_active));
     }
     if (orgFilter !== null) {
-      result = result.filter((u) => (u as any).organization_id === orgFilter);
+      result = result.filter((u) => (u as unknown as { organization_id: number | null }).organization_id === orgFilter);
     }
     return result;
   }, [sortedUsers, statusFilter, orgFilter]);
@@ -658,7 +658,7 @@ export default function UserManagementPage() {
   }, [highlightUserId, filteredUsers]);
 
   // 全量统计（来自后端 /admin/users 的 stats 字段，不随分页变化）
-  const fullStats = (data as any)?.stats;
+  const fullStats = (data as unknown as { stats: { role_counts?: Record<string, number>; total_users?: number; active_users?: number; inactive_users?: number } })?.stats;
 
   const roleStats = useMemo(() => {
     const stats: Record<string, number> = {};
@@ -1740,7 +1740,7 @@ export default function UserManagementPage() {
                         const isSelf = user.id === currentUser?.id;
                         const showMenu = actionMenuId === user.id;
                         const hasAnomaly = (user.login_attempts ?? 0) >= 3;
-                        const isLocked = !!(user as any).locked_until && new Date((user as any).locked_until) > new Date();
+                        const isLocked = !!(user as unknown as { locked_until?: string | null }).locked_until && new Date((user as unknown as { locked_until?: string | null }).locked_until!) > new Date();
 
                         return (
                           <tr
@@ -2289,7 +2289,7 @@ export default function UserManagementPage() {
                     onClick={() => {
                       adminApi.listUsers({ search: preRegDetail.email, page: 1, page_size: 1 })
                         .then((res) => {
-                          const items = (res as any).items || (res as any).data || [];
+                          const items = (res as unknown as { items?: UserDetail[]; data?: UserDetail[] }).items || (res as unknown as { items?: UserDetail[]; data?: UserDetail[] }).data || [];
                           if (items[0]) {
                             setDetailUser(items[0]);
                             setDetailTab('info');
@@ -2516,7 +2516,7 @@ export default function UserManagementPage() {
                           setEditForm({
                             email: detailUser.email || '',
                             full_name: detailUser.full_name || '',
-                            phone: (detailUser as any).phone || '',
+                            phone: (detailUser as unknown as { phone?: string }).phone || '',
                             department: detailUser.department || '',
                           });
                           setEditErrors({});
@@ -3061,7 +3061,7 @@ export default function UserManagementPage() {
             <Upload className="w-4 h-4" />
             <AlertTitle>CSV 格式导入</AlertTitle>
             <AlertDescription className="text-xs mt-1">
-              支持标准 CSV 格式文件。首行为标题行："{t('pages.userManagement.thUsername')}", "姓名, {t('pages.userManagement.thEmail')}, 角色, 部门
+              {`支持标准 CSV 格式文件。首行为标题行："${t('pages.userManagement.thUsername')}", "${t('pages.userManagement.preRegThName')}, ${t('pages.userManagement.thEmail')}, ${t('pages.userManagement.thRole')}, ${t('pages.userManagement.thDepartment')}`}
             </AlertDescription>
           </Alert>
 
@@ -3131,7 +3131,7 @@ lisi,李四,li@example.com,analyst,数据部`}
           setShowCreateModal(false);
           setCreateErrors({});
         }}
-        title="{t('pages.userManagement.newUser')}"
+        title={t('pages.userManagement.newUser')}
         size="md"
       >
         <div className="space-y-6">

@@ -12,7 +12,6 @@ import {
   Lightbulb,
   Cog,
   Eye,
-  FileText,
   Clock,
   CheckCircle,
   XCircle,
@@ -29,7 +28,7 @@ interface InferenceChainVisualizerProps {
   autoScrollToActive?: boolean;
 }
 
-export default function InferenceChainVisualizer({ chain, autoScrollToActive = true }: InferenceChainVisualizerProps) {
+export default function InferenceChainVisualizer({ chain, autoScrollToActive: _autoScrollToActive = true }: InferenceChainVisualizerProps) {
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set());
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -132,7 +131,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
       });
       // 强制虚拟列表重新计算尺寸
       setTimeout(() => {
-        (virtualizer as any)?.recomputeSize?.();
+        virtualizer.measure();
       }, 50);
     },
     [virtualizer],
@@ -143,7 +142,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
     const allStepIds = new Set(chain.steps.map((s) => s.id));
     setExpandedSteps(allStepIds);
     setTimeout(() => {
-      (virtualizer as any)?.recomputeSize?.();
+      virtualizer.measure();
     }, 50);
   }, [chain.steps, virtualizer]);
 
@@ -151,7 +150,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
   const handleCollapseAll = useCallback(() => {
     setExpandedSteps(new Set());
     setTimeout(() => {
-      (virtualizer as any)?.recomputeSize?.();
+      (virtualizer as unknown as { recomputeSize?: () => void })?.recomputeSize?.();
     }, 50);
   }, [virtualizer]);
 

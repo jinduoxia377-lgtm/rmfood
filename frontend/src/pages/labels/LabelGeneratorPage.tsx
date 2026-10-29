@@ -140,7 +140,7 @@ export default function LabelGeneratorPage() {
         entity_id: resolvedId || 1,
         entity_name: name,
         label_size: labelSize,
-        format: barcodeType as any,
+        format: barcodeType,
         output_format: outputFormat,
       })
       if (!(res instanceof Blob)) throw new Error(t('pages.label.genFailed'))
@@ -328,7 +328,7 @@ export default function LabelGeneratorPage() {
                       ) : batchesData?.items?.length === 0 ? (
                         <div className="text-sm text-[var(--text-muted)] text-center py-[var(--space-apple-md)]">
                           {t('pages.label.noBatchesHint')}{' '}
-                          <button onClick={() => navigate('/batches/new')} className="text-[var(--color-secondary-text)]0 dark:text-[var(--color-secondary-text)] hover:underline font-medium">{t('pages.label.createBatch')}</button>
+                          <button onClick={() => navigate('/batches/new')} className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] hover:underline font-medium min-h-[44px] inline-flex items-center px-1 -mx-1">{t('pages.label.createBatch')}</button>
                         </div>
                       ) : (
                         <>
