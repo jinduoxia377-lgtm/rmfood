@@ -597,7 +597,7 @@ async def get_ai_stats_summary(
         # 9. 知识库文档数
         try:
             from ...services.ai.rag.rag_service import rag_service
-            rag_stats = await rag_service.get_stats()
+            rag_stats = rag_service.get_stats()
             result["knowledge_doc_count"] = int(rag_stats.get("total_docs", 0))
         except Exception as e:
             logger.warning("RAG stats 查询失败: %s", e)
