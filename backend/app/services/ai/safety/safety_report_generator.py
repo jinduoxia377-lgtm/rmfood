@@ -41,13 +41,13 @@ class SafetyReportGenerator:
         # 合规率颜色
         if data.overall_compliance >= 90:
             color = "#10B981"
-            status_text = "合格"
+            _ = "合格"
         elif data.overall_compliance >= 70:
             color = "#F59E0B"
-            status_text = "有条件合格"
+            _ = "有条件合格"
         else:
             color = "#EF4444"
-            status_text = "不合格"
+            _ = "不合格"
 
         # 法规引用
         reg_rows = ""

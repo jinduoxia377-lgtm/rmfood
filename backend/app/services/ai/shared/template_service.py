@@ -393,7 +393,7 @@ class TemplateService:
         """
         submission_id = f"community_{uuid.uuid4().hex[:8]}"
 
-        submission = {
+        _ = {
             "id": submission_id,
             "submitter_id": user_id,
             "submitted_at": time.strftime("%Y-%m-%dT%H:%M:%SZ"),

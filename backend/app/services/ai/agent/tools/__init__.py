@@ -1,3 +1,4 @@
+# ruff: noqa: E402  -- 延迟/条件导入（sub-router、懒加载）属模块组织约定
 """
 Agent 工具集协议
 

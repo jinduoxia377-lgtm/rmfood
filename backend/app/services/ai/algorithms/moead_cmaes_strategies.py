@@ -262,7 +262,7 @@ class CMAESEvaluator:
     def _initialize_parameters(self) -> None:
         """初始化CMA-ES参数"""
         mu = self.config.mu
-        lam = self.config.lambda_
+        _ = self.config.lambda_
 
         # 更新权重（促进早熟收敛）
         self.config.weights = [

@@ -124,7 +124,7 @@ class EventBus:
             handler: 处理函数（同步或异步均可）
             listener_id: 可选，用于同一 handler 多次订阅时区分
         """
-        key = f"{event_type}:{listener_id}" if listener_id else event_type
+        _ = f"{event_type}:{listener_id}" if listener_id else event_type
         self._handlers[event_type].append(handler)
         logger.debug("[EventBus] 订阅: %s → %s", event_type, handler.__name__)
 

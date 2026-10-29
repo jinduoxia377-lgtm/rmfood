@@ -137,9 +137,9 @@ class BatchImporter:
                     title = row.get(mapping.title_field)
 
                 # 获取来源
-                source = None
+                _ = None
                 if mapping.source_field and mapping.source_field in row:
-                    source = row.get(mapping.source_field)
+                    _ = row.get(mapping.source_field)
 
                 # 构建文档元数据
                 metadata = {}

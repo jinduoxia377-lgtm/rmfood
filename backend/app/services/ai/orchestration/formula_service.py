@@ -126,7 +126,7 @@ class AIService:
         使用 PepINVERT 生成增强的肽候选方案
         """
         from datetime import datetime, timezone
-        generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        _ = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
         try:
             pepinvent_response = await self.pepinvent_service.generate_peptides(

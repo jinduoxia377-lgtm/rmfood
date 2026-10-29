@@ -188,13 +188,18 @@ class AgentOrchestrator:
 
         execution.status = "completed"
         execution.completed_at = datetime.now(timezone.utc)
-        execution.total_latency_ms = (time.time() - total_start) * 1000
+        # P2-B5 修复：原在 _build_response 之前设 total_latency_ms，导致
+        # 辨证 LLM / 报告生成耗时未计入（fast 实测 wall 49s 只上报 2331ms）。
+        # 现将计时移到 _build_response 之后，计入全部真实工作耗时。
         execution.final_response = await self._build_response(query, execution.steps)
+        execution.total_latency_ms = (time.time() - total_start) * 1000
 
         logger.info(
             "Fast execution done: %d steps, %dms",
             len(execution.steps), execution.total_latency_ms,
         )
+        # P3-B-usage 修复：记录执行 LLM 用量（非致命）
+        await self._record_usage(execution, context)
         return execution
 
     async def execute_smart(
@@ -406,7 +411,37 @@ class AgentOrchestrator:
             "Smart execution done: %d tool calls, %dms",
             len(execution.steps), execution.total_latency_ms,
         )
+        # P3-B-usage 修复：将执行产生的 LLM token 用量写入 ai_bot_usage（非致命）
+        await self._record_usage(execution, context)
         return execution
+
+    async def _record_usage(self, execution: AgentExecution, context: Optional[dict]) -> None:
+        """将执行产生的 LLM token 用量写入 ai_bot_usage（Phase 3，非致命）。
+
+        P3-B-usage 修复：此前仅 bot_manager（Bot 对话）写入用量，
+        agent/execute（orchestrator 快速/智能模式）不写 → /usage/stats 恒为 0。
+        """
+        try:
+            db = (context or {}).get("db")
+            if db is None:
+                return
+            from ....models.usage import AiBotUsage
+            tenant_id = int((context or {}).get("tenant_id") or 1)
+            user_id = int((context or {}).get("user_id") or 0)
+            model = (context or {}).get("model") or "agent"
+            db.add(AiBotUsage(
+                tenant_id=tenant_id,
+                bot_id=None,  # orchestrator/Chief 级执行，无单 Bot
+                user_id=user_id,
+                model=model,
+                prompt_tokens=execution.prompt_tokens,
+                completion_tokens=execution.completion_tokens,
+                endpoint="agent",
+                task_execution_id=execution.execution_id,
+            ))
+            await db.commit()
+        except Exception as e:
+            logger.warning(f"[Usage] 用量记录失败（非致命）: {e}")
 
     async def _call_llm(
         self,
@@ -424,7 +459,7 @@ class AgentOrchestrator:
 
         model_override / temperature_override: DS Bot 移植，按调用覆盖模型与温度。
         """
-        _TOOL_MARKER = "__TOOL_CALLS__:"
+        _tool_marker = "__TOOL_CALLS__:"
 
         try:
             factory = self._provider_factory
@@ -467,8 +502,8 @@ class AgentOrchestrator:
 
             text = result if isinstance(result, str) else str(result)
 
-            if text.startswith(_TOOL_MARKER):
-                raw = text[len(_TOOL_MARKER):]
+            if text.startswith(_tool_marker):
+                raw = text[len(_tool_marker):]
                 try:
                     parsed = json.loads(raw)
                 except json.JSONDecodeError as exc:
@@ -504,6 +539,7 @@ class AgentOrchestrator:
         query: str,
         steps: List[AgentStep],
         user_id: Optional[str] = None,
+        token_usage: Optional[dict] = None,
     ) -> str:
         """根据工具执行结果构建五段式配方报告
 
@@ -511,6 +547,8 @@ class AgentOrchestrator:
             query: 用户问题
             steps: Agent 执行步骤
             user_id: 租户过滤（P0-4），从执行上下文取当前认证用户 id。
+            token_usage: P3-B-usage 可选可变 dict，用于回传辨证 LLM 的 token 用量
+                （写入 ai_bot_usage 统计）。
         """
         tool_outputs: dict = {}
         herbs: list = []
@@ -536,6 +574,9 @@ class AgentOrchestrator:
         parts = ["### 一、辨证与目标\n"]
         try:
             dialectics = await analyze_dialectics(query, user_id=user_id)
+            # P3-B-usage：捕获辨证 LLM token 用量，回传给调用方写入 ai_bot_usage
+            if token_usage is not None:
+                token_usage.update(dialectics.get("_token_usage") or {})
             if dialectics.get("urgent"):
                 parts.append(f"**⚠️ 就医提醒**：{dialectics.get('referral_message', '')}\n")
             else:
@@ -685,21 +726,17 @@ class AgentOrchestrator:
         return self._registry.list_tools()
 
 
-async def _reload_factory_from_db_sync():
-    """同步包装异步 reload，供 get_orchestrator 调用"""
-    from app.services.ai.providers.provider_factory import reload_factory_from_db
-    await reload_factory_from_db()
-
-
 def get_orchestrator(system_prompt: str = "") -> AgentOrchestrator:
-    """创建新的编排器实例，确保每次都使用最新的 LLM 配置"""
-    # 从数据库重载 Provider 工厂（确保使用最新保存的 API Key）
-    try:
-        import asyncio
-        asyncio.run(_reload_factory_from_db_sync())
-    except Exception:
-        pass
-    # 强制清除工厂单例
+    """创建新的编排器实例，确保每次都使用最新的 LLM 配置。
+
+    P2-B3 修复：原实现在此调用 asyncio.run(_reload_factory_from_db_sync())，
+    但 get_orchestrator 是同步函数且常被 async 路由调用 —— asyncio.run 在已运行
+    事件循环内必然抛 RuntimeError，被 except 静默吞掉，DB 重载从未生效，仅产生
+    "coroutine was never awaited" 警告。此处移除该死代码。
+    最新配置通过下方 _set_factory_instance_none() 清空工厂单例 + 下次懒加载
+    （get_provider_factory 重新读取 _get_runtime_config()）实现。
+    """
+    # 强制清除工厂单例（下次使用时懒重建并重新读取最新配置）
     try:
         from app.services.ai.providers.provider_factory import _set_factory_instance_none
         _set_factory_instance_none()

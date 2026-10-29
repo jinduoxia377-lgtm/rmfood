@@ -157,7 +157,7 @@ async def optimize_prompt(
                         "suggestion": "检查该行的括号是否成对出现",
                     })
         # 代码块未闭合
-        if line.strip().startswith("```") and not any("```" in l for l in lines[i:] if l != line):
+        if line.strip().startswith("```") and not any("```" in item for item in lines[i:] if item != line):
             if line.strip().startswith("```") and line.strip() != "```":
                 pass
     if stack:

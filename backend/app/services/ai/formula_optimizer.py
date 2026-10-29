@@ -125,7 +125,7 @@ def optimize_compliance(formula: dict[str, Any]) -> OptimizedFormula:
     suggestions: list[OptimizationSuggestion] = []
 
     # 药食同源目录（简化版）
-    food_homology = {
+    _ = {
         "人参", "黄芪", "当归", "枸杞", "山药", "红枣", "甘草",
         "党参", "茯苓", "白术", "陈皮", "半夏", "川芎", "丹参",
     }
