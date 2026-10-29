@@ -228,6 +228,39 @@ async def list_my_organizations(
             "team_count": int(row.team_count or 0),
             "created_at": row.created_at.isoformat() if row.created_at else None,
         })
+    # 确保「莱茵分子白名单组织」对 admin 可见（系统组织，无成员关系也显示；
+    # 用于白名单获批用户管理与组织级功能授予，见 core/whitelist_org.py）。
+    from ..models.enums import UserRole
+
+    if getattr(current_user, "role", None) == UserRole.ADMIN and not any(
+        o.get("slug") == "whitelist-org" for o in organizations
+    ):
+        wl = await db.execute(
+            text(
+                "SELECT id, name, slug, description, logo_url, plan, owner_id, is_active, created_at "
+                "FROM organizations WHERE slug='whitelist-org' AND is_active=TRUE LIMIT 1"
+            )
+        )
+        wl_row = wl.fetchone()
+        if wl_row:
+            organizations.insert(
+                0,
+                {
+                    "id": wl_row.id,
+                    "name": wl_row.name,
+                    "slug": wl_row.slug,
+                    "description": wl_row.description,
+                    "logo_url": wl_row.logo_url,
+                    "plan": wl_row.plan,
+                    "member_role": None,
+                    "is_favorite": False,
+                    "is_pinned": False,
+                    "owner_id": wl_row.owner_id,
+                    "member_count": 0,
+                    "team_count": 0,
+                    "created_at": wl_row.created_at.isoformat() if wl_row.created_at else None,
+                },
+            )
     return {"organizations": organizations}
 
 

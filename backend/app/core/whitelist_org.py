@@ -86,6 +86,7 @@ async def ensure_whitelist_org(db: AsyncSession) -> Organization:
             slug=WHITELIST_ORG_SLUG,
             description=WHITELIST_ORG_DESCRIPTION,
             is_active=True,
+            owner_id=1,  # DB owner_id NOT NULL；约定所有系统/种子组织 owner_id=1（admin）
         )
         db.add(org)
         await db.flush()  # 拿到 org.id
