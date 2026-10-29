@@ -9,8 +9,6 @@ RAG 全链路端到端验证测试
 运行: cd backend && python -m pytest tests/e2e/test_rag_e2e.py -v --asyncio-mode=auto
 """
 
-import asyncio
-
 
 async def main():
     import os
