@@ -194,7 +194,6 @@ QUERY_SYNONYMS: dict[str, list[str]] = {
     "proteinpulver": ["proteinpulver", "eiweißpulver", "eiweisspulver", "protein powder", "protein"],
     "kollagen": ["kollagen", "collagen"],
     "kollagenpeptid": ["kollagenpeptid", "collagen peptide", "collagen"],
-    "vitamin c": ["vitamin c", "ascorbic acid"],
     "kalzium": ["kalzium", "calcium"],
     "probiotika": ["probiotika", "probiotic", "probiotics"],
     "fischöl": ["fischöl", "fischol", "fischoele", "fish oil", "omega-3"],
