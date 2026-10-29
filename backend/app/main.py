@@ -152,6 +152,18 @@ async def lifespan(app: FastAPI):
             logger.info("[Startup] 数据库初始化完成")
         except Exception as e:
             logger.error(f"[Startup] 数据库初始化失败: {e}")
+    # 2.2 莱茵分子白名单组织主动确保（幂等）：常驻组织，/organizations 页面可见
+    # （组织级授予 + 租户隔离的载体；启动即创建，非惰性）
+    try:
+        from .core.database.session import AsyncSessionLocal
+        from .core.whitelist_org import ensure_whitelist_org
+
+        async with AsyncSessionLocal() as _wl_db:
+            await ensure_whitelist_org(_wl_db)
+            await _wl_db.commit()
+        logger.info("[Startup] 莱茵分子白名单组织已确保存在")
+    except Exception as e:
+        logger.warning(f"[Startup] 白名单组织确保失败（非阻塞）: {e}")
     # 2.5 ② 配额安全接线：加载组织 plan 缓存并挂载 plan 感知 quota provider
     try:
         from .core.multi_tenant.tenant_quota import wire_plan_aware_quota
