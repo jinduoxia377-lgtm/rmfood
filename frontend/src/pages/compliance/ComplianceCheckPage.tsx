@@ -73,7 +73,7 @@ export default function ComplianceCheckPage() {
     }
     setLoading(true)
     try {
-      const res = await complianceApi.bulkCheck(ingredients, population as any)
+      const res = await complianceApi.bulkCheck(ingredients, population)
       setCheckResult(res.data)
       addToast({ type: 'success', message: t('pages.compliance.toastScore', { score: res.data?.score ?? '?' }) })
     } catch (e: any) {
@@ -84,7 +84,7 @@ export default function ComplianceCheckPage() {
   const handleFix = async () => {
     setLoading(true)
     try {
-      const res = await complianceApi.autoFix(ingredients, population as any)
+      const res = await complianceApi.autoFix(ingredients, population)
       const data = res.data
       setIngredients(data.fixed_ingredients ?? ingredients)
       setCheckResult({

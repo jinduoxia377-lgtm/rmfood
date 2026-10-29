@@ -171,7 +171,7 @@ function ScatterPlot({ runs, factors, values }: {
           <RechartsTooltip
             content={({ active, payload }) => {
               if (!active || !payload?.[0]) return null
-              const d = payload[0].payload as any
+              const d = payload[0].payload as unknown as { run_id: number; f1_val: number; f2_val: number; z: number }
               return (
                 <div className="bg-card border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] p-2 text-xs shadow-lg">
                   <div className="font-semibold mb-1">第#{d.run_id} 组</div>
@@ -736,7 +736,7 @@ export default function DoePage() {
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-2 text-xs">
                     <span className="text-[var(--text-muted)]">{t('pages.doe.designType')}</span>
-                    <select value={mixtureDesignType} onChange={e => setMixtureDesignType(e.target.value as any)}
+                    <select value={mixtureDesignType} onChange={e => setMixtureDesignType(e.target.value as 'lattice'|'centroid')}
                       className="h-8 px-2 text-xs rounded-[var(--radius-Apple-sm)] border border-input bg-transparent text-[var(--text-primary)] shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
                       <option value="lattice">{t('pages.doe.lattice')}</option>
                       <option value="centroid">{t('pages.doe.centroid')}</option>
