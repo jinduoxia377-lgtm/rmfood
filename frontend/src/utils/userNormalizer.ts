@@ -31,19 +31,6 @@ export function normalizeUser(raw: RawUser): User {
     // 订阅计划（缺省 'free'；兼容后端尚未返回 plan 的过渡期）
     plan: normalizePlan(raw.plan ?? raw.plan_name),
 
-    // 所属组织（白名单组织授予判定 / 租户隔离显示）
-    // 后端 UserResponse 返回 snake_case organization_id / organization_name；
-    // 同时兼容 camelCase（organizationId/organizationName）、orgName 与嵌套 organization 对象。
-    organizationId: raw.organizationId ?? raw.organization_id ?? undefined,
-    organizationName:
-      raw.organizationName ??
-      raw.organization_name ??
-      (raw.orgName as string | undefined) ??
-      ((raw.organization as { name?: string } | undefined)?.name) ??
-      undefined,
-    orgName: (raw.orgName as string | undefined) ?? undefined,
-    organization: (raw.organization as { id?: number; name?: string } | undefined) ?? undefined,
-
     role: (raw.role ?? 'guest') as UserRole,
     isActive: raw.isActive ?? raw.is_active ?? true,
     department: raw.department ?? undefined,

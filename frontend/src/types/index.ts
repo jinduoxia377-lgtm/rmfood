@@ -27,15 +27,6 @@ export interface User {
   // 订阅计划（用户级，Phase 1：'free' | 'pro'；缺省 'free'）
   plan: 'free' | 'pro';
 
-  // 所属组织（租户隔离；白名单组织授予判定用 organizationName，见 utils/plan.ts）
-  organizationId?: number;
-  /** 规范化组织名（后端 UserResponse.organization_name 经 userNormalizer 转换） */
-  organizationName?: string;
-  /** 兼容别名：部分接口可能直接返回 orgName */
-  orgName?: string;
-  /** 兼容别名：部分接口可能返回嵌套 organization 对象（{ id, name }） */
-  organization?: { id?: number; name?: string } | null;
-
   // 角色与权限
   role: UserRole;
   isActive: boolean;

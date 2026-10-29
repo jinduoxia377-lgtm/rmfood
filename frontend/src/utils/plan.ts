@@ -6,12 +6,6 @@
  *   以及 backend/app/core/plans.py 的 PLAN_FEATURES 完全一致（单一事实来源）。
  *   任何一方修改都必须同步更新本表。
  *
- * ⚠️ 白名单组织授予（单一事实来源 = backend/app/core/plans.py）：
- *   WHITELIST_ORG_NAME / WHITELIST_GRANTED_FEATURES 必须与后端 plans.py 一致。
- *   白名单组织「莱茵分子白名单组织」成员 plan 仍为 'free'，但对授予子集功能
- *   （ai_formula_generation / peptide_analysis / advanced_analytics）按组织授予
- *   判定为可用（免费版 + 部分专业版功能），不改 User.plan。
- *
  * 版本层级（规格 §2.3）：
  *   PLAN_RANK = { free: 0, pro: 1 }
  *   hasPlan(plan, feature) ⇔ PLAN_RANK[plan] >= PLAN_RANK[PLAN_FEATURES[feature]]
@@ -20,7 +14,6 @@ import { createElement, Fragment, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
-import type { User } from '@/types';
 
 /** 版本层级：免费 0 / 专业 1（enterprise 保留给组织级 Subscription.plan，Phase 1 不引入用户级） */
 export const PLAN_RANK = { free: 0, pro: 1 } as const;
@@ -35,23 +28,6 @@ export const PLAN_FEATURES = {
   advanced_report_export: 'pro',
 } as const;
 
-/**
- * 白名单组织名称（与后端 backend/app/core/plans.py WHITELIST_ORG_NAME 一致）。
- * 白名单获批用户归入此单一组织，plan 仍为 'free'，但授予子集功能。
- */
-export const WHITELIST_ORG_NAME = '莱茵分子白名单组织';
-
-/**
- * 白名单组织授予的功能子集（与后端 plans.py WHITELIST_GRANTED_FEATURES 一致）。
- * 仅授予 3 项核心科学功能；不授予 knowledge_graph / multi_ecommerce_sync /
- * advanced_report_export。子集可随配置调整（后端单一事实来源）。
- */
-export const WHITELIST_GRANTED_FEATURES = new Set<PlanFeature>([
-  'ai_formula_generation',
-  'peptide_analysis',
-  'advanced_analytics',
-]);
-
 /** 用户级 Plan 类型：'free' | 'pro' */
 export type Plan = keyof typeof PLAN_RANK;
 
@@ -64,54 +40,26 @@ export function toPlan(value: unknown): Plan {
 }
 
 /**
- * 从用户对象读取组织名（兼容多种来源字段名，归一化为 string | undefined）。
- * 优先级：organizationName（规范化字段）→ orgName（兼容别名）→ organization?.name（嵌套对象）。
- */
-export function getUserOrgName(user: User | null | undefined): string | undefined {
-  if (!user) return undefined;
-  const nested = user.organization as { name?: string } | null | undefined;
-  return user.organizationName ?? user.orgName ?? nested?.name ?? undefined;
-}
-
-/**
- * 判断某 plan（+ 可选组织名）是否满足某功能所需最低版本。
- *
- * 与后端 plans.py has_plan 对齐（单一事实来源）：
- *   1. plan 满足版本门槛 → True；
- *   2. 否则若 feature ∈ WHITELIST_GRANTED_FEATURES 且 orgName === WHITELIST_ORG_NAME → True
- *      （白名单组织 = 免费版 + 部分专业版功能）；
- *   3. 否则 False。
- *
+ * 判断某 plan 是否满足某功能所需最低版本。
  * @param plan    用户当前 plan
  * @param feature 功能 key
- * @param orgName 用户所属组织名（可选；无 org 时 org-grant 不生效，不破坏既有 free/pro 行为）
  */
-export function hasPlan(plan: Plan, feature: PlanFeature, orgName?: string): boolean {
+export function hasPlan(plan: Plan, feature: PlanFeature): boolean {
   const required: Plan = PLAN_FEATURES[feature];
-  if (PLAN_RANK[plan] >= PLAN_RANK[required]) return true;
-  // 白名单组织授予分支：组织名匹配且功能在授予子集内 → 可用（不改 User.plan）
-  if (orgName === WHITELIST_ORG_NAME && WHITELIST_GRANTED_FEATURES.has(feature)) return true;
-  return false;
+  return PLAN_RANK[plan] >= PLAN_RANK[required];
 }
 
 /**
- * usePlan() Hook — 从 authStore 读取当前用户 plan + 组织信息并提供判定。
- * @returns { plan, isPro, orgName, hasFeature }
+ * usePlan() Hook — 从 authStore 读取当前用户 plan 并提供判定。
+ * @returns { plan, isPro, hasFeature }
  */
-export function usePlan(): {
-  plan: Plan;
-  isPro: boolean;
-  orgName: string | undefined;
-  hasFeature: (feature: PlanFeature) => boolean;
-} {
+export function usePlan(): { plan: Plan; isPro: boolean; hasFeature: (feature: PlanFeature) => boolean } {
   const user = useAuthStore((s) => s.user);
   const plan = toPlan(user?.plan);
-  const orgName = getUserOrgName(user);
   return {
     plan,
     isPro: plan === 'pro',
-    orgName,
-    hasFeature: (feature: PlanFeature) => hasPlan(plan, feature, orgName),
+    hasFeature: (feature: PlanFeature) => hasPlan(plan, feature),
   };
 }
 
@@ -158,7 +106,6 @@ function PlanLockedState({ feature }: { feature: PlanFeature }) {
 /**
  * RequirePlan — 条件渲染包裹。
  * 不满足最低版本时渲染 fallback（含升级提示，缺省为 null）。
- * 判定经 usePlan().hasFeature，白名单组织授予自动生效。
  */
 export function RequirePlan({
   feature,
@@ -169,31 +116,19 @@ export function RequirePlan({
   children: ReactNode;
   fallback?: ReactNode;
 }) {
-  const { hasFeature } = usePlan();
-  if (hasFeature(feature)) return createElement(Fragment, null, children);
+  const { plan } = usePlan();
+  if (hasPlan(plan, feature)) return createElement(Fragment, null, children);
   return createElement(Fragment, null, fallback);
 }
 
 /**
  * PlanGate — 专业功能门控。
  * 满足最低版本渲染 children；否则渲染升级引导（锁定态 + 升级提示）。
- * 判定经 usePlan().hasFeature，白名单组织授予自动生效。
  */
 export function PlanGate({ feature, children }: { feature: PlanFeature; children: ReactNode }) {
-  const { hasFeature } = usePlan();
-  if (hasFeature(feature)) return createElement(Fragment, null, children);
+  const { plan } = usePlan();
+  if (hasPlan(plan, feature)) return createElement(Fragment, null, children);
   return createElement(PlanLockedState, { feature });
 }
 
-export default {
-  PLAN_RANK,
-  PLAN_FEATURES,
-  WHITELIST_ORG_NAME,
-  WHITELIST_GRANTED_FEATURES,
-  hasPlan,
-  getUserOrgName,
-  toPlan,
-  usePlan,
-  RequirePlan,
-  PlanGate,
-};
+export default { PLAN_RANK, PLAN_FEATURES, hasPlan, toPlan, usePlan, RequirePlan, PlanGate };

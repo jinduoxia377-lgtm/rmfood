@@ -5,6 +5,50 @@ import type { StructuredContent, BlockType } from './types'
 import { logger } from '@/utils/safeLogger'
 
 /**
+ * 尝试补全截断的 JSON（后端流式输出可能被截断：追加缺失的闭合括号/引号
+ * 并尝试解析）。成功返回补全后的 JSON 字符串，否则返回 null。
+ * 供 MessageBubble.isBrokenJsonContent 判残缺 + 历史截断 JSON 自动修复。
+ */
+export function repairTruncatedJson(content: string): string | null {
+  if (!content) return null
+  const start = content.search(/[\[{]/)
+  if (start < 0) return null
+  const jsonText = content.slice(start)
+  try {
+    JSON.parse(jsonText)
+    return jsonText
+  } catch {
+    // 截断或残缺 → 尝试逐层补全
+  }
+  let candidate = jsonText
+  for (let i = 0; i < 8; i++) {
+    const openObj = (candidate.match(/\{/g) || []).length
+    const closeObj = (candidate.match(/\}/g) || []).length
+    const openArr = (candidate.match(/\[/g) || []).length
+    const closeArr = (candidate.match(/\]/g) || []).length
+    const openQuote = (candidate.match(/"/g) || []).length % 2
+    let repaired = candidate
+    if (closeObj < openObj) repaired += '}'.repeat(openObj - closeObj)
+    if (closeArr < openArr) repaired += ']'.repeat(openArr - closeArr)
+    if (openQuote === 1) repaired += '"'
+    if (repaired === candidate) break
+    candidate = repaired
+    try {
+      JSON.parse(candidate)
+      return candidate
+    } catch {
+      // 继续补全
+    }
+  }
+  try {
+    JSON.parse(candidate)
+    return candidate
+  } catch {
+    return null
+  }
+}
+
+/**
  * 规范化 CalloutData：兼容 style（LLM 常用）→ variant（类型定义）字段映射
  */
 function normalizeCallout(block: { type: string; data: unknown }): { type: string; data: unknown } {
@@ -150,7 +194,7 @@ export function detectStructuredContent(content: string): StructuredContent | nu
     const structured: StructuredContent = {
       responseType: (parsed.responseType as StructuredContent['responseType']) ?? 'general',
       title: (parsed.title as string) || undefined,
-      blocks: normalizedBlocks as any,
+      blocks: normalizedBlocks as unknown as StructuredContent['blocks'],
     }
     return structured
   } catch {
@@ -217,7 +261,7 @@ export function extractStructuredFallback(content: string): StructuredContent | 
       return {
         responseType: (parsed.responseType as StructuredContent['responseType']) ?? 'recommendation',
         title: (parsed.title as string) || undefined,
-        blocks: normalizedBlocks as any,
+        blocks: normalizedBlocks as unknown as StructuredContent['blocks'],
       }
     }
 
