@@ -417,7 +417,7 @@ async def monitored_session(
                 f"[MonitoredSession] ⚠️ 慢操作: '{operation_name}' "
                 f"took {duration_ms:.1f}ms (threshold={warn_on_slow_ms}ms)"
             )
-    except Exception as e:
+    except Exception:
         duration_ms = (time.time() - start_time) * 1000
         logger.error(
             f"[MonitoredSession] 操作 '{operation_name}' 失败 ({duration_ms:.1f}ms)",

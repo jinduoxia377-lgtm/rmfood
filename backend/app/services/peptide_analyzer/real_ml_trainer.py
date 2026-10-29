@@ -280,7 +280,7 @@ class RealModelTrainer:
         # 原 12 维信息量过低，是 F1 仅 0.162 的主因；富特征为标准肽活性预测特征集
         self.feature_mode = "rich"
         self.feature_dim = AminoAcidEncoder.RICH_FEATURE_DIM
-        X_all = [AminoAcidEncoder.extract_features_rich(r["sequence"]) for r in records]
+        x_all = [AminoAcidEncoder.extract_features_rich(r["sequence"]) for r in records]
         y_all = [r["label"] for r in records]
 
         # 留出 15% 做验证（按序列去重后分层）
@@ -290,13 +290,13 @@ class RealModelTrainer:
         random.shuffle(idx)
         split = int(len(idx) * 0.85)
         train_idx, val_idx = idx[:split], idx[split:]
-        X_tr = [X_all[i] for i in train_idx]
+        x_tr = [x_all[i] for i in train_idx]
         y_tr = [y_all[i] for i in train_idx]
-        X_val = [X_all[i] for i in val_idx]
+        x_val = [x_all[i] for i in val_idx]
         y_val = [y_all[i] for i in val_idx]
         # 实际训练子集（85%）vs 验证子集（15%），区别于库总大小
-        self.training_set_size = len(X_tr)
-        self.validation_set_size = len(X_val)
+        self.training_set_size = len(x_tr)
+        self.validation_set_size = len(x_val)
         # 训练/验证子集内 真实 vs 合成 拆分（诚实口径）
         self.train_real_count = sum(1 for i in train_idx if not records[i].get("is_synthetic"))
         self.train_synth_count = len(train_idx) - self.train_real_count
@@ -312,11 +312,11 @@ class RealModelTrainer:
         # 模型升级：改用 numpy 向量化 MLP + Adam（旧逐样本纯 Python 循环在 444 维上需 ~1085s，
         # numpy 版仅 ~8s，实测 130x 加速），并做正类加权对抗 24.7%/75.3% 不平衡。
         self.model = self._nn_cls(input_size=self.feature_dim, hidden_sizes=[64, 32], output_size=1)
-        self.model.train(X_tr, y_tr, epochs=max_epochs, lr=0.01, batch_size=64)
+        self.model.train(x_tr, y_tr, epochs=max_epochs, lr=0.01, batch_size=64)
 
         # 阈值选择（关键）：不平衡数据下固定 0.5 阈值会导致全判负类（F1=0），
         # 必须在验证集上扫描阈值取最优 F1，并把选中阈值固化到 artifact 供 predict 使用。
-        _val_probs = [self.model.predict_proba_one(x) for x in X_val]
+        _val_probs = [self.model.predict_proba_one(x) for x in x_val]
         self.decision_threshold, self.best_f1 = self._select_threshold(y_val, _val_probs)
 
         # 可信度门禁（诚实红线）：平衡准确率≈0.50 表示模型排序能力等同随机猜。
@@ -342,10 +342,10 @@ class RealModelTrainer:
 
         # 验证指标（诚实口径：不平衡数据下 accuracy 极具欺骗性，必须同时报
         # precision/recall/F1/balanced_accuracy + 多数类基线，避免单一 73.9% 误导）
-        def _score(X, y, thr=None):
+        def _score(x_data, y, thr=None):
             if thr is None:
                 thr = getattr(self, "decision_threshold", 0.5)
-            preds = [self.model.predict_proba_one(x) for x in X]
+            preds = [self.model.predict_proba_one(x) for x in x_data]
             pred_labels = [1 if p >= thr else 0 for p in preds]
             tp = sum(1 for p, t in zip(pred_labels, y) if p == 1 and t == 1)
             fp = sum(1 for p, t in zip(pred_labels, y) if p == 1 and t == 0)
@@ -375,8 +375,8 @@ class RealModelTrainer:
             }
 
         self.metrics = {
-            "train": _score(X_tr, y_tr),
-            "validation": _score(X_val, y_val),
+            "train": _score(x_tr, y_tr),
+            "validation": _score(x_val, y_val),
             "pos_ratio_train": round(sum(y_tr) / max(len(y_tr), 1), 4),
             "neg_ratio_train": round(1 - sum(y_tr) / max(len(y_tr), 1), 4),
             "decision_threshold": getattr(self, "decision_threshold", 0.5),
@@ -399,8 +399,8 @@ class RealModelTrainer:
         # 诚实口径：库中真实文献 vs 程序合成；训练集内 真实 vs 合成
         _real_pct = round(self.library_real_count / max(self.library_size, 1) * 100, 1)
         _synth_pct = round(self.library_synth_count / max(self.library_size, 1) * 100, 1)
-        _tr_real_pct = round(self.train_real_count / max(len(X_tr), 1) * 100, 1)
-        _tr_synth_pct = round(self.train_synth_count / max(len(X_tr), 1) * 100, 1)
+        _tr_real_pct = round(self.train_real_count / max(len(x_tr), 1) * 100, 1)
+        _tr_synth_pct = round(self.train_synth_count / max(len(x_tr), 1) * 100, 1)
         return {
             "target_activity": self.target_activity,
             "library_size": self.library_size,
@@ -410,8 +410,8 @@ class RealModelTrainer:
             "train_pubmed_count": getattr(self, "train_pubmed_count", 0),
             "val_pubmed_count": getattr(self, "val_pubmed_count", 0),
             "include_pubmed": getattr(self, "include_pubmed", True),
-            "training_samples": len(X_tr),
-            "validation_samples": len(X_val),
+            "training_samples": len(x_tr),
+            "validation_samples": len(x_val),
             "train_real_count": self.train_real_count,
             "train_synth_count": self.train_synth_count,
             "val_real_count": self.val_real_count,

@@ -157,12 +157,12 @@ class SchemaTransformer:
             return data
 
         result = {}
-        for field in mappings:
-            if field.new_name in data:
-                value = data[field.new_name]
-                if field.transform:
-                    value = field.transform(value)
-                result[field.old_name] = value
+        for mapping in mappings:
+            if mapping.new_name in data:
+                value = data[mapping.new_name]
+                if mapping.transform:
+                    value = mapping.transform(value)
+                result[mapping.old_name] = value
 
         # 保留未映射的字段
         mapped_new_names = {m.new_name for m in mappings}
@@ -185,12 +185,12 @@ class SchemaTransformer:
             return data
 
         result = {}
-        for field in mappings:
-            if field.old_name in data:
-                value = data[field.old_name]
-                if field.transform:
-                    value = field.transform(value)
-                result[field.new_name] = value
+        for mapping in mappings:
+            if mapping.old_name in data:
+                value = data[mapping.old_name]
+                if mapping.transform:
+                    value = mapping.transform(value)
+                result[mapping.new_name] = value
 
         # 保留未映射的字段
         mapped_old_names = {m.old_name for m in mappings}

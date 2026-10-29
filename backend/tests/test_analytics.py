@@ -1,5 +1,4 @@
 """Tests for the analytics aggregation endpoint SQL injection fix."""
-import pytest
 
 
 class TestAggregationEndpoint:

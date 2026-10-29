@@ -1,7 +1,6 @@
 """OpenFoodFacts 导入工作流集成测试"""
 
 import pytest
-import asyncio
 from scripts.import_off_direct import run_sample_import, run_bulk_import
 from app.core.database.session import get_engine, init_database
 

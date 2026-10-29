@@ -8,10 +8,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 # 导入安全预警系统模块
 from app.services.formula.safety_alert_system import (
     SafetyAlertSystem,
-    BUILT_IN_THRESHOLDS,
     AlertLevel,
     SafetyThreshold,
-    SafetyAlert,
     SafetyCheckResult,
 )
 

@@ -128,7 +128,7 @@ async def push_changes(
 
     返回接受的变更数量和检测到的冲突列表。
     """
-    detector = _get_detector()
+    _get_detector()
     protocol = _get_protocol()
 
     device = await _get_or_register_device(db, current_user.id, request.device_id)
@@ -366,13 +366,13 @@ async def resolve_conflict(
         )
 
         if merge_strategy == MergeStrategy.MANUAL:
-            resolved = conflict_detector.manual_resolve(
+            conflict_detector.manual_resolve(
                 conflict=mock_conflict,
                 user_choice="custom",
                 custom_data=request.resolved_data,
             )
         else:
-            resolved = await conflict_detector.auto_resolve(
+            await conflict_detector.auto_resolve(
                 conflict=mock_conflict,
                 strategy=merge_strategy,
             )
@@ -401,7 +401,7 @@ async def resolve_conflict(
                     SyncLog.user_id == current_user.id,
                 )
             )
-            update_result = await db.execute(
+            await db.execute(
                 SyncLog.__table__.update()
                 .where(SyncLog.id.in_(request.conflict_ids))
                 .values(status=SyncStatus.COMPLETED, error_msg="Resolved by user")

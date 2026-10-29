@@ -125,18 +125,18 @@ class FormulaCheckMixin:
         if not alerts:
             return 0.0
 
-        ALERT_WEIGHTS = {
+        alert_weights = {
             AlertLevel.INFO: 1,
             AlertLevel.WARNING: 5,
             AlertLevel.CRITICAL: 10,
         }
 
-        total_weight = sum(ALERT_WEIGHTS[a.alert_level] for a in alerts)
+        total_weight = sum(alert_weights[a.alert_level] for a in alerts)
         max_possible_weight = total_weight
 
         weighted_sum = 0.0
         for alert in alerts:
-            weight = ALERT_WEIGHTS[alert.alert_level]
+            weight = alert_weights[alert.alert_level]
             severity_factor = min(alert.percentage / 100, 1.0)
             weighted_sum += weight * severity_factor
 

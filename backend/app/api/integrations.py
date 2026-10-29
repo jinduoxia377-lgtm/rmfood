@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 logger = logging.getLogger(__name__)
 
 
-from ..core.api_framework.integration_framework import (
+from ..core.api_framework.integration_framework import (  # noqa: E402
     IntegrationType,
     WebhookEvent,
     WebhookStatus,
@@ -27,13 +27,13 @@ from ..core.api_framework.integration_framework import (
     get_integration_service,
     get_webhook_service,
 )
-from .api_key_deps import (
+from .api_key_deps import (  # noqa: E402
     ApiKeyPrincipal,
     get_current_active_api_key,
     get_current_api_key,
     require_api_scope,
 )
-from .deps import get_current_active_user, get_current_user, get_db_session
+from .deps import get_current_active_user, get_current_user, get_db_session  # noqa: E402
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
 

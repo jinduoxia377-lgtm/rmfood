@@ -2,8 +2,6 @@
 import pytest
 from httpx import AsyncClient
 
-from app.models import User
-from app.models.enums import UserRole
 
 
 class TestFormulaAPI:

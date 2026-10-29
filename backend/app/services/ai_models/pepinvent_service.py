@@ -22,14 +22,14 @@ import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
-
 from .pepinvent_adapter import (
     _EFFECT_MAPPING,
     PepinventAdapter,
     ServiceUnavailableError,
     get_pepinvent_adapter,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass

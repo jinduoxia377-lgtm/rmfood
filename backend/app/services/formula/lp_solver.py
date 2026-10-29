@@ -278,10 +278,9 @@ class MILPSolver:
 
         # 等式约束: sum(x_i) = total_dosage
         eq_matrix = np.ones((1, n))
-        b_eq = [total_dosage]
 
         # 不等式约束: 营养约束 + 成本约束
-        A_ineq = []
+        a_ineq = []
         b_ineq_upper = []  # <= 约束
         b_ineq_lower = []  # >= 约束（转为 -sum <= -min）
 
@@ -302,11 +301,11 @@ class MILPSolver:
 
             if rhs is not None:
                 # sum(row_i * x_i) >= rhs  =>  -sum(row_i * x_i) <= -rhs
-                A_ineq.append([-v for v in row])
+                a_ineq.append([-v for v in row])
                 b_ineq_lower.append(-rhs)
             if rhs_max is not None:
                 # sum(row_i * x_i) <= rhs_max
-                A_ineq.append(list(row))
+                a_ineq.append(list(row))
                 b_ineq_upper.append(rhs_max)
 
         # 成本约束
@@ -315,18 +314,18 @@ class MILPSolver:
                 self.herb_nutrition[hid].cost_per_gram
                 for hid in valid_herbs
             ]
-            A_ineq.append(cost_row)
+            a_ineq.append(cost_row)
             b_ineq_upper.append(max_cost)
 
         constraints = []
         constraints.append(LinearConstraint(eq_matrix, lb=total_dosage, ub=total_dosage))  # 等式
 
-        if A_ineq:
-            # A_ineq rows alternate: [neg_row_for_min, pos_row_for_max, ...]
+        if a_ineq:
+            # a_ineq rows alternate: [neg_row_for_min, pos_row_for_max, ...]
             lb_vec = []
             ub_vec = []
             upper_idx = 0
-            for i in range(len(A_ineq)):
+            for i in range(len(a_ineq)):
                 if i % 2 == 0 and i < len(b_ineq_lower):
                     lb_vec.append(-float('inf'))
                     ub_vec.append(b_ineq_lower[i])
@@ -338,7 +337,7 @@ class MILPSolver:
                     else:
                         lb_vec.append(-float('inf'))
                         ub_vec.append(float('inf'))
-            constraints.append(LinearConstraint(np.array(A_ineq, dtype=float), lb=np.array(lb_vec, dtype=float), ub=np.array(ub_vec, dtype=float)))
+            constraints.append(LinearConstraint(np.array(a_ineq, dtype=float), lb=np.array(lb_vec, dtype=float), ub=np.array(ub_vec, dtype=float)))
 
         # Warm start
         options = {}

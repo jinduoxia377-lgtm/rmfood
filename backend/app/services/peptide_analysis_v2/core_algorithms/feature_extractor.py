@@ -455,14 +455,14 @@ class FeatureExtractor:
 
         # 侧链
         for aa in sequence:
-            pKa = AA_PROPERTIES.get(aa, {}).get('pKa')
-            if pKa:
+            pka = AA_PROPERTIES.get(aa, {}).get('pKa')
+            if pka:
                 charge = 1 if aa in ['K', 'R'] else (-1 if aa in ['D', 'E'] else 0)
                 if aa == 'H':
                     charge = 0  # His在pH7附近接近中性
                 groups.append({
                     'type': f'side_{aa}',
-                    'pKa': pKa,
+                    'pKa': pka,
                     'charge_at_low_pH': charge
                 })
 
@@ -474,14 +474,14 @@ class FeatureExtractor:
 
             net_charge = 0.0
             for group in groups:
-                pKa = group['pKa']
+                pka = group['pKa']
                 q = group['charge_at_low_pH']
 
                 if q > 0:  # 酸性基团 (低pH时带正电)
-                    fraction_protonated = 1 / (1 + 10**(ph_mid - pKa))
+                    fraction_protonated = 1 / (1 + 10**(ph_mid - pka))
                     net_charge += q * fraction_protonated
                 elif q < 0:  # 碱性基团 (低pH时带负电)
-                    fraction_deprotonated = 1 / (1 + 10**(pKa - ph_mid))
+                    fraction_deprotonated = 1 / (1 + 10**(pka - ph_mid))
                     net_charge += q * fraction_deprotonated
 
             if abs(net_charge) < 0.001:  # 收敛

@@ -20,8 +20,7 @@ _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 FormulaService = _mod.FormulaService
 
-from app.models.formula import Formula
-from app.models.enums import FormulaStatus, UserRole
+from app.models.enums import FormulaStatus, UserRole  # noqa: E402
 
 
 @pytest.mark.asyncio

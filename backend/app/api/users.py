@@ -198,7 +198,7 @@ async def upload_avatar(
     # 更新用户头像URL
     avatar_url = f"/uploads/avatars/{filename}"
     service = UserService(db)
-    user = await service.update_user(
+    await service.update_user(
         user_id,
         UserUpdate(avatar_url=avatar_url)
     )

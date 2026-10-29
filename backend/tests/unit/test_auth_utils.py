@@ -10,7 +10,6 @@
 """
 import pytest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
 
 from fastapi import HTTPException
 from jose import jwt as jose_jwt

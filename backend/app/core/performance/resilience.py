@@ -206,7 +206,7 @@ class CircuitBreaker:
                     result = await func(*args, **kwargs)
                     await self.record_success()
                     return result
-                except Exception as e:
+                except Exception:
                     await self.record_failure()
                     raise
 
@@ -560,7 +560,7 @@ logger.info("⚡ 统一错误处理与降级策略框架初始化完成")
 # AI 专属限流器 (用户级 + SSE 连接数限制)
 # ════════════════════════════════════════════
 
-from collections import defaultdict
+from collections import defaultdict  # noqa: E402
 
 
 @dataclass

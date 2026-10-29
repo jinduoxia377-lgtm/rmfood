@@ -759,7 +759,7 @@ def setup_enhanced_metrics(app: FastAPI):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={"error": "Invalid JSON"},
             )
-        except Exception as e:
+        except Exception:
             logger.error("[Metrics] 客户端性能上报失败", exc_info=True)
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

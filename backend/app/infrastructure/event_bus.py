@@ -286,5 +286,5 @@ class RedisStreamsEventBus(ABC):
 
 
 # 导入辅助修复（序列化中用到的类型）
-from decimal import Decimal
-from enum import Enum
+from decimal import Decimal  # noqa: E402
+from enum import Enum  # noqa: E402

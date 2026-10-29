@@ -7,7 +7,6 @@
 3. 成员添加/移除
 4. 服务级消息派单（mock agent 执行，保持确定性）
 """
-import uuid
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -22,7 +21,7 @@ from app.services.ai.agent.group_chat_service import GroupChatService
 
 client = TestClient(app)
 
-from app.api import register_lazy_routers
+from app.api import register_lazy_routers  # noqa: E402
 register_lazy_routers()
 
 client.cookies.set("csrf_token", "test_csrf_token_for_groups")
@@ -32,7 +31,7 @@ client.headers["X-CSRF-Token"] = "test_csrf_token_for_groups"
 # ── 测试用户自动清理：conftest_clean_users 模块提供 conftest_clean_users._TestUserCleaner，
 #    在 pytest_configure 钩子中注册 session 级 atexit 钩子，于测试会话结束后统一删除。
 #    本模块只需在 create_test_user 中登记 user.id，由统一清理器兜底。 ──
-from tests.conftest_clean_users import track_test_user, track_test_bot, make_test_user_id
+from tests.conftest_clean_users import track_test_user, track_test_bot, make_test_user_id  # noqa: E402
 
 
 

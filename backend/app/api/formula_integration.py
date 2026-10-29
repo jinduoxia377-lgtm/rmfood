@@ -166,7 +166,7 @@ class DeepGenerationResponse(BaseModel):
 # ==================== WebSocket 连接管理器 ====================
 
 # 统一使用 WebSocketManager (core/websocket_manager)
-from ..core.realtime.websocket_manager import get_ws_manager as _get_ws_manager
+from ..core.realtime.websocket_manager import get_ws_manager as _get_ws_manager  # noqa: E402
 
 # ==================== API 端点实现 ====================
 
@@ -301,7 +301,7 @@ async def analyze_synergy(
             data_source=data_source
         )
 
-    except ImportError as e:
+    except ImportError:
         raise HTTPException(status_code=503, detail="协同分析模块不可用")
     except Exception as e:
         logger.error("协同分析失败: %s", e, exc_info=True)
@@ -374,7 +374,7 @@ async def optimize_ratio(
             diversity_metric=frontier.diversity_metric
         )
 
-    except ImportError as e:
+    except ImportError:
         raise HTTPException(status_code=503, detail="配比优化模块不可用")
     except Exception as e:
         logger.error("配比优化失败: %s", e, exc_info=True)
@@ -454,7 +454,7 @@ async def check_compatibility(
             data_coverage=data_coverage
         )
 
-    except ImportError as e:
+    except ImportError:
         raise HTTPException(status_code=503, detail="兼容性检测模块不可用")
     except Exception as e:
         logger.error("兼容性检测失败: %s", e, exc_info=True)
@@ -512,7 +512,7 @@ async def predict_effect(
             auc=prediction.auc
         )
 
-    except ImportError as e:
+    except ImportError:
         raise HTTPException(status_code=503, detail="效果预测模块不可用")
     except Exception as e:
         logger.error("效果预测失败: %s", e, exc_info=True)
@@ -569,7 +569,7 @@ async def check_safety(
             recommendations=result.recommendations or []
         )
 
-    except ImportError as e:
+    except ImportError:
         raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
         logger.error("安全检查失败: %s", e, exc_info=True)
@@ -817,7 +817,7 @@ async def deep_generation(
             cache_hit=response.cache_hit
         )
 
-    except ImportError as e:
+    except ImportError:
         raise HTTPException(status_code=503, detail="配方集成服务模块不可用")
     except Exception as e:
         logger.error("增强配方生成失败: %s", e, exc_info=True)
@@ -845,7 +845,7 @@ async def get_safety_thresholds():
             "total_count": len(thresholds)
         }
 
-    except ImportError as e:
+    except ImportError:
         raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
         logger.error("查询安全阈值失败: %s", e, exc_info=True)
@@ -887,7 +887,7 @@ async def update_safety_threshold(
             "version": getattr(system, "_current_version", "unknown")
         }
 
-    except ImportError as e:
+    except ImportError:
         raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
         logger.error("更新安全阈值失败: %s", e, exc_info=True)

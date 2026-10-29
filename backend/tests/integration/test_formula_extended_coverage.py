@@ -15,16 +15,12 @@
 """
 
 import pytest
-import asyncio
 import time
 import math
 import json
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
-from unittest.mock import Mock, patch, MagicMock, AsyncMock
-from dataclasses import asdict
+from datetime import datetime
+from unittest.mock import patch, MagicMock
 import threading
-import concurrent.futures
 
 
 # ==================== 测试配置 ====================
@@ -407,7 +403,6 @@ class TestRatioOptimizerExtended:
     def test_memory_usage_stability(self, optimizer):
         """11.8 连续多次调用不应导致内存泄漏"""
         import gc
-        import sys
         
         ingredients = [
             {"name": f"成分_{i}", "min_ratio": 5, "max_ratio": 35, "cost_per_gram": 1.0,
@@ -562,7 +557,7 @@ class TestEffectSimulatorModelValidation:
         
         assert ct_data is not None
         concentrations = ct_data.get('concentrations', [])
-        times = ct_data.get('times', [])
+        ct_data.get('times', [])
         
         # 浓度必须非负
         for c in concentrations:
@@ -957,7 +952,6 @@ class TestAPIContractCompliance:
 
     def test_websocket_handshake_protocol(self):
         """16.4 WebSocket 握手协议验证"""
-        from starlette.websockets import WebSocketDisconnect
         from fastapi.testclient import TestClient
         from app.main import app
         

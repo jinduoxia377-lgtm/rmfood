@@ -234,7 +234,7 @@ async def enrich_herb_knowledge(db: AsyncSession) -> dict[str, int]:
 
 def _get_herb_id(name_cn: str) -> str:
     """从中文名获取 herb_id"""
-    _NAME_TO_ID = {
+    name_to_id = {
         "黄芪": "hq", "党参": "ds", "枸杞子": "gz", "人参": "rs",
         "当归": "dg", "黄芪根": "hqg", "白术": "bq", "茯苓": "fp",
         "甘草": "gq", "菊花": "jgh", "川芎": "cs", "藜芦": "lk",
@@ -251,7 +251,7 @@ def _get_herb_id(name_cn: str) -> str:
         "厚朴": "hp", "五味子": "wsz", "山茱萸": "szf",
         "酸枣仁": "szr", "柏子仁": "bzr",
     }
-    return _NAME_TO_ID.get(name_cn, name_cn[:2].lower())
+    return name_to_id.get(name_cn, name_cn[:2].lower())
 
 
 def _get_synergy_partners(name_cn: str, efficacy_scores: dict) -> list[str]:

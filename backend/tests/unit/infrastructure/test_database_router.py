@@ -8,7 +8,7 @@
 4. 健康检查接口正常工作
 """
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch
 
 from app.infrastructure.database_router import DatabaseRouter
 

@@ -11,20 +11,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
-from ..core.performance.cache_system import MultiLevelCache, get_cache
-from ..services.data_sources.china_food_regulations import regulation_service
+from ..core.performance.cache_system import MultiLevelCache, get_cache  # noqa: E402
+from ..services.data_sources.china_food_regulations import regulation_service  # noqa: E402
 
 # A-39：DFBP_PEPTIDE_DATABASE 是 dfbp_client 的【模块级】常量，不是
 #   DFBPSyncService 实例上的属性 —— 原先写 dfbp_service.DFBP_PEPTIDE_DATABASE
 #   在无过滤条件下会抛 AttributeError（GET /knowledge-base/peptide/search → 503）。
-from ..services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE, dfbp_service
-from ..services.data_sources.tcmsp_client import tcmsp_service
-from ..services.intent_recognition import (
+from ..services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE, dfbp_service  # noqa: E402
+from ..services.data_sources.tcmsp_client import tcmsp_service  # noqa: E402
+from ..services.intent_recognition import (  # noqa: E402
     IntentType,
     KnowledgeBaseType,
     intent_recognition_service,
 )
-from .deps import get_db_session
+from .deps import get_db_session  # noqa: E402
 
 router = APIRouter(prefix="/knowledge-base", tags=["知识数据库"])
 

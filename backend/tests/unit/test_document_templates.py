@@ -2,7 +2,6 @@
 
 覆盖 Markdown 解析器与中药报告模板生成。
 """
-import pytest
 
 from app.services.document_templates import MarkdownParser, ChineseMedicineReportTemplate
 

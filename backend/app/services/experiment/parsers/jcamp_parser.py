@@ -189,7 +189,7 @@ class JcampDXParser:
                 pass
         elif key_upper in ("NX", "NY"):
             try:
-                n = int(value)
+                int(value)
                 # NX/NY 表示数据点数量
             except ValueError:
                 pass

@@ -5,7 +5,7 @@
 """
 import pytest
 from app.domain.agents import (
-    AgentRole, TaskType, AgentTask, AgentContext, TaskStatus,
+    AgentRole, TaskType, AgentTask, AgentContext,
 )
 from app.infrastructure.agents_impl import (
     FormulaAgent, KnowledgeAgent, SafetyAgent, AgentOrchestratorImpl,

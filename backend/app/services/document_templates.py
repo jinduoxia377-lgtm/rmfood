@@ -8,7 +8,7 @@ import re
 import uuid
 from datetime import datetime
 from pathlib import Path
-from xml.etree import ElementTree as ET
+from xml.etree import ElementTree
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -179,7 +179,7 @@ class MarkdownParser:
                     para_text = line.strip()
                     j = i + 1
                     while j < len(lines) and lines[j].strip() and not any(
-                        re.match(p, lines[j].strip()) for p in [self.HEADING_PATTERNS[l] for l in range(1, 7)]
+                        re.match(p, lines[j].strip()) for p in [self.HEADING_PATTERNS[h] for h in range(1, 7)]
                     ) and not lines[j].strip().startswith(('|', '- ', '* ')):
                         para_text += ' ' + lines[j].strip()
                         j += 1
@@ -203,11 +203,11 @@ class HTMLParser:
 
     def parse(self, html_content: str) -> list:
         self.elements = []
-        root = ET.fromstring(f'<root>{html_content}</root>')
+        root = ElementTree.fromstring(f'<root>{html_content}</root>')
         self._parse_element(root)
         return self.elements
 
-    def _parse_element(self, element: ET.Element):
+    def _parse_element(self, element: ElementTree.Element):
         for child in element:
             tag = child.tag.lower()
             if tag in ('h1', 'h2', 'h3', 'h4', 'h5', 'h6'):
@@ -330,7 +330,7 @@ class DocumentConverter:
             bottomMargin=72
         )
 
-        styles = getSampleStyleSheet()
+        getSampleStyleSheet()
         font_name = chinese_font_manager.get_pdf_font()
         font_name_bold = chinese_font_manager.get_pdf_font(bold=True)
 
@@ -477,7 +477,7 @@ class DocumentConverter:
             bottomMargin=72
         )
 
-        styles = getSampleStyleSheet()
+        getSampleStyleSheet()
         font_name = chinese_font_manager.get_pdf_font()
         font_name_bold = chinese_font_manager.get_pdf_font(bold=True)
 
@@ -868,12 +868,12 @@ class FormulaAnalysisReportTemplate:
                     run.font.color.rgb = RGBColor(*font_color)
         if bg_color:
             tc = cell._tc
-            tcPr = tc.get_or_add_tcPr()
+            tcpr = tc.get_or_add_tcPr()
             shd = OxmlElement('w:shd')
             shd.set(qn('w:val'), 'clear')
             shd.set(qn('w:color'), 'auto')
             shd.set(qn('w:fill'), bg_color)
-            tcPr.append(shd)
+            tcpr.append(shd)
 
     def _apply_table_header_style(self, table, headers, font_name, font_size):
         for col_idx, header_text in enumerate(headers):
@@ -887,21 +887,21 @@ class FormulaAnalysisReportTemplate:
             bg_color = 'F2F2F2' if row_idx % 2 == 0 else 'FFFFFF'
             for cell in table.rows[row_idx].cells:
                 tc = cell._tc
-                tcPr = tc.get_or_add_tcPr()
+                tcpr = tc.get_or_add_tcPr()
                 shd = OxmlElement('w:shd')
                 shd.set(qn('w:val'), 'clear')
                 shd.set(qn('w:color'), 'auto')
                 shd.set(qn('w:fill'), bg_color)
-                tcPr.append(shd)
+                tcpr.append(shd)
 
     def _highlight_role_cell(self, cell, font_name, font_size):
         tc = cell._tc
-        tcPr = tc.get_or_add_tcPr()
+        tcpr = tc.get_or_add_tcPr()
         shd = OxmlElement('w:shd')
         shd.set(qn('w:val'), 'clear')
         shd.set(qn('w:color'), 'auto')
         shd.set(qn('w:fill'), 'FFFACD')
-        tcPr.append(shd)
+        tcpr.append(shd)
         for para in cell.paragraphs:
             para.alignment = WD_ALIGN_PARAGRAPH.CENTER
             for run in para.runs:

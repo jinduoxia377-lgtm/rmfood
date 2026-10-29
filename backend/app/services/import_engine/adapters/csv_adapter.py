@@ -74,7 +74,7 @@ class CsvAdapter(BaseAdapter):
     async def count(self) -> int:
         """统计文件的非空行数（不含 header）"""
         encoding = self._encoding or _detect_encoding(self.file_path)
-        delimiter = self._resolve_delimiter()
+        self._resolve_delimiter()
 
         count = 0
         with open(self.file_path, "r", encoding=encoding, errors="replace") as f:

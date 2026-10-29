@@ -431,7 +431,6 @@ class DiversityMetrics:
         if not similarities:
             return 0.0
 
-        mean_sim = np.mean(similarities)
         variance = np.var(similarities)
 
         return round(variance, 4)

@@ -636,7 +636,6 @@ class OFFDataService:
         - local：仅 source='manual'（平台参考数据）
         """
         try:
-            like_pattern = f"%{keyword}%"
 
             # ── 构建附加过滤条件（支持 origin 来源过滤） ──
             where_clauses: list[str] = []
@@ -1187,7 +1186,7 @@ class OFFDataService:
         now_naive = now.replace(tzinfo=None)
         table = _RetailProduct.__table__
         # 冲突时不更新的列：主键/幂等键/创建审计
-        excluded = {c.name: getattr(table.c, c.name) for c in table.columns}
+        {c.name: getattr(table.c, c.name) for c in table.columns}
         for it in items:
             external_id = it.get("id") or it.get("sku")
             if not external_id:
@@ -1544,7 +1543,7 @@ class OFFDataService:
         }
 
         # OFF API 分页直接传参，不需前端切片（修复 N+1 bug）
-        offset = (page - 1) * page_size
+        (page - 1) * page_size
         all_products, total_count, last_error = await self._parallel_probe_mirrors(
             mirrors, base_params,
         )

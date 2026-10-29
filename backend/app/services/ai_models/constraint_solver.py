@@ -679,7 +679,7 @@ class FormulaConstraintSolver(ConstraintSolver):
 
         修复: fitness_function 使用知识库中的真实药效评分和禁忌关系
         """
-        herb_db = self._herb_db or _get_herb_db()
+        _ = self._herb_db or _get_herb_db()  # 保留延迟加载副作用
 
         def fitness_function(formula: dict[str, Any], cons: dict[str, Any] | None) -> float:
             formula["target_effects"] = target_effects

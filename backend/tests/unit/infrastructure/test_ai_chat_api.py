@@ -9,9 +9,6 @@ AI 对话 API 单元测试
 5. LLM Config - encryption/decryption with ENCRYPTION_KEY
 """
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
-from datetime import datetime, timezone
-import json
 
 
 pytest_plugins = ('pytest_asyncio',)
@@ -185,9 +182,6 @@ class TestAiEndpointErrorHandling:
     @pytest.mark.asyncio
     async def test_chat_endpoint_handles_runtime_error(self):
         """chat 端点应正确处理 RuntimeError"""
-        from fastapi import HTTPException
-        from app.api.ai_modules.chat import chat
-        from pydantic import ValidationError
 
         # This test verifies that the endpoint structure handles errors correctly
         # Actual runtime error testing would require mocking LLM service

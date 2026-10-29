@@ -8,7 +8,6 @@ Tests cover:
 """
 
 import pytest
-import asyncio
 
 from app.services.ai.models.unified_formula_engine import (
     UnifiedFormulaEngine,

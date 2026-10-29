@@ -251,7 +251,7 @@ class ColorEngine:
         if total_dosage <= 0:
             return (50.0, 0.0, 0.0)
 
-        L = sum(
+        lab_l = sum(
             s["lab"][0] * s.get("dosage_g_per_kg", 1.0) / total_dosage
             for s in selection
         )
@@ -264,7 +264,7 @@ class ColorEngine:
             for s in selection
         )
 
-        return (round(L, 1), round(a, 1), round(b, 1))
+        return (round(lab_l, 1), round(a, 1), round(b, 1))
 
     def _generate_process_advice(
         self, selection: List[Dict], product_form: str

@@ -1,9 +1,9 @@
-import logging  # A-27：except 分支里用到 logger，原先未定义
-
 """
 审计日志 API 路由
 管理员查看操作审计记录
 """
+import logging  # A-27：except 分支里用到 logger，原先未定义
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession

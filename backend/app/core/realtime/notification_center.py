@@ -275,7 +275,7 @@ class NotificationService:
             q = q.where(Notification.is_read == False)  # noqa: E712
 
         if category:
-            cat_enum = NotificationCategory(category)
+            NotificationCategory(category)
             q = q.where(Notification.metadata_.as_string().contains(f'"category":"{category}"'))
 
         # Total count
@@ -558,7 +558,7 @@ async def notify_ai_generation_complete(
     formula_id: int,
     channel: NotificationChannel = NotificationChannel.IN_APP,
 ) -> None:
-    svc = NotificationService(db=None)  # caller passes db via direct model insert
+    NotificationService(db=None)  # caller passes db via direct model insert
     # We only create the DB row; the actual db session is provided by the caller.
     # This helper is primarily used by background tasks / websocket push.
     pass  # pragma: no cover — deferred to caller's db session

@@ -21,9 +21,9 @@ from app.schemas.retail_product import (
     SyncStatusResponse,
 )
 
-logger = logging.getLogger(__name__)
-
 from . import router
+
+logger = logging.getLogger(__name__)
 
 # ── 同步状态 ──
 

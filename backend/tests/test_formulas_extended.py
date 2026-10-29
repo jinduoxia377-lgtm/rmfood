@@ -1,5 +1,4 @@
 """Tests for formula validation and business rules."""
-import pytest
 
 
 class TestFormulaValidation:

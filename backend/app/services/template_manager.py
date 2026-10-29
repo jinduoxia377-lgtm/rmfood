@@ -100,7 +100,6 @@ class TemplateManager:
         current_content = []
         current_table = None
         in_code_block = False
-        code_language = ''
         code_content = ''
 
         for line in lines:
@@ -137,7 +136,7 @@ class TemplateManager:
                     code_content = ''
                 else:
                     in_code_block = True
-                    code_language = line[3:].strip()
+                    line[3:].strip()
                 continue
 
             if in_code_block:
@@ -163,7 +162,7 @@ class TemplateManager:
             list_match = re.match(r'^(\s*)([-*]|\d+\.)\s+(.*)$', line)
             if list_match:
                 indent = len(list_match.group(1))
-                list_type = 'unordered' if list_match.group(2) in ['-', '*'] else 'ordered'
+                'unordered' if list_match.group(2) in ['-', '*'] else 'ordered'
                 item = list_match.group(3)
                 spaces = '  ' * (indent // 2)
                 current_content.append(f'{spaces}{list_match.group(2)} {item}')
@@ -194,7 +193,7 @@ class TemplateManager:
     def convert_markdown_to_content(self, markdown: str, template_name: str = 'default') -> Dict[str, Any]:
         """将Markdown转换为内容结构"""
         parsed_content = self.parse_markdown(markdown)
-        template = self.get_template(template_name)
+        self.get_template(template_name)
 
         organized_content = {
             'title': parsed_content.get('title', '文档'),
@@ -258,7 +257,7 @@ class TemplateManager:
     def generate_from_template(self, template_name: str, data: Dict[str, Any],
                              format: FileFormat, filename: str) -> Tuple[str, str]:
         """从模板生成文件"""
-        template = self.get_template(template_name)
+        self.get_template(template_name)
 
         if template_name == 'tcm_recipe':
             content = {

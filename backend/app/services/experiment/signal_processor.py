@@ -264,7 +264,7 @@ class PeakRecognitionEngine:
         known_peaks: Dict[str, List[float]],
     ) -> Dict[str, Any]:
         """对峰进行分类"""
-        peak_height = peak["y"] - baseline_mean
+        peak["y"] - baseline_mean
         result = {
             "x": peak["x"],
             "y": peak["y"],

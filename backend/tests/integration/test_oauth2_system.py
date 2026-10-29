@@ -18,7 +18,6 @@ OAuth2 增强认证系统 - 完整流程测试脚本
 依赖: requests, pytest (可选)
 """
 import requests
-import json
 import time
 import sys
 
@@ -231,7 +230,6 @@ class OAuth2TestSuite:
             result = response.json()
 
             if response.status_code == 200:
-                old_access_token = self.access_token
                 self.access_token = result.get('access_token')
                 self.refresh_token = result.get('refresh_token')
 

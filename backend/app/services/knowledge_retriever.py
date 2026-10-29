@@ -41,11 +41,7 @@ async def _async_load_herb_cache() -> Dict[str, Dict[str, Any]]:
             # 加载所有药材
             result = await session.execute(select(TCMHerb))
             for herb in result.scalars().all():
-                extra = _parse_extra_knowledge(herb.extra_knowledge)
-                effects_list = []
-                if herb.effects:
-                    effects_list = [e.strip() for e in herb.effects.split("、") if e.strip()]
-
+                _parse_extra_knowledge(herb.extra_knowledge)
                 cache[herb.name_cn] = {
                     "id": herb.id,
                     "name": herb.name_cn,

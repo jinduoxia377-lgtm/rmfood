@@ -8,7 +8,6 @@
 - 免打扰时段判断可用
 - 优先级/渠道/分类枚举完整
 """
-import pytest
 
 from app.services.notification import NotificationService
 from app.core.realtime.notification_center import (

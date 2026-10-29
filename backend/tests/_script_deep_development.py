@@ -26,7 +26,7 @@ sys.modules['app.services.ai.shared'] = MockPackage('app.services.ai.shared')
 sys.modules['app.services.ai.algorithms'] = MockPackage('app.services.ai.algorithms')
 sys.modules['app.services.ai.data_quality'] = MockPackage('app.services.ai.data_quality')
 
-import importlib.util
+import importlib.util  # noqa: E402
 
 def load_pkg(name, filepath):
     spec = importlib.util.spec_from_file_location(name, filepath)

@@ -378,7 +378,7 @@ class User(Base):
         return count
 
 
-from .experiment import Experiment
-from .formula import Formula
-from .formula_case import CaseComment, CaseLike, FormulaCase
-from .notification import Notification
+from .experiment import Experiment  # noqa: E402
+from .formula import Formula  # noqa: E402
+from .formula_case import CaseComment, CaseLike, FormulaCase  # noqa: E402
+from .notification import Notification  # noqa: E402

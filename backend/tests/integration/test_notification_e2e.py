@@ -25,7 +25,6 @@ from app.core.realtime.notification_center import (
     NotificationService,
     NotificationCategory,
     NotificationPriority,
-    UserNotificationPreference,
 )
 
 

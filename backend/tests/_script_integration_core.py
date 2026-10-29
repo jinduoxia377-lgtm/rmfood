@@ -19,34 +19,30 @@ import pytest
 import asyncio
 import time
 import json
-from typing import Optional, List, Dict, Any
-from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
+from unittest.mock import AsyncMock, MagicMock
 
 # SQLAlchemy 相关
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy import select, func, text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # 核心模块
 from app.core.query_optimizer import (
-    FormulaQueryOptimizer, get_optimized_formulas, get_optimized_formula,
+    get_optimized_formulas, get_optimized_formula,
     get_formula_stats,
 )
 from app.core.index_optimizer import (
-    IndexAnalyzer, IndexCandidate, run_index_analysis, get_missing_indexes,
-    generate_index_creation_sql,
+    IndexAnalyzer, IndexCandidate, run_index_analysis,
 )
 from app.core.multi_cache import (
-    init_multi_layer_cache, MultiLayerCache, get_multi_layer_cache,
-    cache_aside, warm_up_cache,
+    MultiLayerCache, cache_aside,
 )
 from app.core.http_client import (
-    CircuitBreaker, CircuitState, ExternalServiceConfig,
+    CircuitBreaker, CircuitState,
 )
 from app.core.logging_enhanced import (
-    StructuredLogger, RequestContext, init_enhanced_logging,
+    StructuredLogger,
 )
 from app.core.export_engine import (
-    export_to_excel, create_file_response, export_to_csv,
+    export_to_excel, export_to_csv,
     ExportColumn,
 )
 
@@ -95,7 +91,7 @@ class TestQueryOptimizer:
         mock_result.scalar_one_or_none.return_value = None
         mock_session.execute.return_value = mock_result
 
-        result = await get_optimized_formula(mock_session, formula_id=123)
+        await get_optimized_formula(mock_session, formula_id=123)
 
         # 即使返回 None，也不会抛出异常
         assert True  # 测试通过，证明查询执行成功

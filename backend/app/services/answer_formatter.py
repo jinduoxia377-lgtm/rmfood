@@ -44,7 +44,7 @@ class AnswerFormatter:
 
         formula_data = reasoning.get("data", [])
         scores = reasoning.get("scores", {})
-        total_herbs = len(formula_data) if formula_data else 0
+        len(formula_data) if formula_data else 0
 
         answer = "## 智能配方方案\n\n"
         answer += (

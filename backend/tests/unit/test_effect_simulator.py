@@ -2,7 +2,6 @@
 
 覆盖效果预测模拟器的入口与结果模型。
 """
-import pytest
 
 from app.services.formula.effect_simulator import EffectSimulator, EffectPrediction, TimePoint
 

@@ -3,7 +3,6 @@
 
 验证 SecurityHeadersMiddleware 和 RateLimitMiddleware 已注册
 """
-import pytest
 
 
 def test_security_headers_middleware_registered():

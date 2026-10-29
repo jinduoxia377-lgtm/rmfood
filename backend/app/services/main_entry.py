@@ -1,14 +1,13 @@
-import logging
-
-logger = logging.getLogger(__name__)
 """Main application entry point - initializes microservices infrastructure."""
-
 import asyncio
+import logging
 
 from app.factories.adapters_factory import get_adapter_registry
 from app.infrastructure.microservice_event_bus import get_event_bus
 from app.infrastructure.microservice_gateway import get_microservice_gateway
 from app.services.microservice_boundaries import FormulaCreatedEvent
+
+logger = logging.getLogger(__name__)
 
 
 async def initialize_services():

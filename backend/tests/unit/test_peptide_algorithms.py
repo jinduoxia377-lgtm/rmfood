@@ -8,7 +8,6 @@ Tests cover:
 
 All tests are pure unit tests with no DB dependencies.
 """
-import math
 import pytest
 
 from app.services.peptide_analysis_v2.core_algorithms.preprocessor import (

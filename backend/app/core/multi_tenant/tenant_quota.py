@@ -420,7 +420,7 @@ class QuotaChecker:
         if org_id is None:
             return []
 
-        quota = self._quota_cache.get(org_id) or self._quota_provider(org_id)
+        self._quota_cache.get(org_id) or self._quota_provider(org_id)
         usages = []
         for qt in QuotaType:
             usage = await self.get_usage(org_id, qt)

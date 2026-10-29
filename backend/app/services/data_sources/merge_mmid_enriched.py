@@ -1,15 +1,15 @@
-import logging
-
-logger = logging.getLogger(__name__)
 """Merge MMID enriched data into the existing herb database.
 
 此脚本用于一次性数据预处理，将 enriched_mmid_herbs.json 与扩展药材数据合并。
 不再参与运行时数据流，保留仅为数据考古目的。
 """
 import json
+import logging
 import os
 import re
 import sys
+
+logger = logging.getLogger(__name__)
 
 sys.stdout.reconfigure(encoding="utf-8")
 

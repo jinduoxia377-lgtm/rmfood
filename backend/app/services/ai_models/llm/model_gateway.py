@@ -1,12 +1,12 @@
 """Model gateway - Central registry and router for multiple LLM adapters."""
 
 import logging  # A-27
+from dataclasses import dataclass
 from typing import Type
 
-logger = logging.getLogger(__name__)  # A-27
-from dataclasses import dataclass
-
 from .ports import ChatResponse, LLMPort, Message
+
+logger = logging.getLogger(__name__)  # A-27
 
 
 @dataclass

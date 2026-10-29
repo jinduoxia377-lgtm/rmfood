@@ -7,7 +7,6 @@ Tests cover:
 - Incremental updates
 """
 
-import pytest
 
 from app.services.ai.models.formula_discriminator import FormulaDiscriminator
 

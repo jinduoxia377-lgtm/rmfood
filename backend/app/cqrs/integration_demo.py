@@ -3,14 +3,14 @@ import logging
 logger = logging.getLogger(__name__)
 """CQRS Integration Demo - Shows how query models, cache, search, and event handlers work together."""
 
-from app.cqrs.handlers.event_handlers import CQRSHandler
-from app.cqrs.queries.models import FormulaSearchQuery
-from app.cqrs.queries.search import SearchService
-from app.cqrs.queries.service import QueryService
-from app.infrastructure.cache import create_cache_service
+from app.cqrs.handlers.event_handlers import CQRSHandler  # noqa: E402
+from app.cqrs.queries.models import FormulaSearchQuery  # noqa: E402
+from app.cqrs.queries.search import SearchService  # noqa: E402
+from app.cqrs.queries.service import QueryService  # noqa: E402
+from app.infrastructure.cache import create_cache_service  # noqa: E402
 
 
-def setup_cQRS_system(use_cache_redis=False):
+def setup_cqrs_system(use_cache_redis=False):
     """Set up the complete CQRS read-side system."""
 
     # Create cache service
@@ -45,9 +45,9 @@ def demo_usage():
     logger.info("=" * 60)
 
     # Setup system (using in-memory cache for demo)
-    system = setup_cQRS_system(use_cache_redis=False)
+    system = setup_cqrs_system(use_cache_redis=False)
 
-    qsvc = system["query_service"]
+    system["query_service"]
     chandler = system["cqrshandler"]
     sserv = system["search_service"]
 

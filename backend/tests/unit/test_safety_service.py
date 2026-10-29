@@ -20,7 +20,6 @@ from app.services.formula.safety_alert_system import (
     ParameterType,
     SafetyThreshold,
     SafetyAlert,
-    SafetyCheckResult,
     ThresholdUpdateRecord,
     SafetyAlertSystem,
     BUILT_IN_THRESHOLDS,
@@ -471,7 +470,7 @@ class TestSpecialGroupDetection:
         amount = 2500  # safe for adult (soft=2400, so this is WARNING)
 
         # Act
-        adult_alert = system.check_single_parameter(ingredient, amount, "adult")
+        system.check_single_parameter(ingredient, amount, "adult")
         children_alert = system.check_single_parameter(ingredient, amount, "children")
 
         # Assert

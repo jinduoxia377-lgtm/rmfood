@@ -34,11 +34,11 @@ from datetime import datetime
 from functools import wraps
 from typing import Any, Dict, List, Optional
 
-logger = logging.getLogger(__name__)
-
 from fastapi import Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 # ════════════════════════════════════════════
 # 1. 标准化API响应
@@ -237,10 +237,10 @@ async def paginate_query(
 # 3. 权限检查装饰器
 # ════════════════════════════════════════════
 
-from app.core.middleware.exceptions import AuthenticationError, AuthorizationError
+from app.core.middleware.exceptions import AuthenticationError, AuthorizationError  # noqa: E402
 
-from ..core.rbac.rbac import Permission
-from ..core.rbac.rbac import RBACManager as RBACEngine
+from ..core.rbac.rbac import Permission  # noqa: E402
+from ..core.rbac.rbac import RBACManager as RBACEngine  # noqa: E402
 
 
 def require_roles(allowed_roles: List[str]):
@@ -319,7 +319,7 @@ def check_ownership(resource_owner_id: int, current_user_id: int, allow_admin: b
 # 4. 请求日志中间件
 # ════════════════════════════════════════════
 
-import uuid
+import uuid  # noqa: E402
 
 
 class RequestLogger:

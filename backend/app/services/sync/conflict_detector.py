@@ -430,7 +430,7 @@ class ConflictDetector:
         remote_value: Any,
     ) -> bool:
         """判断是否为结构性冲突（类型不匹配等）"""
-        if type(local_value) != type(remote_value):
+        if type(local_value) is not type(remote_value):
             return True
 
         if isinstance(local_value, dict) and isinstance(remote_value, dict):
@@ -474,13 +474,13 @@ class ConflictDetector:
         winner_data = copy.deepcopy(conflict.local_data if use_local else conflict.server_data)
         loser_data = conflict.server_data if use_local else conflict.local_data
 
-        for field in conflict.conflicting_fields:
-            if field in self._union_merge_fields and field in loser_data:
-                if field not in winner_data:
-                    winner_data[field] = loser_data[field]
-                elif isinstance(winner_data[field], list) and isinstance(loser_data[field], list):
-                    combined = list(set(winner_data[field] + loser_data[field]))
-                    winner_data[field] = combined
+        for fname in conflict.conflicting_fields:
+            if fname in self._union_merge_fields and fname in loser_data:
+                if fname not in winner_data:
+                    winner_data[fname] = loser_data[fname]
+                elif isinstance(winner_data[fname], list) and isinstance(loser_data[fname], list):
+                    combined = list(set(winner_data[fname] + loser_data[fname]))
+                    winner_data[fname] = combined
 
         return ResolvedEntity(
             entity_type=conflict.entity_type,
@@ -496,17 +496,17 @@ class ConflictDetector:
         """应用联合合并策略"""
         merged = copy.deepcopy(conflict.local_data)
 
-        for field in conflict.conflicting_fields:
-            if field in self._protected_fields:
+        for fname in conflict.conflicting_fields:
+            if fname in self._protected_fields:
                 continue
 
-            remote_val = conflict.server_data.get(field)
-            local_val = merged.get(field)
+            remote_val = conflict.server_data.get(fname)
+            local_val = merged.get(fname)
 
-            if field in self._union_merge_fields:
-                merged[field] = self._merge_field_values(local_val, remote_val, field)
-            elif remote_val is not None and field not in merged:
-                merged[field] = remote_val
+            if fname in self._union_merge_fields:
+                merged[fname] = self._merge_field_values(local_val, remote_val, fname)
+            elif remote_val is not None and fname not in merged:
+                merged[fname] = remote_val
 
         return ResolvedEntity(
             entity_type=conflict.entity_type,
@@ -599,6 +599,6 @@ class ConflictDetector:
         return dict(self._stats)
 
 
-import json as _json
+import json as _json  # noqa: E402
 
 json = _json

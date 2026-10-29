@@ -135,7 +135,7 @@ def sync_pull(
 ):
     """从云端拉取变更"""
     device_id = payload.get("device_id")
-    since = payload.get("since")  # 上次同步时间戳
+    payload.get("since")  # 上次同步时间戳
 
     if not device_id:
         raise HTTPException(status_code=400, detail="缺少 device_id")

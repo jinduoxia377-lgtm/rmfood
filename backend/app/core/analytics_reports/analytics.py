@@ -599,7 +599,7 @@ class ReportGenerator:
     ) -> bytes:
         """生成 Excel 报表"""
         # 实际实现应使用 openpyxl
-        dashboard = await self._analytics.generate_dashboard(tenant_id, date_range)
+        await self._analytics.generate_dashboard(tenant_id, date_range)
 
         # 返回模拟数据
         return b"Excel file content (use openpyxl to implement)"
@@ -612,7 +612,7 @@ class ReportGenerator:
     ) -> bytes:
         """生成 PDF 报表"""
         # 实际实现应使用 reportlab 或 weasyprint
-        dashboard = await self._analytics.generate_dashboard(tenant_id, date_range)
+        await self._analytics.generate_dashboard(tenant_id, date_range)
 
         return b"PDF file content (use reportlab/weasyprint to implement)"
 

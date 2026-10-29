@@ -29,10 +29,10 @@ from app.services.search.hybrid_search import HybridSearchService
 from app.services.search.stream_search import StreamSearchService
 from app.services.search.vector_searcher import VectorSearcher
 
-logger = logging.getLogger(__name__)
-
 # 使用共享 router 实例注册到 /databases 前缀
 from . import router
+
+logger = logging.getLogger(__name__)
 
 # ── 食品原料搜索 ──
 
@@ -280,7 +280,7 @@ async def normalize_name(
 
     将别名/俗名归一化为标准名称
     """
-    nlp = get_nlp_pipeline()
+    get_nlp_pipeline()
 
     # 检查别名映射
     from app.services.search.chinese_nlp import TCM_ALIASES

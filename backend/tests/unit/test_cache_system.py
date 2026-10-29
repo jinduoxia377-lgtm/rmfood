@@ -9,9 +9,7 @@ Tests cover:
 
 Uses asyncio and mocks Redis if needed.
 """
-import asyncio
 import time
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 

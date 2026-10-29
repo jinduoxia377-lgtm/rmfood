@@ -61,7 +61,7 @@ async def create_version(
     )
     max_version = result.scalar() or 0
 
-    new_version_num = _parse_version(request.version_number)
+    _parse_version(request.version_number)
 
     version = PromptVersion(
         prompt_template_id=prompt_id,

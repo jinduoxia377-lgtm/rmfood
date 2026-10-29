@@ -3,7 +3,6 @@
 
 验证 importlib 反模式已被标准 import 替代
 """
-import pytest
 import pathlib
 
 

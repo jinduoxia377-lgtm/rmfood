@@ -2,7 +2,6 @@
 
 覆盖 4 层兼容性检测的主流程与报告对象。
 """
-import pytest
 
 from app.services.formula.compatibility_checker import (
     CompatibilityChecker,

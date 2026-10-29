@@ -87,7 +87,7 @@ class TaskSubmitRequest(BaseModel):
     retry_delay_seconds: int = Field(default=5, ge=1, le=60, description="重试延迟(秒)")
 
     @validator("payload")
-    def validate_payload(cls, v):
+    def validate_payload(cls, v):  # noqa: N805 - Pydantic validator (classmethod)
         """验证载荷大小"""
         serialized = json.dumps(v, default=str)
         if len(serialized) > 10 * 1024 * 1024:  # 10MB限制
@@ -147,7 +147,7 @@ class RecipeAnalysisRequest(BaseModel):
     )
 
     @validator("analysis_types")
-    def validate_analysis_types(cls, v):
+    def validate_analysis_types(cls, v):  # noqa: N805 - Pydantic validator (classmethod)
         """验证分析类型"""
         valid_types = {"composition", "similarity", "nutrition", "safety", "cost"}
         for atype in v:
@@ -166,7 +166,7 @@ class BatchAnalysisRequest(BaseModel):
     use_gpu: bool = Field(default=False, description="是否使用GPU加速")
 
     @validator("recipe_ids")
-    def validate_recipe_ids(cls, v):
+    def validate_recipe_ids(cls, v):  # noqa: N805 - Pydantic validator (classmethod)
         """验证配方ID列表"""
         if len(v) > 1000:
             raise ValueError("单次批量分析最多1000个配方")
@@ -870,7 +870,6 @@ async def check_ray_availability() -> Dict[str, Any]:
     """
     try:
         import ray
-        RAY_AVAILABLE = True
     except ImportError:
         return {
             "available": False,

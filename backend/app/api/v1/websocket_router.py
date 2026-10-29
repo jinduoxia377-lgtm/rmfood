@@ -171,7 +171,7 @@ async def websocket_presence_endpoint(
         if not payload or payload.get("type") != "access":
             await websocket.close(code=4003, reason="Invalid token")
             return
-        user_id = str(payload["sub"])
+        str(payload["sub"])
     except Exception as auth_err:
         logger.warning("WebSocket 认证失败: %s", auth_err)
         await websocket.close(code=4003, reason="Authentication failed")

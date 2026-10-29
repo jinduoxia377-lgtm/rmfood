@@ -45,6 +45,6 @@ class PromptVersion(Base):
         return f"<PromptVersion(id={self.id}, template_id={self.prompt_template_id}, version={self.version_number})>"
 
 
-from .ai_suggestion import AiSuggestion
-from .prompt_template import PromptTemplate
-from .user_model import User
+from .ai_suggestion import AiSuggestion  # noqa: E402
+from .prompt_template import PromptTemplate  # noqa: E402
+from .user_model import User  # noqa: E402

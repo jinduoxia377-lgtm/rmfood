@@ -8,7 +8,6 @@
 """
 
 import pytest
-import json
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
@@ -16,14 +15,13 @@ from datetime import datetime, timezone
 from app.main import app
 from app.models.chat import ChatSession, ChatMessage
 from app.models import User
-from app.models.enums import UserRole
 from app.api.deps import get_db_session
 from app.utils.auth import create_access_token
-from tests.conftest_clean_users import track_test_user, track_test_bot, make_test_user_id
+from tests.conftest_clean_users import track_test_user, make_test_user_id
 
 client = TestClient(app)
 # 手动注册延迟路由（TestClient 不启动 lifespan）
-from app.api import register_lazy_routers
+from app.api import register_lazy_routers  # noqa: E402
 register_lazy_routers()
 client.cookies.set("csrf_token", "test_csrf_token_for_unit_tests")
 client.headers["X-CSRF-Token"] = "test_csrf_token_for_unit_tests"

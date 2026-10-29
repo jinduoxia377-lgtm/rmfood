@@ -101,7 +101,7 @@ def extract_efficacy_from_effects(effects_text: str) -> Dict[str, float]:
 
 def get_herb_id_from_name(name: str) -> str:
     """从中文名获取 herb_id"""
-    _NAME_TO_ID = {
+    name_to_id = {
         "黄芪": "hq", "党参": "ds", "枸杞子": "gz", "人参": "rs",
         "当归": "dg", "黄芪根": "hqg", "白术": "bq", "茯苓": "fp",
         "甘草": "gq", "菊花": "jgh", "川芎": "cs", "藜芦": "lk",
@@ -118,12 +118,12 @@ def get_herb_id_from_name(name: str) -> str:
         "厚朴": "hp", "五味子": "wsz", "山茱萸": "szf",
         "酸枣仁": "szr", "柏子仁": "bzr", "红枣": "dcx",
     }
-    return _NAME_TO_ID.get(name, name[:2].lower())
+    return name_to_id.get(name, name[:2].lower())
 
 
 def get_default_dosage(name: str) -> tuple[float, float]:
     """获取默认剂量范围"""
-    _DOSAGE_RANGES = {
+    dosage_ranges = {
         "黄芪": (3, 30), "人参": (1, 9), "党参": (3, 15), "山药": (10, 30),
         "白术": (3, 12), "甘草": (1.5, 6), "大枣": (6, 15),
         "当归": (3, 12), "龙眼肉": (6, 12),
@@ -140,7 +140,7 @@ def get_default_dosage(name: str) -> tuple[float, float]:
         "山楂": (6, 12), "荷叶": (6, 12), "决明子": (10, 15),
         "黑芝麻": (6, 12), "桑葚": (6, 12),
     }
-    return _DOSAGE_RANGES.get(name, (3, 15))
+    return dosage_ranges.get(name, (3, 15))
 
 
 def get_safety_index(name: str, is_food_homology: bool) -> float:
@@ -286,7 +286,7 @@ async def main():
 
         # 2. 填充数据
         logger.info("\n[2] 开始填充知识数据...")
-        enrich_stats = await enrich_herb_knowledge(db)
+        await enrich_herb_knowledge(db)
 
         # 3. 验证结果
         logger.info("\n[3] 验证填充结果...")

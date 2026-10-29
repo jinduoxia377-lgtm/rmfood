@@ -38,5 +38,5 @@ class UserDevice(Base):
         return f"<UserDevice(id={self.id}, device_id='{self.device_id}', user_id={self.user_id}, type={self.device_type.value})>"
 
 
-from .sync_log import SyncLog
-from .user_model import User
+from .sync_log import SyncLog  # noqa: E402
+from .user_model import User  # noqa: E402

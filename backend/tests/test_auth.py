@@ -4,7 +4,6 @@ Covers: login, register, token refresh, token blacklist, account lockout.
 """
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import text
 
 
 @pytest.fixture
@@ -21,7 +20,6 @@ class TestLogin:
         """Valid user can log in and receive tokens."""
         # Create test user
         from app.models.user_model import User
-        from app.services.auth import AuthService
         import hashlib
 
         hashed_pw = hashlib.sha256("testpass123".encode()).hexdigest()

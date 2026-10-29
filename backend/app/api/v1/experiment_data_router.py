@@ -142,7 +142,7 @@ async def _parse_csv(content: bytes, recognize: bool, filename: str) -> dict:
     except UnicodeDecodeError:
         text = content.decode("gbk")
 
-    lines = [l.strip() for l in text.strip().split("\n") if l.strip()]
+    lines = [line.strip() for line in text.strip().split("\n") if line.strip()]
     if len(lines) < 2:
         raise ValueError("数据太少，至少需要2行")
 

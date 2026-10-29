@@ -40,4 +40,4 @@ class AiSuggestion(Base):
         return f"<AiSuggestion(id={self.id}, type={self.suggestion_type.value}, confidence={self.confidence_score}, applied={self.is_applied})>"
 
 
-from .prompt_version import PromptVersion
+from .prompt_version import PromptVersion  # noqa: E402

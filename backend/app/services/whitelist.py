@@ -422,7 +422,6 @@ async def create_application(
         }
 
     # 3. 冷却检查：最近一次 rejected 后 7 天内不可重新申请
-    cooldown_until = None
     last_rejected_until = (
         await db.execute(
             select(PreRegisterRequest.cooldown_until)

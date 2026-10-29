@@ -8,10 +8,8 @@ Tests cover:
 - Efficacy-based querying
 """
 
-import pytest
-import random
 
-from app.services.ai.models.data_loader import TCMSPDataLoader, HerbSample, FormulaSample
+from app.services.ai.models.data_loader import TCMSPDataLoader, HerbSample
 
 
 class TestDataLoaderInit:

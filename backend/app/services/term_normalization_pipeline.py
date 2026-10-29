@@ -254,24 +254,6 @@ class TermCorrectionPipeline(TermNormalizationPipeline):
 
     def _standardize_abbreviations(self, term: str) -> str:
         """标准化缩写"""
-        abbreviations = {
-            # 中药术语缩写
-            '四气五味': '四气五味',
-            '君臣佐使': '君臣佐使',
-            # 多肽术语缩写
-            'AA': '氨基酸',
-            'MW': '分子量',
-            'pI': '等电点',
-            'IC50': '半数抑制浓度',
-            'EC50': '半数有效浓度',
-            'HPLC': '高效液相色谱',
-            'MS': '质谱',
-            # 食品法规缩写
-            'GB': '国家标准',
-            'HACCP': '危害分析与关键控制点',
-            'GMP': '良好生产规范',
-            'ISO': '国际标准化组织',
-        }
 
         # 对于缩写，我们不直接替换，而是保持原样（因为缩写可能是有意使用的）
         # 这里主要是确保缩写的一致性
@@ -311,7 +293,7 @@ class ComprehensiveTermPipeline:
                 try:
                     normalized_for_validation = result["normalized"] or term
                     self.validation_pipeline.process(normalized_for_validation)
-                except ValueError as e:
+                except ValueError:
                     result["is_valid"] = False
                     result["errors"].append("处理异常")
 
@@ -323,7 +305,7 @@ class ComprehensiveTermPipeline:
                 if result["corrected"] != input_for_correction:
                     result["warnings"].append("术语已自动更正")
 
-        except Exception as e:
+        except Exception:
             result["is_valid"] = False
             result["errors"].append("处理失败")
 

@@ -13,10 +13,8 @@ RMFOOD 全面测试套件 v2.0
 """
 
 import pytest
-import asyncio
-from datetime import datetime, timedelta, timezone
-from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
-from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
 
 
 # ════════════════════════════════════════════
@@ -810,7 +808,7 @@ class TestSecurityMechanisms:
     
     def test_rate_limiting_enforcement(self):
         """测试速率限制执行"""
-        from app.core.security_middleware import SlidingWindowRateLimiter, RateLimitConfig, ClientInfo
+        from app.core.security_middleware import SlidingWindowRateLimiter
         
         limiter = SlidingWindowRateLimiter(requests_per_minute=60)
         

@@ -7,9 +7,8 @@ Tests cover:
 - Stats retrieval
 """
 
-import pytest
 
-from app.services.ai.models.rl_tuner import RLFormulaTuner, RewardWeights, TrainingRecord
+from app.services.ai.models.rl_tuner import RLFormulaTuner, RewardWeights
 
 
 class TestTunerInit:

@@ -116,6 +116,10 @@ from .organization import Organization, OrganizationInvitation, OrganizationMemb
 
 # 肽分析模块
 from .peptide_analysis import PeptideAnalysis, PeptideAnalysisDetail
+
+# 多肽批次COA 模块（Peptide.batch_coas 关系按字符串引用 PeptideBatchCOA，
+# 必须在此注册，否则 mapper 初始化时无法定位该类 → InvalidRequestError）
+from .peptide_batch_coa import COATestItem, PeptideBatchCOA
 from .peptide_design import PeptideDesign, PeptideDesignCandidate, PeptideDesignStatus
 
 # 账号申请（预注册）模块
@@ -249,6 +253,9 @@ __all__ = [
     # 肽分析模块
     "PeptideAnalysis",
     "PeptideAnalysisDetail",
+    # 多肽批次COA 模块
+    "PeptideBatchCOA",
+    "COATestItem",
     # 深度集成模块
     "SynergyRecord",
     "OptimizationResultRecord",

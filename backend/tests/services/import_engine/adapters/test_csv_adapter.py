@@ -1,8 +1,6 @@
 """CSVAdapter 单元测试"""
 import pytest
-from pathlib import Path
 from app.services.import_engine.adapters.csv_adapter import CsvAdapter
-from app.services.import_engine.models import ImportStats
 
 
 @pytest.fixture()

@@ -8,12 +8,9 @@ Tests cover:
 - Output format validation
 """
 
-import pytest
-import random
 
 from app.services.ai.models.autoregressive_generator import (
     AutoregressiveFormulaGenerator,
-    GenerationStep,
 )
 
 

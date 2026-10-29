@@ -4,7 +4,7 @@ Covers: token generation/validation, blacklist, password strength,
 cookie settings, rate limiting, token type differentiation.
 """
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 from datetime import datetime, timedelta, timezone
 
 

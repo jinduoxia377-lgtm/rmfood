@@ -205,7 +205,7 @@ async def update_price(
         if not ingredient:
             raise HTTPException(status_code=404, detail="原料不存在")
 
-        old_price = (ingredient.properties or {}).get("price_per_kg", 0)
+        (ingredient.properties or {}).get("price_per_kg", 0)
         return await service.bulk_update_price(ingredient_id, new_price_per_kg, currency, note)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

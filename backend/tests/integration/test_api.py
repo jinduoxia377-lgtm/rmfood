@@ -1,6 +1,5 @@
 """Phase 2 API 端到端测试"""
 import requests
-import json
 
 BASE = "http://localhost:8000"
 results = []
@@ -16,7 +15,7 @@ token = login_data["access_token"]
 h = {"Authorization": f"Bearer {token}"}
 log(f"Login: {r.status_code} OK, token_type={login_data.get('token_type')}")
 # Decode the token to check payload
-import base64
+import base64  # noqa: E402
 payload_part = token.split('.')[1]
 payload_part += '=' * (4 - len(payload_part) % 4)
 payload_json = base64.urlsafe_b64decode(payload_part)

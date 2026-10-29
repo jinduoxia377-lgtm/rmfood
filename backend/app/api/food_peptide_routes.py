@@ -32,10 +32,10 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger(__name__)
 
 # 导入RMFOOD专用的食品肽分析器
-from ..api.deps import get_db_session
-from ..core.plans import require_plan
-from ..models import User
-from ..services.ai_models.food_peptide_analyzer import (
+from ..api.deps import get_db_session  # noqa: E402
+from ..core.plans import require_plan  # noqa: E402
+from ..models import User  # noqa: E402
+from ..services.ai_models.food_peptide_analyzer import (  # noqa: E402
     RMFOODPeptideAnalyzer,
     get_rmfood_analyzer,
 )

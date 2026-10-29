@@ -7,7 +7,7 @@
 """
 import pytest
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 from app.core.compliance.cdc_listener import CDCListener, EXCLUDED_TABLES
 from app.models.change_event import ChangeEvent, ChangeAction

@@ -7,7 +7,6 @@ Tests cover:
 - Batch prediction
 """
 
-import pytest
 
 from app.services.ai.models.formula_predictor import FormulaPredictor, PredictionResult
 

@@ -2,7 +2,6 @@
 
 覆盖风味预测、相互作用效应、优化建议与接受度预测。
 """
-import pytest
 
 from app.services.formula.taste_predictor import TastePredictor, TasteProfile
 

@@ -9,9 +9,9 @@ pytestmark = pytest.mark.skip(reason="MultiObjectiveOptimizer 类已随模块迁
 
 sys.path.insert(0, 'd:/RMFOOD配方平台/backend')
 
-from app.core.database.session import get_db
-from app.services.ai.algorithms.herb_knowledge_service import HerbKnowledgeService, init_herb_knowledge
-from app.services.ai.algorithms.bayesian_formula_optimizer import BayesianFormulaOptimizer
+from app.core.database.session import get_db  # noqa: E402
+from app.services.ai.algorithms.herb_knowledge_service import HerbKnowledgeService  # noqa: E402
+from app.services.ai.algorithms.bayesian_formula_optimizer import BayesianFormulaOptimizer  # noqa: E402
 
 
 async def test_herb_knowledge_service():

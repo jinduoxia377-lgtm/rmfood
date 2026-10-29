@@ -10,15 +10,10 @@
 import pytest
 import time
 import asyncio
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
 
 # 导入应用
-from app.main import app
 from app.api.ai_modules.generation import FormulaGenerateV2Request
 
 
@@ -251,7 +246,6 @@ class TestGenerateV2ErrorHandling:
     @pytest.mark.asyncio
     async def test_data_loader_error(self):
         """测试数据加载器错误"""
-        from app.services.ai.models import get_data_loader
 
         # 模拟数据加载器错误
         with patch('app.services.ai.models.data_loader.get_data_loader') as mock_loader:

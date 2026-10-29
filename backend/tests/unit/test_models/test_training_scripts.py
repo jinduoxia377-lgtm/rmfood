@@ -9,9 +9,7 @@ Tests cover:
 import sys
 from pathlib import Path
 
-import pytest
 import torch
-from torch.utils.data import DataLoader
 
 # Add scripts dir to path for TrainingConfig
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "scripts"))
@@ -238,5 +236,5 @@ class TestTrainingIntegration:
             losses.append(total_loss.item())
 
         # Loss should be finite
-        assert all(isinstance(l, float) for l in losses)
-        assert all(l > 0 for l in losses)
+        assert all(isinstance(loss, float) for loss in losses)
+        assert all(loss > 0 for loss in losses)

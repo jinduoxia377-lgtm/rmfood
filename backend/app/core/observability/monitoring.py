@@ -60,16 +60,12 @@ try:
     from prometheus_client import (
         CONTENT_TYPE_LATEST,
         REGISTRY,
-        CollectorRegistry,
         Counter,
         Gauge,
         Histogram,
         Info,
         Summary,
         generate_latest,
-    )
-    from prometheus_client import (
-        Enum as PEnum,
     )
 
     HAS_PROMETHEUS = True
@@ -539,7 +535,7 @@ async def monitor_request(method: str, endpoint: str):
     try:
         yield request_id
     finally:
-        duration = time.time() - start_time
+        time.time() - start_time
         HTTP_REQUESTS_IN_PROGRESS.labels(method=method, endpoint=endpoint).dec()
         # 注意：status_code 会在响应完成后填充，这里用 0 代替
         # 实际使用中应传入真实状态码

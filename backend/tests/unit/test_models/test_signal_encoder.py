@@ -8,8 +8,6 @@ Tests cover:
 - Output dimension consistency
 """
 
-import pytest
-import random
 
 from app.services.ai.models.signal_encoder import SignalEncoder, EncodedSignal
 

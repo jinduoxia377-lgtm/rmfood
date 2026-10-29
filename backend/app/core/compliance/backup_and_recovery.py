@@ -369,7 +369,7 @@ class BackupManager:
 
         # 额外执行完整解包验证（在临时目录）
         record = self._records.get(backup_id)
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory():
             try:
                 with tarfile.open(record.file_path, "r:gz") as tar:
                     members = tar.getmembers()
@@ -574,7 +574,7 @@ class BackupManager:
         """解密文件"""
         try:
             data = encrypted_path.read_bytes()
-            sig_bytes, content = data[:32], data[32:]
+            _sig_bytes, content = data[:32], data[32:]
 
             key = self._encryption_key
             decrypted = bytes(b ^ key[i % len(key)] for i, b in enumerate(content))

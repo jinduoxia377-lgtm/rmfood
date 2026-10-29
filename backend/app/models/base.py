@@ -14,10 +14,10 @@ from sqlalchemy import BigInteger, DateTime
 from sqlalchemy.orm import Mapped, declared_attr, mapped_column
 
 from ..core.database import Base
+from .utils import now_utc_mapped
 
 # 创建扩展性 Base，允许表定义重复
 ExtendedBase = Base
-from .utils import now_utc_mapped
 
 
 class BaseModel(Base):

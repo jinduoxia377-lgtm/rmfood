@@ -43,7 +43,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # 平台发布版本的单一事实源（ADR-038）。
 # app.version 零依赖、不反向引用本模块，故不会产生循环导入。
-from app.version import __version__ as PLATFORM_VERSION
+from app.version import __version__ as platform_version
 
 logger = logging.getLogger(__name__)
 
@@ -306,7 +306,7 @@ class CeleryConfig(BaseModel):
     )
 
     @field_validator("broker_url", "result_backend")
-    def validate_redis_url(cls, v: str) -> str:
+    def validate_redis_url(cls, v: str) -> str:  # noqa: N805 - Pydantic validator (classmethod)
         """验证 Redis URL 必须以 redis:// 或 rediss:// 开头"""
         if not (v.startswith("redis://") or v.startswith("rediss://")):
             raise ValueError("URL 必须以 redis:// 或 rediss:// 开头")
@@ -850,7 +850,7 @@ class AppInfoConfig(BaseModel):
     name: str = "RMFOOD配方平台"
     # 单一事实源：app.version.PLATFORM_VERSION（ADR-038）。
     # 修改版本号请运行 `npm run version:bump`，不要手工编辑。
-    version: str = PLATFORM_VERSION
+    version: str = platform_version
     description: str = "AI 驱动的配方管理系统"
     api_prefix: str = "/api/v1"
     docs_url: str = "/docs"

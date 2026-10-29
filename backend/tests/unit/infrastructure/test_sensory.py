@@ -4,7 +4,7 @@
 覆盖：味觉预测、雷达图生成、优化建议、原料检索
 """
 import pytest
-from app.domain.sensory import TasteProfile, SensoryScore, FlavorNote
+from app.domain.sensory import TasteProfile, SensoryScore
 from app.infrastructure.sensory_engine import SensoryEvaluationEngine
 
 

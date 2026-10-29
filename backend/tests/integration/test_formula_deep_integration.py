@@ -17,10 +17,7 @@
 """
 
 import pytest
-import asyncio
 import time
-import math
-from typing import Dict, List, Any
 
 # ==================== Test Fixtures ====================
 
@@ -347,10 +344,6 @@ class TestRatioOptimizer:
     def test_antagonism_detection(self, ratio_optimizer):
         """2.8 边界条件检测：已知拮抗对自动标记"""
         # 大豆异黄酮 + 维生素C 是已知拮抗对（模拟）
-        test_case = {
-            "大豆异黄酮": 30.0,
-            "维生素C": 40.0
-        }
         
         # 该测试主要验证代码不崩溃，实际拮抗检测依赖具体实现
         assert True  # 占位，实际应检查日志或警告
@@ -384,7 +377,7 @@ class TestCompatibilityChecker:
         
         # pH 差异 > 2.0 应触发 WARNING
         ph_issues = [i for i in report.issues if i.category.value == "chemical"]
-        has_ph_warning = any("pH" in i.description.lower() for i in ph_issues)
+        any("pH" in i.description.lower() for i in ph_issues)
         
         # 注意：可能不会总是触发，取决于内置数据库是否包含这些成分
         assert isinstance(report.overall_score, (int, float))
@@ -735,7 +728,7 @@ class TestPerformanceBenchmarks:
         ]
         
         start = time.time()
-        frontier = ratio_optimizer.optimize_ratio(small_ingredients)
+        ratio_optimizer.optimize_ratio(small_ingredients)
         elapsed = time.time() - start
         
         assert elapsed < 1.0, f"小规模优化耗时 {elapsed:.3f}s > 1s"
@@ -756,7 +749,7 @@ class TestPerformanceBenchmarks:
         ]
         
         start = time.time()
-        frontier = ratio_optimizer.optimize_ratio(medium_ingredients)
+        ratio_optimizer.optimize_ratio(medium_ingredients)
         elapsed = time.time() - start
         
         assert elapsed < 3.0, f"中等规模优化耗时 {elapsed:.3f}s > 3s"

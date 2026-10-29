@@ -112,7 +112,7 @@ async def check_read_replica_health() -> dict:
                 "overflow": _read_replica_engine.pool.overflow(),
             } if hasattr(_read_replica_engine.pool, "size") else {},
         }
-    except Exception as e:
+    except Exception:
         logger.error("读库健康检查失败", exc_info=True)
         return {"status": "unhealthy", "error": "读库连接异常"}
 
@@ -250,7 +250,7 @@ async def get_replication_lag() -> dict:
 
         return {"status": "unknown", "lag_seconds": 0, "lag_ms": 0}
 
-    except Exception as e:
+    except Exception:
         logger.warning("[ReadReplica] 复制延迟检查失败", exc_info=True)
         return {"status": "error", "lag_seconds": 0, "lag_ms": 0, "error": "复制延迟检查异常"}
 

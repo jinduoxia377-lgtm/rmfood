@@ -115,7 +115,7 @@ async def restore_backup(
                 "details": report.details,
             },
         }
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(status_code=404, detail="备份数据无效")
     except Exception as e:
         logger.error("备份恢复失败: %s", e)

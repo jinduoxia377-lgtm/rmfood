@@ -18,7 +18,6 @@ RMFOOD 核心业务逻辑单元测试
 import pytest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
-import json
 
 # ── 测试认证服务 ──
 

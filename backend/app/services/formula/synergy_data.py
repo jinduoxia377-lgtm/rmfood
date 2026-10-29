@@ -202,7 +202,7 @@ class SynergyDataMixin:
                 else:
                     imported_count += 1
 
-            except Exception as e:
+            except Exception:
                 errors.append("处理系数失败: 服务异常")
 
         # 5. 更新版本号并保存

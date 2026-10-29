@@ -729,8 +729,8 @@ class VersioningService:
         lines1 = set(content1.splitlines())
         lines2 = set(content2.splitlines())
 
-        only_in_1 = lines1 - lines2
-        only_in_2 = lines2 - lines1
+        lines1 - lines2
+        lines2 - lines1
         common = lines1 & lines2
 
         total = len(lines1 | lines2)

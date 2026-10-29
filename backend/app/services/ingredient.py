@@ -2,12 +2,13 @@
 import logging  # A-27
 from typing import List, Optional, Tuple
 
-logger = logging.getLogger(__name__)  # A-27
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.formula import Ingredient
 from ..schemas.ingredient import IngredientCreate, IngredientUpdate
+
+logger = logging.getLogger(__name__)  # A-27
 
 
 class IngredientService:

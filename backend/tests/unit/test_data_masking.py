@@ -2,7 +2,6 @@
 
 覆盖 PII 脱敏的等级枚举、单值/字典/列表脱敏与字段类型自动识别。
 """
-import pytest
 
 from app.core.database.data_masking import (
     MaskLevel,

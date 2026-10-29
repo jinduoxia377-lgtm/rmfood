@@ -2,14 +2,12 @@
 
 覆盖安全预警系统的阈值查询、成分搜索、统计与配方安全检查。
 """
-import pytest
 
 from app.services.formula.safety_alert_system import SafetyAlertSystem
 from app.services.formula.safety_alert_system.types import (
     AlertLevel,
     ParameterType,
     SafetyThreshold,
-    SafetyAlert,
     SafetyCheckResult,
 )
 

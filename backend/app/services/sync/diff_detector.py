@@ -244,7 +244,7 @@ class DiffDetector:
             local_val = local[key]
             server_val = server[key]
 
-            if type(local_val) != type(server_val):
+            if type(local_val) is not type(server_val):
                 changed_fields.append(field_path)
                 continue
 

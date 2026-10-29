@@ -445,7 +445,6 @@ class FoodPeptideAnalyzer:
 
         # 苦味评分 (基于Qiu规则简化版)
         bitter_contrib = sum(AA_PROPERTIES.get(aa, {}).get('bitter', 0) for aa in seq) / length
-        sweetness_contrib = sum(AA_PROPERTIES.get(aa, {}).get('sweet', 0) for aa in seq) / length
         bitterness = min(1.0, bitter_contrib / 1.5)  # 归一化到0-1
 
         # 溶解度指数 (经验公式)
@@ -614,7 +613,7 @@ class FoodPeptideAnalyzer:
 
         # === 抗菌活性预测 (简化) ===
         positive_density = sum(1 for aa in seq if aa in 'KR') / length
-        amphipathic = abs(gravy := sum(AA_PROPERTIES.get(aa, {}).get('hydropathy', 0) for aa in seq) / length) < 1.5
+        amphipathic = abs(sum(AA_PROPERTIES.get(aa, {}).get('hydropathy', 0) for aa in seq) / length) < 1.5
 
         antimicrob_score = (
             0.40 * positive_density +

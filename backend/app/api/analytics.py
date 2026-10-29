@@ -674,7 +674,7 @@ async def custom_aggregation(
         # ── Identifier whitelist validation ──────────────────────────
         # Column names allowed per entity — prevents SQL injection via
         # field, alias, and group_by identifiers.
-        ENTITY_COLUMNS: Dict[str, List[str]] = {
+        entity_columns: Dict[str, List[str]] = {
             "formulas": ["id", "name", "code", "status", "version",
                          "creator_id", "created_at", "updated_at",
                          "target_effects", "description"],
@@ -686,7 +686,7 @@ async def custom_aggregation(
             "ingredients": ["id", "name", "name_cn", "category", "source",
                             "is_food_homology", "created_at"],
         }
-        allowed_columns = ENTITY_COLUMNS.get(entity, [])
+        allowed_columns = entity_columns.get(entity, [])
 
         def _validate_identifier(value: Any, name: str) -> str:
             """Validate an identifier against the column whitelist."""
@@ -700,11 +700,11 @@ async def custom_aggregation(
             return value
 
         # Validate operations
-        VALID_OPERATIONS = {"count", "sum", "avg", "max", "min"}
+        valid_operations = {"count", "sum", "avg", "max", "min"}
         validated_ops = []
         for op in operations:
             operation = op.get("operation", "count")
-            if operation not in VALID_OPERATIONS:
+            if operation not in valid_operations:
                 raise HTTPException(status_code=400, detail=f"Unsupported operation: {operation}")
             field = _validate_identifier(op.get("field", "*"), "field")
             alias = _validate_identifier(op.get("alias", f"{operation}_{field}"), "alias")

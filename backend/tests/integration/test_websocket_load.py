@@ -35,7 +35,7 @@ async def connect_and_keep_alive(url, client_id, duration=30):
                 try:
                     await websocket.send(ping_message)
                     try:
-                        response = await asyncio.wait_for(websocket.recv(), timeout=10)  # 增加超时时间
+                        await asyncio.wait_for(websocket.recv(), timeout=10)  # 增加超时时间
                         success_count += 1
                         # 每10次成功响应打印一次
                         if success_count % 10 == 0:

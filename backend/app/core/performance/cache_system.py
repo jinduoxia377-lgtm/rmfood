@@ -565,7 +565,7 @@ cache_service = get_cache()
 
 async def init_cache():
     """初始化缓存服务 (兼容 from .core.cache import init_cache)"""
-    cache = get_cache()
+    get_cache()
     # MultiLevelCache 在 __init__ 中已初始化 Redis，此处为空操作
     # 但保留接口以兼容 main.py 的 lifespan 调用
     pass

@@ -344,7 +344,7 @@ def _is_public_endpoint(path: str) -> bool:
     return any(path.startswith(p) for p in public_prefixes)
 
 
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse  # noqa: E402
 
 # ═════════════════════════════════════════════
 # 🟡 P4-1: 租户感知查询

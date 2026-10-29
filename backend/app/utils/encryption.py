@@ -11,9 +11,7 @@ import os
 from typing import Any, Dict, Optional, Tuple
 
 try:
-    from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-    from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     CRYPTO_AVAILABLE = True
 except ImportError:
     CRYPTO_AVAILABLE = False
@@ -240,7 +238,7 @@ class EncryptionUtils:
                         "v": base64.b64encode(ciphertext).decode("ascii"),
                         "n": base64.b64encode(nonce).decode("ascii"),
                     }
-                except Exception as e:
+                except Exception:
                     result[field_name] = value
                     result[f"{field_name}_encrypt_error"] = "加密失败"
             elif isinstance(value, dict):
@@ -292,7 +290,7 @@ class EncryptionUtils:
                     except (json.JSONDecodeError, UnicodeDecodeError):
                         result[field_name] = decrypted_bytes
 
-                except Exception as e:
+                except Exception:
                     result[field_name] = value
                     result[f"{field_name}_decrypt_error"] = "解密失败"
             elif isinstance(value, dict):

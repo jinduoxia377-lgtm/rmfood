@@ -26,15 +26,12 @@
 """
 
 import asyncio
-import json
 import os
 import sys
 import pytest
 import pytest_asyncio
-import tempfile
 from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from typing import Dict, Any, List, Optional
 
 # 添加项目根目录到路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -47,16 +44,9 @@ from app.core.distributed.ray_manager import (
     ClusterState,
     ClusterStatus,
     ResourceUsage,
-    RayTaskStatus,
-    get_ray_manager
+    RayTaskStatus
 )
 
-from app.api.v1.ray_router import (
-    ClusterStartRequest,
-    TaskSubmitRequest,
-    ResourceUsageResponse,
-    HealthCheckResponse
-)
 
 
 # ═════════════════════════════════════════════
@@ -392,7 +382,7 @@ class TestRayClusterManager:
         assert task_id in ray_manager._tasks
 
         # 验证任务配置
-        task_status = ray_manager._tasks[task_id]
+        ray_manager._tasks[task_id]
         # 注意：在实际实现中，这里会有一个任务执行线程，但在测试中可能没有
 
     @pytest.mark.asyncio

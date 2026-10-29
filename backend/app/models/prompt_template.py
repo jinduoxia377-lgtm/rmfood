@@ -37,5 +37,5 @@ class PromptTemplate(Base):
         return f"<PromptTemplate(id={self.id}, name={self.name}, category={self.category})>"
 
 
-from .prompt_version import PromptVersion
-from .user_model import User
+from .prompt_version import PromptVersion  # noqa: E402
+from .user_model import User  # noqa: E402

@@ -20,10 +20,10 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
-from ..api.deps import get_db_session
-from ..core.plans import require_plan
-from ..models import User
-from ..services.ai_models.pepinvent_service import (
+from ..api.deps import get_db_session  # noqa: E402
+from ..core.plans import require_plan  # noqa: E402
+from ..models import User  # noqa: E402
+from ..services.ai_models.pepinvent_service import (  # noqa: E402
     ServiceUnavailableError,
     get_pepinvent_service,
 )

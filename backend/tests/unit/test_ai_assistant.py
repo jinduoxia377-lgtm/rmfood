@@ -9,9 +9,6 @@
 - 推荐算法基础功能
 """
 import pytest
-import json
-from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime, timezone
 
 
 class TestLLMProvider:
@@ -173,7 +170,7 @@ class TestPromptStructureAnalyzer:
         freeform_prompt = "随便写点东西"
         
         report_complete = self.analyzer.analyze(complete_prompt)
-        report_freeform = self.analyzer.analyze(freeform_prompt)
+        self.analyzer.analyze(freeform_prompt)
         
         assert report_complete.structure_type in ["structured", "semi_structured"]
         # 自由形式可能得分较低但不会崩溃

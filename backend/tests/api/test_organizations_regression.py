@@ -21,7 +21,7 @@ from app.utils.auth import create_access_token
 from tests.conftest_clean_users import track_test_user, make_test_user_id
 
 client = TestClient(app, raise_server_exceptions=False)
-from app.api import register_lazy_routers
+from app.api import register_lazy_routers  # noqa: E402
 register_lazy_routers()
 
 

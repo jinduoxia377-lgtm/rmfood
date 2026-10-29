@@ -1,5 +1,4 @@
 """app/services/formula/seven_step_engine.py 数据模型单元测试"""
-import pytest
 
 from app.services.formula.seven_step_engine import FormulaRequest, FormulaOutput, SevenStepFormulaEngine
 

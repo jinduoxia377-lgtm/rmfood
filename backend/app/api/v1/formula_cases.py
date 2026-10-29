@@ -154,7 +154,7 @@ async def list_cases(
     order_col = getattr(FormulaCase, sort_by, FormulaCase.created_at)
     q = q.order_by(desc(order_col) if sort_dir == "desc" else order_col)
     total_q = select(func.count()).select_from(q.subquery())
-    total = (await db.execute(total_q)).scalar_one()
+    (await db.execute(total_q)).scalar_one()
     q = q.offset((page - 1) * page_size).limit(page_size)
     result = await db.execute(q)
     cases = result.scalars().all()
