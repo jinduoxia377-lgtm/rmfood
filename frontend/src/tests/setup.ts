@@ -10,7 +10,7 @@ import '@/i18n';
 import 'fake-indexeddb/auto';
 
 // 定义全局变量
-const globalAny = globalThis as any;
+const globalAny = globalThis as unknown as Record<string, unknown>;
 globalAny.window = globalAny.window || {};
 globalAny.navigator = globalAny.navigator || {};
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -22,9 +22,13 @@ globalAny.cancelIdleCallback = (id: number) => clearTimeout(id);
 
 // 直接在 window 对象上定义，确保 axe-core 能找到
 if (typeof window !== 'undefined') {
+  const testWindow = window as unknown as Window & {
+    requestIdleCallback: (callback: () => void) => number;
+    cancelIdleCallback: (id: number) => void;
+  };
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  (window as any).requestIdleCallback = (callback: Function) => setTimeout(callback, 0);
-  (window as any).cancelIdleCallback = (id: number) => clearTimeout(id);
+  testWindow.requestIdleCallback = (callback: Function) => setTimeout(callback, 0);
+  testWindow.cancelIdleCallback = (id: number) => clearTimeout(id);
 }
 
 // 添加 TextEncoder 定义
