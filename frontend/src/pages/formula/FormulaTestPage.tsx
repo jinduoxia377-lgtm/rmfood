@@ -298,7 +298,7 @@ export function FormulaTestPage() {
                     icon={<FlaskConical size={16} />}
                     desc={`配方 #${selectedFormulaId} 的药材协同作用分析（取前2味）`}
                     runFn={() => {
-                      const ings = (selectedFormula?.ingredients ?? []) as any[]
+                      const ings = (selectedFormula?.ingredients ?? [])
                       if (ings.length < 2) return Promise.resolve({ error: '配方至少需要2味药材' })
                       return formulaApi.analyzeSynergy({ ingredient_a: ings[0].name, ingredient_b: ings[1].name })
                     }}
@@ -309,7 +309,7 @@ export function FormulaTestPage() {
                     icon={<CheckCircle2 size={16} />}
                     desc={`检查配方 #${selectedFormulaId} 中各成分间的配伍禁忌`}
                     runFn={() => {
-                      const ings = (selectedFormula?.ingredients ?? []) as any[]
+                      const ings = (selectedFormula?.ingredients ?? [])
                       return formulaApi.checkCompatibility({
                         ingredients: ings.map((ing: any) => ({
                           name: ing.name,
@@ -326,7 +326,7 @@ export function FormulaTestPage() {
                     icon={<Activity size={16} />}
                     desc={`预测配方 #${selectedFormulaId} 的药理功效`}
                     runFn={() => {
-                      const ings = (selectedFormula?.ingredients ?? []) as any[]
+                      const ings = (selectedFormula?.ingredients ?? [])
                       return formulaApi.predictEffect({
                         formula_ingredients: ings.map((ing: any) => ({
                           name: ing.name,
@@ -343,7 +343,7 @@ export function FormulaTestPage() {
                     icon={<Shield size={16} />}
                     desc={`检查配方 #${selectedFormulaId} 的安全性（毒性、用量）`}
                     runFn={() => {
-                      const ings = (selectedFormula?.ingredients ?? []) as any[]
+                      const ings = (selectedFormula?.ingredients ?? [])
                       return formulaApi.checkSafety({
                         ingredients: ings.map((ing: any) => ({
                           name: ing.name,

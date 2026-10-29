@@ -76,7 +76,7 @@ export default function StabilityPage() {
   ])
   const [storageTemp, setStorageTemp] = useState(25)
   const [humidity, setHumidity] = useState(60)
-  const [lightExposure, setLightExposure] = useState('normal')
+  const [lightExposure, setLightExposure] = useState<'dark'|'normal'|'bright'>('normal')
   const [packaging, setPackaging] = useState<"standard"|"amber_bottle"|"vacuum"|"nitrogen_flushed">("standard")
   const [months, setMonths] = useState(24)
   const [result, setResult] = useState<any>(null)
@@ -97,7 +97,7 @@ export default function StabilityPage() {
 
   const buildPayload = () => ({
     ingredients, storage_temp: storageTemp, storage_humidity: humidity,
-    light_exposure: lightExposure as any, packaging, months_to_predict: months,
+    light_exposure: lightExposure, packaging, months_to_predict: months,
   })
 
   const runPredict = async (forCompare = false) => {
@@ -250,7 +250,7 @@ export default function StabilityPage() {
                 </div>
                 <div>
                   <label className="text-xs text-[var(--text-muted)] mb-1 block">{t('pages.stability.lightCondition')}</label>
-                  <select value={lightExposure} onChange={e => setLightExposure(e.target.value)} className={`w-full ${selectClass}`}>
+                  <select value={lightExposure} onChange={e => setLightExposure(e.target.value as 'dark'|'normal'|'bright')} className={`w-full ${selectClass}`}>
                     <option value="dark">{t('pages.stability.dark')}</option>
                     <option value="normal">{t('pages.stability.normal')}</option>
                     <option value="bright">{t('pages.stability.bright')}</option>
@@ -258,7 +258,7 @@ export default function StabilityPage() {
                 </div>
                 <div>
                   <label className="text-xs text-[var(--text-muted)] mb-1 block">{t('pages.stability.packaging')}</label>
-                  <select value={packaging} onChange={e => setPackaging(e.target.value as any)} className={`w-full ${selectClass}`}>
+                  <select value={packaging} onChange={e => setPackaging(e.target.value as "standard"|"amber_bottle"|"vacuum"|"nitrogen_flushed")} className={`w-full ${selectClass}`}>
                     <option value="standard">{t('pages.stability.standard')}</option>
                     <option value="amber_bottle">{t('pages.stability.amberBottle')}</option>
                     <option value="vacuum">{t('pages.stability.vacuum')}</option>

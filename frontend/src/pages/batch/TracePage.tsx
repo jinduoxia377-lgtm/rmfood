@@ -473,7 +473,7 @@ function ResultCard({
             <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               共关联 <span className="font-medium text-[var(--text-primary)]">{result.samples.length}</span> 个样品
               {(() => {
-                const flat = (result.samples as any[]).flat()
+                const flat = (result.samples as unknown as unknown[][]).flat()
                 return flat?.length ? `，${flat.length} 条测试记录` : ''
               })()}
             </div>

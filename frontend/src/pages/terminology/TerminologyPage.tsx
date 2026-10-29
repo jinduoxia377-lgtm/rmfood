@@ -18,7 +18,7 @@ import {
   StatCard,
 } from '@/components/ui'
 import * as terminologyApi from '@/api/terminology'
-import type { Term, TermCategory, TermCategoryCreate, TermValidationResponse } from '@/api/terminology'
+import type { Term, TermCategory, TermCategoryCreate, TermValidationResponse, TermVariantCreate } from '@/api/terminology'
 import { activityApi } from '@/api/activity'
 import {
   BookOpen, Search, Settings, Plus, Trash2, Edit2, Check,
@@ -1126,7 +1126,7 @@ function VariantManagementTab() {
               <Button variant="secondary" onClick={() => setShowCreateModal(false)}>取消</Button>
               <Button
                 variant="primary"
-                onClick={() => createMutation.mutate(formData as any)}
+                onClick={() => createMutation.mutate(formData as unknown as TermVariantCreate)}
                 disabled={!formData.variant || !formData.term_id}
               >
                 保存
