@@ -14,11 +14,11 @@ async def main():
     import os
     import sys
 
-    RAG_DIR = os.path.normpath(os.path.join(
+    rag_dir = os.path.normpath(os.path.join(
         os.path.dirname(__file__), "..", "services", "ai", "rag"
     ))
-    if RAG_DIR not in sys.path:
-        sys.path.insert(0, RAG_DIR)
+    if rag_dir not in sys.path:
+        sys.path.insert(0, rag_dir)
 
     import types
     _rag_pkg = types.ModuleType("services.ai.rag")

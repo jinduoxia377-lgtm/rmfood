@@ -43,7 +43,7 @@ def _bliss_core(efficacy_a: float, efficacy_b: float, alpha: float = 0.0) -> dic
     }
 
 
-def _hypergeometric_test(N: int, K: int, n: int, k: int) -> float:
+def _hypergeometric_test(N: int, K: int, n: int, k: int) -> float:  # noqa: N803  # N/K 为超几何分布数学符号
     """纯 Python 超几何检验 P(X >= k)。"""
 
     if k == 0:
@@ -104,13 +104,13 @@ def _tanimoto(set_a: set, set_b: set) -> float:
     return len(set_a & set_b) / denom
 
 
-def _gibbs_base(delta_h: float, delta_s: float, T: float = 298.15, gamma: float = 1.0,
+def _gibbs_base(delta_h: float, delta_s: float, T: float = 298.15, gamma: float = 1.0,  # noqa: N803  # T 为热力学温度符号
                 interaction_terms: List[float] = None) -> dict:
     """Gibbs 自由能基础计算。"""
     delta_g_base = delta_h - (T * delta_s / 1000)
     interaction_sum = sum(interaction_terms) if interaction_terms else 0.0
     delta_g_complex = delta_g_base + gamma * interaction_sum
-    R = 8.314
+    R = 8.314  # noqa: N806  # 气体常数（数学符号约定）
     rt = R * T / 1000
     stability_score = 1.0 / (1.0 + math.exp(delta_g_complex / rt)) if rt > 0 else 0.5
     stability_score = max(0.0, min(1.0, stability_score))
