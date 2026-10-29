@@ -1,15 +1,21 @@
-import { useState, useRef, useCallback } from 'react'
+import { useRef, useCallback } from 'react'
 import { DEFAULTS, TIMEOUTS } from '@/config'
 import type { AICandidate } from '@/api/ai'
+import { useGenerationStore } from '@/stores/generationStore'
 
-interface SavedFormulaState {
+export interface SavedFormulaState {
   formulaId: number
   savedAt: number
 }
 
 export function useSavedFormulas() {
-  const [savedFormulas, setSavedFormulas] = useState<Map<string, SavedFormulaState>>(new Map())
-  const [saveSuccess, setSaveSuccess] = useState<{ formulaId: number; formulaName: string } | null>(null)
+  // P1-6：已保存映射提升到全局 Zustand store，切 tab（GenerateTab 卸载）后保留，
+  // 避免「已保存」标记丢失与重复保存。
+  const savedFormulas = useGenerationStore((s) => s.savedFormulas)
+  const setSavedFormulas = useGenerationStore((s) => s.setSavedFormulas)
+  const saveSuccess = useGenerationStore((s) => s.saveSuccess)
+  const setSaveSuccess = useGenerationStore((s) => s.setSaveSuccess)
+  const resetSavedFormulas = useGenerationStore((s) => s.resetSavedFormulas)
   const candidateIdCache = useRef<Map<string, string>>(new Map())
 
   const getCandidateId = useCallback((candidate: AICandidate, index: number): string => {
@@ -33,7 +39,7 @@ export function useSavedFormulas() {
     candidateId: string,
     generateResult: AICandidate[] | null,
   ) => {
-    setSavedFormulas(prev => new Map(prev).set(candidateId, {
+    setSavedFormulas(new Map(savedFormulas).set(candidateId, {
       formulaId,
       savedAt: Date.now(),
     }))
@@ -51,12 +57,7 @@ export function useSavedFormulas() {
         setSaveSuccess(null)
       }, TIMEOUTS.saveSuccessDisplay)
     }
-  }, [getCandidateId])
-
-  const resetSavedFormulas = useCallback(() => {
-    setSavedFormulas(new Map())
-    setSaveSuccess(null)
-  }, [])
+  }, [getCandidateId, savedFormulas, setSavedFormulas, setSaveSuccess])
 
   return {
     savedFormulas,

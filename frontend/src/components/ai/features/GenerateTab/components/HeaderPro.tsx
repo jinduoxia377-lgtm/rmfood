@@ -20,6 +20,8 @@ interface HeaderProProps {
   generateResult: any[] | null
   onFullReset: () => void
   onSwitchToChat?: () => void
+  /** 历史按钮点击回调（打开版本历史面板） */
+  onViewHistory?: () => void
   historyCount?: number
   generator?: GeneratorType
   className?: string
@@ -35,6 +37,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
   generateResult,
   onFullReset,
   onSwitchToChat,
+  onViewHistory,
   historyCount = 0,
   generator,
   className = '',
@@ -120,6 +123,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
           {/* History */}
           {historyCount > 0 && (
             <button
+              onClick={onViewHistory}
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-body-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               title={t('ai.formula.generateTab.viewHistory')}
             >
@@ -145,7 +149,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
                 {t('ai.formula.generateTab.aiEnhanced')}
               </span>
               <Badge variant="neutral" className="text-label-sm font-semibold">
-                {modelStatus?.llm?.provider || 'local'}
+                {modelStatus?.llm?.provider || t('ai.formula.generateTab.localProvider')}
               </Badge>
             </label>
           )}

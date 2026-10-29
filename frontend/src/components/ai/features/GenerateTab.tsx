@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { useUserPreferenceStore } from '@/stores/userPreferenceStore';
+import { useGenerationStore } from '@/stores/generationStore';
 import { STORAGE_KEYS } from '@/config';
 import { Card } from '@/components/ui';
 import { logger } from '@/utils/safeLogger';
@@ -9,10 +10,12 @@ import type { AICandidate } from '@/api/ai';
 import { validateAiFormula, type AiFormulaValidationRequest, type AiFormulaValidationResponse } from '@/api/ai';
 import { formulaApi } from '@/api/formula';
 import type { FormulaCreatePayload } from '@/types/formula';
-import { FormulaValidationModal } from './components/FormulaValidationModal';
+import { FormulaValidationModal } from './components/FormulaValidationModal'
+import { parseDosageToGramsOrZero } from './utils/dosage';
 import type { InputMode, ViewMode } from './GenerateTab/config/generateTabConfig';
+import { HERB_ROLES } from './GenerateTab/config/generateTabConfig';
 import { AcademicReportEnhanced } from '@/components/ai/AcademicReportEnhanced';
-import { VersionComparePanel } from '@/components/ai/FormulaVersionManager';
+import { FormulaVersionManager, VersionComparePanel } from '@/components/ai/FormulaVersionManager';
 
 // Hooks
 import { useGenerateEffects } from './GenerateTab/hooks/useGenerateEffects';
@@ -40,12 +43,9 @@ const AdvancedGeneratePanel = lazy(() => import('@/components/ai/AdvancedGenerat
 
 // ===== 批量保存辅助函数（可独立测试）=====
 
-/** 从剂量字符串解析克数（"1.0-3.0g" / "10g" / "约15克"）。区间取上限。 */
+/** 从剂量字符串解析克数（"1.0-3.0g" / "500mg" / "10g" / "约15克"），单位统一归一化为克。 */
 export function parseDosageGrams(raw: string): number {
-  if (!raw) return 0
-  const range = /(\d+(?:\.\d+)?)\s*[-–~至]\s*(\d+(?:\.\d+)?)/.exec(raw)
-  const val = range ? Number(range[2]) : Number((/^[\s约]*([\d.]+)/.exec(raw) || [0, '0'])[1])
-  return Number.isFinite(val) ? val : 0
+  return parseDosageToGramsOrZero(raw)
 }
 
 /** 将候选配方组装为校验请求 payload（含 formula_name + 成分 name + dosage_g） */
@@ -56,10 +56,51 @@ export function buildCandidateValidationPayload(
   return {
     formula_name: candidate.formula_name || candidate.name || '未知配方',
     ingredients: (candidate.herb_combination ?? [])
-      .map(h => ({ name: h.name ? String(h.name) : '', dosage_g: parseDosageGrams(h.dosage ?? '') }))
+      .map(h => ({ name: h.name ? String(h.name) : '', dosage_g: parseDosageGrams(typeof h.dosage === 'string' ? h.dosage : '') }))
       .filter(item => item.name.length > 0),
     target_effects: targetEffects,
   }
+}
+
+/** 将单个 herb_combination 项的剂量归一化为克（数值）。
+ * 兼容：dosage_g（克）、dosage_mg（GA 系列实际即克）、数值 dosage、字符串 "10g"/"500mg"。 */
+function herbDosageInGrams(h: { dosage?: string | number; dosage_g?: number; dosage_mg?: number }): number {
+  if (typeof h.dosage_g === 'number' && Number.isFinite(h.dosage_g)) return h.dosage_g
+  if (typeof h.dosage_mg === 'number' && Number.isFinite(h.dosage_mg)) return h.dosage_mg
+  if (typeof h.dosage === 'number' && Number.isFinite(h.dosage)) return h.dosage
+  return parseDosageGrams(typeof h.dosage === 'string' ? h.dosage : '')
+}
+
+/** 将单个 herb_combination 项格式化为展示用剂量字符串。 */
+function formatHerbDosage(h: { dosage?: string | number; dosage_g?: number; dosage_mg?: number }): string {
+  if (typeof h.dosage === 'string' && h.dosage) return h.dosage
+  if (typeof h.dosage_g === 'number' && h.dosage_g > 0) return `${h.dosage_g}g`
+  if (typeof h.dosage_mg === 'number' && h.dosage_mg > 0) return `${h.dosage_mg}g`
+  if (typeof h.dosage === 'number' && h.dosage > 0) return `${h.dosage}g`
+  return ''
+}
+
+/** 将 herb_combination 映射为保存 payload 成分列表：
+ * - dosage 使用真实剂量字符串（"10g" / "500mg"），缺失时留空；
+ * - role 优先使用后端返回的角色；缺失时按剂量降序推导君臣佐使（君>臣>佐>使）。 */
+function mapHerbsToSaveIngredients(candidate: AICandidate): { name: string; role: string; dosage: string }[] {
+  const herbs = (candidate.herb_combination ?? []).filter(h => h.name)
+  if (herbs.length === 0) return []
+
+  // 按剂量降序排序，建立「剂量排名 → 角色」映射
+  const sorted = [...herbs].sort((a, b) => herbDosageInGrams(b) - herbDosageInGrams(a))
+  const roleByHerbName = new Map<string, string>()
+  sorted.forEach((h, rank) => {
+    const derivedRole = HERB_ROLES[Math.min(rank, HERB_ROLES.length - 1)] || '佐药'
+    roleByHerbName.set(String(h.name), h.role || derivedRole)
+  })
+
+  // 保持原始顺序输出
+  return herbs.map(h => ({
+    name: h.name ? String(h.name) : '',
+    role: roleByHerbName.get(String(h.name)) || h.role || '佐药',
+    dosage: formatHerbDosage(h),
+  }))
 }
 
 /** 将候选配方组装为保存到配方库的 payload */
@@ -73,11 +114,8 @@ export function buildCandidateSavePayload(
     description: candidate.description || '',
     target_effects: targetEffects,
     composition: {
-      ingredients: (candidate.herb_combination ?? []).map(h => ({
-        name: h.name ? String(h.name) : '',
-        role: h.role || '佐药',
-        dosage: '1.0-3.0g',
-      })),
+      // P1：使用 herb_combination 的真实 dosage/role，不再硬编码 '1.0-3.0g'/'佐药'
+      ingredients: mapHerbsToSaveIngredients(candidate),
       peptides: candidate.peptide_candidates,
     },
     safety_check: candidate.safety_details,
@@ -205,7 +243,13 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   
   // New hooks
   useGenerationShortcuts({
-    onGenerate: () => generationHook.mutation.mutate(effectsHook.effectLabels),
+    onGenerate: () => {
+      // 唯一一处 Ctrl+Enter 生成注册（GenerationInputPro 内的重复注册已移除）。
+      // 未选择功效时不发空请求，避免后端 422。
+      if (effectsHook.effectLabels.length > 0) {
+        generationHook.mutation.mutate(effectsHook.effectLabels);
+      }
+    },
     onCancel: generationHook.handleCancelGeneration,
     onReset: () => {
       generationHook.handleReset();
@@ -223,6 +267,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   const [selectedCompareIndex, setSelectedCompareIndex] = useState<number | undefined>(undefined);
   const [compareVersions, setCompareVersions] = useState<{ v1: number; v2: number } | null>(null);
   const [compareVersionsEnhanced, setCompareVersionsEnhanced] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [paramPanelExpanded, setParamPanelExpanded] = useState(false);
   const [showCacheInfo, setShowCacheInfo] = useState(false);
   // ── 批量保存：成分级校验报告弹窗 + 诚实降级提示 ──
@@ -233,15 +278,16 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   } | null>(null)
   const [batchNotice, setBatchNotice] = useState<string | null>(null)
 
-  // Process result once
-  const processedResultRef = useRef<string | null>(null);
+  // Process result once（P3：去重标记提升到全局 store，切 tab 重挂载后不会重复写入版本/历史）
+  const lastProcessedResultId = useGenerationStore((s) => s.lastProcessedResultId);
+  const setLastProcessedResultId = useGenerationStore((s) => s.setLastProcessedResultId);
 
   useEffect(() => {
     if (generationHook.generateResult && generationHook.generateResult.length > 0) {
       const resultId = generationHook.generateResult.map((c) => c.id || c.name).join('|');
-      if (processedResultRef.current === resultId) return;
+      if (lastProcessedResultId === resultId) return;
 
-      processedResultRef.current = resultId;
+      setLastProcessedResultId(resultId);
       versionsHook.addVersion(generationHook.generateResult, effectsHook.effectLabels);
 
       const topCandidate = generationHook.generateResult[0];
@@ -266,11 +312,22 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
     generationHook.generator,
     versionsHook,
     addGenerationHistory,
+    lastProcessedResultId,
+    setLastProcessedResultId,
   ]);
 
   // Cache optimization
   const handleGenerateWithCache = useCallback(async (effects: string[]) => {
-    const cacheKey = generateCacheKey(effects, { useLlm });
+    // P2：缓存键加入算法关键参数，与 useAlgorithmConfig.toApiParams 实际传参一致，
+    // 避免修改算法参数后仍命中旧缓存。
+    const cacheKey = generateCacheKey(effects, {
+      useLlm,
+      population_size: algorithmHook.toApiParams.population_size,
+      generations: algorithmHook.toApiParams.generations,
+      max_candidates: algorithmHook.toApiParams.max_candidates,
+      strategy: algorithmHook.toApiParams.strategy,
+      taste_preference: algorithmHook.toApiParams.taste_preference,
+    });
     const cached = getCachedResult(cacheKey);
 
     if (cached) {
@@ -296,7 +353,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
         }
       },
     });
-  }, [generationHook, getCachedResult, setCachedResult, useLlm]);
+  }, [generationHook, getCachedResult, setCachedResult, useLlm, algorithmHook.toApiParams]);
 
   // Handlers
   const handleFullReset = useCallback(() => {
@@ -309,17 +366,20 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
 
   const handleManualFormulaInput = useCallback(
     (candidate: AICandidate) => {
-      if (!candidate || typeof candidate.formula_name !== 'string' || candidate.formula_name.trim() === '') {
-        logger.warn('Invalid manual input');
+      // P1-3：手动输入模式采用 FormulaInputWindow 分析得到的候选配方，
+      // 直接写入全局结果面板，不再把配方名当功效关键词重新生成。
+      if (!candidate) {
+        logger.warn('Invalid manual input: 缺少候选配方');
         return;
       }
       try {
-        generationHook.mutation.mutate([candidate.formula_name.trim()]);
+        generationHook.setGenerateResult([candidate]);
+        generationHook.setGenerator('rule_engine');
       } catch (error) {
         logger.error('Manual input failed', { error });
       }
     },
-    [generationHook.mutation],
+    [generationHook],
   );
 
   const handleViewReport = useCallback((candidate: AICandidate) => {
@@ -330,6 +390,8 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   const handleSelectCandidate = useCallback(
     (candidate: AICandidate) => {
       setSelectedCandidate(candidate);
+      // P2：双对比弹窗互斥——打开增强对比时关闭版本对比弹窗
+      setCompareVersions(null);
       setCompareVersionsEnhanced(true);
       const index = generationHook.generateResult?.findIndex((c) => c === candidate);
       if (index !== undefined && index >= 0) {
@@ -356,6 +418,13 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   const handleSwitchToChat = useCallback(() => {
     setInputMode('chat');
   }, []);
+
+  // Chat 模式真实生成完成后，将候选配方同步到结果面板（供保存/对比/报告）
+  const handleChatCandidates = useCallback((candidates: AICandidate[]) => {
+    if (!candidates || candidates.length === 0) return;
+    generationHook.setGenerateResult(candidates);
+    generationHook.setGenerator('ga');
+  }, [generationHook]);
 
   // ── 保存全部：逐候选过 AI 校验，CRITICAL 弹窗停止、warnings 追加【AI校验】备注、接口异常诚实降级 ──
   const handleSaveAllCandidates = useCallback(async () => {
@@ -402,7 +471,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
       {/* Theme indicator - Professional (unified) */}
       <div className="absolute top-4 right-4 z-10">
         <div className="px-3 py-1.5 rounded-full text-caption font-medium bg-primary/10 text-primary border border-primary/20">
-          Professional
+          专业版
         </div>
       </div>
 
@@ -412,25 +481,25 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
           <kbd className="px-1.5 py-0.5 bg-background rounded border border-border font-mono">
             Ctrl+Enter
           </kbd>
-          Generate
+          生成
         </span>
         <span className="flex items-center gap-1">
           <kbd className="px-1.5 py-0.5 bg-background rounded border border-border font-mono">
             Esc
           </kbd>
-          Cancel
+          取消
         </span>
         <span className="flex items-center gap-1">
           <kbd className="px-1.5 py-0.5 bg-background rounded border border-border font-mono">
             Ctrl+K
           </kbd>
-          Chat
+          聊天
         </span>
         <button
           onClick={() => setShowCacheInfo(!showCacheInfo)}
           className="ml-auto flex items-center gap-1.5 hover:text-foreground transition-colors"
         >
-          Cache: {cacheStats.size}/{cacheStats.maxSize}
+          缓存: {cacheStats.size}/{cacheStats.maxSize}
         </button>
       </div>
 
@@ -439,17 +508,17 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
         <div className="px-6 py-3 bg-info/5 border-b border-info/10">
           <div className="flex items-center justify-between">
             <div className="text-body-sm text-info-foreground">
-              <strong>Cache Stats</strong>
+              <strong>缓存统计</strong>
               <span className="ml-2 text-info-foreground/70">
-                TTL: {Math.round(cacheStats.ttl / 1000 / 60)}min | 
-                Items: {cacheStats.size}
+                TTL: {Math.round(cacheStats.ttl / 1000 / 60)}分钟 | 
+                条目: {cacheStats.size}
               </span>
             </div>
             <button
               onClick={clearCache}
               className="text-caption text-info hover:underline"
             >
-              Clear Cache
+              清除缓存
             </button>
           </div>
         </div>
@@ -478,6 +547,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
         generateResult={generationHook.generateResult}
         onFullReset={handleFullReset}
         onSwitchToChat={handleSwitchToChat}
+        onViewHistory={() => setShowVersionHistory(true)}
         historyCount={versionsHook.formulaVersions.length}
         generator={generationHook.generator}
       />
@@ -493,9 +563,12 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
             }
           >
             <AdvancedGeneratePanel
-              onCandidatesGenerated={(candidates) =>
-                logger.info('Neural generation complete', { count: candidates.length })
-              }
+              onCandidatesGenerated={(candidates) => {
+                // P1-7：高级模式结果写入全局 store，与简单模式共用结果面板/版本历史/批量保存。
+                generationHook.setGenerateResult(candidates);
+                generationHook.setGenerator('ga');
+                logger.info('Neural generation complete', { count: candidates.length });
+              }}
             />
           </Suspense>
         ) : (
@@ -525,6 +598,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
                 onAlgorithmConfigChange={algorithmHook.updateConfig}
                 constraints={algorithmHook.constraints}
                 onConstraintsChange={algorithmHook.updateConstraints}
+                onChatCandidates={handleChatCandidates}
               />
             )}
 
@@ -546,8 +620,10 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
                 onSelectCandidate={handleSelectCandidate}
                 selectedCompareIndex={selectedCompareIndex}
                 onCompareVersions={(v1, v2) => {
+                  // P2：双对比弹窗互斥——打开版本对比时关闭增强对比弹窗
+                  // 语义约定：v1 = 较新版本（候选 1），v2 = 较旧版本（候选 2）
                   setCompareVersions({ v1, v2 });
-                  setCompareVersionsEnhanced(true);
+                  setCompareVersionsEnhanced(false);
                 }}
                 onExportFormula={handleExportFormula}
                 effectLabels={effectsHook.effectLabels}
@@ -555,6 +631,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
                 onSaveSuccess={(formulaId, candidateId) =>
                   savedHook.handleSaveSuccess(formulaId, candidateId, generationHook.generateResult)
                 }
+                savedFormulas={savedHook.savedFormulas}
               />
             )}
           </>
@@ -565,11 +642,19 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
       {selectedReport && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-           role="button" tabIndex={0} onClick={() => setSelectedReport(null)}
+          role="button" tabIndex={0}
+          onClick={() => setSelectedReport(null)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault(); setSelectedReport(null)
+            }
+          }}
         >
           <div
-            className="bg-surface rounded-xl max-w-3xl w-full mx-4 overflow-hidden shadow-2xl border border-border"
-             role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}
+            className="bg-surface rounded-xl max-w-5xl w-full mx-4 overflow-hidden shadow-2xl border border-border"
+            role="button" tabIndex={0}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             <AcademicReportEnhanced
               candidate={selectedReport}
@@ -584,17 +669,65 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
       {compareVersions && versionsHook.formulaVersions.length >= 2 && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-           role="button" tabIndex={0} onClick={() => setCompareVersions(null)}
+          role="button" tabIndex={0}
+          onClick={() => setCompareVersions(null)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault(); setCompareVersions(null)
+            }
+          }}
         >
           <div
             className="bg-surface rounded-xl max-w-4xl w-full mx-4 overflow-hidden shadow-2xl border border-border"
-             role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}
+            role="button" tabIndex={0}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
+            {/* P3-4：version1 固定为「旧版本」，version2 固定为「新版本」；
+             formulaVersions 为最新在前，因此 v1（较新）→ index v1-1 → version2（新），
+             v2（较旧）→ index v2-1 → version1（旧），与面板标签语义一致。 */}
             <VersionComparePanel
               version1={versionsHook.formulaVersions[compareVersions.v2 - 1]}
               version2={versionsHook.formulaVersions[compareVersions.v1 - 1]}
               onClose={() => setCompareVersions(null)}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Version History Modal — P3-2：HeaderPro 历史按钮接入版本历史面板 */}
+      {showVersionHistory && versionsHook.formulaVersions.length > 0 && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          role="button" tabIndex={0}
+          onClick={() => setShowVersionHistory(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault(); setShowVersionHistory(false)
+            }
+          }}
+        >
+          <div
+            className="bg-surface rounded-xl max-w-4xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-border"
+            role="button" tabIndex={0}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-surface z-10">
+              <h3 className="text-title-md font-semibold">配方版本历史</h3>
+              <button
+                onClick={() => setShowVersionHistory(false)}
+                className="text-caption text-muted-foreground hover:text-foreground"
+                aria-label="关闭版本历史"
+              >
+                关闭
+              </button>
+            </div>
+            <div className="p-6">
+              <FormulaVersionManager
+                versions={versionsHook.formulaVersions}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -605,11 +738,17 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           role="button" tabIndex={0}
           onClick={() => setCompareVersionsEnhanced(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault(); setCompareVersionsEnhanced(false)
+            }
+          }}
         >
           <div
-            className="bg-surface rounded-xl max-w-3xl w-full mx-4 overflow-y-auto max-h-[80vh] shadow-2xl border border-border p-6"
+            className="bg-surface rounded-xl max-w-5xl w-full mx-4 overflow-y-auto max-h-[80vh] shadow-2xl border border-border p-6"
             role="button" tabIndex={0}
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-title-md font-semibold">配方对比分析</h3>

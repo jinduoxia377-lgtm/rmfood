@@ -95,7 +95,7 @@ export function FormulaComparePanel({
       {/* 版本信息 */}
       <div className="flex items-center justify-between text-caption text-muted-foreground">
         <span>{version1.formula_name || version1.name || resolvedLabel1}</span>
-        <Badge variant="neutral">VS</Badge>
+        <Badge variant="neutral">对比</Badge>
         <span>{version2.formula_name || version2.name || resolvedLabel2}</span>
       </div>
 

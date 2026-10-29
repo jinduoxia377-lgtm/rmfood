@@ -24,7 +24,7 @@ export const SuccessMessage: React.FC<SuccessMessageProps> = ({
             {DEFAULTS.PLACEHOLDER_TEXTS.SAVE_SUCCESS_TITLE}
           </h4>
           <p className="text-sm text-success-600 dark:text-success-600 mt-0.5">
-            {`${DEFAULTS.PLACEHOLDER_TEXTS.SAVE_SUCCESS_MESSAGE_PREFIX} ${formulaName} ${DEFAULTS.PLACEHOLDER_TEXTS.SAVE_SUCCESS_MESSAGE_SUFFIX} (ID: ${formulaId})`}
+            {`${DEFAULTS.PLACEHOLDER_TEXTS.SAVE_SUCCESS_MESSAGE_PREFIX} ${formulaName} ${DEFAULTS.PLACEHOLDER_TEXTS.SAVE_SUCCESS_MESSAGE_SUFFIX}（编号：${formulaId}）`}
           </p>
           <button
             onClick={onClose}

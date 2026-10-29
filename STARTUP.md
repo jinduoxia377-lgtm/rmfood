@@ -1,4 +1,4 @@
-﻿# RMFOOD 启动指南
+# RMFOOD 启动指南
 
 ## 快速启动
 
@@ -18,7 +18,8 @@ python start_all.py frontend
 ### 后端
 ```bash
 cd backend
-.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# 使用 backend\venv（实际依赖环境；.venv 为过期空壳无 fastapi）
+venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### 前端

@@ -939,42 +939,11 @@ export interface Attachment {
 // 11. AI 模型相关 (AI Model Related)
 // ════════════════════════════════════════════
 
-export interface AICandidate {
-  id?: string;
-  name?: string;
-  provider?: string;
-  model?: string;
-  version?: string;
-  capabilities?: string[];
-  maxTokens?: number;
-  costPerToken?: number;
-  latencyMs?: number;
-  accuracyScore?: number;
-  safetyRating?: 'safe' | 'moderate' | 'risky' | 'unknown';
-  isAvailable?: boolean;
-  documentationUrl?: string;
-  config?: ModelConfiguration;
-
-  // 配方分析扩展属性
-  formula_name?: string;
-  herb_combination?: { name: string; role: string; dosage: string }[];
-  peptide_candidates?: any[];
-  patent_synergy_scores?: any;
-  synergy_score?: number;
-  safety_passed?: boolean;
-  safety_details?: { warnings: string[]; contraindications: string[]; summary: string };
-  taste_score?: number;
-  stability_score?: number;
-  overall_score?: number;
-  description?: string;
-  target_population?: string;
-  contraindications?: string;
-  generated_at?: string;
-  candidateId?: string;
-  effects?: string[];
-  ingredients?: { name: string; dosage: string; unit: string; amount_mg?: number }[];
-  score?: number;
-}
+/**
+ * AICandidate — 权威定义位于 types/ai.api.ts（配方生成 + 模型管理字段并集）。
+ * 本处仅 re-export，避免重复定义（P3：单一权威类型）。
+ */
+export type { AICandidate } from './ai.api';
 
 export interface ModelConfiguration {
   temperature: number;

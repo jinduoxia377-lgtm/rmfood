@@ -81,13 +81,36 @@ function Kill-ByPort {
     }
 }
 
+# 打印后端启动错误日志末尾，用于超时/启动失败时快速定位（路径基于项目根目录）
+function Show-BackendErrTail {
+    param([int]$Tail = 25)
+    $logFile = Join-Path $ProjectRoot "logs\backend-start.err.log"
+    if (-not (Test-Path $logFile)) {
+        Write-Host ("  Log not found: " + $logFile) -ForegroundColor DarkYellow
+        return
+    }
+    if ((Get-Item $logFile).Length -eq 0) {
+        Write-Host "  backend-start.err.log is empty — 进程可能未真正启动或已被清理" -ForegroundColor DarkYellow
+        return
+    }
+    Write-Host ("  --- last " + $Tail + " lines of logs\backend-start.err.log ---") -ForegroundColor Yellow
+    Get-Content $logFile -Tail $Tail | ForEach-Object { Write-Host ("    " + $_) -ForegroundColor Yellow }
+    Write-Host ("  Full log: " + $logFile) -ForegroundColor DarkYellow
+}
+
 function Wait-ForService {
-    param([string]$Url, [string]$Name, [int]$TimeoutSec = 90)
+    param([string]$Url, [string]$Name, [int]$TimeoutSec = 90, [System.Diagnostics.Process]$Proc = $null)
     Write-Host ("  Waiting for " + $Name + "...") -NoNewline
     $start = Get-Date
     $attempt = 0
     while ((Get-Date) -lt $start.AddSeconds($TimeoutSec)) {
         $attempt++
+        # 进程已退出 → 启动即失败（如 app 导入期抛异常），无需空等超时，快速失败并直接看日志
+        if ($null -ne $Proc -and $Proc.HasExited) {
+            Write-Host (" FAILED (process exited, code " + $Proc.ExitCode + ")") -ForegroundColor Red
+            if ($Name -eq "Backend") { Show-BackendErrTail }
+            return $false
+        }
         Start-Sleep -Seconds 1
         $ok = $false
         $info = ""
@@ -125,12 +148,7 @@ function Wait-ForService {
         }
     }
     Write-Host " TIMEOUT" -ForegroundColor Red
-    # 超时排障：尝试读取最近的后端错误日志末尾
-    $logFile = Join-Path (Split-Path -Parent $PSScriptRoot) "logs\backend-start.err.log"
-    if ($Name -eq "Backend" -and (Test-Path $logFile)) {
-        Write-Host "  --- last 5 lines of backend-start.err.log ---" -ForegroundColor Yellow
-        Get-Content $logFile -Tail 5 | ForEach-Object { Write-Host ("    " + $_) -ForegroundColor Yellow }
-    }
+    if ($Name -eq "Backend") { Show-BackendErrTail }
     return $false
 }
 
@@ -179,8 +197,8 @@ Write-Host ("  Frontend PID: " + $fproc.Id) -ForegroundColor Gray
 Write-Host "[4/4] Verifying services..." -ForegroundColor Yellow
 # 后端启动需完成建表/种子数据/AI 服务初始化，耗时较长，超时上限放宽到 5 分钟
 # 验证时给后端更充裕的启动时间（含建表/种子/AI 初始化），前端 180s
-$bOk = Wait-ForService -Url "http://127.0.0.1:8000/api/v1/health" -Name "Backend" -TimeoutSec 480
-$fOk = Wait-ForService -Url "http://127.0.0.1:3000" -Name "Frontend" -TimeoutSec 120
+$bOk = Wait-ForService -Url "http://127.0.0.1:8000/api/v1/health" -Name "Backend" -TimeoutSec 480 -Proc $bproc
+$fOk = Wait-ForService -Url "http://127.0.0.1:3000" -Name "Frontend" -TimeoutSec 120 -Proc $fproc
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan

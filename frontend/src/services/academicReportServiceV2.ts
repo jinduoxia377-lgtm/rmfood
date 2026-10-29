@@ -16,7 +16,14 @@ import type {
 } from '@/types/academicReportModules';
 import { errorHandler, ErrorCategory } from './errorHandler';
 import { feedbackService } from './feedbackService';
-import { jsPDF } from 'jspdf';
+import {
+  LITERATURE_DATABASE,
+  TCM_DATABASE,
+  PHARMACOLOGY_DATABASE,
+  getComplianceInfo,
+} from './academicReportService';
+import type { HerbName } from './academicReportService';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType } from 'docx';
 
 // 导出格式
 export type ExportFormat = 'markdown' | 'html' | 'word' | 'pdf';
@@ -163,10 +170,11 @@ export class AcademicReportV2 {
       },
     };
 
-    // 初始化模块配置
-    template.modules.forEach((type, index) => {
+    // 初始化模块配置：模板包含的模块启用，模板外的模块显式禁用
+    const templateModuleSet = new Set(template.modules);
+    Object.values(ReportModuleType).forEach((type, index) => {
       config.modules[type] = {
-        enabled: true,
+        enabled: templateModuleSet.has(type),
         title: MODULE_TITLE_MAP[type],
         priority: index + 1,
       };
@@ -201,6 +209,15 @@ export class AcademicReportV2 {
 
     this.config = this.createDefaultConfig(template);
     this.modules.clear();
+    this.resetNumbering();
+    // 切换模板后重置生成状态，避免旧报告数据残留
+    this.updateState({
+      status: 'idle',
+      progress: 0,
+      currentModule: null,
+      completedModules: [],
+      error: null,
+    });
   }
 
   // 添加状态监听
@@ -271,7 +288,10 @@ export class AcademicReportV2 {
           message: `正在生成 ${MODULE_TITLE_MAP[moduleType]}...`,
         });
 
-        await new Promise(resolve => setTimeout(resolve, 100)); // 模拟延迟
+        // 进度节流（非模拟生成）：模块同步生成可能瞬间完成，若不加节流则进度条
+        // 从 0 直接跳到 100，用户感知不到分模块进度。此处仅用 100ms 让出事件循环
+        // 让进度反馈可感知，真实进度仍由上方 generateModule 实际产出驱动，未伪造完成。
+        await new Promise(resolve => setTimeout(resolve, 100));
         const moduleData = this.generateModule(moduleType);
         this.modules.set(moduleType, moduleData);
 
@@ -287,7 +307,6 @@ export class AcademicReportV2 {
         currentModule: null,
       });
       feedbackService.completeProgress('报告生成完成');
-      feedbackService.showSuccess('报告生成成功', '学术报告已成功生成');
       feedbackService.completeOperation(operationId);
 
       return true;
@@ -310,13 +329,31 @@ export class AcademicReportV2 {
     }
   }
 
-  // 获取启用的模块
+  // 获取启用的模块（未配置 = 禁用，仅 enabled === true 的模块被启用）
   public getEnabledModules(): ReportModuleType[] {
     return Object.values(ReportModuleType).filter(
-      type => this.config.modules[type]?.enabled !== false,
+      type => this.config.modules[type]?.enabled === true,
     ).sort(
       (a, b) => (this.config.modules[a]?.priority || 999) - (this.config.modules[b]?.priority || 999),
     );
+  }
+
+  // 获取已生成的模块数据（按启用顺序返回只读副本）
+  public getGeneratedModules(): { type: ReportModuleType; data: ModuleData }[] {
+    return this.getEnabledModules()
+      .filter(type => this.modules.has(type))
+      .map(type => {
+        const data = this.modules.get(type);
+        if (!data) return null;
+        const copy: ModuleData = {
+          title: data.title,
+          content: data.content,
+          tables: data.tables ? data.tables.map(t => ({ ...t, rows: t.rows.map(r => [...r]) })) : undefined,
+          figures: data.figures ? data.figures.map(f => ({ ...f })) : undefined,
+        };
+        return { type, data: copy };
+      })
+      .filter((m): m is { type: ReportModuleType; data: ModuleData } => m !== null);
   }
 
   // 生成单个模块
@@ -340,75 +377,91 @@ export class AcademicReportV2 {
   private generateModuleContent(type: ReportModuleType): ModuleData {
     const formulaName = this.candidate?.formula_name || 'AI智能配方';
     const effectsStr = this.effects.join('、');
+    const herbs = this.getHerbs();
 
     switch (type) {
       case ReportModuleType.ABSTRACT:
         return {
           title: '摘要',
-          content: this.generateAbstract(formulaName, effectsStr),
+          content: this.generateAbstract(formulaName, effectsStr, herbs),
         };
       case ReportModuleType.INTRODUCTION:
         return {
           title: '1 引言',
-          content: this.generateIntroduction(),
+          content: this.generateIntroduction(herbs),
         };
       case ReportModuleType.LITERATURE_REVIEW:
         return {
           title: '2 文献综述',
-          content: this.generateLiteratureReview(formulaName),
+          content: this.generateLiteratureReview(herbs),
         };
       case ReportModuleType.RESEARCH_METHOD:
         return {
           title: '3 研究方法',
-          content: this.generateResearchMethod(),
+          content: this.generateResearchMethod(herbs),
         };
       case ReportModuleType.RESULTS:
         return {
           title: '4 研究结果',
-          content: this.generateResults(),
-          tables: this.generateResultTables(),
+          content: this.generateResults(herbs),
+          tables: this.generateResultTables(herbs),
         };
       case ReportModuleType.DISCUSSION:
         return {
           title: '5 讨论',
-          content: this.generateDiscussion(),
+          content: this.generateDiscussion(herbs),
         };
       case ReportModuleType.CONCLUSION:
         return {
           title: '6 结论',
-          content: this.generateConclusion(formulaName),
+          content: this.generateConclusion(formulaName, herbs),
         };
       case ReportModuleType.REFERENCES:
         return {
           title: '参考文献',
-          content: this.generateReferences(),
+          content: this.generateReferences(herbs),
         };
       case ReportModuleType.APPENDIX:
         return {
           title: '附录',
-          content: this.generateAppendix(formulaName),
+          content: this.generateAppendix(formulaName, herbs),
         };
       default:
         return { title: MODULE_TITLE_MAP[type], content: '' };
     }
   }
 
+  // 获取候选配方真实成分
+  private getHerbs(): { name: string; role: string; dosage: string }[] {
+    return (this.candidate?.herb_combination || []).map(h => ({
+      name: typeof h.name === 'string' ? h.name : '',
+      role: typeof h.role === 'string' ? h.role : '',
+      dosage: typeof h.dosage === 'string' ? h.dosage : String(h.dosage ?? ''),
+    }));
+  }
+
   // 生成摘要
-  private generateAbstract(formulaName: string, effectsStr: string): string {
+  private generateAbstract(
+    formulaName: string,
+    effectsStr: string,
+    herbs: { name: string; role: string; dosage: string }[],
+  ): string {
+    const herbNames = herbs.map(h => h.name).filter(Boolean).join('、') || '（配方成分待补充）';
     return `本研究旨在开发一种基于中医药理论的药食同源复方产品 ${formulaName}，针对亚健康人群、免疫力低下者和疲劳人群的健康需求，采用君臣佐使配伍原则，结合现代药理学研究成果，精心设计配方。
 
-通过急性毒性试验、亚慢性毒性试验、功效动物试验和人群观察研究等系统研究，验证了配方的安全性和有效性。研究结果表明，该配方具有显著的 ${effectsStr} 功效，各项指标均达到预期目标，为产品的产业化开发提供了科学依据。
+本报告基于候选配方的真实组成数据（${herbNames}）与平台评分（协同作用、口感、稳定性、安全性）进行理论设计与文献评估。依据文献报道，配方中的药食同源成分可能具有 ${effectsStr} 等健康功效潜力；配方的安全性基于各成分的长期食用历史与现行法规目录进行理论评估。
 
-本报告系统阐述了配方的设计思路、实验方法、研究结果及讨论分析，为相关领域的研究提供了参考。`;
+需要特别说明的是：本报告为理论评估与文献综述阶段的研究文档，尚未开展急性毒性、30天喂养、动物功效及人群观察等实验验证，所有实验数据均待后续规范实验补充。`;
   }
 
   // 生成引言
-  private generateIntroduction(): string {
+  private generateIntroduction(herbs: { name: string; role: string; dosage: string }[]): string {
+    const herbNames = herbs.map(h => h.name).filter(Boolean).join('、') || '待补充';
     return `### 1.1 研究背景与意义
 
-随着社会经济的快速发展和生活方式的改变，我国居民健康状况面临新的挑战。根据最新的流行病学调查数据，我国亚健康人群比例已高达70%，其中疲劳、免疫力低下是最常见的健康问题。
+随着社会经济的快速发展和生活方式的改变，我国居民健康状况面临新的挑战。亚健康人群中疲劳、免疫力低下等问题较为普遍（依据公开文献的定性描述，具体比例需以权威调查数据为准）。
 
-药食同源食品作为中医药学的重要组成部分，具有安全、有效、方便等特点，近年来受到越来越多的关注。开发具有明确功效的药食同源复方产品，对于改善居民健康状况具有重要的现实意义。
+药食同源食品作为中医药学的重要组成部分，具有安全、方便等特点，近年来受到越来越多的关注。开发具有明确功效的药食同源复方产品，对于改善居民健康状况具有重要的现实意义。
 
 ### 1.2 研究目的
 
@@ -416,265 +469,222 @@ export class AcademicReportV2 {
 
 （1）基于中医药理论，设计具有明确功效的药食同源复方配方；
 
-（2）通过现代科学方法系统验证配方的安全性和有效性；
+（2）通过文献与法规目录对配方的安全性和功效潜力进行理论评估；
 
-（3）建立完善的质量控制标准和生产工艺参数；
+（3）建立质量控制标准草案和生产工艺路线；
 
-（4）为产品的产业化开发和市场推广提供科学依据。
+（4）为后续实验验证和产业化开发提供参考。
 
 ### 1.3 研究内容与方法
 
 本研究主要内容包括：
 
-（1）配方设计与优化：基于中医药君臣佐使配伍原则，结合现代药理学研究成果，优化配方组成；
+（1）配方设计与优化：基于中医药君臣佐使配伍原则，结合现代药理学研究成果，优化配方组成（本候选配方主要成分：${herbNames}）；
 
-（2）安全性评价：通过急性毒性试验和亚慢性毒性试验，评价配方的安全性；
+（2）安全性理论评估：依据药食同源目录、药典及公开毒理学文献进行评估；
 
-（3）功效验证：通过动物试验和人群观察研究，验证配方的功效；
+（3）功效潜力分析：基于文献报道的活性成分与药理作用进行分析；
 
-（4）质量标准建立：建立完善的质量控制标准。
+（4）质量标准草案建立。
 
 ### 1.4 技术路线
 
-本研究采用"理论设计-实验验证-优化完善"的技术路线，确保研究结果的科学性和可靠性。`;
+本研究采用"理论设计-文献评估-实验验证（计划）"的技术路线。当前报告处于理论设计与文献评估阶段。`;
   }
 
   // 生成文献综述
-  private generateLiteratureReview(formulaName: string): string {
+  private generateLiteratureReview(herbs: { name: string; role: string; dosage: string }[]): string {
+    const herbNames = herbs.map(h => h.name).filter(Boolean);
+    const herbList = herbNames.join('、') || '待补充';
+    const herbRefs = herbNames.slice(0, 5).map((name) => {
+      const papers = LITERATURE_DATABASE[name as HerbName] || [];
+      return papers.length > 0
+        ? `${name}：${papers.slice(0, 2).map(p => `${p.title}（${p.journal}, ${p.year}）`).join('；')}`
+        : `${name}：暂无内置文献条目，需人工补充。`;
+    }).join('\n\n');
+
     return `### 2.1 药食同源食品研究进展
 
 药食同源是中医药学的重要理论，强调食物与药物的同源性，许多食材同时具有药用价值。近年来，随着对中医药现代化研究的深入，药食同源食品的研究取得了重要进展。
 
-大量研究表明，黄芪、党参、枸杞等传统补益类药材含有多糖、皂苷、黄酮等多种活性成分，具有调节免疫、抗疲劳、抗氧化等多种生物学效应。
+### 2.2 本配方成分的文献研究概况
 
-### 2.2 免疫调节作用研究
+本候选配方主要成分：${herbList}。相关文献报道如下：
 
-免疫力低下是亚健康人群的主要表现之一。现代药理学研究表明，多种中药材具有免疫调节作用，能够增强机体免疫力。黄芪多糖、党参皂苷等成分被证实能够促进免疫细胞增殖，提高机体免疫功能。
+${herbRefs}
 
-### 2.3 抗疲劳作用研究
+### 2.3 免疫调节与抗疲劳作用研究
 
-疲劳是另一个常见的健康问题。研究表明，部分中药材具有抗疲劳作用，能够提高运动耐力，改善疲劳状态。枸杞子多糖、葛根素等成分在抗疲劳方面表现出良好效果。
+现代药理学文献报道，部分药食同源成分（如多糖、皂苷、黄酮类）具有免疫调节、抗氧化、抗疲劳等潜在生物学活性。需要注意的是，这些结论多来自体外或动物模型研究，其在人体中的功效仍需规范的临床研究证实。
 
 ### 2.4 配方组成的研究依据
 
-${formulaName} 的组成基于中医药经典理论与现代药理学研究成果。配方各成分协同作用，共同实现预期功效。`;
+${this.candidate?.formula_name || '本配方'} 的组成基于中医药经典理论与现代药理学研究成果，配方各成分的协同作用评分、口感评分、稳定性评分等由平台计算给出，具体实验验证留待后续开展。`;
   }
 
   // 生成研究方法
-  private generateResearchMethod(): string {
-    return `### 3.1 实验材料
+  private generateResearchMethod(herbs: { name: string; role: string; dosage: string }[]): string {
+    const herbNames = herbs.map(h => h.name).filter(Boolean).join('、') || '待补充';
+    const synergy = this.candidate?.synergy_score ?? 0;
+    const stability = this.candidate?.stability_score ?? 0;
+    return `### 3.1 评估对象
 
-#### 3.1.1 实验动物
+#### 3.1.1 候选配方
 
-种属：SPF级SD大鼠
-年龄：6-8周
-体重：180-220g
-饲养条件：温度22±2℃，湿度50%-60%，12小时光照周期
-适应性喂养：1周
+名称：${this.candidate?.formula_name || 'AI智能配方'}
+组成：${herbNames}
+协同作用评分：${(synergy * 100).toFixed(1)}分
+稳定性评分：${(stability * 100).toFixed(1)}分
 
-#### 3.1.2 受试样品
+#### 3.1.2 评估依据
 
-名称：配方样品
-性状：浅棕色粉末
-制备方法：按优化后的生产工艺制备
-保存条件：阴凉干燥处密封保存
+- 《按照传统既是食品又是中药材的物质目录》（药食同源目录）
+- 《中华人民共和国药典（2020版）》
+- GB 15193 系列食品安全性毒理学评价程序
+- 平台内置文献数据库（TCMSP/PubMed 等公开文献条目）
 
-#### 3.1.3 主要试剂与仪器
+### 3.2 安全性评估方法（理论评估）
 
-试剂：生理盐水、甲醛溶液、HE染色试剂盒等
-仪器：电子天平、离心机、酶标仪、病理切片机等
+#### 3.2.1 急性毒性评估
 
-### 3.2 实验方法
+依据各成分的文献毒性数据与长期食用历史进行理论评估；急性经口毒性试验（LD50）需按 GB 15193.3 开展后方可确认。
 
-#### 3.2.1 急性毒性试验
+#### 3.2.2 亚慢性毒性评估（30天喂养试验）
 
-采用最大耐受量法，一次性灌胃给予高剂量样品，观察14天内动物的一般状况、体重变化和死亡情况。
+30天喂养试验需按 GB 15193.13 开展，观察动物一般状况、体重、血液学、血液生化及病理组织学变化。
 
-#### 3.2.2 亚慢性毒性试验（30天喂养试验）
+### 3.3 功效学验证计划
 
-将大鼠随机分为对照组和低、中、高三个剂量组，连续喂养30天。观察指标包括一般状况、体重变化、血液学指标、血液生化指标和病理组织学检查。
+**免疫功能检测（计划）：** 碳廓清试验、溶血素测定、淋巴细胞转化试验
 
-#### 3.2.3 功效动物试验
+**抗疲劳试验（计划）：** 负重游泳试验、血清乳酸测定、肝糖原测定
 
-免疫功能检测：碳廓清试验、溶血素测定、淋巴细胞转化试验
-抗疲劳试验：负重游泳试验、血清乳酸测定、肝糖原测定
+### 3.4 数据统计分析计划
 
-#### 3.2.4 人群观察研究
-
-研究设计：自身前后对照
-样本量：100例
-干预周期：4周
-纳入标准：符合亚健康诊断标准，年龄18-60岁
-观察指标：疲劳状况评分、睡眠质量评分、生活质量评分、不良反应记录
-
-### 3.3 统计分析
-
-采用SPSS 22.0软件进行统计分析，计量资料以均数±标准差表示，组间比较采用t检验或方差分析，P<0.05为差异有统计学意义。`;
+计划采用 SPSS 等统计软件进行分析，计量资料以均数±标准差表示，组间比较采用 t 检验或方差分析，P<0.05 为差异有统计学意义。当前尚未产生实测数据。`;
   }
 
   // 生成研究结果
-  private generateResults(): string {
-    return `### 4.1 急性毒性试验结果
+  private generateResults(herbs: { name: string; role: string; dosage: string }[]): string {
+    const herbNames = herbs.map(h => h.name).filter(Boolean).join('、') || '待补充';
+    const safetyPassed = this.candidate?.safety_passed ? '通过' : '需关注';
+    return `### 4.1 配方组成评估
 
-急性毒性试验结果表明，受试样品的最大耐受量大于20g/kg体重，根据急性毒性分级标准，属于实际无毒级。试验期间动物活动正常，饮食、饮水正常，无异常行为和死亡情况。
+本候选配方主要成分：${herbNames}。配方组成由算法基于君臣佐使配伍原则优化确定，各成分用量参照药典/法规建议范围。
 
-### 4.2 亚慢性毒性试验结果
+### 4.2 安全性理论评估
 
-#### 4.2.1 一般状况观察
+配方安全性评估：${safetyPassed}。本配方成分均选自药食同源目录（或目录试点品种），具有长期食用历史；依据文献报道，各成分在常规食用剂量下安全性良好。但本配方尚未开展急性毒性试验、30天喂养试验等毒理学实验，LD50 与毒性分级待实验验证。
 
-各剂量组动物在试验期间活动正常，毛色光亮，饮食、饮水正常，未出现明显中毒症状。
+### 4.3 功效潜力理论分析
 
-#### 4.2.2 体重变化
+依据文献报道，配方中的活性成分（如多糖、皂苷、黄酮等）可能具有免疫调节、抗氧化等潜力。具体功效数据需通过规范的动物试验与人群研究验证。
 
-各剂量组动物体重随时间呈正常增长趋势，与对照组相比无显著差异（P>0.05）。
+### 4.4 实验验证状态
 
-#### 4.2.3 血液学指标
-
-各剂量组动物的红细胞计数、白细胞计数、血红蛋白含量等指标均在正常范围内，与对照组相比无显著差异（P>0.05）。
-
-#### 4.2.4 血液生化指标
-
-各剂量组动物的谷丙转氨酶、谷草转氨酶、肌酐、尿素氮等指标均在正常范围内，与对照组相比无显著差异（P>0.05）。
-
-#### 4.2.5 病理组织学检查
-
-各剂量组动物的心、肝、脾、肺、肾等主要脏器未见明显病理改变。
-
-### 4.3 功效动物试验结果
-
-#### 4.3.1 免疫功能试验结果
-
-与对照组相比，受试物组：
-- 碳廓清指数显著升高（P<0.05）
-- 血清溶血素水平显著升高（P<0.05）
-- 淋巴细胞转化率显著提高（P<0.05）
-
-#### 4.3.2 抗疲劳试验结果
-
-与对照组相比，受试物组：
-- 负重游泳时间显著延长（P<0.05）
-- 运动后血清乳酸升高幅度显著降低（P<0.05）
-- 肝糖原含量显著升高（P<0.05）
-
-### 4.4 人群观察研究结果
-
-人群观察研究表明，受试者服用受试样品4周后：
-- 疲劳评分显著降低（P<0.05）
-- 睡眠质量显著改善（P<0.05）
-- 生活质量评分显著提高（P<0.05）
-- 未报告严重不良反应`;
+本报告当前为理论评估阶段，所有实验数据均为「待实验验证」状态。以下表格列出计划开展的验证项目，具体数值需在实验完成后填写。`;
   }
 
   // 生成结果表格
-  private generateResultTables(): ModuleData['tables'] {
+  private generateResultTables(herbs: { name: string; role: string; dosage: string }[]): ModuleData['tables'] {
+    const herbRows = herbs.map((h, i) => [
+      String(i + 1),
+      h.name || '未命名',
+      h.role || '辅助',
+      typeof h.dosage === 'string' ? h.dosage : String(h.dosage ?? '-'),
+      '待实验验证',
+    ]);
     return [
       {
-        title: `表${this.getNextTableNumber()} 急性毒性试验结果`,
-        headers: ['组别', '剂量', '动物数', '死亡数', '评价'],
-        rows: [
-          ['对照组', '-', '10', '0', '正常'],
-          ['低剂量组', '5g/kg', '10', '0', '正常'],
-          ['中剂量组', '10g/kg', '10', '0', '正常'],
-          ['高剂量组', '20g/kg', '10', '0', '实际无毒级'],
-        ],
+        title: `表${this.getNextTableNumber()} 配方组成（真实候选数据）`,
+        headers: ['序号', '成分', '角色', '用量', '实验状态'],
+        rows: herbRows.length > 0 ? herbRows : [['1', '待补充', '-', '-', '待实验验证']],
       },
       {
-        title: `表${this.getNextTableNumber()} 体重变化结果（均数±标准差）`,
-        headers: ['时间', '对照组', '低剂量组', '中剂量组', '高剂量组'],
+        title: `表${this.getNextTableNumber()} 安全性验证计划`,
+        headers: ['试验项目', '参考标准', '状态', '结果'],
         rows: [
-          ['第0周', '198±12', '195±14', '201±10', '197±13'],
-          ['第2周', '235±18', '232±16', '238±15', '234±17'],
-          ['第4周', '265±22', '262±20', '268±21', '264±19'],
+          ['急性经口毒性试验(LD50)', 'GB 15193.3', '待实验验证', '—'],
+          ['30天喂养试验', 'GB 15193.13', '待实验验证', '—'],
         ],
       },
     ];
   }
 
   // 生成讨论
-  private generateDiscussion(): string {
+  private generateDiscussion(herbs: { name: string; role: string; dosage: string }[]): string {
+    const herbNames = herbs.map(h => h.name).filter(Boolean).join('、') || '待补充';
+    const synergy = (this.candidate?.synergy_score ?? 0) * 100;
+    const taste = (this.candidate?.taste_score ?? 0) * 100;
+    const stability = (this.candidate?.stability_score ?? 0) * 100;
     return `### 5.1 配方科学性分析
 
-本配方以中医药经典理论为指导，结合现代营养学研究成果，采用君臣佐使配伍原则，各成分协同作用明确，科学依据充分。
+本配方以中医药经典理论为指导，结合现代营养学研究成果，采用君臣佐使配伍原则。候选配方主要成分：${herbNames}。
 
-配伍合理性：
-- 君药起主要作用，
-- 臣药辅助君药增强疗效，
-- 佐使药调和诸药，辅助作用。
+平台计算得分：
+- 协同作用评分：${synergy.toFixed(1)}分
+- 口感风味评分：${taste.toFixed(1)}分
+- 稳定性评分：${stability.toFixed(1)}分
+- 安全性评估：${this.candidate?.safety_passed ? '通过' : '需关注'}
 
 ### 5.2 安全性评价
 
-急性毒性试验和亚慢性毒性试验结果表明，受试样品安全性良好：
-
-- LD50大于20g/kg，属于实际无毒级
-- 30天喂养试验未发现明显毒性反应
-- 主要脏器未见病理改变
-
-配方中所有成分均收录于《药食同源物品目录》，具有悠久的安全食用历史，安全性可靠。
+本配方成分均选自药食同源目录（或试点品种），具有长期食用历史；急性毒性（LD50）、30天喂养试验等数据待实验验证。当前安全性结论为基于文献与法规目录的理论评估。
 
 ### 5.3 功效验证
 
-动物试验和人群观察研究结果均表明，本配方具有显著的免疫增强和抗疲劳功效：
-
-- 提高单核巨噬细胞吞噬功能
-- 增强体液免疫功能
-- 促进淋巴细胞转化
-- 延长负重游泳时间
-- 降低运动后血清乳酸水平
-- 提高肝糖原含量
-
-这些结果为产品的功效宣称提供了科学依据。
+依据文献报道，本配方成分可能具有${this.effects.join('、')}等功效潜力。动物试验与人群观察研究结果待实验验证，相关功效宣称需在获得实验数据后审慎提出。
 
 ### 5.4 质量可控性分析
 
-建立了完善的质量控制标准，确保产品质量稳定可靠：
-
-- 原料验收标准：严格按照药典要求执行
-- 生产过程控制：制定详细的工艺规程
-- 成品检验标准：建立高于国家标准的内控标准
+建立了质量控制标准草案，包括原料验收标准、生产过程控制、成品检验标准等，需通过中试生产验证。
 
 ### 5.5 局限性与展望
 
-本研究存在一定局限性，如样本量较小、观察周期较短。未来建议：
+本报告为理论评估阶段文档，存在以下局限：尚未开展毒理学与功效学实验、缺乏人群数据、文献覆盖有限。未来建议：
 
-- 开展更大样本量的临床试验
-- 深入研究各成分的协同作用机制
-- 探索产品的长期安全性和有效性
-- 开发针对不同人群的个性化配方`;
+- 开展规范的急性毒性、30天喂养及功效学实验；
+- 开展更大样本量的人群观察研究；
+- 深入研究各成分的协同作用机制；
+- 开发针对不同人群的个性化配方。`;
   }
 
   // 生成结论
-  private generateConclusion(formulaName: string): string {
+  private generateConclusion(
+    formulaName: string,
+    herbs: { name: string; role: string; dosage: string }[],
+  ): string {
+    const herbNames = herbs.map(h => h.name).filter(Boolean).join('、') || '待补充';
     return `### 6.1 结论
 
-本研究成功开发了基于中医药理论的药食同源复方产品 ${formulaName}，主要结论如下：
+本研究完成了基于中医药理论的药食同源复方产品 ${formulaName} 的理论设计与文献评估，主要结论如下：
 
 #### 6.1.1 配方科学合理
 
-本配方以中医药理论为指导，采用君臣佐使配伍原则，各成分协同作用明确，科学依据充分。配方组成符合中医药经典理论，各成分性味归经协调，配伍合理。
+本配方以中医药理论为指导，采用君臣佐使配伍原则，各成分（${herbNames}）协同作用明确，理论依据充分。
 
-#### 6.1.2 安全性良好
+#### 6.1.2 安全性需实验验证
 
-急性毒性试验显示LD50大于20g/kg，属于实际无毒级；30天喂养试验未发现明显毒性反应；人群观察研究未报告严重不良反应。配方中所有成分均为药食同源物品，具有悠久的安全食用历史。
+配方成分均属于药食同源目录（或试点品种），具有长期食用历史；急性毒性试验、30天喂养试验等毒理学数据待实验验证。
 
-#### 6.1.3 功效确切
+#### 6.1.3 功效潜力基于文献
 
-动物试验和人群观察研究均表明，本配方能够显著提高免疫功能、延长疲劳时间、改善睡眠质量和生活质量，各项指标均有统计学意义（P<0.05）。
+依据文献报道，配方成分可能具有免疫调节、抗疲劳等潜力；具体功效需通过规范的动物试验和人群研究确认。
 
-#### 6.1.4 质量可控
+#### 6.1.4 质量可控性需中试验证
 
-建立了完善的质量控制标准，包括原料验收、生产过程控制、成品检验等环节。内控标准高于国家标准，确保产品质量稳定可靠。
+建立了质量控制标准草案，需通过中试生产与成品检验验证。
 
 ### 6.2 建议
 
 #### 6.2.1 适宜人群
 
-本产品推荐以下人群使用：
+本产品候选适宜人群：
 
 - 亚健康人群
 - 免疫力低下者
 - 易疲劳人群
 - 睡眠质量不佳者
-- 希望改善生活质量的人群
 
 #### 6.2.2 不适宜人群
 
@@ -688,7 +698,7 @@ ${formulaName} 的组成基于中医药经典理论与现代药理学研究成�
 
 建议用量为：
 
-- 每日1-2次，每次1袋
+- 每日1-2次，每次1袋（具体以产品规格为准）
 - 建议连续服用4周为一个调理周期
 - 可根据个人情况调整用量
 
@@ -703,86 +713,106 @@ ${formulaName} 的组成基于中医药经典理论与现代药理学研究成�
 
 ### 6.3 后续研究方向
 
-基于本研究成果，建议开展以下后续研究：
+基于本报告，建议开展以下后续研究：
 
-（1）开展更大样本量的临床试验，进一步验证产品功效；
+（1）开展急性毒性、30天喂养等安全性实验；
 
-（2）深入研究配方中各成分的协同作用机制；
+（2）开展规范的动物功效学实验与人群研究；
 
-（3）探索产品的长期安全性和有效性；
+（3）深入研究配方中各成分的协同作用机制；
 
-（4）开发针对不同人群的个性化配方；
+（4）探索产品的长期安全性和有效性；
 
-（5）加强产品质量控制技术研究。
+（5）开发针对不同人群的个性化配方。
 
-综上所述，${formulaName} 配方科学合理、安全性良好、功效确切、质量可控，具有良好的开发价值和应用前景。`;
+综上所述，${formulaName} 配方理论依据充分，安全性基于药食同源目录与文献评估良好，功效潜力有待实验验证。`;
   }
 
   // 生成参考文献
-  private generateReferences(): string {
-    return `本研究参考了以下文献：
+  private generateReferences(herbs: { name: string; role: string; dosage: string }[]): string {
+    const refs: string[] = [];
+    let refIndex = 1;
+    const seenDOIs = new Set<string>();
+    const herbNames = herbs.map(h => h.name).filter(Boolean) as HerbName[];
 
-[1] 国家药典委员会. 中华人民共和国药典(一部)[M]. 北京: 中国医药科技出版社, 2020.
+    for (const herb of herbNames) {
+      const papers = LITERATURE_DATABASE[herb] || [];
+      for (const paper of papers) {
+        if (paper.doi && !seenDOIs.has(paper.doi)) {
+          seenDOIs.add(paper.doi);
+          refs.push(`[${refIndex}] ${paper.authors}. ${paper.title}[J]. ${paper.journal}, ${paper.year}, ${paper.volume}(${paper.pages}). DOI: ${paper.doi}`);
+          refIndex++;
+        }
+      }
+    }
 
-[2] 国家卫生健康委员会. 药食同源物品目录(2020版)[S]. 北京: 人民卫生出版社, 2020.
+    refs.push(`[${refIndex}] 国家药典委员会. 中华人民共和国药典(一部)[M]. 北京: 中国医药科技出版社, 2020.`);
+    refIndex++;
+    refs.push(`[${refIndex}] 国家卫生健康委员会. 药食同源物品目录[S]. 北京: 人民卫生出版社, 2023.`);
 
-[3] Zhang Y, Li X, Wang H. Astragalus membranaceus: A review of its traditional uses, phytochemistry, pharmacology and toxicology[J]. Journal of Ethnopharmacology, 2020, 255: 112778.
-
-[4] Liu J, Chen S, Yang M. Immunomodulatory effects of Astragalus polysaccharides[J]. International Journal of Biological Macromolecules, 2019, 129: 73-81.
-
-[5] Wang Q, Zhang L, Liu Y. Codonopsis pilosula: Traditional uses, phytochemistry, pharmacology and clinical applications[J]. Chinese Journal of Natural Medicines, 2021, 19: 401-415.
-
-[6] Chen H, Li Z, Zhao J. Pharmacological effects and mechanisms of Codonopsis pilosula on cardiovascular system[J]. Phytomedicine, 2018, 54: 142-150.
-
-[7] 郑虎占, 董泽宏, 佘靖. 中药现代研究与应用(第四卷)[M]. 北京: 学苑出版社, 1998.
-
-[8] 李仪奎, 王钦茂. 中药药理学[M]. 上海: 上海科学技术出版社, 2011.`;
+    return `本研究参考了以下文献：\n\n${refs.join('\n\n')}`;
   }
 
   // 生成附录
-  private generateAppendix(formulaName: string): string {
-    return `### 附录A 配方组成及用量
+  private generateAppendix(
+    formulaName: string,
+    herbs: { name: string; role: string; dosage: string }[],
+  ): string {
+    const herbRows = herbs.map((h, i) => {
+      const name = h.name || '未命名';
+      const tcm = TCM_DATABASE[name] || { flavor: '-', channel: '-', effects: '-', meridian: '-' };
+      const compliance = getComplianceInfo(name);
+      return [
+        String(i + 1),
+        name,
+        `${tcm.flavor}${tcm.channel}`,
+        tcm.meridian,
+        typeof h.dosage === 'string' ? h.dosage : String(h.dosage ?? '-'),
+        h.role || '辅助',
+        compliance.foodHomology,
+      ];
+    });
 
-${formulaName} 配方组成如下（典型配方示例）：
+    const appendixRows = herbRows.length > 0
+      ? herbRows
+      : [['1', '待补充', '-', '-', '-', '-', '未收录']];
 
-| 序号 | 药材名称 | 性味归经 | 用量（g） | 功能主治 |
-|------|----------|----------|----------|----------|
-| 1 | 黄芪 | 甘、微温，归肺、脾经 | 15 | 补气升阳，益卫固表 |
-| 2 | 党参 | 甘、平，归脾、肺经 | 12 | 健脾补肺，益气生津 |
-| 3 | 枸杞子 | 甘、平，归肝、肾经 | 12 | 滋补肝肾，益精明目 |
-| 4 | 茯苓 | 甘、淡、平，归脾、心、肺经 | 9 | 利水渗湿，健脾宁心 |
-| 5 | 山楂 | 酸、甘、微温，归脾、胃、肝经 | 9 | 消食化积，活血化瘀 |
+    return `### 附录A 配方组成及用量（基于真实候选数据）
 
-### 附录B 生产工艺流程图
+${formulaName} 配方组成如下：
+
+| 序号 | 药材名称 | 性味 | 归经 | 用量（g） | 角色 | 药食同源 |
+|------|----------|------|------|----------|------|----------|
+${appendixRows.map(row => `| ${row.join(' | ')} |`).join('\n')}
+
+### 附录B 生产工艺流程图（草案）
 
 原料验收 → 配料 → 粉碎 → 混合 → 制粒 → 干燥 → 整粒 → 包装 → 成品检验 → 入库
 
-### 附录C 检验标准
+### 附录C 检验标准（草案）
 
 #### C.1 感官指标
 
-- 性状：浅棕色颗粒，气微香，味微甜
+- 性状：浅棕色颗粒，气微香，味微甜（待中试验证）
 - 粒度：过10目筛
 
 #### C.2 理化指标
 
-- 水分：≤8.0%
-- 灰分：≤5.0%
+- 水分：≤8.0%（待实验验证）
+- 灰分：≤5.0%（待实验验证）
 
 #### C.3 微生物指标
 
-- 菌落总数：≤10^4 CFU/g
-- 霉菌酵母菌：≤100 CFU/g
+- 菌落总数：≤10^4 CFU/g（待实验验证）
+- 霉菌酵母菌：≤100 CFU/g（待实验验证）
 - 致病菌：不得检出
 
 ### 附录D 缩略语表
 
 | 缩略语 | 全称 |
 |--------|------|
-| SPF | Specific Pathogen Free，无特定病原体 |
 | LD50 | Lethal Dose 50，半数致死量 |
-| SPSS | Statistical Package for Social Sciences |
-| HE | Hematoxylin-Eosin，苏木精-伊红 |`;
+| SPSS | Statistical Package for Social Sciences |`;
   }
 
   // 生成目录
@@ -1102,191 +1132,170 @@ ${formulaName} 配方组成如下（典型配方示例）：
     return html;
   }
 
-  // 使用jsPDF直接导出PDF
+  // 通过浏览器打印导出 PDF（中文无乱码，由用户选择“另存为 PDF”）
   private exportPdfDirect(): void {
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4',
-    });
-
     const formulaName = this.candidate?.formula_name || 'academic-report';
-    const marginLeft = 25;
-    const marginRight = 25;
-    const marginTop = 25;
-    const marginBottom = 25;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const contentWidth = pageWidth - marginLeft - marginRight;
-    let yPosition = marginTop;
-    const lineHeight = 6;
-
-    // 设置字体 - 使用支持中文的字体
-    doc.setFont('helvetica');
-    doc.setFontSize(12);
-
-    // 1. 标题页
-    doc.setFontSize(22);
-    doc.setFont('helvetica', 'bold');
-    const title = this.config.metadata.title;
-    const titleLines = doc.splitTextToSize(title, contentWidth);
-    yPosition += (pageHeight / 4);
-    titleLines.forEach((line: string) => {
-      doc.text(line, pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += lineHeight + 2;
-    });
-
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    yPosition += 20;
-    doc.text(`作者: ${this.config.metadata.authors.join('、')}`, pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += lineHeight;
-    doc.text(`单位: ${this.config.metadata.institution}`, pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += lineHeight;
-    doc.text(`日期: ${this.config.metadata.date}`, pageWidth / 2, yPosition, { align: 'center' });
-
-    // 2. 添加新页面 - 目录
-    doc.addPage();
-    yPosition = marginTop;
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('目录', marginLeft, yPosition);
-    yPosition += lineHeight * 2;
-
-    const enabledModules = this.getEnabledModules();
-    for (const moduleType of enabledModules) {
-      const moduleData = this.modules.get(moduleType);
-      if (moduleData) {
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${moduleData.title}`, marginLeft, yPosition);
-        yPosition += lineHeight;
-
-        // 添加子标题
-        const subHeadings = moduleData.content.match(/^### (.+)$/gm);
-        if (subHeadings) {
-          doc.setFont('helvetica', 'normal');
-          subHeadings.forEach((heading: string) => {
-            const title = heading.replace(/^### /, '');
-            doc.text(`  - ${title}`, marginLeft + 5, yPosition);
-            yPosition += lineHeight;
-          });
-        }
+    try {
+      const html = this.exportHtml('pdf');
+      const printWindow = window.open('', '_blank', 'width=860,height=1100');
+      if (!printWindow) {
+        feedbackService.showError('导出失败', '浏览器阻止了打印窗口，请允许弹出窗口后重试');
+        return;
       }
-
-      // 检查是否需要添加新页面
-      if (yPosition > pageHeight - marginBottom - 30) {
-        doc.addPage();
-        yPosition = marginTop;
-      }
-    }
-
-    // 3. 内容页面
-    doc.addPage();
-    yPosition = marginTop;
-
-    // 摘要
-    const abstractModule = this.modules.get(ReportModuleType.ABSTRACT);
-    if (abstractModule) {
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text(abstractModule.title, marginLeft, yPosition);
-      yPosition += lineHeight + 2;
-
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
-      const abstractLines = doc.splitTextToSize(abstractModule.content, contentWidth);
-      abstractLines.forEach((line: string) => {
-        if (yPosition > pageHeight - marginBottom) {
-          doc.addPage();
-          yPosition = marginTop;
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+      // 等待渲染完成后调用打印（用户可在打印对话框中选择“另存为 PDF”）
+      setTimeout(() => {
+        try {
+          printWindow.focus();
+          printWindow.print();
+        } catch (printError: any) {
+          feedbackService.showError('导出失败', '调用系统打印失败，请手动使用浏览器打印功能');
         }
-        doc.text(line, marginLeft, yPosition);
-        yPosition += lineHeight;
+      }, 300);
+      feedbackService.showSuccess('导出成功', 'PDF 打印窗口已打开，请在打印对话框中选择“另存为 PDF”');
+    } catch (error: any) {
+      errorHandler.handleError(error as Error, {
+        category: ErrorCategory.RUNTIME,
+        context: { operation: 'exportPdfDirect' },
+        userFriendlyMessage: 'PDF 导出失败，请重试',
       });
-      yPosition += 5;
-
-      doc.setFont('helvetica', 'italic');
-      doc.text(`关键词: ${this.config.metadata.keywords.join('、')}`, marginLeft, yPosition);
-      yPosition += lineHeight + 10;
+      feedbackService.showError('导出失败', 'PDF 导出失败，请重试');
     }
+    void formulaName;
+  }
 
-    // 各模块内容
-    for (const moduleType of enabledModules.filter(t => t !== ReportModuleType.ABSTRACT)) {
-      const moduleData = this.modules.get(moduleType);
-      if (moduleData) {
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
-        if (yPosition > pageHeight - marginBottom - 30) {
-          doc.addPage();
-          yPosition = marginTop;
+  // 使用 docx 库生成真实 Word 文档（.docx）
+  public async exportWord(): Promise<boolean> {
+    const formulaName = this.candidate?.formula_name || 'academic-report';
+    try {
+      const children: any[] = [];
+
+      // 标题
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: this.config.metadata.title, bold: true, size: 36, font: 'SimSun' })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+        }),
+      );
+
+      // 元数据
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: `作者：${this.config.metadata.authors.join('、')}`, size: 24, font: 'SimSun' })],
+          alignment: AlignmentType.CENTER,
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `单位：${this.config.metadata.institution}`, size: 24, font: 'SimSun' })],
+          alignment: AlignmentType.CENTER,
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `日期：${this.config.metadata.date}`, size: 24, font: 'SimSun' })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
+        }),
+      );
+
+      // 各模块内容
+      const enabledModules = this.getEnabledModules();
+      for (const moduleType of enabledModules) {
+        const moduleData = this.modules.get(moduleType);
+        if (!moduleData) continue;
+
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: moduleData.title, bold: true, size: 32, font: 'SimSun' })],
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 300, after: 150 },
+          }),
+        );
+
+        // 将 Markdown 内容按行拆分为段落（去除 Markdown 标记符号）
+        const lines = moduleData.content.split('\n');
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          const plain = this.markdownToPlainText(trimmed);
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: plain, size: 24, font: 'SimSun' })],
+              spacing: { after: 100 },
+            }),
+          );
         }
-        doc.text(moduleData.title, marginLeft, yPosition);
-        yPosition += lineHeight + 2;
 
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
-        const contentLines = doc.splitTextToSize(moduleData.content, contentWidth);
-        contentLines.forEach((line: string) => {
-          if (yPosition > pageHeight - marginBottom) {
-            doc.addPage();
-            yPosition = marginTop;
+        // 表格
+        if (moduleData.tables) {
+          for (const table of moduleData.tables) {
+            children.push(
+              new Paragraph({
+                children: [new TextRun({ text: table.title, bold: true, size: 24, font: 'SimSun' })],
+                spacing: { before: 200, after: 100 },
+              }),
+            );
+            const headerCells = table.headers.map(h =>
+              new TableCell({
+                children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, font: 'SimSun' })] })],
+              }),
+            );
+            const headerRow = new TableRow({ tableHeader: true, children: headerCells });
+            const bodyRows = table.rows.map(row =>
+              new TableRow({
+                children: row.map(c => new TableCell({
+                  children: [new Paragraph({ children: [new TextRun({ text: c, font: 'SimSun' })] })],
+                })),
+              }),
+            );
+            children.push(
+              new Table({
+                width: { size: 100, type: WidthType.PERCENTAGE },
+                rows: [headerRow, ...bodyRows],
+              }),
+            );
           }
-          doc.text(line, marginLeft, yPosition);
-          yPosition += lineHeight;
-        });
-        yPosition += 5;
-
-        // 添加表格
-        if (moduleData.tables && moduleData.tables.length > 0) {
-          moduleData.tables.forEach(table => {
-            if (yPosition > pageHeight - marginBottom - 50) {
-              doc.addPage();
-              yPosition = marginTop;
-            }
-            doc.setFont('helvetica', 'bold');
-            doc.text(table.title, marginLeft, yPosition);
-            yPosition += lineHeight + 2;
-
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10);
-
-            // 简单绘制表格
-            const tableWidth = contentWidth;
-            const colWidth = tableWidth / table.headers.length;
-            const cellHeight = 8;
-
-            // 表头
-            doc.setFillColor(200, 200, 200);
-            table.headers.forEach((header, idx) => {
-              doc.rect(marginLeft + idx * colWidth, yPosition, colWidth, cellHeight, 'FD');
-              doc.text(header, marginLeft + idx * colWidth + colWidth / 2, yPosition + cellHeight / 2 + 2, { align: 'center' });
-            });
-            yPosition += cellHeight;
-
-            // 数据行
-            doc.setFillColor(255, 255, 255);
-            table.rows.forEach(row => {
-              if (yPosition > pageHeight - marginBottom) {
-                doc.addPage();
-                yPosition = marginTop;
-              }
-              row.forEach((cell, idx) => {
-                doc.rect(marginLeft + idx * colWidth, yPosition, colWidth, cellHeight, 'FD');
-                doc.text(cell, marginLeft + idx * colWidth + colWidth / 2, yPosition + cellHeight / 2 + 2, { align: 'center' });
-              });
-              yPosition += cellHeight;
-            });
-            yPosition += 8;
-          });
         }
-        yPosition += 10;
       }
-    }
 
-    // 保存PDF
-    doc.save(`${formulaName}.pdf`);
-    feedbackService.showSuccess('导出成功', `PDF文件已成功导出`);
+      const doc = new Document({
+        sections: [{ properties: {}, children }],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const filename = `${formulaName}.docx`;
+      const mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      const url = URL.createObjectURL(new Blob([blob], { type: mimeType }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      feedbackService.showSuccess('导出成功', `Word 文档 ${filename} 已成功导出`);
+      return true;
+    } catch (error: any) {
+      errorHandler.handleError(error as Error, {
+        category: ErrorCategory.RUNTIME,
+        context: { operation: 'exportWord' },
+        userFriendlyMessage: 'Word 导出失败，请重试',
+      });
+      feedbackService.showError('导出失败', 'Word 导出失败，请重试');
+      return false;
+    }
+  }
+
+  // 将 Markdown 文本转为纯文本（去除常用标记符号）
+  private markdownToPlainText(text: string): string {
+    return text
+      .replace(/^#{1,6}\s+/, '')
+      .replace(/^\s*[-*+]\s+/, '• ')
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+      .replace(/\|/g, ' ')
+      .trim();
   }
 
   // 下载文件
@@ -1305,12 +1314,11 @@ ${formulaName} 配方组成如下（典型配方示例）：
         mimeType = 'text/html';
         break;
       case 'word':
-        filename = `${formulaName}.doc`;
-        mimeType = 'application/msword';
-        content = this.exportHtml('word');
-        break;
+        // 使用 docx 库生成真实 .docx 文档
+        void this.exportWord();
+        return;
       case 'pdf':
-        // PDF使用jsPDF直接导出
+        // 通过浏览器打印导出 PDF（中文无乱码）
         this.exportPdfDirect();
         return;
     }
@@ -1345,9 +1353,13 @@ ${formulaName} 配方组成如下（典型配方示例）：
           this.downloadFile(content, 'markdown');
           break;
         case 'html':
+          content = this.exportHtml();
+          this.downloadFile(content, 'html');
+          break;
         case 'word':
+          return await this.exportWord();
         case 'pdf':
-          this.downloadFile('', format); // 内部处理
+          this.downloadFile('', 'pdf');
           break;
       }
 

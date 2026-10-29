@@ -17,16 +17,16 @@ async def main():
             sql = "INSERT INTO food_materials (" + ", ".join(safe_cols) + ") VALUES (" + ph + ")"
 
             samples = [
-                ('YX001', 'GB/T 18672', '狐梱子', 'Lycium barbarum', 'Goji Berry', '补益类', True, '低毒', 40.0, 70.0, 'plant_cnm', 0.95, 'approved', '药食同源补益药材'),
+                ('YX001', 'GB/T 18672', '枸杞子', 'Lycium barbarum', 'Goji Berry', '补益类', True, '低毒', 40.0, 70.0, 'plant_cnm', 0.95, 'approved', '药食同源补益药材'),
                 ('YX002', 'GB/T 13408', '红枣', 'Ziziphus jujuba', 'Jujube', '补益类', True, '低毒', 37.0, 60.0, 'plant_cnm', 0.92, 'approved', '常用药食同源补益食材'),
                 ('YX003', 'GB 2762', '山药', 'Dioscorea opposita', 'Chinese Yam', '补益类', True, '低毒', 65.0, 80.0, 'plant_cnm', 0.93, 'approved', '药食两用健脾食材'),
-                ('YX004', 'ChP 2020', '黄芫', 'Astragalus membranaceus', 'Astragalus Root', '补益类', True, '低毒', 60.0, 80.0, 'plant_cnm', 0.9, 'approved', '补气要药'),
+                ('YX004', 'ChP 2020', '黄芪', 'Astragalus membranaceus', 'Astragalus Root', '补益类', True, '低毒', 60.0, 80.0, 'plant_cnm', 0.9, 'approved', '补气要药'),
                 ('YX005', 'ChP 2020', '人参', 'Panax ginseng', 'Ginseng Root', '补益类', False, '小毒', 80.0, 100.0, 'plant_cnm', 0.97, 'approved', '草木之王'),
                 ('YX006', 'GB/T 18627', '桂花', 'Chrysanthemum morifolium', 'Chrysanthemum', '清热类', True, '低毒', 70.0, 85.0, 'plant_cnm', 0.88, 'approved', '清热明目佳品'),
                 ('YX007', 'ChP 2020', '金银花', 'Lonicera japonica', 'Honeysuckle', '清热类', True, '低毒', 55.0, 70.0, 'plant_cnm', 0.91, 'approved', '解毒清热要药'),
                 ('YX008', 'ChP 2020', '陈皮', 'Citrus reticulata', 'Tangerine Peel', '理气类', True, '低毒', 65.0, 80.0, 'plant_cnm', 0.89, 'approved', '理气健脾经典药材'),
-                ('YX009', 'GB 2760', '山椰', 'Crataegus pinnatifida', 'Hawthorn', '消食类', True, '低毒', 55.0, 70.0, 'plant_cnm', 0.87, 'approved', '消食化积首选'),
-                ('YX010', 'GB/T 11765', '薰舒仐', 'Coix lacryma-jobi', 'Coix Seed', '利水湿类', True, '低毒', 60.0, 75.0, 'plant_cnm', 0.85, 'approved', '利水湿药要药'),
+                ('YX009', 'GB 2760', '山楂', 'Crataegus pinnatifida', 'Hawthorn', '消食类', True, '低毒', 55.0, 70.0, 'plant_cnm', 0.87, 'approved', '消食化积首选'),
+                ('YX010', 'GB/T 11765', '薏苡仁', 'Coix lacryma-jobi', 'Coix Seed', '利水湿类', True, '低毒', 60.0, 75.0, 'plant_cnm', 0.85, 'approved', '利水湿药要药'),
                 ('YS001', 'GB 2762', '大豆', 'Glycine max', 'Soybean', '豆类', False, '低毒', 35.0, 50.0, 'global_foods', 0.96, 'approved', '植物蛋白之王'),
                 ('YS002', 'GB 2762', '黑芝麻', 'Sesamum indicum', 'Black Sesame', '油料种孞', False, '低毒', 45.0, 60.0, 'global_foods', 0.88, 'approved', '补益肝肾坚果'),
                 ('YS003', 'GB 2762', '核桃仁', 'Juglans regia', 'Walnut Kernel', '坚果类', False, '低毒', 50.0, 65.0, 'global_foods', 0.9, 'approved', '智瓦补脑坚果'),
