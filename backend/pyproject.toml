@@ -31,6 +31,12 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W"]
 ignore = ["E501"]  # 允许较长行，配合 line-length=100
+# 文档化公开 API 命名跳过（有意保留，改动会破坏 API 契约）：
+#   N815 Pydantic camelCase 序列化键（isFollowUp/nutriScore/sessionId/overallScore 等）
+#   N803 公开参数名（RotatingFileHandler maxBytes/backupCount、arrhenius Ea/T_celsius、ML X）
+#   N818 公开异常（AIException/PermissionDenied/ResourceNotFoundException 等）
+#   N802 startTimer（logger __all__）
+extend-ignore = ["N815", "N803", "N818", "N802"]
 per-file-ignores = { "__init__.py" = ["F401"] }
 
 [tool.pytest.ini_options]
