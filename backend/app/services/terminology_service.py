@@ -45,7 +45,7 @@ class TerminologyService:
     async def _load_normalization_rules(self):
         """加载标准化规则"""
         result = await self.db.execute(
-            select(TermNormalizationRule).where(TermNormalizationRule.enabled == True)
+            select(TermNormalizationRule).where(TermNormalizationRule.enabled.is_(True))
         )
         rules = result.scalars().all()
         self.normalization_rules = sorted(rules, key=lambda r: r.priority)
@@ -414,7 +414,7 @@ class TerminologyService:
             )
             validation_count = result.scalar()
             result = await self.db.execute(
-                select(func.count()).where(TermValidation.correction_needed == True).select_from(TermValidation)
+                select(func.count()).where(TermValidation.correction_needed.is_(True)).select_from(TermValidation)
             )
             correction_count = result.scalar()
 

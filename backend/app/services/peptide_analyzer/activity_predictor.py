@@ -75,7 +75,6 @@ class ActivityFeatureExtractor:
     CHARGE = {
         'D': -1, 'E': -1,   # 酸性
         'K': 1, 'R': 1, 'H': 0.1,  # 碱性
-        'H': 0.1,  # 组氨酸部分带电
     }
 
     # 抗氧化氨基酸

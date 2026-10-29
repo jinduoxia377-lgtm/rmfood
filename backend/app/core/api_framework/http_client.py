@@ -725,9 +725,6 @@ async def http_request(
     )
 
 
-# defaultdict 补充（避免 import 顺序问题）
-from collections import defaultdict
-
 __all__ = [
     "CircuitState",
     "ExternalServiceConfig",

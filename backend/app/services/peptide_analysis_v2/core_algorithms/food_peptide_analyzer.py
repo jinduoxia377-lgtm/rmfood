@@ -487,7 +487,7 @@ class FoodPeptideAnalyzer:
             return SecondaryStructure()
 
         # Chou-Fasman 参数 (简化)
-        helix_prop = {'A': 1.42, 'E': 1.51, 'L': 1.21, 'M': 1.45, 'Q': 1.11, 'K': 1.16, 'A': 1.42, 'R': 0.98}
+        helix_prop = {'A': 1.42, 'E': 1.51, 'L': 1.21, 'M': 1.45, 'Q': 1.11, 'K': 1.16, 'R': 0.98}
         sheet_prop = {'A': 0.83, 'E': 0.37, 'I': 1.60, 'V': 1.70, 'Y': 1.47, 'F': 1.38, 'W': 1.14, 'C': 1.19}
 
         helix_scores = [helix_prop.get(aa, 1.0) for aa in seq]

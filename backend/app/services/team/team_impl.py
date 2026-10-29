@@ -617,7 +617,7 @@ class TeamService:
         )
 
         if not include_archived:
-            query = query.where(Team.is_archived == False)
+            query = query.where(Team.is_archived.is_(False))
 
         count_query = (
             select(func.count(Team.id))
@@ -625,7 +625,7 @@ class TeamService:
             .where(TeamMember.user_id == user_id)
         )
         if not include_archived:
-            count_query = count_query.where(Team.is_archived == False)
+            count_query = count_query.where(Team.is_archived.is_(False))
 
         total_result = await self.db.execute(count_query)
         total = total_result.scalar() or 0

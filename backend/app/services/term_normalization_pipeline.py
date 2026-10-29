@@ -8,8 +8,6 @@ from collections import OrderedDict
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional
 
-from app.core.observability.logging_config import logger
-
 logger = logging.getLogger(__name__)
 
 

@@ -302,7 +302,7 @@ async def main():
         logger.info("\n[4] 样本药材（前5种）:")
         result = await db.execute(
             select(TCMHerb)
-            .where(TCMHerb.extra_knowledge != None)
+            .where(TCMHerb.extra_knowledge.is_not(None))
             .limit(5)
         )
         sample_herbs = result.scalars().all()

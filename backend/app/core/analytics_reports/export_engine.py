@@ -219,16 +219,6 @@ class ExcelExporter:
             return False
 
     def export(self, filename: str = "export.xlsx") -> bytes:
-        """导出为 bytes"""
-        if not self._initialized or not self._workbook:
-            raise RuntimeError("openpyxl 未安装或未正确初始化")
-
-        output = io.BytesIO()
-        self._workbook.save(output)
-        output.seek(0)
-        return output.getvalue()
-
-    def export(self, filename: str = "export.xlsx") -> bytes:
         if not self._initialized:
             raise RuntimeError("openpyxl 未安装，Excel 导出不可用")
 

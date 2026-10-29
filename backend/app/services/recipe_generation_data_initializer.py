@@ -51,7 +51,7 @@ async def ensure_data_completeness() -> dict[str, Any]:
         with_knowledge_result = await db.execute(
             select(func.count())
             .select_from(TCMHerb)
-            .where(TCMHerb.extra_knowledge != None)
+            .where(TCMHerb.extra_knowledge.is_not(None))
             .where(TCMHerb.extra_knowledge != '')
         )
         with_knowledge = with_knowledge_result.scalar() or 0
@@ -82,7 +82,7 @@ async def ensure_data_completeness() -> dict[str, Any]:
             with_knowledge_result = await db.execute(
                 select(func.count())
                 .select_from(TCMHerb)
-                .where(TCMHerb.extra_knowledge != None)
+                .where(TCMHerb.extra_knowledge.is_not(None))
                 .where(TCMHerb.extra_knowledge != '')
             )
             with_knowledge = with_knowledge_result.scalar() or 0

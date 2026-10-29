@@ -41,7 +41,7 @@ async def main():
             result = await db.execute(
                 select(func.count())
                 .select_from(TCMHerb)
-                .where(TCMHerb.extra_knowledge != None)
+                .where(TCMHerb.extra_knowledge.is_not(None))
                 .where(TCMHerb.extra_knowledge != '')
             )
             with_knowledge = result.scalar()

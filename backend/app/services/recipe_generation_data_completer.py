@@ -291,7 +291,7 @@ async def verify_data_completeness(db: AsyncSession) -> dict[str, Any]:
     with_knowledge = (await db.execute(
         select(func.count())
         .select_from(TCMHerb)
-        .where(TCMHerb.extra_knowledge != None)
+        .where(TCMHerb.extra_knowledge.is_not(None))
         .where(TCMHerb.extra_knowledge != '')
     )).scalar() or 0
 
@@ -299,7 +299,7 @@ async def verify_data_completeness(db: AsyncSession) -> dict[str, Any]:
     food_homology = (await db.execute(
         select(func.count())
         .select_from(TCMHerb)
-        .where(TCMHerb.is_food_homology == True)
+        .where(TCMHerb.is_food_homology.is_(True))
     )).scalar() or 0
 
     # 验证 extra_knowledge 格式
@@ -368,7 +368,7 @@ async def main():
         logger.info("\n[4] 抽样验证数据质量...")
         result = await db.execute(
             select(TCMHerb)
-            .where(TCMHerb.extra_knowledge != None)
+            .where(TCMHerb.extra_knowledge.is_not(None))
             .limit(5)
         )
         sample_herbs = result.scalars().all()

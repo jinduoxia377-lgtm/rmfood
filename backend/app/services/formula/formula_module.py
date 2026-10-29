@@ -424,7 +424,7 @@ class FormulaService:
             from app.services.notification import NotificationService
             notif_svc = NotificationService(self.db)
             reviewers = (await self.db.execute(
-                select(User).where(User.role == UserRole.REVIEWER, User.is_active == True)
+                select(User).where(User.role == UserRole.REVIEWER, User.is_active.is_(True))
             )).scalars().all()
             for reviewer in reviewers:
                 await notif_svc.create_notification(
