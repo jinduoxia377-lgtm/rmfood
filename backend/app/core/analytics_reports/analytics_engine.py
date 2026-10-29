@@ -40,8 +40,8 @@ from app.core.analytics_reports.schemas import (
     TimeGranularity,
 )
 from app.models import Comment, Experiment, Formula, User
-from app.models.formula import Category, formula_categories
 from app.models.enums import ExperimentStatus, FormulaStatus
+from app.models.formula import Category, formula_categories
 
 logger = logging.getLogger(__name__)
 
