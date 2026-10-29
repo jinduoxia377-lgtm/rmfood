@@ -1,4 +1,4 @@
-﻿"""
+"""
 药食同源合规检查服务
 从数据库读取官方106种目录，支持实时查询和搜索
 """
@@ -61,12 +61,12 @@ class FoodHomologyService:
             try:
                 import json
                 restrictions = json.loads(row[6]) if row[6] and row[6] != '[]' else []
-            except:
+            except Exception:
                 restrictions = []
 
             try:
                 usage_forms = json.loads(row[7]) if row[7] and row[7] != '[]' else []
-            except:
+            except Exception:
                 usage_forms = []
 
             materials.append({

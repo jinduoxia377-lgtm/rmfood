@@ -49,7 +49,7 @@ except ImportError:
     RDKIT_AVAILABLE = False
     Chem = None  # type: ignore
     Descriptors = None  # type: ignore
-    rdMolDescriptors = None  # type: ignore
+    rdMolDescriptors = None  # type: ignore  # noqa: N816
 
 try:
     import pepinvent

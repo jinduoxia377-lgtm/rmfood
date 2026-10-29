@@ -18,10 +18,10 @@ from __future__ import annotations
 
 import logging
 import re
-from xml.etree import ElementTree
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from xml.etree import ElementTree
 
 logger = logging.getLogger(__name__)
 

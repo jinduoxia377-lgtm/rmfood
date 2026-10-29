@@ -9,7 +9,10 @@ from typing import Optional  # noqa: E402
 from fastapi import APIRouter, HTTPException, Query, status  # noqa: E402
 
 from ...api.deps import CurrentUser, DbSession  # noqa: E402
-from ...services.search.elasticsearch_service import ElasticsearchService, SearchFilters  # noqa: E402
+from ...services.search.elasticsearch_service import (  # noqa: E402
+    ElasticsearchService,
+    SearchFilters,
+)
 from ...services.team.team_dashboard import TeamDashboardService  # noqa: E402
 
 logger = logging.getLogger(__name__)  # A-27：原缺失

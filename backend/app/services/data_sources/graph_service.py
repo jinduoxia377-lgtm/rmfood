@@ -1123,7 +1123,7 @@ class KnowledgeGraphService:
         peptide_edges_added = 0
         peptide_nodes_added = 0
         try:
-            from .dfbp_client import PEPTIDE_TARGET_PATHS as peptide_target_paths
+            from .dfbp_client import PEPTIDE_TARGET_PATHS as peptide_target_paths  # noqa: N811
         except (ImportError, AttributeError):
             peptide_target_paths = []
 
