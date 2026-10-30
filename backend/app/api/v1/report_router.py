@@ -7,6 +7,7 @@ import logging
 from typing import Any, Dict
 
 from fastapi import APIRouter
+from app.api.deps import CurrentUser
 from pydantic import BaseModel, Field
 
 from app.services.report.product_plan_reporter import ProductPlanReporter, get_reporter
@@ -38,7 +39,7 @@ class ProductPlanResponse(BaseModel):
 
 
 @router.post("/product-plan", summary="生成产品方案报告", response_model=dict)
-async def generate_product_plan(req: ProductPlanRequest):
+async def generate_product_plan(req: ProductPlanRequest, current_user: CurrentUser):
     """
     生成完整的产品方案报告。
 

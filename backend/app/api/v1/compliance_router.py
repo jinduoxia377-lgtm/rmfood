@@ -11,6 +11,7 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
 from app.services.compliance import get_compliance_service
+from app.api.deps import CurrentUser
 
 logger = logging.getLogger(__name__)
 
@@ -21085,7 +21086,7 @@ async def health_check():
 
 
 @router.post("/check/realtime", summary="实时合规检查")
-async def realtime_check(req: RealtimeCheckRequest):
+async def realtime_check(req: RealtimeCheckRequest, current_user: CurrentUser):
     """
     配方编辑时的实时合规检查。
 
@@ -21106,7 +21107,7 @@ async def realtime_check(req: RealtimeCheckRequest):
 
 
 @router.post("/check/bulk", summary="批量合规检查")
-async def bulk_check(req: BulkCheckRequest):
+async def bulk_check(req: BulkCheckRequest, current_user: CurrentUser):
     """批量检查多个配方的合规性"""
     service = get_compliance_service()
     ingredients = [i.model_dump() for i in req.ingredients]
@@ -21115,7 +21116,7 @@ async def bulk_check(req: BulkCheckRequest):
 
 
 @router.post("/fix", summary="自动修复配方合规性问题")
-async def auto_fix(req: BulkCheckRequest):
+async def auto_fix(req: BulkCheckRequest, current_user: CurrentUser):
     """
     自动修复配方中的超量成分，将其降至法定限量。
     返回修复前后的评分对比和修复记录。

@@ -11,6 +11,7 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException
+from app.api.deps import CurrentUser
 from pydantic import BaseModel, Field
 
 from app.services.report import get_explainability_service
@@ -42,7 +43,7 @@ class ContributionAnalysisRequest(BaseModel):
 
 
 @router.post("/analyze", summary="生成配方可解释性报告")
-async def analyze_formula(req: FormulaExplanationRequest):
+async def analyze_formula(req: FormulaExplanationRequest, current_user: CurrentUser):
     """
     生成配方可解释性报告，包含：
     - 成分贡献度分析

@@ -7,6 +7,7 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
+from app.api.deps import CurrentUser
 from fastapi.responses import FileResponse
 
 from app.services.document_templates import document_template_service
@@ -19,6 +20,7 @@ router = APIRouter(prefix="/reports", tags=["报告导出"])
 
 @router.post("/explainability/docx", summary="导出可解释性报告（DOCX）")
 async def export_explainability_docx(
+    current_user: CurrentUser,
     formula_name: str,
     ingredients: str,       # JSON string: '[{"name":"枸杞","dosage_mg":1000}]'
     target_effects: str,    # JSON string: '["免疫调节"]'

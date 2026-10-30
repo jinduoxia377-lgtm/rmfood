@@ -9,6 +9,7 @@ import re
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
+from app.api.deps import CurrentUser
 from pydantic import BaseModel, Field
 
 from ...services.ingredient_analysis import analysis_service
@@ -83,7 +84,7 @@ async def health_check():
 
 
 @router.post("/analyze", response_model=Dict[str, Any], summary="配料六维分析")
-async def analyze_ingredient(req: AnalyzeRequest):
+async def analyze_ingredient(req: AnalyzeRequest, current_user: CurrentUser):
     """
     配料表六维分析接口
 
