@@ -117,7 +117,7 @@ async def infer_path(req: PathInferRequest, current_user: CurrentUser):
 
 
 @router.post("/infer/synergy", summary="协同效应推理", response_model=dict)
-async def infer_synergy(req: SynergyInferRequest):
+async def infer_synergy(req: SynergyInferRequest, current_user: CurrentUser):
     """
     协同效应推理：分析多味药材的组合效应。
 
@@ -148,7 +148,7 @@ async def infer_synergy(req: SynergyInferRequest):
 
 
 @router.post("/infer/conflict", summary="配伍冲突检测", response_model=dict)
-async def infer_conflict(req: ConflictInferRequest):
+async def infer_conflict(req: ConflictInferRequest, current_user: CurrentUser):
     """
     配伍冲突检测：检测十八反十九畏、人群禁忌等配伍问题。
 
@@ -182,7 +182,7 @@ async def infer_conflict(req: ConflictInferRequest):
 
 
 @router.post("/infer/all", summary="综合推理", response_model=InferAllResponse)
-async def infer_all(req: InferAllRequest):
+async def infer_all(req: InferAllRequest, current_user: CurrentUser):
     """
     综合推理：一次性执行路径发现、协同效应分析和配伍冲突检测。
 
