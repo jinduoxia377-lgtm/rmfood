@@ -33,7 +33,7 @@ def list_formulas(
     query_service: QueryService = Depends(get_query_service)
 ) -> List[FormulaQueryModel]:
     """Paginated list of all formulas."""
-    return []
+    return query_service.list_formulas(page=page, page_size=page_size)
 
 
 @router.get("/formulas/search")

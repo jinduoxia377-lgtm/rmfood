@@ -55,13 +55,8 @@ async def get_cache_stats():
 async def clear_cache(pattern: str = Query(None, description="Optional key pattern to match")):
     """Clear cache entries. Without pattern, clears all L1 + L2."""
     cache = get_cache()
-    if pattern:
-        # Targeted deletion not supported for L1; clear all as fallback
-        await cache.clear_all()
-        cleared = cache.get_stats().get("l1_size", 0)
-    else:
-        await cache.clear_all()
-        cleared = cache.get_stats().get("l1_size", 0)
+    await cache.clear_all()
+    cleared = cache.get_stats().get("l1_size", 0)
     return {"success": True, "message": "Cache cleared", "cleared_keys": cleared}
 
 
@@ -69,11 +64,34 @@ async def clear_cache(pattern: str = Query(None, description="Optional key patte
 # Task queue endpoints
 # ════════════════════════════════════════════
 
+# 注册表：可安全提交到后台队列的异步任务（function_name -> async callable）。
+# 仅暴露白名单内的安全操作；未注册名称返回 400，不再伪造 pending task_id。
+async def _task_cache_health():
+    cache = get_cache()
+    return cache.get_stats()
+
+
+async def _task_cache_clear():
+    cache = get_cache()
+    await cache.clear_all()
+    return {"cleared": True}
+
+
+_TASK_REGISTRY = {
+    "cache.health": _task_cache_health,
+    "cache.clear": _task_cache_clear,
+}
+
 
 @router.post("/tasks", summary="Submit a task to the queue")
 async def submit_task(request: TaskSubmitRequest):
     """Submit a named function for background execution."""
-    get_task_queue()
+    func = _TASK_REGISTRY.get(request.function_name)
+    if func is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"未知的后台任务: {request.function_name}（可用: {', '.join(sorted(_TASK_REGISTRY))}）",
+        )
 
     priority_map = {
         "critical": TaskPriority.CRITICAL,
@@ -82,11 +100,24 @@ async def submit_task(request: TaskSubmitRequest):
         "low": TaskPriority.LOW,
         "background": TaskPriority.BACKGROUND,
     }
-    priority_map.get(request.priority, TaskPriority.NORMAL)
+    priority = priority_map.get(request.priority, TaskPriority.NORMAL)
 
-    # TODO: resolve function_name to an actual callable in production
-    # For now return a pending task_id placeholder
-    task_id = f"pending-{request.function_name}"
+    queue = get_task_queue()
+    try:
+        task_id = await queue.submit(
+            func=func,
+            args=tuple(request.args),
+            kwargs=request.kwargs,
+            priority=priority,
+            timeout=request.timeout,
+            metadata={"function": request.function_name},
+        )
+    except Exception as exc:
+        logger.exception("Task submission failed: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail=f"任务提交失败，队列可能已满: {exc}",
+        )
     return {"success": True, "data": {"task_id": task_id, "status": "pending"}}
 
 
