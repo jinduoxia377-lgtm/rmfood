@@ -29,6 +29,22 @@ class QueryService:
         # In production query read store
         return None
 
+    def list_formulas(self, page: int = 1, page_size: int = 20) -> List[FormulaQueryModel]:
+        """Read-optimized paginated listing from the query read store.
+
+        The read store is populated by the write side (CQRS). It is currently
+        cache-backed; keys are ``formula:<id>`` and values are FormulaQueryModel.
+        Respects page/page_size; returns an empty slice when the store is empty.
+        """
+        formulas: List[FormulaQueryModel] = []
+        store = getattr(self.cache, "store", None)
+        if isinstance(store, dict):
+            for key, value in store.items():
+                if key.startswith(self.formula_cache_prefix) and isinstance(value, FormulaQueryModel):
+                    formulas.append(value)
+        start = max(page - 1, 0) * max(page_size, 1)
+        return formulas[start:start + max(page_size, 1)]
+
     def search_formulas(self, query: FormulaSearchQuery) -> List[SearchResultItem]:
         cache_key = f"{self.search_cache_prefix}{str(query.target_effects)}"
         cached = self.cache.get(cache_key)
