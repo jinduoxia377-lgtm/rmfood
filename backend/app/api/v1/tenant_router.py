@@ -6,9 +6,11 @@
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from app.models.enums import UserRole
+from app.api.deps import require_role
 from app.services.multi_tenant import (
     IsolationLevel,
     get_isolation_manager,
@@ -80,7 +82,11 @@ async def get_isolation_level(org_id: int):
 
 
 @router.put("/{org_id}/isolation-level", summary="修改租户隔离级别")
-async def set_isolation_level(org_id: int, req: SetIsolationRequest):
+async def set_isolation_level(
+    org_id: int,
+    req: SetIsolationRequest,
+    _: object = Depends(require_role(UserRole.ADMIN)),
+):
     """
     修改租户的隔离级别。
 
@@ -139,7 +145,11 @@ async def get_ai_config(org_id: int):
 
 
 @router.put("/{org_id}/ai-config", summary="更新租户AI配置")
-async def update_ai_config(org_id: int, req: UpdateAIConfigRequest):
+async def update_ai_config(
+    org_id: int,
+    req: UpdateAIConfigRequest,
+    _: object = Depends(require_role(UserRole.ADMIN)),
+):
     """
     更新租户的AI配置。
 
@@ -181,7 +191,10 @@ async def update_ai_config(org_id: int, req: UpdateAIConfigRequest):
 
 
 @router.post("/{org_id}/ai-config/reset", summary="重置租户AI配置")
-async def reset_ai_config(org_id: int):
+async def reset_ai_config(
+    org_id: int,
+    _: object = Depends(require_role(UserRole.ADMIN)),
+):
     """重置租户的AI配置为默认值。"""
     manager = get_tenant_ai_config_manager()
     config = manager.reset_config(org_id)
