@@ -42,5 +42,14 @@ export default {
     statQuotaUsage: '配额使用',
     noOrgs: '暂无组织',
     noOrgsDesc: '创建您的第一个组织开始协作吧！',
+
+    // ── 组织详情 ──
+    detail: {
+      loadFailed: '加载失败',
+      retry: '重试',
+      backToList: '返回组织列表',
+      errorForbidden: '权限不足，您无权访问该组织',
+      errorGeneric: '加载组织信息失败，请稍后重试',
+    },
   },
 }

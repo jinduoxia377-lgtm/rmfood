@@ -42,5 +42,14 @@ export default {
     statQuotaUsage: 'Kontingentnutzung',
     noOrgs: 'Keine Organisationen',
     noOrgsDesc: 'Erstellen Sie Ihre erste Organisation, um mit der Zusammenarbeit zu beginnen!',
+
+    // ── Organisationsdetails ──
+    detail: {
+      loadFailed: 'Laden fehlgeschlagen',
+      retry: 'Erneut versuchen',
+      backToList: 'Zurück zur Organisationsliste',
+      errorForbidden: 'Unzureichende Berechtigungen. Sie haben keinen Zugriff auf diese Organisation.',
+      errorGeneric: 'Organisationsinformationen konnten nicht geladen werden. Bitte versuchen Sie es erneut.',
+    },
   },
 }

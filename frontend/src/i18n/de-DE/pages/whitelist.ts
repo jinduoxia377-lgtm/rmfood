@@ -74,6 +74,7 @@ export default {
       label: 'Verbleibende Plätze',
       value: '{{remaining}} / {{total}}',
       loading: 'Verbleibende Plätze werden geladen…',
+      full: 'Diese Runde ist voll. Bitte achten Sie auf die nächste Runde.',
     },
 
     errors: {
@@ -82,6 +83,11 @@ export default {
       rateLimited: 'Zu viele Anfragen. Bitte versuchen Sie es in {{seconds}} Sekunden erneut.',
       network: 'Netzwerkfehler. Bitte versuchen Sie es später erneut.',
       unknown: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es später erneut.',
+      invalidCaptcha: 'Der Verifizierungscode ist falsch oder abgelaufen. Bitte versuchen Sie es erneut.',
+      invalidCode: 'Falscher Verifizierungscode. Bitte versuchen Sie es erneut.',
+      codeExpired: 'Der Verifizierungscode ist abgelaufen. Bitte fordern Sie einen neuen an.',
+      tooManyAttempts: 'Zu viele Fehlversuche. Bitte fordern Sie einen neuen Code an.',
+      alreadyVerified: 'Diese Bewerbung wurde bereits verifiziert.',
     },
   },
 }

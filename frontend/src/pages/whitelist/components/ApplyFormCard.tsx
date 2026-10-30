@@ -15,6 +15,8 @@ export interface ApplyFormValues {
 interface ApplyFormCardProps {
   submitting: boolean
   error: string | null
+  /** P2-8：本轮剩余名额=0 → 禁用提交按钮并提示「本轮名额已满」 */
+  quotaFull?: boolean
   onSubmit: (values: ApplyFormValues) => void
 }
 
@@ -22,7 +24,7 @@ interface ApplyFormCardProps {
  * 单页申请表单（人机验证码 + 邮箱必填 + 姓名/单位/申请理由选填 + 隐私同意）。
  * 校验错误使用 aria-invalid + aria-describedby（对齐登录页先例）。
  */
-export function ApplyFormCard({ submitting, error, onSubmit }: ApplyFormCardProps) {
+export function ApplyFormCard({ submitting, error, quotaFull = false, onSubmit }: ApplyFormCardProps) {
   const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState('')
@@ -234,8 +236,13 @@ export function ApplyFormCard({ submitting, error, onSubmit }: ApplyFormCardProp
             </div>
             {consentErr && <p id="wl-consent-err" className="whitelist-error-text" role="alert">{consentErr}</p>}
 
+            {/* P2-8：本轮剩余名额=0 → 提示并禁用提交 */}
+            {quotaFull && (
+              <p className="whitelist-error-text" role="alert">{t('pages.whitelist.quota.full')}</p>
+            )}
+
             <div className="whitelist-actions">
-              <button type="submit" className="whitelist-btn-primary" disabled={submitting} aria-busy={submitting}>
+              <button type="submit" className="whitelist-btn-primary" disabled={submitting || quotaFull} aria-busy={submitting}>
                 {submitting ? t('pages.whitelist.form.submitting') : t('pages.whitelist.form.submit')}
               </button>
             </div>

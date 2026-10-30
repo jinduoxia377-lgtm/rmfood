@@ -42,5 +42,14 @@ export default {
     statQuotaUsage: 'Quota Usage',
     noOrgs: 'No Organizations',
     noOrgsDesc: 'Create your first organization to start collaborating!',
+
+    // ── Organization detail ──
+    detail: {
+      loadFailed: 'Failed to Load',
+      retry: 'Retry',
+      backToList: 'Back to Organizations',
+      errorForbidden: 'Insufficient permissions. You do not have access to this organization.',
+      errorGeneric: 'Failed to load organization information. Please try again.',
+    },
   },
 }
