@@ -11,6 +11,7 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
+from app.api.deps import CurrentUser
 from pydantic import BaseModel, Field
 
 from app.services.label_check.label_check_service import (
@@ -39,7 +40,7 @@ class LabelCheckOCRResponse(BaseModel):
 
 
 @router.post("", summary="配料表核查（文本）")
-async def check_label_text_api(req: LabelCheckTextRequest):
+async def check_label_text_api(req: LabelCheckTextRequest, current_user: CurrentUser):
     """输入配料表文本，返回成分分类与提示（信息参考，不构成合规结论）。"""
     try:
         return check_label_text(req.text)

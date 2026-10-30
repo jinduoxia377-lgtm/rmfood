@@ -7,6 +7,7 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter
+from app.api.deps import CurrentUser
 from pydantic import BaseModel, Field
 
 from app.services.kg.reasoning_engine import (
@@ -85,7 +86,7 @@ class InferAllResponse(BaseModel):
 
 
 @router.post("/infer/path", summary="路径推理", response_model=dict)
-async def infer_path(req: PathInferRequest):
+async def infer_path(req: PathInferRequest, current_user: CurrentUser):
     """
     路径推理：发现从源药材到目标疾病的关联路径。
 

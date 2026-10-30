@@ -6,6 +6,7 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from app.api.deps import CurrentUser
 from pydantic import BaseModel, Field
 from sqlalchemy import select, text
 
@@ -76,7 +77,7 @@ class InverseSearchRequest(BaseModel):
 # ═══════════════════════════════════════════
 
 @router.post("/ccd", summary="生成 CCD 设计")
-async def generate_ccd(req: CCDDesignRequest) -> dict:
+async def generate_ccd(req: CCDDesignRequest, current_user: CurrentUser) -> dict:
     """生成中心复合设计 (Central Composite Design)"""
     engine = get_doe_engine()
     factors = [
