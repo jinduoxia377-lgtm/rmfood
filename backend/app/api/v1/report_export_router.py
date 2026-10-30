@@ -57,6 +57,7 @@ async def export_explainability_docx(
 
 @router.post("/explainability/pdf", summary="导出可解释性报告（PDF）")
 async def export_explainability_pdf(
+    current_user: CurrentUser,
     formula_name: str,
     ingredients: str,
     target_effects: str,
@@ -91,6 +92,7 @@ async def export_explainability_pdf(
 
 @router.post("/explainability/markdown", summary="导出可解释性报告（Markdown）")
 async def export_explainability_markdown(
+    current_user: CurrentUser,
     formula_name: str,
     ingredients: str,
     target_effects: str,

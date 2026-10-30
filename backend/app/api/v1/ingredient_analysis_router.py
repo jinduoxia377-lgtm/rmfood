@@ -130,7 +130,7 @@ async def analyze_ingredient(req: AnalyzeRequest, current_user: CurrentUser):
 
 
 @router.post("/ocr", response_model=OCRResponse, summary="OCR识别配料表")
-async def ocr_ingredient_image(file: UploadFile = File(...)):
+async def ocr_ingredient_image(current_user: CurrentUser, file: UploadFile = File(...)):
     """
     OCR识别食品包装配料表图片
 
@@ -289,7 +289,7 @@ async def get_allergens():
 
 
 @router.post("/batch-analyze", summary="批量配料分析")
-async def batch_analyze(request: Dict[str, Any]):
+async def batch_analyze(request: Dict[str, Any], current_user: CurrentUser):
     """
     批量配料分析接口
     支持一次分析多个配料表

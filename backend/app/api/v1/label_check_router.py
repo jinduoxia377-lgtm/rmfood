@@ -50,7 +50,7 @@ async def check_label_text_api(req: LabelCheckTextRequest, current_user: Current
 
 
 @router.post("/ocr", response_model=LabelCheckOCRResponse, summary="配料表核查（图片 OCR）")
-async def check_label_ocr_api(file: UploadFile = File(...)):
+async def check_label_ocr_api(current_user: CurrentUser, file: UploadFile = File(...)):
     """上传配料表图片，OCR 识别后执行目录比对核查。"""
     try:
         from app.api.v1.ingredient_analysis_router import _run_ocr
@@ -81,7 +81,7 @@ async def check_label_ocr_api(file: UploadFile = File(...)):
 
 
 @router.post("/ingredients", summary="配料表核查（成分列表）")
-async def check_label_ingredients_api(req: LabelCheckListRequest):
+async def check_label_ingredients_api(req: LabelCheckListRequest, current_user: CurrentUser):
     """输入成分名称列表，返回成分分类与提示（信息参考，不构成合规结论）。"""
     try:
         return check_ingredient_names(req.ingredients)
