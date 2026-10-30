@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback, Suspense, lazy } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   LayoutDashboard,
@@ -112,7 +113,15 @@ function getRoleIcon(role: string) {
   }
 }
 
+/** 组织详情加载错误 → 本地化文案（按 HTTP status 映射；403 权限不足，其他通用） */
+function getDetailErrorMessage(error: Error | null, t: (key: string) => string): string {
+  const status = (error as { response?: { status?: number } } | null)?.response?.status;
+  if (status === 403) return t('pages.organizations.detail.errorForbidden');
+  return t('pages.organizations.detail.errorGeneric');
+}
+
 export default function OrganizationDetail({ organizationId: propOrgId }: OrganizationDetailPageProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const params = useParams();
@@ -318,16 +327,16 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
         <div className="w-16 h-16 rounded-[var(--radius-pill)] bg-[var(--color-error-container)] dark:bg-[var(--color-error-container)]/25 flex items-center justify-center">
           <AlertCircle className="w-16 h-16 mx-auto text-[var(--color-error-text)]" />
         </div>
-        <h2 className="text-xl font-semibold text-[var(--text-primary)]">加载失败</h2>
-        <p className="text-sm text-[var(--text-muted)]">{error.message}</p>
+        <h2 className="text-xl font-semibold text-[var(--text-primary)]">{t('pages.organizations.detail.loadFailed')}</h2>
+        <p className="text-sm text-[var(--text-muted)]">{getDetailErrorMessage(error, t)}</p>
         <button
           onClick={() => orgId && fetchDetail(orgId)}
           className="px-[var(--space-apple-md)] py-2 bg-secondary-container text-secondary-main rounded-[var(--radius-Apple-sm)] hover:bg-secondary-container transition-colors"
         >
-          重试
+          {t('pages.organizations.detail.retry')}
         </button>
         <button onClick={handleBack} className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)]">
-          返回组织列表
+          {t('pages.organizations.detail.backToList')}
         </button>
       </div>
     );

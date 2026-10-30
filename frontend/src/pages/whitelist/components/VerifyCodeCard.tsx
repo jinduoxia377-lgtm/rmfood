@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/ui/Card'
 import { whitelistApi } from '@/api/whitelist'
+import { extractWhitelistErrorMessage } from '../errorMapping'
 
 interface VerifyCodeCardProps {
   email: string
@@ -36,8 +37,8 @@ export function VerifyCodeCard({ email, requestId, lang, devCode, onVerified, on
     try {
       const data = await whitelistApi.verifyCode(requestId, code)
       onVerified({ reviewDeadline: data.review_deadline, serverTime: data.server_time })
-    } catch {
-      onError(t('pages.whitelist.errors.unknown'))
+    } catch (err) {
+      onError(extractWhitelistErrorMessage(err, t))
     } finally {
       setSubmitting(false)
     }
@@ -49,8 +50,8 @@ export function VerifyCodeCard({ email, requestId, lang, devCode, onVerified, on
     try {
       await whitelistApi.resendCode(requestId, lang)
       setResendIn(60)
-    } catch {
-      onError(t('pages.whitelist.errors.rateLimited', { seconds: 60 }))
+    } catch (err) {
+      onError(extractWhitelistErrorMessage(err, t))
     } finally {
       setSubmitting(false)
     }

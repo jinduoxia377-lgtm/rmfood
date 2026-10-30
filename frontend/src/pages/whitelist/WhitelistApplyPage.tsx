@@ -8,6 +8,7 @@ import { ApplyFormCard, type ApplyFormValues } from './components/ApplyFormCard'
 import { VerifyCodeCard } from './components/VerifyCodeCard'
 import { ReviewStatusCard } from './components/ReviewStatusCard'
 import { StatusLookupSection } from './components/StatusLookupSection'
+import { extractWhitelistErrorMessage } from './errorMapping'
 import './whitelist.css'
 
 /** 申请窗口截止时间：优先读环境变量（M4 上线时由运维配置），未配置时隐藏 Hero 倒计时 */
@@ -87,6 +88,8 @@ export default function WhitelistApplyPage() {
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  // P2-8：本轮剩余名额=0 时禁用提交（QuotaBanner 回传 remaining；null=未加载/不可用 → 不禁用）
+  const [quotaFull, setQuotaFull] = useState(false)
 
   useEffect(() => {
     persist(state)
@@ -116,7 +119,7 @@ export default function WhitelistApplyPage() {
         devVerifyCode: result.dev_verify_code ?? null,
       }))
     } catch (err) {
-      setError(extractErrorMessage(err, t))
+      setError(extractWhitelistErrorMessage(err, t))
     } finally {
       setSubmitting(false)
     }
@@ -156,8 +159,9 @@ export default function WhitelistApplyPage() {
           <WindowCountdown deadline={APPLY_WINDOW_END} serverTime={state.serverTime} />
         </header>
 
-        {/* 本轮剩余名额横幅（数据源 GET /auth/whitelist/quota，后端未实现时隐藏） */}
-        <QuotaBanner />
+        {/* 本轮剩余名额横幅（数据源 GET /auth/whitelist/quota，后端未实现时隐藏）。
+            remaining 回传：remaining===0 → 禁用提交（P2-8） */}
+        <QuotaBanner onRemainingChange={(remaining) => setQuotaFull(remaining === 0)} />
 
         {/* 步骤条 */}
         <nav className="whitelist-stepper" aria-label="whitelist steps">
@@ -175,7 +179,7 @@ export default function WhitelistApplyPage() {
         {/* 主体 */}
         <main style={{ maxWidth: 560, width: '100%', margin: '0 auto' }}>
           {state.step === 'apply' && (
-            <ApplyFormCard submitting={submitting} error={error} onSubmit={handleApplySubmit} />
+            <ApplyFormCard submitting={submitting} error={error} quotaFull={quotaFull} onSubmit={handleApplySubmit} />
           )}
 
           {state.step === 'verify' && state.applicationId != null && (
@@ -183,6 +187,7 @@ export default function WhitelistApplyPage() {
               email={state.email}
               requestId={state.applicationId}
               lang={lang}
+              devCode={state.devVerifyCode}
               onVerified={handleVerified}
               onError={(msg) => setError(msg)}
             />
@@ -211,19 +216,4 @@ export default function WhitelistApplyPage() {
       </div>
     </div>
   )
-}
-
-/** 将 axios 错误响应映射为用户可读文案（429/409/网络异常） */
-function extractErrorMessage(err: unknown, t: (key: string, opts?: Record<string, unknown>) => string): string {
-  const anyErr = err as { response?: { data?: { detail?: { code?: string; message?: string; retry_after?: number } } } }
-  const detail = anyErr?.response?.data?.detail
-  if (detail) {
-    if (detail.code === 'EMAIL_REGISTERED') return t('pages.whitelist.errors.alreadyRegistered')
-    if (detail.code === 'ALREADY_APPLIED') return t('pages.whitelist.errors.alreadyApplied')
-    if (detail.code === 'RATE_LIMITED' || detail.code === 'COOLDOWN') {
-      return t('pages.whitelist.errors.rateLimited', { seconds: detail.retry_after ?? 60 })
-    }
-    return detail.message ?? t('pages.whitelist.errors.unknown')
-  }
-  return t('pages.whitelist.errors.network')
 }

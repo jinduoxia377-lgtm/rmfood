@@ -74,6 +74,7 @@ export default {
       label: 'Remaining Slots',
       value: '{{remaining}} / {{total}}',
       loading: 'Loading remaining slots…',
+      full: 'This round is full. Please check for the next round.',
     },
 
     errors: {
@@ -82,6 +83,11 @@ export default {
       rateLimited: 'Too many requests. Please try again in {{seconds}} seconds.',
       network: 'Network error. Please try again later.',
       unknown: 'Something went wrong. Please try again later.',
+      invalidCaptcha: 'The verification code is incorrect or has expired. Please try again.',
+      invalidCode: 'Incorrect verification code. Please try again.',
+      codeExpired: 'The verification code has expired. Please request a new one.',
+      tooManyAttempts: 'Too many failed attempts. Please request a new code.',
+      alreadyVerified: 'This application has already been verified.',
     },
   },
 }

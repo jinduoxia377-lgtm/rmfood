@@ -80,6 +80,7 @@ export default {
       label: '剩余名额',
       value: '{{remaining}} / {{total}}',
       loading: '剩余名额加载中…',
+      full: '本轮名额已满，请关注下一轮开放',
     },
 
     // ── 错误 ──
@@ -89,6 +90,11 @@ export default {
       rateLimited: '操作过于频繁，请 {{seconds}} 秒后再试',
       network: '网络异常，请稍后重试',
       unknown: '操作失败，请稍后重试',
+      invalidCaptcha: '人机验证码错误或已过期，请重新输入',
+      invalidCode: '验证码错误，请重新输入',
+      codeExpired: '验证码已过期，请重新发送',
+      tooManyAttempts: '验证失败次数过多，请重新发送验证码',
+      alreadyVerified: '该申请已完成邮箱验证',
     },
   },
 }
