@@ -28,6 +28,7 @@ import { useOrganizationDetail, type Member, type Team } from '@/hooks/useOrgani
 import { Modal } from '@/components/ui/Modal';
 import { Skeleton, CardSkeleton } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import PlanUpgradeDialog from './PlanUpgradeDialog';
 
 const OverviewTab = lazy(() => import('./detail/OverviewTab'));
 const MembersTab = lazy(() => import('./detail/MembersTab'));
@@ -40,6 +41,9 @@ interface CommonTabProps {
   memberCount: number
   teamCount: number
   teams: unknown[]
+  // 局部降级：members/teams 请求失败时的错误标志（null 表示成功/未失败）
+  membersError?: Error | null
+  teamsError?: Error | null
   onInvite: () => void
   onRemoveMember: (id: number) => void
   onUpdateRole: (id: number, role: string) => void
@@ -125,6 +129,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [copiedSlug, setCopiedSlug] = useState(false);
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
 
   const {
     organization,
@@ -132,6 +137,8 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
     teams,
     loading,
     error,
+    membersError,
+    teamsError,
     fetchDetail,
     setActiveTab: setHookActiveTab,
     inviteMember,
@@ -228,6 +235,8 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
       memberCount,
       teamCount,
       organization: organization ?? undefined,
+      membersError,
+      teamsError,
       onInvite: inviteMember,
       onRemoveMember: removeMember,
       onUpdateRole: updateMemberRole,
@@ -291,6 +300,8 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
     organization,
     currentUser,
     orgRoles,
+    membersError,
+    teamsError,
     inviteMember,
     removeMember,
     updateMemberRole,
@@ -389,6 +400,15 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
                     >
                       {getPlanConfig(organization?.plan || '').label}
                     </span>
+
+                    {/* 免费-专业版分割：PlanUpgradeDialog 触发入口（升级/变更订阅计划） */}
+                    <button
+                      type="button"
+                      onClick={() => setShowPlanDialog(true)}
+                      className="px-2.5 py-0.5 rounded-[var(--radius-pill)] text-xs font-medium bg-[var(--bg-secondary)]/15 text-white ring-1 ring-white/25 hover:bg-[var(--bg-secondary)]/30 transition-colors"
+                    >
+                      变更计划
+                    </button>
 
                     <span
                       className={cn(
@@ -658,6 +678,19 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
           </div>
         </div>
       </Modal>
+
+      {/* 免费-专业版分割：PlanUpgradeDialog 触发入口 */}
+      {organization && (
+        <PlanUpgradeDialog
+          open={showPlanDialog}
+          organization={organization}
+          onClose={() => setShowPlanDialog(false)}
+          onPlanUpdated={() => {
+            setShowPlanDialog(false);
+            refetch();
+          }}
+        />
+      )}
     </div>
   );
 }
