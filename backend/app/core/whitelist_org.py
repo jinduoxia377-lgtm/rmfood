@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import threading
+import time
 from typing import Optional
 
 from sqlalchemy import select, text
@@ -26,22 +27,34 @@ WHITELIST_ORG_SLUG = "whitelist-org"
 WHITELIST_ORG_DESCRIPTION = "白名单获批用户组织（免费版 + 部分专业版功能授予，参与租户数据隔离）"
 
 # ── 进程内缓存（组织 id 按名称查询结果）──
-# 白名单组织生产环境创建一次、不删除，进程内缓存安全；组织重建（测试/运维）后
-# 需调用 clear_whitelist_org_cache() 使缓存失效。
-_org_id_cache: Optional[int] = None
+# 缓存存 (org_id, cached_at_monotonic)，TTL 后自动失效重查。组织删/重建后 id 变化时，
+# 陈旧缓存会导致 assign/count/has_plan 用旧 id（FK 错误/归入错误组织），故加 TTL。
+# 白名单组织生产环境创建一次、不删除；组织重建（测试/运维）后亦可调用
+# clear_whitelist_org_cache() 立即失效。
+_org_id_cache: Optional[tuple[int, float]] = None  # (org_id, cached_at_monotonic)
+_ORG_ID_CACHE_TTL: float = 300.0  # 秒
 _cache_lock = threading.Lock()
 
 
 def _set_cached_org_id(org_id: Optional[int]) -> None:
     global _org_id_cache
     with _cache_lock:
-        _org_id_cache = org_id
+        _org_id_cache = (org_id, time.monotonic()) if org_id is not None else None
 
 
 def get_cached_whitelist_org_id() -> Optional[int]:
-    """读取进程内缓存的白名单组织 id（同步，供 is_whitelist_member / has_plan 使用）。"""
+    """读取进程内缓存的白名单组织 id（同步，供 is_whitelist_member / has_plan 使用）。
+
+    缓存过期（TTL）或未缓存时返回 None，调用方应经 get_whitelist_org_id 重查库
+    （权威解析）。仅读缓存的同步路径在冷缓存/过期后可能返回 None（保守不误授）。
+    """
     with _cache_lock:
-        return _org_id_cache
+        if _org_id_cache is None:
+            return None
+        org_id, cached_at = _org_id_cache
+        if time.monotonic() - cached_at > _ORG_ID_CACHE_TTL:
+            return None
+        return org_id
 
 
 def clear_whitelist_org_cache() -> None:
@@ -50,10 +63,10 @@ def clear_whitelist_org_cache() -> None:
 
 
 async def get_whitelist_org_id(db: AsyncSession) -> Optional[int]:
-    """按名称查询白名单组织 id（避免硬编码 id）。
+    """按名称查询白名单组织 id（避免硬编码 id，权威解析）。
 
-    优先命中进程内缓存；未命中则按需查库，找到后回填缓存。
-    组织不存在时返回 None（不缓存 None，组织创建后可再次查到），不阻断调用方。
+    优先命中进程内缓存（TTL 内）；缓存未命中/过期则按需查库，找到后回填缓存。
+    组织不存在时返回 None 并清空缓存（组织删除/重建后可再次查到），不阻断调用方。
     """
     cached = get_cached_whitelist_org_id()
     if cached is not None:
@@ -64,6 +77,8 @@ async def get_whitelist_org_id(db: AsyncSession) -> Optional[int]:
         )
     ).scalar_one_or_none()
     if org_id is None:
+        # 查无此组织：清空缓存（可能缓存了陈旧 id），下次可重查（组织重建/改名后）。
+        _set_cached_org_id(None)
         return None
     _set_cached_org_id(int(org_id))
     return int(org_id)
@@ -162,12 +177,26 @@ async def assign_user_to_whitelist_org(db: AsyncSession, user) -> None:
 
 
 def is_whitelist_member(user) -> bool:
-    """判断用户是否属于白名单组织（同步，供 has_plan org-grant 分支）。
+    """判断用户是否属于白名单组织（同步，仅进程内缓存判定，供 has_plan org-grant 分支）。
 
     依据：user.organization_id == 白名单组织 id（进程内缓存）。
-    组织 id 未缓存（组织不存在或尚未查询）时返回 False —— 保守不误授、不阻断。
+    组织 id 未缓存（组织不存在、尚未查询或缓存过期）时返回 False —— 保守不误授。
+    注意：本函数不查库；冷缓存/缓存过期时可能误拒（返回 False）。权威判定请用
+    is_whitelist_member_async（has_plan_async / require_plan 使用）。
     """
     org_id = get_cached_whitelist_org_id()
+    if org_id is None:
+        return False
+    return getattr(user, "organization_id", None) == org_id
+
+
+async def is_whitelist_member_async(db: AsyncSession, user) -> bool:
+    """判断用户是否属于白名单组织（async，权威，冷缓存不误拒）。
+
+    与 is_whitelist_member 同语义，但缓存未命中/过期时经 get_whitelist_org_id 查库
+    确认（TTL 内重查），避免冷缓存/缓存过期把白名单成员误判为 False。
+    """
+    org_id = await get_whitelist_org_id(db)
     if org_id is None:
         return False
     return getattr(user, "organization_id", None) == org_id

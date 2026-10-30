@@ -70,6 +70,33 @@ async def _require_org_permission(
     )
 
 
+async def _admin_whitelist_org_bypass(
+    org_id: int,
+    current_user,
+    db: AsyncSession,
+    slug: Optional[str] = None,
+) -> bool:
+    """admin 对「莱茵分子白名单组织」详情/成员端点特例放行（系统组织，admin 始终可见）。
+
+    背景（P2-5）：白名单组织成员仅在启动/首次批准时由 _ensure_whitelist_org_members
+    补齐，启动后新晋 admin 不在成员表 → 详情/成员端点 403。列表端点已对 admin 特例
+    显示该组织（见 list_my_organizations），此处对详情/成员做同源特例放行：
+    admin + whitelist-org（slug == 'whitelist-org'）→ 视为组织 owner 虚拟成员。
+    """
+    from ..models.enums import UserRole
+
+    if getattr(current_user, "role", None) != UserRole.ADMIN:
+        return False
+    if slug is None:
+        slug = (
+            await db.execute(
+                text("SELECT slug FROM organizations WHERE id = :id"),
+                {"id": org_id},
+            )
+        ).scalar_one_or_none()
+    return slug == "whitelist-org"
+
+
 # ============================================================
 # Request/Response Models
 # ============================================================
@@ -237,8 +264,11 @@ async def list_my_organizations(
     ):
         wl = await db.execute(
             text(
-                "SELECT id, name, slug, description, logo_url, plan, owner_id, is_active, created_at "
-                "FROM organizations WHERE slug='whitelist-org' AND is_active=TRUE LIMIT 1"
+                "SELECT o.id, o.name, o.slug, o.description, o.logo_url, o.plan, o.owner_id, "
+                "       o.is_active, o.created_at, "
+                "       (SELECT COUNT(*) FROM organization_members mm "
+                "        WHERE mm.organization_id = o.id AND mm.is_active = TRUE) AS member_count "
+                "FROM organizations o WHERE o.slug='whitelist-org' AND o.is_active=TRUE LIMIT 1"
             )
         )
         wl_row = wl.fetchone()
@@ -256,7 +286,7 @@ async def list_my_organizations(
                     "is_favorite": False,
                     "is_pinned": False,
                     "owner_id": wl_row.owner_id,
-                    "member_count": 0,
+                    "member_count": int(wl_row.member_count or 0),
                     "team_count": 0,
                     "created_at": wl_row.created_at.isoformat() if wl_row.created_at else None,
                 },
@@ -445,7 +475,11 @@ async def get_organization(
             raise HTTPException(status_code=404, detail="组织不存在")
 
         membership = await service._get_membership(org.id, current_user.id)
-        if not membership:
+        # P2-5：admin 对白名单组织特例放行（系统组织，admin 无成员行也可见）。
+        is_admin_bypass = await _admin_whitelist_org_bypass(
+            org.id, current_user, db, slug=getattr(org, "slug", None)
+        )
+        if not membership and not is_admin_bypass:
             raise HTTPException(status_code=403, detail="您不是该组织的成员")
 
         # 真实成员数/团队数/存储用量（供详情页展示）
@@ -495,7 +529,7 @@ async def get_organization(
                 "settings": org.settings,
                 "owner_id": org.owner_id,
                 "is_active": bool(org.is_active) if hasattr(org, "is_active") else True,
-                "my_role": membership.role if hasattr(membership, 'role') else membership["role"],
+                "my_role": (membership.role if hasattr(membership, 'role') else membership["role"]) if membership else "owner",
                 "memberCount": int(member_count),
                 "teamCount": int(team_count),
                 "storageUsed": int(storage_used_mb * 1024 * 1024),
@@ -574,7 +608,9 @@ async def get_members(
 
     membership = await service._get_membership(org_id, current_user.id)
     if not membership:
-        raise HTTPException(status_code=403, detail="您不是该组织的成员")
+        # P2-5：admin 对白名单组织特例放行（系统组织，admin 无成员行也可见成员列表）。
+        if not await _admin_whitelist_org_bypass(org_id, current_user, db):
+            raise HTTPException(status_code=403, detail="您不是该组织的成员")
 
     members = await service.get_members(org_id)
     return {"members": members}

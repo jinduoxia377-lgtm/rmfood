@@ -34,6 +34,9 @@ async def get_approved_count(db: AsyncSession) -> int:
     口径（用户定夺「未来新增可批 500（不含已批用户）」）：仅计**新流程**批准——
     即批准时通过 _approve_one 归入白名单组织的用户；历史已批用户（旧流程，plan 各异、
     未归入白名单组织）不消耗 500 池，故不计数。
+
+    去重：多条 APPROVED 申请可能指向同一用户（如同一邮箱重复提交/历史遗留），
+    按用户去重计数（COUNT(DISTINCT users.id)），避免重复消耗 500 池。
     """
     from .whitelist_org import get_whitelist_org_id
 
@@ -41,7 +44,7 @@ async def get_approved_count(db: AsyncSession) -> int:
     if org_id is None:
         return 0  # 白名单组织尚未创建 → 尚无新流程批准
     result = await db.execute(
-        select(func.count())
+        select(func.count(func.distinct(User.id)))
         .select_from(PreRegisterRequest)
         .join(User, User.id == PreRegisterRequest.user_id)
         .where(

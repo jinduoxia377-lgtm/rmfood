@@ -81,6 +81,8 @@ def has_plan(user, feature: str, org_id: int | None = None) -> bool:
         feature: 功能 key。
         org_id: 可选，白名单组织 id。FastAPI 的 require_plan 传入（避免缓存依赖）；
             为 None 时回退到 core/whitelist_org.is_whitelist_member（进程内缓存判定）。
+            注意：org_id 为 None 且缓存未命中/过期时 is_whitelist_member 保守返回
+            False（冷缓存误拒，见 P2-6）；需权威判定请改用 has_plan_async（可查库）。
     """
     required_plan = PLAN_FEATURES.get(feature)
     if required_plan is None:
@@ -98,6 +100,34 @@ def has_plan(user, feature: str, org_id: int | None = None) -> bool:
         # 回退缓存判定（User.has_feature / 直接调用）
         from .whitelist_org import is_whitelist_member
         return is_whitelist_member(user)
+
+    return False
+
+
+async def has_plan_async(user, feature: str, db, org_id: int | None = None) -> bool:
+    """has_plan 的 async 版本（org_id 缺省时可查库确认，冷缓存不误拒）。
+
+    与 has_plan 同语义，但 org_id 为 None 时的组织授予回退判定改用
+    core/whitelist_org.is_whitelist_member_async：缓存未命中/过期时查库确认，
+    避免冷启动/缓存过期把白名单成员误判为 False（P2-6）。
+    FastAPI 的 require_plan 依赖使用本函数（已持有 db 会话）。
+    """
+    required_plan = PLAN_FEATURES.get(feature)
+    if required_plan is None:
+        return True  # 基础功能，free 可用
+    user_rank = PLAN_RANK.get(effective_plan(user), 0)
+    required_rank = PLAN_RANK.get(required_plan, 0)
+    if user_rank >= required_rank:
+        return True
+
+    # ── 组织授予（白名单组织成员 = 免费版 + 部分专业版功能）──
+    if feature in WHITELIST_ORG_GRANTED_FEATURES:
+        if org_id is not None:
+            # 显式 org_id（require_plan 解析，确定性，不依赖缓存）
+            return getattr(user, "organization_id", None) == org_id
+        # 查库确认（权威，冷缓存不误拒）
+        from .whitelist_org import is_whitelist_member_async
+        return await is_whitelist_member_async(db, user)
 
     return False
 
@@ -139,7 +169,7 @@ def require_plan(feature: str) -> Callable:
         from .whitelist_org import get_whitelist_org_id
 
         org_id = await get_whitelist_org_id(db)
-        if not has_plan(current_user, feature, org_id=org_id):
+        if not await has_plan_async(current_user, feature, db, org_id=org_id):
             detail = {
                 "error_code": "PLAN_REQUIRED",
                 "message": f"该功能需要 {required_plan} 及以上版本，请升级后使用",

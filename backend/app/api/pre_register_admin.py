@@ -27,6 +27,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import func, or_, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session, require_role
@@ -169,6 +170,35 @@ async def _get_request(db: AsyncSession, request_id: int) -> PreRegisterRequest 
     ).scalar_one_or_none()
 
 
+async def _detect_approve_conflict(db: AsyncSession, email: str, username: str) -> dict:
+    """IntegrityError 回滚后判定并发唯一约束冲突类型。
+
+    优先按 email 唯一冲突（用户已存在，最常见）返回 EMAIL_EXISTS；否则按 username
+    唯一冲突返回 USERNAME_CONFLICT；两者皆非则归为通用 CONCURRENT_CONFLICT。
+    返回值携带 error_code / message，供 _approve_one 与 approve 端点映射为 409。
+    """
+    email_user = (
+        await db.execute(select(User.id).where(User.email == email))
+    ).scalar_one_or_none()
+    if email_user is not None:
+        return {
+            "error_code": "EMAIL_EXISTS",
+            "message": f"邮箱 {email} 已存在用户(user_id={email_user})，请勿重复创建",
+        }
+    username_user = (
+        await db.execute(select(User.id).where(User.username == username))
+    ).scalar_one_or_none()
+    if username_user is not None:
+        return {
+            "error_code": "USERNAME_CONFLICT",
+            "message": f"用户名 {username} 已被并发占用，请重试",
+        }
+    return {
+        "error_code": "CONCURRENT_CONFLICT",
+        "message": "并发创建冲突，请重试",
+    }
+
+
 async def _approve_one(
     db: AsyncSession,
     request_id: int,
@@ -284,48 +314,66 @@ async def _approve_one(
         temp_password = final_password
 
     hashed = get_password_hash(final_password)
-    user = User(
-        username=username,
-        email=req.email,
-        hashed_password=hashed,
-        full_name=req.full_name or base_username,
-        role=target_role,
-        department=req.department,
-        is_active=True,
-        # 白名单通过 → 免费版基础（白名单用户仍 free）+ 组织授予子集
-        # （专业版功能由「莱茵分子白名单组织」组织级授予，见 core/plans.py has_plan org-grant）。
-        plan="free",
-    )
-    db.add(user)
-    # 新批用户归入「莱茵分子白名单组织」，参与租户数据隔离（数据仅组织内可见）。
-    await assign_user_to_whitelist_org(db, user)
-    await db.flush()
-
-    req.status = PreRegisterStatus.APPROVED
-    req.user_id = user.id
-    req.reviewed_by = operator.id
-    req.reviewed_at = now
-    req.review_note = (note or "").strip() or None
-
+    req_email = req.email  # 捕获于事务内，IntegrityError 回滚后仍可安全引用
     import logging
     logger = logging.getLogger("audit.pre_register")
-    logger.info(
-        "[AUDIT] pre-register approve id=%s email=%s user_id=%s role=%s operator=%s",
-        request_id, req.email, user.id, target_role.value, operator.username,
-    )
-    await db.commit()
+    try:
+        user = User(
+            username=username,
+            email=req_email,
+            hashed_password=hashed,
+            full_name=req.full_name or base_username,
+            role=target_role,
+            department=req.department,
+            is_active=True,
+            # 白名单通过 → 免费版基础（白名单用户仍 free）+ 组织授予子集
+            # （专业版功能由「莱茵分子白名单组织」组织级授予，见 core/plans.py has_plan org-grant）。
+            plan="free",
+        )
+        db.add(user)
+        # 新批用户归入「莱茵分子白名单组织」，参与租户数据隔离（数据仅组织内可见）。
+        await assign_user_to_whitelist_org(db, user)
+        await db.flush()
 
-    # 审核结果邮件（best-effort）
+        req.status = PreRegisterStatus.APPROVED
+        req.user_id = user.id
+        req.reviewed_by = operator.id
+        req.reviewed_at = now
+        req.review_note = (note or "").strip() or None
+
+        logger.info(
+            "[AUDIT] pre-register approve id=%s email=%s user_id=%s role=%s operator=%s",
+            request_id, req_email, user.id, target_role.value, operator.username,
+        )
+        await db.commit()
+    except IntegrityError:
+        # 并发唯一约束冲突（username/email/organization_members）：回滚整个事务——
+        # 事务级 advisory lock（pg_advisory_xact_lock，见 consume_quota）随回滚自动释放，
+        # 不悬挂；申请保持 pending（claim 一并回滚），返回明确冲突而非 503。
+        await db.rollback()
+        conflict = await _detect_approve_conflict(db, req_email, username)
+        return {
+            "ok": False,
+            "request_id": request_id,
+            "conflict": True,
+            "error_code": conflict["error_code"],
+            "message": conflict["message"],
+        }
+
+    # 审核结果邮件（best-effort）：临时密码仅随邮件下发；邮件失败才回退到响应
+    # （明文不外泄，见 P2-4）。
+    email_sent = True
     try:
         await whitelist_service.send_review_result_email(
-            req.email,
+            req_email,
             status=PreRegisterStatus.APPROVED,
             username=username,
             temp_password=temp_password,
             lang="zh-CN",
         )
     except Exception:  # noqa: BLE001
-        logger.exception("发送审核通过邮件失败 email=%s", req.email)
+        email_sent = False
+        logger.exception("发送审核通过邮件失败 email=%s", req_email)
 
     return {
         "ok": True,
@@ -333,7 +381,7 @@ async def _approve_one(
         "message": f"账号已开通: {username}",
         "username": username,
         "user_id": user.id,
-        "temp_password": temp_password,
+        "temp_password": temp_password if not email_sent else None,
     }
 
 
@@ -495,6 +543,15 @@ async def approve_pre_register_request(
                     "quota_total": WHITELIST_QUOTA_TOTAL,
                     "quota_approved": WHITELIST_QUOTA_TOTAL,
                     "quota_remaining": 0,
+                },
+            )
+        if result.get("conflict"):
+            # 并发唯一约束冲突（email/username 已存在）：409（明确错误码，非 503）
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "error_code": result.get("error_code", "CONFLICT"),
+                    "message": result["message"],
                 },
             )
         raise HTTPException(status_code=400, detail=result["message"])
