@@ -66,6 +66,9 @@ interface OrganizationDetailState {
   teams: Team[]
   loading: boolean
   error: Error | null
+  // 局部降级：members/teams 请求失败时置空数组 + 记录局部错误标志（不拖垮整页）
+  membersError: Error | null
+  teamsError: Error | null
   activeTab: string
   organizationId: number | null
 }
@@ -75,10 +78,12 @@ type OrganizationDetailAction =
   | { type: 'SET_ERROR'; payload: Error | null }
   | { type: 'SET_ORGANIZATION'; payload: Organization }
   | { type: 'SET_MEMBERS'; payload: Member[] }
+  | { type: 'SET_MEMBERS_ERROR'; payload: Error | null }
   | { type: 'ADD_MEMBER'; payload: Member }
   | { type: 'UPDATE_MEMBER'; payload: { id: number; data: Partial<Member> } }
   | { type: 'REMOVE_MEMBER'; payload: number }
   | { type: 'SET_TEAMS'; payload: Team[] }
+  | { type: 'SET_TEAMS_ERROR'; payload: Error | null }
   | { type: 'ADD_TEAM'; payload: Team }
   | { type: 'UPDATE_TEAM'; payload: { id: number; data: Partial<Team> } }
   | { type: 'REMOVE_TEAM'; payload: number }
@@ -92,6 +97,8 @@ const initialState: OrganizationDetailState = {
   teams: [],
   loading: false,
   error: null,
+  membersError: null,
+  teamsError: null,
   activeTab: 'overview',
   organizationId: null,
 }
@@ -113,6 +120,9 @@ function organizationDetailReducer(
     case 'SET_MEMBERS':
       return { ...state, members: action.payload }
 
+    case 'SET_MEMBERS_ERROR':
+      return { ...state, membersError: action.payload }
+
     case 'ADD_MEMBER':
       return { ...state, members: [...state.members, action.payload] }
 
@@ -132,6 +142,9 @@ function organizationDetailReducer(
 
     case 'SET_TEAMS':
       return { ...state, teams: action.payload }
+
+    case 'SET_TEAMS_ERROR':
+      return { ...state, teamsError: action.payload }
 
     case 'ADD_TEAM':
       return { ...state, teams: [...state.teams, action.payload] }
@@ -202,7 +215,9 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
       dispatch({ type: 'SET_ERROR', payload: null })
 
       try {
-        const [orgResponse, membersResponse, teamsResponse] = await Promise.all([
+        // P1-2：Promise.allSettled 化 — 任一子请求失败不再一票否决整页。
+        // org 请求失败 → 整页错误态；members/teams 失败 → 置空数组 + 局部错误标志（局部降级）。
+        const [orgResult, membersResult, teamsResult] = await Promise.allSettled([
           api.get(`/organizations/${id}`, {
             signal: abortControllerRef.current.signal,
           }),
@@ -220,24 +235,52 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
 
         if (!mountedRef.current) return
 
+        // 组织详情失败 → 整页错误态（唯一一票否决项）
+        if (orgResult.status === 'rejected') {
+          dispatch({
+            type: 'SET_ERROR',
+            payload: (orgResult.reason as Error) || new Error('加载组织信息失败'),
+          })
+          return
+        }
+
         // Backend returns { organization: {...} }, { members: [...] }, { teams: [...] }
+        const orgResponse = orgResult.value
         const rawOrg = orgResponse.data?.organization ?? orgResponse.data
         dispatch({ type: 'SET_ORGANIZATION', payload: rawOrg })
 
+        // members：失败降级为空数组 + 局部错误标志，不拖垮整页
         if (autoFetchMembers) {
-          const rawMembers = membersResponse.data?.members || membersResponse.data || []
-          dispatch({
-            type: 'SET_MEMBERS',
-            payload: rawMembers.map((m: Record<string, any>) => mapMemberResponse(m)),
-          })
+          if (membersResult.status === 'rejected') {
+            dispatch({ type: 'SET_MEMBERS', payload: [] })
+            dispatch({ type: 'SET_MEMBERS_ERROR', payload: membersResult.reason as Error })
+          } else {
+            const rawMembers = membersResult.value.data?.members || membersResult.value.data || []
+            dispatch({
+              type: 'SET_MEMBERS',
+              payload: rawMembers.map((m: Record<string, any>) => mapMemberResponse(m)),
+            })
+            dispatch({ type: 'SET_MEMBERS_ERROR', payload: null })
+          }
+        } else {
+          dispatch({ type: 'SET_MEMBERS_ERROR', payload: null })
         }
 
+        // teams：失败降级为空数组 + 局部错误标志，不拖垮整页
         if (autoFetchTeams) {
-          const rawTeams = teamsResponse.data?.teams || teamsResponse.data || []
-          dispatch({
-            type: 'SET_TEAMS',
-            payload: rawTeams.map((t: Record<string, any>) => mapTeamResponse(t)),
-          })
+          if (teamsResult.status === 'rejected') {
+            dispatch({ type: 'SET_TEAMS', payload: [] })
+            dispatch({ type: 'SET_TEAMS_ERROR', payload: teamsResult.reason as Error })
+          } else {
+            const rawTeams = teamsResult.value.data?.teams || teamsResult.value.data || []
+            dispatch({
+              type: 'SET_TEAMS',
+              payload: rawTeams.map((t: Record<string, any>) => mapTeamResponse(t)),
+            })
+            dispatch({ type: 'SET_TEAMS_ERROR', payload: null })
+          }
+        } else {
+          dispatch({ type: 'SET_TEAMS_ERROR', payload: null })
         }
       } catch (error: any) {
         if (!mountedRef.current) return
@@ -441,6 +484,9 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
     teams: state.teams,
     loading: state.loading,
     error: state.error,
+    // 局部降级标志（members/teams 请求失败时为 Error，成功为 null）
+    membersError: state.membersError,
+    teamsError: state.teamsError,
     activeTab: state.activeTab,
 
     fetchDetail,

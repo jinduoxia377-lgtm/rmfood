@@ -27,7 +27,7 @@ import i18n from '@/i18n'
 
 import DashboardConfigManager, { CARD_CATALOG, DEFAULT_CARDS, isPremiumCardType, getCardPlanRequirement, DASHBOARD_CARD_FEATURE, type CardConfig, type DashboardLayout } from '@/config/dashboard'
 import { DraggableCard, DashboardLayout as GridLayout, LayoutEditor, LayoutSwitcher } from '@/pages/formula/components/DashboardLayout'
-import { hasPlan, toPlan, type Plan } from '@/utils/plan'
+import { usePlan, type PlanFeature } from '@/utils/plan'
 
 import { AIInsights, KPIDashboard } from '@/pages/formula/components/AIInsights'
 
@@ -102,8 +102,9 @@ function renderTemplateManager(currentLayout: DashboardLayout, setCurrentLayout:
 
 interface CardRenderProps {
   card: CardConfig
-  // 用户订阅计划（免费/专业），用于 premium 卡片门控
-  plan?: Plan
+  // 免费-专业版分割：org-grant 感知的 hasFeature（统一走 usePlan().hasFeature，
+  // 白名单组织授予子集内功能（如 advanced_analytics）对 free+白名单组织用户自动放行）
+  hasFeature: (feature: PlanFeature) => boolean
   data: {
     formulas: { total: number; by_status: Record<string, number> }
     experiments: { total: number; by_status: Record<string, number> }
@@ -144,9 +145,10 @@ interface CardRenderProps {
   refetchAIInsights?: () => void
 }
 
-function renderCard({ card, plan, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout, statsLoading, statsError, refetchStats, trendsLoading, trendsError, formulasLoading, formulasError, refetchFormulas, experimentsLoading, experimentsError, refetchExperiments, todosLoading, todosError, refetchTodos, reviewQueueLoading, reviewQueueError, refetchReviewQueue, timelineLoading, timelineError, refetchTimeline }: CardRenderProps) {
-  // 免费-专业版分割：premium 卡片仅 pro 可用；free 渲染锁定态 + 升级引导
-  if (isPremiumCardType(card.type) && !hasPlan(toPlan(plan), DASHBOARD_CARD_FEATURE)) {
+function renderCard({ card, hasFeature, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout, statsLoading, statsError, refetchStats, trendsLoading, trendsError, formulasLoading, formulasError, refetchFormulas, experimentsLoading, experimentsError, refetchExperiments, todosLoading, todosError, refetchTodos, reviewQueueLoading, reviewQueueError, refetchReviewQueue, timelineLoading, timelineError, refetchTimeline }: CardRenderProps) {
+  // 免费-专业版分割：premium 卡片仅 pro 可用（org-grant 感知，白名单组织授予子集自动放行）；
+  // free 渲染锁定态 + 升级引导
+  if (isPremiumCardType(card.type) && !hasFeature(DASHBOARD_CARD_FEATURE)) {
     const required = getCardPlanRequirement(card.type)
     return (
       <div
@@ -330,6 +332,8 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
+  // 免费-专业版分割：org-grant 感知的 hasFeature（白名单组织授予子集自动放行）
+  const { hasFeature } = usePlan()
   const [trendPeriod, setTrendPeriod] = useState<'7d' | '30d' | '90d'>('30d')
   const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useDashboardStatistics()
   const { data: trendsData, isLoading: trendsLoading, error: trendsError } = useDashboardTrends(trendPeriod)
@@ -511,7 +515,8 @@ export default function DashboardPage() {
     if (!cardInfo) return
 
     // 免费-专业版分割：免费用户不可添加 premium 卡片 → 跳转升级
-    if (isPremiumCardType(type) && !hasPlan(toPlan(user?.plan), DASHBOARD_CARD_FEATURE)) {
+    // （org-grant 感知：白名单组织授予子集内功能对 free+白名单组织用户放行）
+    if (isPremiumCardType(type) && !hasFeature(DASHBOARD_CARD_FEATURE)) {
       navigate('/billing')
       return
     }
@@ -530,7 +535,7 @@ export default function DashboardPage() {
     const newLayout = { ...currentLayout, cards: newCards, updatedAt: new Date().toISOString() }
     setCurrentLayout(newLayout)
     DashboardConfigManager.saveLayout(newLayout)
-  }, [currentLayout, user, navigate])
+  }, [currentLayout, hasFeature, navigate])
 
   const duplicateCard = useCallback((cardId: string) => {
     const cardToDuplicate = currentLayout.cards.find(card => card.id === cardId)
@@ -541,7 +546,8 @@ export default function DashboardPage() {
     if (!cardInfo) return
 
     // 免费-专业版分割：免费用户不可复制 premium 卡片 → 跳转升级
-    if (isPremiumCardType(cardToDuplicate.type) && !hasPlan(toPlan(user?.plan), DASHBOARD_CARD_FEATURE)) {
+    // （org-grant 感知：白名单组织授予子集内功能对 free+白名单组织用户放行）
+    if (isPremiumCardType(cardToDuplicate.type) && !hasFeature(DASHBOARD_CARD_FEATURE)) {
       navigate('/billing')
       return
     }
@@ -561,7 +567,7 @@ export default function DashboardPage() {
     const newLayout = { ...currentLayout, cards: newCards, updatedAt: new Date().toISOString() }
     setCurrentLayout(newLayout)
     DashboardConfigManager.saveLayout(newLayout)
-  }, [currentLayout, user, navigate])
+  }, [currentLayout, hasFeature, navigate])
 
   const switchLayout = useCallback((layoutId: string) => {
     const layout = layouts.find(l => l.id === layoutId)
@@ -781,6 +787,7 @@ export default function DashboardPage() {
               size="sm"
               icon={<Sparkles size={16} />}
               onClick={() => navigate('/ai')}
+              className="min-w-[44px]"
             >
               <span className="hidden sm:inline">{t('pages.dashboard.aiReady')}</span>
             </Button>
@@ -819,10 +826,12 @@ export default function DashboardPage() {
               size="sm"
               icon={<Settings size={14} />}
               onClick={() => setIsEditMode(!isEditMode)}
-              className={isEditMode
-                ? 'bg-[var(--bg-secondary)]/95 text-[var(--color-primary-text)] hover:bg-[var(--bg-secondary)] shadow-sm'
-                : 'text-white/90 hover:text-white hover:bg-[var(--bg-secondary)]/10'
-              }
+              className={cn(
+                'min-w-[44px]',
+                isEditMode
+                  ? 'bg-[var(--bg-secondary)]/95 text-[var(--color-primary-text)] hover:bg-[var(--bg-secondary)] shadow-sm'
+                  : 'text-white/90 hover:text-white hover:bg-[var(--bg-secondary)]/10'
+              )}
               aria-label={isEditMode ? t('pages.dashboard.exitEditMode') : t('pages.dashboard.enterEditMode')}
             >
               <span className="hidden sm:inline">{isEditMode ? t('pages.dashboard.finishEdit') : t('pages.dashboard.editLayout')}</span>
@@ -834,6 +843,7 @@ export default function DashboardPage() {
               icon={<Download size={14} />}
               onClick={handleExportDashboard}
               aria-label={t('pages.dashboard.exportDashboardAria')}
+              className="min-w-[44px]"
             >
               <span className="hidden sm:inline">{t('pages.dashboard.exportData')}</span>
             </Button>
@@ -850,6 +860,7 @@ export default function DashboardPage() {
               }}
               title={t('pages.dashboard.refreshData')}
               aria-label={t('pages.dashboard.refreshDashboardAria')}
+              className="min-w-[44px]"
             >
               <span className="hidden sm:inline">{t('pages.dashboard.refresh')}</span>
             </Button>
@@ -957,7 +968,7 @@ export default function DashboardPage() {
               >
                 {renderCard({
                   card,
-                  plan: toPlan(user?.plan),
+                  hasFeature,
                   data: stats ? {
                     formulas: { total: stats.formulas?.total ?? 0, by_status: stats.formulas?.by_status || {} },
                     experiments: { total: stats.experiments?.total ?? 0, by_status: stats.experiments?.by_status || {} },

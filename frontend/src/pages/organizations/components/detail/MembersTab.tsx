@@ -18,6 +18,7 @@ import {
   Ban,
   RotateCcw,
   ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -41,6 +42,8 @@ interface MembersTabProps {
   onDeleteTeam?: (teamId: number) => Promise<void>;
   onRefresh?: () => void;
   canManageMembers?: boolean;
+  // 局部降级：members 请求失败时的错误标志（null 表示成功/未失败）
+  membersError?: Error | null;
 }
 
 const ROLE_OPTIONS: { value: Role; label: string; description: string; color: string }[] = [
@@ -182,7 +185,7 @@ function RoleSelect({
 }
 
 const MembersTab = memo(
-  ({ organizationId, members, memberCount, onInvite, onRemoveMember, onUpdateRole, onRefresh, canManageMembers = true }: MembersTabProps) => {
+  ({ organizationId, members, memberCount, membersError, onInvite, onRemoveMember, onUpdateRole, onRefresh, canManageMembers = true }: MembersTabProps) => {
     const toast = useToast();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
@@ -362,7 +365,7 @@ const MembersTab = memo(
     const activeMembers = members.filter((m) => m.status === 'active').length;
 
     return (
-      <div className="p-8 space-y-8">
+      <div className="p-4 sm:p-8 space-y-4 sm:space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
           <div>
@@ -506,6 +509,20 @@ const MembersTab = memo(
               取消选择
             </button>
             {batchBusy && <Loader2 className="w-4 h-4 animate-spin text-[var(--color-primary-text)]" />}
+          </div>
+        )}
+
+        {/* 局部降级：members 请求失败 → 提示 + 空列表，不影响组织/团队数据 */}
+        {membersError && (
+          <div
+            role="alert"
+            className="flex items-start gap-2 rounded-[var(--radius-Apple-md)] border border-[var(--color-error-border)] dark:border-[var(--color-error)]/40 bg-[var(--color-error-container)]/20 dark:bg-[var(--color-error-container)]/10 px-[var(--space-apple-md)] py-[var(--space-apple-sm)] text-sm text-[var(--color-error-text)]"
+          >
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">成员列表加载失败，已降级显示空列表。</p>
+              <p className="text-xs opacity-90 mt-0.5">请点击上方「刷新」重试。组织信息与团队数据不受影响。</p>
+            </div>
           </div>
         )}
 
@@ -867,3 +884,4 @@ const MembersTab = memo(
 );
 
 export default MembersTab;
+

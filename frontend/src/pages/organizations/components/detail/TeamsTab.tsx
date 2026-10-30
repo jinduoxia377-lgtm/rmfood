@@ -10,6 +10,7 @@ import {
   Users,
   Loader2,
   X,
+  AlertTriangle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
@@ -30,6 +31,8 @@ interface TeamsTabProps {
   onUpdateTeam?: (teamId: number, data: Partial<Team>) => Promise<void>
   onDeleteTeam?: (teamId: number) => Promise<void>
   onRefresh?: () => void
+  // 局部降级：teams 请求失败时的错误标志（null 表示成功/未失败）
+  teamsError?: Error | null
 }
 
 function getMemberById(members: Member[], memberId: number): Member | undefined {
@@ -201,7 +204,7 @@ const TeamTreeNode = memo(function TeamTreeNode({
   )
 })
 
-const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, onDeleteTeam }: TeamsTabProps) => {
+const TeamsTab = memo(({ teams, members, teamCount, teamsError, onCreateTeam, onUpdateTeam, onDeleteTeam }: TeamsTabProps) => {
   const toast = useToast()
   const [expandedTeams, setExpandedTeams] = useState<Set<number>>(new Set())
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
@@ -317,7 +320,7 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
   }, [])
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-8 space-y-4 sm:space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -332,6 +335,20 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
           创建团队
         </button>
       </div>
+
+      {/* 局部降级：teams 请求失败 → 提示 + 空列表，不影响组织/成员数据 */}
+      {teamsError && (
+        <div
+          role="alert"
+          className="flex items-start gap-2 rounded-[var(--radius-Apple-md)] border border-[var(--color-error-border)] dark:border-[var(--color-error)]/40 bg-[var(--color-error-container)]/20 dark:bg-[var(--color-error-container)]/10 px-[var(--space-apple-md)] py-[var(--space-apple-sm)] text-sm text-[var(--color-error-text)]"
+        >
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">团队列表加载失败，已降级显示空列表。</p>
+            <p className="text-xs opacity-90 mt-0.5">请点击上方「刷新」重试。组织信息与成员数据不受影响。</p>
+          </div>
+        </div>
+      )}
 
       {/* Main Layout: Tree + Detail Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -581,3 +598,4 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
 })
 
 export default TeamsTab
+
