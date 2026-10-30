@@ -15,6 +15,7 @@ from pydantic import BaseModel
 
 from app.core.performance.cache_system import get_cache
 from app.core.performance.task_queue import TaskPriority, get_task_queue
+from app.api.deps import CurrentUser
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,10 @@ async def get_cache_stats():
 
 
 @router.delete("/cache/clear", summary="Clear cache")
-async def clear_cache(pattern: str = Query(None, description="Optional key pattern to match")):
+async def clear_cache(
+    current_user: CurrentUser,
+    pattern: str = Query(None, description="Optional key pattern to match"),
+):
     """Clear cache entries. Without pattern, clears all L1 + L2."""
     cache = get_cache()
     await cache.clear_all()
@@ -84,7 +88,7 @@ _TASK_REGISTRY = {
 
 
 @router.post("/tasks", summary="Submit a task to the queue")
-async def submit_task(request: TaskSubmitRequest):
+async def submit_task(request: TaskSubmitRequest, current_user: CurrentUser):
     """Submit a named function for background execution."""
     func = _TASK_REGISTRY.get(request.function_name)
     if func is None:
