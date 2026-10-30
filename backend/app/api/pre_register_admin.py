@@ -198,16 +198,46 @@ async def _approve_one(
 
     req = await _get_request(db, request_id)
 
-    # 邮箱冲突检查
-    existing = (await db.execute(
-        select(User.id).where(User.email == req.email)
+    # 邮箱冲突检查：该 email 已存在用户（既有用户直接归入白名单组织，不再新建）。
+    existing_user = (await db.execute(
+        select(User).where(User.email == req.email)
     )).scalar_one_or_none()
-    if existing is not None:
+    if existing_user is not None:
+        # 已删号/停用用户（is_active=False，注销时 email 已匿名化）不授予白名单权益：
+        # 返回明确错误而非 APPROVED，避免误授已失效账号。
+        if not existing_user.is_active:
+            await db.rollback()
+            return {
+                "ok": False,
+                "request_id": request_id,
+                "message": f"邮箱已存在但用户已停用(user_id={existing_user.id})，无法归入白名单组织",
+            }
+        # 与「新用户分支」一致的配额语义：批准也消耗 1 个白名单名额。
+        # 此刻尚未 commit（claim 的 reviewed_by/reviewed_at 也未提交），
+        # 配额不足时 rollback 回滚整个 claim，申请保持 pending，管理员可在名额释放后重试。
+        if not await consume_quota(db):
+            await db.rollback()
+            return {
+                "ok": False,
+                "request_id": request_id,
+                "message": f"白名单名额已满（{WHITELIST_QUOTA_TOTAL}/{WHITELIST_QUOTA_TOTAL}）",
+                "quota_full": True,
+            }
+        # 既有用户归入「莱茵分子白名单组织」（成员行 + org-grant 权益），与新建用户同路径。
+        await assign_user_to_whitelist_org(db, existing_user)
         req.status = PreRegisterStatus.APPROVED
-        req.user_id = existing
+        req.user_id = existing_user.id
+        req.reviewed_by = operator.id
         req.reviewed_at = now
+        req.review_note = (note or "").strip() or None
         await db.commit()
-        return {"ok": False, "request_id": request_id, "message": f"邮箱已存在用户(user_id={existing})，已标记为通过"}
+        return {
+            "ok": True,
+            "request_id": request_id,
+            "message": f"邮箱已存在用户(user_id={existing_user.id})，已归入白名单组织并通过",
+            "username": existing_user.username,
+            "user_id": existing_user.id,
+        }
 
     role_map = {
         "guest": UserRole.GUEST,

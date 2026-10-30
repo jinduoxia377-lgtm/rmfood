@@ -275,25 +275,11 @@ class AuthService:
         self.db.add(user)
         await self.db.flush()
 
-        # ── 白名单授权（规格 tenant-isolation-segmentation-plan.md 3.4）──
-        # 若该 email 存在 status='approved' 的 pre_register 申请记录，
-        # 说明其已通过白名单审核 → 授予专业版（plan='pro'）。
-        # 延迟导入避免 models 循环依赖。
-        from ..models.pre_register import PreRegisterRequest, PreRegisterStatus
-
-        approved_req = (
-            await self.db.execute(
-                select(PreRegisterRequest.id)
-                .where(
-                    PreRegisterRequest.email == email,
-                    PreRegisterRequest.status == PreRegisterStatus.APPROVED,
-                )
-                .limit(1)
-            )
-        ).scalar_one_or_none()
-        if approved_req is not None:
-            user.plan = "pro"
-            logger.info(f"白名单授权: 用户 {user.username} 注册时授予专业版 (email={email})")
+        # 注册一律不因已批准的 pre_register 记录升级 plan（P1-1 修复）。
+        # 白名单权益只经「莱茵分子白名单组织」组织级授予（org-grant，见 core/plans.py
+        # has_plan），白名单批准走 _approve_one 建用户时置 plan='free'（免费版基础）。
+        # 若沿用旧「白名单→pro」逻辑，非白名单用户可经删号重注册触达全功能专业版，
+        # 构成 entitlement 泄漏，故注册路径不再重复授予。
 
         logger.info(f"新用户注册: {user.username} (plan={user.plan})")
         return user
