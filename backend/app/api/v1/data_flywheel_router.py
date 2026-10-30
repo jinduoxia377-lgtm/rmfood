@@ -20,6 +20,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.services.analytics.user_behavior import BehaviorAnonymizer
+from app.api.deps import CurrentUser
 from app.services.data_sources.pipeline.collection_pipeline import CollectionPipeline
 from app.services.data_sources.pipeline.validators import DataQualityValidator
 from app.services.ml.recommendation_trainer import RecommendationTrainer
@@ -74,7 +75,7 @@ class RecommendationRequest(BaseModel):
 # ── Endpoints ───────────────────────────────────────────────────────
 
 @router.post("/collect", summary="Trigger data collection")
-async def trigger_collect(request: CollectRequest) -> dict[str, Any]:
+async def trigger_collect(request: CollectRequest, current_user: CurrentUser) -> dict[str, Any]:
     """
     Start a data collection run against the requested sources.
 
@@ -123,7 +124,7 @@ async def get_stats() -> dict[str, Any]:
 
 
 @router.post("/validate", summary="Validate data quality")
-async def validate_data(request: ValidateRequest) -> dict[str, Any]:
+async def validate_data(request: ValidateRequest, current_user: CurrentUser) -> dict[str, Any]:
     """
     Validate a batch of records against source-specific rules.
 
@@ -204,7 +205,7 @@ async def get_anonymized(
 
 
 @router.post("/train", summary="Train recommendation model")
-async def train_model(request: TrainRequest) -> dict[str, Any]:
+async def train_model(request: TrainRequest, current_user: CurrentUser) -> dict[str, Any]:
     """
     Train or update the recommendation model.
 
