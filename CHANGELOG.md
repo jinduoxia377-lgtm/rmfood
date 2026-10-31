@@ -47,6 +47,28 @@
 
 ---
 
+## [2.1.0] - 2026-10-30
+
+### Added
+
+- **白名单组织体系**：Rhine Molecular 白名单组织（启动自动 ensure + owner_id + 管理员列表特例），免费版与部分 Pro 功能（org-grant + 500 配额），配额仅计新流程已批准，用户加入组织写 `organization_members` 行
+- **租户隔离（tenant scope）**：AI 配方生成、GA 生成、实验列表、全局搜索与分析均解析生效组织（cookie 认证路径），未授权用户看到升级提示（`RequirePlan` / `PlanGate`）
+- **任务提交注册表**：`submit_task` 真注册表（不再伪造 pending），`list_formulas` 委托 `QueryService`，清理 `clear_cache` 死分支
+- **RAG 知识库与配方生成 100% 功能闭环**（含药典十九畏禁忌回填，禁忌 29→55/142）
+- **智能体模块 P1/P2/P3 修复** + 工作流耗时优化 + 前端全量测试修复与 i18n 接入
+
+### Changed
+
+- 前端 `as any` 清理（类型明确化，`tsc` 全量 exit 0）；后端 ruff 积压清理（`api` 1656→193、`models` 461→38、`services/core/application` 等）
+- 提交钩子门禁：ruff 门禁改用 backend venv python，默认报告放行 + `RUFF_BLOCK=1` 严格阻止
+- 工作流/实验/分析：区分 403 并显示服务端详情，替换静默空状态
+
+### Fixed
+
+- **安全**：30+ 写端点补鉴权（`compliance` / `doe` / `kg` / `explainability` / `label-check` / `report` / `export` / `ingredient-analysis` / `data_flywheel` / `core`），`tenant_router` 3 个变更端点要求 ADMIN 角色
+- 后端真 `NameError`（F821 ×36 + 3）与 `F601` 重复字典键 ×10（首值被覆写真 bug）修复
+- 分析 4 处 schema 不匹配（静默降级 dashboard 指标）修复；日志 `os.getpid` 遮蔽致 `UnboundLocalError`（F823 真运行时 bug）修复
+- 白名单：org-grant 403/成员详情、并发 409、缓存 TTL、配额去重计数修复
 ## [2.0.0] - 2026-10-25
 
 > **首个正式语义化版本发布**。此前项目无任何 git tag、无 CHANGELOG，

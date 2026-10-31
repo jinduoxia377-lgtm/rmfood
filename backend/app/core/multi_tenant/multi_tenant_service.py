@@ -730,6 +730,23 @@ class OrganizationService:
             {"id": organization_id},
         )).scalar() or 0
 
+        # 对话调用也计入 AI 配额：chat_messages 中每条 assistant 消息代表一次完成的 AI 对话
+        # （/chat 与 /chat/stream 成功时都会通过 _persist_chat_record 写入一条 assistant 消息）。
+        # 这样对话无法绕过配额（formula_generation_history 长期无写入导致 ai_generations 恒为 0）。
+        chat_generations = (await self.db.execute(
+            text("""
+                SELECT COUNT(*) FROM chat_messages cm
+                JOIN chat_sessions cs ON cs.id = cm.session_id
+                WHERE cm.role = 'assistant'
+                  AND cm.timestamp >= CURRENT_DATE
+                  AND cs.user_id IN (
+                      SELECT user_id FROM organization_members WHERE organization_id = :id
+                  )
+            """),
+            {"id": organization_id},
+        )).scalar() or 0
+        ai_generations = int(ai_generations) + int(chat_generations)
+
         def _over(used: int, limit: int) -> bool:
             return limit >= 0 and used > limit
 

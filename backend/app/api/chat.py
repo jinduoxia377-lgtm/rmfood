@@ -80,17 +80,25 @@ async def get_sessions(
 
 @router.get("/sessions/{session_id}", summary="获取会话详情")
 async def get_session(
-    session_id: int = Path(..., description="会话ID"),
+    session_id: str = Path(..., description="会话ID：后端 int 自增 ID，或前端本地 client_session_id（session-<ts>-<rand> 字符串）"),
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_active_user),
 ):
-    """获取指定会话的详细信息和消息列表"""
+    """获取指定会话的详细信息和消息列表
+
+    兼容两种 ID：
+    - 纯数字 → 按后端主键 ChatSession.id 查询（旧行为不变）
+    - 非数字 → 按前端本地 client_session_id 精确匹配（P2 统一会话 ID 后前端可直查）
+    """
     try:
         query = select(ChatSession).options(joinedload(ChatSession.messages)).filter(
-            ChatSession.id == session_id,
             ChatSession.user_id == current_user.id,
             ChatSession.is_active.is_(True)
         )
+        if session_id.isdigit():
+            query = query.filter(ChatSession.id == int(session_id))
+        else:
+            query = query.filter(ChatSession.client_session_id == session_id)
 
         result = await db.execute(query)
         # joinedload 集合（messages）后必须调用 unique()，否则 scalar_one_or_none 抛 InvalidRequestError

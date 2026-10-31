@@ -35,13 +35,13 @@ __all__ = ["__version__", "VERSION_TUPLE", "RELEASE_DATE", "VERSION_SOURCE_FILES
 
 #: 平台发布版本号 —— 严格遵循 SemVer 2.0.0
 #: https://semver.org/lang/zh-CN/
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 #: 元组形式，便于程序化比较，例如 `VERSION_TUPLE >= (2, 1, 0)`
-VERSION_TUPLE: tuple[int, int, int] = (2, 0, 0)
+VERSION_TUPLE: tuple[int, int, int] = (2, 1, 0)
 
 #: 本次版本的发布日期（与 CHANGELOG.md 条目、git tag 日期保持一致）
-RELEASE_DATE = "2026-10-25"
+RELEASE_DATE = "2026-10-30"
 
 #: 全部版本承载点（相对仓库根目录）—— 与 scripts/version/check-version.js 中的
 #: VERSION_SOURCES 必须保持同步。修改任一处时必须同时更新另一处。

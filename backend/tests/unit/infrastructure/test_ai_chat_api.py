@@ -96,14 +96,14 @@ class TestAIResponseCache:
         from app.services.ai.shared.response_cache import ai_cache
 
         # Clear cache first
-        ai_cache.clear()
+        await ai_cache.clear()
 
         # Set and get should work
         question = "What is the effect of ginseng?"
         answer = "Ginseng has immune-boosting properties."
 
-        ai_cache.set(question, answer)
-        result = ai_cache.get(question)
+        await ai_cache.set(question, answer)
+        result = await ai_cache.get(question)
 
         assert result == answer
 
@@ -112,8 +112,8 @@ class TestAIResponseCache:
         """Cache miss should return None"""
         from app.services.ai.shared.response_cache import ai_cache
 
-        ai_cache.clear()
-        result = ai_cache.get("nonexistent question")
+        await ai_cache.clear()
+        result = await ai_cache.get("nonexistent question")
         assert result is None
 
     @pytest.mark.asyncio
@@ -124,10 +124,10 @@ class TestAIResponseCache:
         question = "test question"
         answer = "test answer"
 
-        ai_cache.set(question, answer)
-        ai_cache.invalidate(question)
+        await ai_cache.set(question, answer)
+        await ai_cache.invalidate(question)
 
-        result = ai_cache.get(question)
+        result = await ai_cache.get(question)
         assert result is None
 
     @pytest.mark.asyncio
@@ -135,7 +135,7 @@ class TestAIResponseCache:
         """Same question should always generate same cache key"""
         from app.services.ai.shared.response_cache import ai_cache
 
-        ai_cache.clear()
+        await ai_cache.clear()
         question = "consistent test question"
 
         key1 = ai_cache._make_key(question)

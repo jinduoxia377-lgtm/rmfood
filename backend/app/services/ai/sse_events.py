@@ -7,25 +7,38 @@ SSE 事件标准协议 - 统一 AI 对话流式响应格式
 3. 思考步骤与内容分离，便于前端独立渲染
 4. 错误信息结构化，支持前端统一处理
 
-协议规范:
+协议规范（与 backend/app/api/ai_modules/chat.py event_stream() 实际发出的事件对齐）:
 ┌─────────────────────────────────────────────────────┐
-│ event: thinking_step                                │
-│ data: {"step": "问题理解", "content": "...", "status": "processing"} │
+│ event: meta                                        │
+│ data: {"model": "gpt-4o", "reason": "..."}          │
 │                                                       │
-│ event: content                                      │
-│ data: {"content": " streamed content..."}            │
+│ event: dialectics                                │
+│ data: {"engine": "...", "urgent": false, ...}       │
 │                                                       │
-│ event: formula                                      │
-│ data: {"name": "黄芪", "value": 15, "unit": "克"}     │
+│ event: progress                                   │
+│ data: {"stage": "generating", "percent": 60, "chars": 120} │
 │                                                       │
-│ event: done                                         │
-│ data: {}                                             │
+│ event: step                                       │
+│ data: {"step": "生成回答", "content": "...", "status": "complete"} │
+│                                                       │
+│ event: content                                    │
+│ data: {"content": " streamed content..."}          │
+│                                                       │
+│ event: ping                                        │
+│ data: {}                                           │
 │                                                       │
 │ event: error                                        │
 │ data: {"message": "错误描述"}                        │
+│                                                       │
+│ event: done                                         │
+│ data: {}                                             │
 └─────────────────────────────────────────────────────┘
 
-@version 1.0.0
+结束约定:
+- 成功路径以 `data: [DONE]` 收尾（不发送 event: done）
+- 错误路径以 `event: error` + `event: done` 收尾
+
+@version 1.1.0
 @created 2026-09-21
 """
 from __future__ import annotations
@@ -40,12 +53,26 @@ logger = logging.getLogger(__name__)
 
 
 class SSEEventType(str, Enum):
-    """SSE 事件类型枚举"""
-    THINKING_STEP = "thinking_step"
+    """SSE 事件类型枚举（与 chat.py /chat/stream 实际发出的事件对齐）
+
+    实际事件：meta / dialectics / step / progress / content / ping / error / done。
+
+    结束约定：
+    - 成功路径以 `data: [DONE]` 收尾（不发送 event: done）
+    - 错误路径以 `event: error` + `event: done` 收尾
+    """
+    # 实际事件（与 chat.py event_stream() 对齐）
+    META = "meta"
+    DIALECTICS = "dialectics"
+    STEP = "step"
+    PROGRESS = "progress"
     CONTENT = "content"
-    FORMULA = "formula"
-    DONE = "done"
+    PING = "ping"
     ERROR = "error"
+    DONE = "done"
+    # 兼容旧协议 / 其他端点的历史事件
+    THINKING_STEP = "thinking_step"
+    FORMULA = "formula"
 
 
 @dataclass

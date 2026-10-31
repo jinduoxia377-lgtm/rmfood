@@ -55,6 +55,7 @@ async def _get_user_llm(user_id: int):
 from ...services.ai.prompt_service import get_prompt_service
 from ...services.ai.shared.observability import ai_observability
 from ...services.ai.shared.response_cache import ai_cache
+from ...services.ai.safety.output_filter import get_output_checker
 
 
 def _repair_truncated_json(content: str) -> str:
@@ -203,6 +204,23 @@ def _format_sse_event(event_type: str, data: dict) -> str:
     return f"event: {event_type}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
+def _sanitize_stream_chunk(chunk: str) -> str:
+    """流式逐 chunk 轻量脱敏：复用 OutputSafetyChecker 的敏感模式（API Key/PII/邮箱等），
+    在 chunk 展示给用户之前将命中内容替换为 [REDACTED]。
+
+    说明：敏感串若被 LLM 拆分到多个 chunk（如手机号/API Key 跨 chunk 边界），
+    此处可能漏检；流式结束后的整段 check_output 会再次检查，并对高风险
+    finding（api_key/pii）回填脱敏全文兜底。
+    """
+    if not chunk:
+        return chunk
+    try:
+        return get_output_checker().check(chunk).sanitized_text or chunk
+    except Exception:
+        # 脱敏失败静默降级：不阻断流式输出
+        return chunk
+
+
 # ── LLM 超时配置（秒）──
 # 首包超时：连接建立后等待「首个内容分片」的最长时间，用于快速识别上游挂起（60s）；
 # 总超时：整个流式响应的总时长上限（含首包等待），必须 < 前端 STREAM_TIMEOUT_MS=240s。
@@ -212,8 +230,12 @@ def _format_sse_event(event_type: str, data: dict) -> str:
 # 首包超时保持 60s 不变（仅检测上游挂起）。
 # 非流式 /chat 使用与流式对齐的总超时，避免降级后反而更早失败。
 LLM_STREAM_FIRST_TOKEN_TIMEOUT = 60
-LLM_STREAM_TOTAL_TIMEOUT = 200
-LLM_NON_STREAM_TIMEOUT = 200
+# 2026-10-29：总超时 200s → 120s（用户等待过长，恢复快速失败）；
+# 保持不变式：后端总超时（120s）< 前端 STREAM_TIMEOUT_MS（180s）
+LLM_STREAM_TOTAL_TIMEOUT = 120
+LLM_NON_STREAM_TIMEOUT = 120
+# 流式空闲超时：读流过程中超过该时长无任何内容分片，视为上游挂起（半死连接），快速失败
+LLM_STREAM_IDLE_TIMEOUT = 30
 
 
 class ChatRequest(BaseModel):
@@ -242,6 +264,14 @@ class ChatRequest(BaseModel):
     model: str | None = Field(
         None,
         description="模型覆盖：指定 LLM 模型名称（如 deepseek-chat, gpt-4o-mini），优先级低于 bot_id",
+    )
+    # P2 统一会话 ID：前端本地会话标识（session-<ts>-<rand> 字符串）。
+    # 携带时，_persist_chat_record 按 (user_id, client_session_id) 查找/创建会话，
+    # 避免不同前端本地会话被服务器端合并；不携带时维持旧行为（合并到最新活跃会话）。
+    client_session_id: str | None = Field(
+        None,
+        max_length=128,
+        description="前端本地会话 ID（client_session_id），用于服务器端按前端会话隔离记录",
     )
 
 
@@ -286,6 +316,53 @@ def _sanitize_profile(raw: str | None) -> str:
     text = _re.sub(r"[ \t]{2,}", " ", text).strip()
     # 4. 兜底限长
     return text[:2000]
+
+
+# RAG 检索片段净化参数（与 _sanitize_profile 类似，防止 Prompt 注入）
+_RAG_CHUNK_MAX_CHARS = 500   # 单个 chunk 最大注入长度
+_RAG_MAX_CHUNKS = 5          # 最多注入的 chunk 数量
+
+
+def _sanitize_rag_chunks(rag_context: list[str] | None) -> list[str]:
+    """
+    净化前端传入的 RAG 检索片段，防止 Prompt 注入。
+
+    rag_context 来自用户上传文档的检索结果，属不可信输入。与 _sanitize_profile 一致：
+      1. 过滤控制字符
+      2. 替换明显的指令覆盖句式
+      3. 折叠换行与多余空白
+      4. 限制每个 chunk 长度（500 字符）与 chunk 数量（5 个）
+    """
+    if not rag_context:
+        return []
+
+    import re as _re
+
+    sanitized: list[str] = []
+    for chunk in rag_context:
+        if len(sanitized) >= _RAG_MAX_CHUNKS:
+            break
+        try:
+            text = str(chunk or "").strip()
+        except Exception:
+            continue
+        if not text:
+            continue
+        # 先限长，控制后续正则处理成本
+        text = text[:_RAG_CHUNK_MAX_CHARS]
+        # 1. 移除控制字符（保留常规空白）
+        text = _re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
+        # 2. 替换注入句式
+        for pattern in _PROFILE_INJECTION_PATTERNS:
+            text = _re.sub(pattern, "[已过滤]", text, flags=_re.IGNORECASE)
+        # 3. 折叠换行与多余空白
+        text = _re.sub(r"\s*\n\s*", "；", text)
+        text = _re.sub(r"[ \t]{2,}", " ", text).strip()
+        # 4. 折叠后再次限长
+        text = text[:_RAG_CHUNK_MAX_CHARS]
+        if text:
+            sanitized.append(text)
+    return sanitized
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -556,9 +633,11 @@ async def _build_system_prompt(
     knowledge_block = ""
 
     # 优先使用前端 RAG 结果（避免双重检索）
-    if rag_context and len(rag_context) > 0:
+    # P2：rag_context 属不可信输入，先净化（过滤控制字符/注入句式、限制 chunk 长度与数量）再注入。
+    sanitized_rag = _sanitize_rag_chunks(rag_context)
+    if sanitized_rag:
         # 合并前端 RAG 结果
-        rag_lines = [f"- {chunk}" for chunk in rag_context[:5]]
+        rag_lines = [f"- {chunk}" for chunk in sanitized_rag]
         knowledge_block = (
             "\n\n【用户知识库参考】（来自用户上传文档的检索结果，可作为配方设计的依据；"
             "若与平台知识库冲突，以药食同源安全规范为准）\n"
@@ -655,22 +734,46 @@ async def _persist_chat_record(
     answer: str,
     bot_id: int | None = None,
     title: str | None = None,
+    client_session_id: str | None = None,
 ) -> None:
-    """回写对话记录到数据库（会话 + 消息），按 bot_id 隔离持续会话。"""
+    """回写对话记录到数据库（会话 + 消息）。
+
+    - 携带 client_session_id：按 (user_id, client_session_id[, bot_id]) 查找/创建会话，
+      使服务器端会话与前端本地会话一一对应，避免多个本地会话被合并。
+    - 不携带 client_session_id：维持旧行为（按 bot_id 隔离，合并到最新活跃会话），
+      保证旧请求/旧客户端行为完全不变。
+    """
     try:
         import datetime as _dt
 
         from ...models.chat import ChatMessage, ChatSession
-        session_query = select(ChatSession).where(
-            ChatSession.user_id == user_id,
-            ChatSession.is_active.is_(True),
-        )
-        if bot_id:
-            session_query = session_query.where(ChatSession.bot_id == bot_id)
-        session_result = await db.execute(
-            session_query.order_by(ChatSession.updated_at.desc()).limit(1)
-        )
-        chat_session = session_result.scalar_one_or_none()
+
+        if client_session_id:
+            # P2 统一会话 ID：按前端本地会话标识精确查找/创建，避免合并
+            session_query = select(ChatSession).where(
+                ChatSession.user_id == user_id,
+                ChatSession.client_session_id == client_session_id,
+                ChatSession.is_active.is_(True),
+            )
+            if bot_id:
+                session_query = session_query.where(ChatSession.bot_id == bot_id)
+            session_result = await db.execute(
+                session_query.order_by(ChatSession.updated_at.desc()).limit(1)
+            )
+            chat_session = session_result.scalar_one_or_none()
+        else:
+            # 旧行为：无 client_session_id 时合并到用户最新活跃会话（按 bot_id 隔离）
+            session_query = select(ChatSession).where(
+                ChatSession.user_id == user_id,
+                ChatSession.is_active.is_(True),
+            )
+            if bot_id:
+                session_query = session_query.where(ChatSession.bot_id == bot_id)
+            session_result = await db.execute(
+                session_query.order_by(ChatSession.updated_at.desc()).limit(1)
+            )
+            chat_session = session_result.scalar_one_or_none()
+
         if not chat_session:
             chat_session = ChatSession(
                 user_id=user_id,
@@ -678,6 +781,7 @@ async def _persist_chat_record(
                 message_count=0,
                 is_active=True,
                 bot_id=bot_id,
+                client_session_id=client_session_id,
             )
             db.add(chat_session)
             await db.commit()
@@ -719,6 +823,21 @@ async def chat(
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
 
+    # ── Rate Limit 检查（租户级，与 /chat/stream 一致） ──
+    limiter = get_ai_rate_limiter()
+    allowed, error_msg = await limiter.check_request(tenant.org_id)
+    if not allowed:
+        logger.warning(f"[chat] 组织 {tenant.org_id} 触发限流: {error_msg}")
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail={
+                "error": "RATE_LIMIT_EXCEEDED",
+                "message": error_msg,
+                "retry_after": 60,
+            },
+            headers={"Retry-After": "60"},
+        )
+
     import datetime as dt
 
     try:
@@ -748,15 +867,29 @@ async def chat(
                 sort_keys=True,
             ).encode()
         ).hexdigest()[:16] if req.history else "0"
-        cache_key = (
-            f"user:{current_user.id}:q:{question_hash}:ctx:{history_hash}{bot_cache_tag}{scenario_cache_tag}"
-            if user_llm is not None
-            else f"org:{tenant.org_id or 1}:q:{question_hash}:ctx:{history_hash}{bot_cache_tag}{scenario_cache_tag}"
+        # 画像/知识库上下文纳入缓存键：用户修改健康画像（如新增过敏原）或 RAG
+        # 知识库更新后，若不入键会在 TTL 内命中旧答案，存在过敏原/禁忌安全风险。
+        # 长文本/列表一律哈希后入键，避免缓存键长度失控。
+        profile_raw = getattr(req, "user_profile_context", None)
+        profile_hash = (
+            hashlib.md5(str(profile_raw).encode()).hexdigest()[:16] if profile_raw else "0"
         )
-        cached = ai_cache.get(cache_key)
+        rag_raw = getattr(req, "rag_context", None)
+        rag_hash = (
+            hashlib.md5(json.dumps(rag_raw, sort_keys=True).encode()).hexdigest()[:16]
+            if rag_raw
+            else "0"
+        )
+        cache_key = (
+            f"user:{current_user.id}:q:{question_hash}:ctx:{history_hash}:prof:{profile_hash}:rag:{rag_hash}{bot_cache_tag}{scenario_cache_tag}"
+            if user_llm is not None
+            else f"org:{tenant.org_id or 1}:q:{question_hash}:ctx:{history_hash}:prof:{profile_hash}:rag:{rag_hash}{bot_cache_tag}{scenario_cache_tag}"
+        )
+        cached = await ai_cache.get(cache_key)
         if cached:
             logger.info("缓存命中: %s", cache_key[:50])
-            ai_observability.track_call("llm", (time.time() - start_time) * 1000, error=False)
+            # 缓存命中单独打点（不污染 LLM 健康度统计；track_call 对非 llm/rag/safety 名称仅记录延迟）
+            ai_observability.track_call("cache", (time.time() - start_time) * 1000, error=False)
             return {
                 "content": cached,
                 "role": "assistant",
@@ -877,6 +1010,7 @@ async def chat(
         await _persist_chat_record(
             db, current_user.id, req.question, answer,
             bot_id=getattr(req, "bot_id", None), title=req.question[:50],
+            client_session_id=getattr(req, "client_session_id", None),
         )
 
         # 构建返回结果（匹配前端 AIResponse 接口）
@@ -894,7 +1028,7 @@ async def chat(
         }
 
         # 写入缓存 + 记录指标（在 return 之前）
-        ai_cache.set(cache_key, answer)
+        await ai_cache.set(cache_key, answer)
         ai_observability.track_call("llm", (time.time() - start_time) * 1000, error=False)
         return result
     except RuntimeError as e:
@@ -1001,6 +1135,10 @@ async def chat_stream(
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
 
+    # SSE 连接槽占用标志：register 成功后置 True，任何异常路径据此注销，
+    # 防止 5 次异常后 org 连接槽泄漏导致永久 429。
+    sse_conn_registered = False
+
     try:
         logger.info(f"[chat_stream] 收到流式对话请求, question={req.question[:50]}..., history_count={len(req.history) if req.history else 0}")
 
@@ -1033,6 +1171,7 @@ async def chat_stream(
                     "retry_after": 30,
                 },
             )
+        sse_conn_registered = True
 
         # 如果前端传递了 API Key，拒绝并记录安全事件
         if hasattr(req, 'api_key') and req.api_key:
@@ -1066,9 +1205,16 @@ async def chat_stream(
                 # 明示降级来源：此前此处静默替换为规则引擎，用户完全无感知，
                 # 是流式模式的「冒充专家」缺口。现显式标注 model 供前端展示徽标。
                 yield _format_sse_event("meta", {"model": "rule-engine-fallback", "reason": "LLM 服务未配置或不可用"})
+                # 规则引擎降级也发送 progress 事件，保持前端进度条阶段文案一致
+                yield _format_sse_event("progress", {"stage": "preparing", "percent": 0})
+                yield _format_sse_event("progress", {"stage": "rag_retrieving", "percent": 10})
+                yield _format_sse_event("progress", {"stage": "llm_start", "percent": 45})
                 async for chunk in thinking_engine.generate_thinking_stream(req.question):
                     yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
+                yield _format_sse_event("progress", {"stage": "done", "percent": 100})
                 yield "data: [DONE]\n\n"
+            # 降级流同样占用 SSE 连接槽：此路径直接返回，需显式登记注销，避免连接泄漏
+            background_tasks.add_task(limiter.unregister_sse_connection, tenant.org_id, conn_id)
             return StreamingResponse(thinking_stream(), media_type="text/event-stream")
 
         scenario_mode = getattr(req, "scenario_mode", "formula_design") or "formula_design"
@@ -1111,6 +1257,8 @@ async def chat_stream(
                 yield _format_sse_event("meta", {
                     "model": model_override or llm.config.model or llm.config.provider,
                 })
+                # 实时进度：请求开始处理
+                yield _format_sse_event("progress", {"stage": "preparing", "percent": 0})
                 # ── P2-3 修复：辨证引擎与 LLM 流并行启动，节省端到端延迟 ──
                 # 架构：dialectics 作为后台 task 与 LLM 流同时运行；
                 #      event_stream 先 yield 辨证结果（30s 超时），再处理 LLM chunks。
@@ -1134,7 +1282,7 @@ async def chat_stream(
                 llm_queue: asyncio.Queue = asyncio.Queue()
 
                 async def _consume_llm_stream():
-                    """后台消费 LLM 流：首包超时（60s）+ 总超时（150s，含首包）保护。"""
+                    """后台消费 LLM 流：首包超时（60s）+ 总超时（120s，含首包）+ 空闲超时（30s 无数据分片即失败）。"""
                     start_ts = time.monotonic()
                     stream = None
                     try:
@@ -1171,7 +1319,26 @@ async def chat_stream(
                         if remaining <= 0:
                             raise asyncio.TimeoutError
                         async with asyncio.timeout(remaining):
-                            async for chunk in stream:
+                            # 空闲超时：30s 无任何内容分片 → 上游挂起（半死连接），快速失败。
+                            # 用 wait_for 包裹 anext，避免"连接不断但无输出"拖满总超时。
+                            while True:
+                                try:
+                                    chunk = await asyncio.wait_for(anext(stream), timeout=LLM_STREAM_IDLE_TIMEOUT)
+                                except StopAsyncIteration:
+                                    break
+                                except asyncio.TimeoutError:
+                                    idle_elapsed = time.monotonic() - start_ts
+                                    logger.error(
+                                        f"[chat_stream] LLM 流式空闲超时（{LLM_STREAM_IDLE_TIMEOUT}s 无数据分片）: "
+                                        f"elapsed={idle_elapsed:.1f}s, url={llm.config.base_url}/chat/completions, "
+                                        f"model={model_override or llm.config.model}, "
+                                        f"provider={llm.config.provider}, user_id={current_user.id}"
+                                    )
+                                    await llm_queue.put((
+                                        "error",
+                                        f"LLM 流式空闲超时（{LLM_STREAM_IDLE_TIMEOUT}s 无数据），请重试或切换模型",
+                                    ))
+                                    return
                                 if chunk:
                                     await llm_queue.put(("chunk", chunk))
                     except asyncio.TimeoutError:
@@ -1216,12 +1383,20 @@ async def chat_stream(
                     try:
                         dialectics = await asyncio.wait_for(asyncio.shield(dialectics_task), timeout=30)
                         yield _format_sse_event("dialectics", dialectics)
+                        # 实时进度：辨证分析完成
+                        yield _format_sse_event("progress", {"stage": "dialectics", "percent": 30})
                     except (asyncio.TimeoutError, Exception) as d_exc:
                         logger.warning(f"[chat_stream] 辨证分析跳过（超时或失败）: {d_exc}")
                         if dialectics_task and not dialectics_task.done():
                             dialectics_task.cancel()
 
                 try:
+                    # 实时进度：开始调用 LLM 生成回答
+                    yield _format_sse_event("progress", {"stage": "llm_start", "percent": 45})
+                    first_chunk_emitted = False
+                    stream_error_emitted = False
+                    generated_chars = 0
+                    last_progress_chars = 0
                     while True:
                         msg_type, msg_data = await llm_queue.get()
                         if msg_type == "eof":
@@ -1229,15 +1404,51 @@ async def chat_stream(
                         if msg_type == "ping":
                             yield _format_sse_event("ping", {})
                         elif msg_type == "chunk":
-                            full_answer += msg_data
-                            yield _format_sse_event("content", {"content": msg_data})
+                            # P1: 流式输出安全过滤——逐 chunk 轻量脱敏（API Key/PII/邮箱等），
+                            # 避免 LLM 原始 chunk 直接透传给用户终端。
+                            sanitized_chunk = _sanitize_stream_chunk(msg_data)
+                            full_answer += sanitized_chunk
+                            generated_chars += len(sanitized_chunk)
+                            yield _format_sse_event("content", {"content": sanitized_chunk})
+                            # 实时进度：首包到达锚定 60%，之后每累计 200 字符更新一次（60→85 反映生成量）
+                            if not first_chunk_emitted:
+                                first_chunk_emitted = True
+                                yield _format_sse_event("progress", {"stage": "generating", "percent": 60, "chars": generated_chars})
+                            elif generated_chars - last_progress_chars >= 200:
+                                last_progress_chars = generated_chars
+                                pct = min(85, 60 + generated_chars // 50)
+                                yield _format_sse_event("progress", {"stage": "generating", "percent": pct, "chars": generated_chars})
                         elif msg_type == "error":
+                            stream_error_emitted = True
                             yield _format_sse_event("error", {"message": msg_data, "error": "STREAM_ERROR"})
                             break
                 finally:
                     _hb_task.cancel()
                     if not _llm_task.done():
                         _llm_task.cancel()
+
+                # P2: 流式错误（STREAM_ERROR）已发送 → 直接 done 结束，不再走后续成功路径，
+                # 避免"错误后仍发 progress/step/done 成功事件"导致协议自相矛盾。
+                if stream_error_emitted:
+                    yield _format_sse_event("done", {})
+                    return
+
+                # P2: 流式 LLM 空响应不得按成功处理。上游返回空流（如 StopAsyncIteration）
+                # 或全程无内容分片时，full_answer 为空 → 发送 error + done 并直接结束，
+                # 跳过后续 progress/step/done 成功事件；错误路径本身以 error + done 收尾
+                # （与下方 RuntimeError/Exception 分支的结束方式一致）。
+                if not full_answer:
+                    if not stream_error_emitted:
+                        logger.warning(
+                            "[chat_stream] LLM 返回空响应，按错误处理: model=%s",
+                            model_override or llm.config.model,
+                        )
+                        yield _format_sse_event("error", {
+                            "error": "EMPTY_RESPONSE",
+                            "message": "LLM 返回空响应",
+                        })
+                    yield _format_sse_event("done", {})
+                    return
 
                 # 输出完整性修复：LLM 提前停止导致 JSON 代码块未闭合时，
                 # 自动补全后把差异补发到前端（用户无需刷新即可看到完整配方卡），
@@ -1247,8 +1458,12 @@ async def chat_stream(
                 if len(full_answer) > len(raw_answer):
                     yield _format_sse_event("content", {"content": full_answer[len(raw_answer):]})
 
-                # P0-2: 流式结束后对完整内容做输出安全检查，不安全的回复追加提示
+                # P0-2/P1: 流式结束后对完整内容做输出安全检查。
+                # 非流式 /chat 会用 sanitized_text 整体替换；流式已展示内容无法撤回，
+                # 因此这里（1）对高风险 API Key / PII 回填脱敏后的完整内容，
+                # （2）将持久化文本替换为脱敏版本，与 /chat 行为保持一致。
                 safety_patch = ""
+                stream_sanitized = False
                 try:
                     from ...services.ai.safety import check_output
 
@@ -1261,6 +1476,23 @@ async def chat_stream(
                         safety_patch += (
                             "\n\n> ⚠️ **内容安全提示**：本回复已通过系统安全检查并标记部分敏感内容，请谨慎参考。"
                         )
+                        sanitized_text = output_result.sanitized_text or full_answer
+                        if sanitized_text != full_answer:
+                            # 高风险敏感信息（API Key / PII）：回填脱敏全文，供用户看到修正后的版本。
+                            # 逐 chunk 脱敏可能因敏感串跨 chunk 边界漏检（如手机号/API Key 被拆分）。
+                            high_risk = any(
+                                f.finding_type in ("api_key", "pii", "phone", "email", "id_card")
+                                for f in output_result.findings
+                            )
+                            if high_risk:
+                                stream_sanitized = True
+                                safety_patch += (
+                                    "\n\n> 🔒 **敏感信息已脱敏**：检测到回复中包含 API Key / 个人信息等敏感内容，"
+                                    "以下为脱敏后的完整回复（已替换原文中的敏感内容）：\n\n"
+                                    f"{sanitized_text}"
+                                )
+                            # 与非流式 /chat 一致：持久化/后续处理使用脱敏后的完整内容
+                            full_answer = sanitized_text
                 except Exception as exc:
                     logger.warning("[chat_stream] 输出安全检查失败（忽略）: %s", exc)
 
@@ -1274,19 +1506,29 @@ async def chat_stream(
 
                 if safety_patch:
                     yield _format_sse_event("content", {"content": safety_patch})
+                # 实时进度：安全校验完成
+                yield _format_sse_event("progress", {"stage": "safety_check", "percent": 85})
 
                 # 流式完成后追加元数据步骤，供前端 ReasoningRow 显示"生成回答"状态
-                yield _format_sse_event("step", {
+                yield _format_sse_event("progress", {"stage": "finalizing", "percent": 90})
+                _step_payload = {
                     "step": "生成回答",
                     "content": f"完成 ({len(full_answer)} 字符)",
                     "status": "complete",
-                })
+                }
+                if stream_sanitized:
+                    _step_payload["content"] += "，已脱敏"
+                    _step_payload["sanitized"] = True
+                yield _format_sse_event("step", _step_payload)
+                # 实时进度：完成
+                yield _format_sse_event("progress", {"stage": "done", "percent": 100, "chars": len(full_answer)})
                 yield "data: [DONE]\n\n"
                 # 流式对话写回会话历史（含 Bot 持续会话）
                 try:
                     await _persist_chat_record(
                         db, current_user.id, req.question, full_answer,
                         bot_id=getattr(req, "bot_id", None), title=req.question[:50],
+                        client_session_id=getattr(req, "client_session_id", None),
                     )
                 except Exception as persist_err:
                     logger.warning(f"流式对话记录回写失败（非致命）: {persist_err}")
@@ -1347,9 +1589,16 @@ async def chat_stream(
         )
 
     except HTTPException:
+        # SSE 连接槽已占用时，任何 HTTP 异常路径（如 _resolve_bot_chat_context 抛
+        # 404/403）都必须先注销连接再重抛，否则连接槽泄漏会导致 org 连接上限
+        # （5 个）耗尽后永久 429。
+        if sse_conn_registered:
+            await limiter.unregister_sse_connection(tenant.org_id, conn_id)
         raise  # HTTP 异常已由具体 handler 处理，直接重抛
     except Exception as e:
         # 捕获 StreamingResponse 创建之前的所有异常
+        if sse_conn_registered:
+            await limiter.unregister_sse_connection(tenant.org_id, conn_id)
         logger.error("[chat_stream] 端点级异常（StreamingResponse 创建之前）: %s", e, exc_info=True)
         raise HTTPException(
             status_code=500,
@@ -1367,7 +1616,8 @@ async def chat_stream(
 
 class FollowUpSuggestionsRequest(BaseModel):
     """根据对话内容动态生成追问问题的请求"""
-    question: str = Field(..., min_length=1, max_length=8000, description="用户最近的一个问题")
+    # 允许 question 为空：极端场景（消息列表异常）下前端可能取不到最后一条 user 消息；空时后端从 history 取
+    question: str = Field("", max_length=8000, description="用户最近的一个问题（可空，空时尝试从 history 取最后一条 user 消息）")
     # 允许 answer 为空：AI 可能尚未产生回复（前端在 AI 回复完成前不应调用，但后端需防御空值）
     answer: str = Field("", max_length=16000, description="AI 最后一条回复内容（可空，空时尝试从 history 取最后一条 assistant 回复）")
     history: list[dict[str, Any]] | None = Field(None, description="最近对话历史（可选）")
@@ -1419,6 +1669,21 @@ async def follow_up_suggestions(
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
 
+    # ── Rate Limit 检查（租户级，与 /chat/stream 一致） ──
+    limiter = get_ai_rate_limiter()
+    allowed, error_msg = await limiter.check_request(tenant.org_id)
+    if not allowed:
+        logger.warning(f"[follow-up-suggestions] 组织 {tenant.org_id} 触发限流: {error_msg}")
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail={
+                "error": "RATE_LIMIT_EXCEEDED",
+                "message": error_msg,
+                "retry_after": 60,
+            },
+            headers={"Retry-After": "60"},
+        )
+
     # 解析用户实际可用的 LLM 服务：优先用户级密钥，未配置则回退到全局 llm_service
     user_llm = await _get_user_llm(current_user.id)
     llm = user_llm if user_llm is not None else _get_llm_service()
@@ -1432,6 +1697,23 @@ async def follow_up_suggestions(
         }
 
     try:
+        # 防御：question 为空时尝试从 history 取最后一条 user 消息；仍为空则返回 fallback
+        question = req.question.strip()
+        if not question and req.history:
+            for h in reversed(req.history):
+                if str(h.get("role") or "") == "user":
+                    candidate = str(h.get("content") or "").strip()
+                    if candidate:
+                        question = candidate
+                        break
+        if not question:
+            logger.info("[follow-up-suggestions] question 为空（无用户消息），返回固定候选（fallback）")
+            return {
+                "success": True,
+                "source": "fallback",
+                "suggestions": _FALLBACK_FOLLOW_UP_SUGGESTIONS[:req.max_suggestions],
+            }
+
         # 防御：answer 为空时尝试从 history 取最后一条 assistant 回复；仍为空则返回 fallback
         answer = req.answer.strip()
         if not answer and req.history:
@@ -1460,7 +1742,7 @@ async def follow_up_suggestions(
                 history_text = "\n".join(lines) + "\n"
 
         user_content = (
-            f"【用户问题】\n{req.question}\n\n"
+            f"【用户问题】\n{question}\n\n"
             f"【AI 回复】\n{answer}\n\n"
         )
         if history_text:

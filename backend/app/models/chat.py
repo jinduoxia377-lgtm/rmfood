@@ -23,6 +23,10 @@ class ChatSession(Base):
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     # DS Bot 移植：单 Bot 对话复用会话表，bot_id 为空表示普通 AI 会话
     bot_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("ai_bots.id", ondelete="SET NULL"), nullable=True, index=True)
+    # P2 统一会话 ID：前端本地会话标识（session-<ts>-<rand> 字符串）。
+    # 无 bot_id 的普通 AI 对话按 (user_id, client_session_id) 查找/创建会话，
+    # 避免多个前端本地会话被合并到同一个后端长会话。旧请求（无此字段）行为不变。
+    client_session_id: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     message_count: Mapped[int] = mapped_column(Integer, default=0)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -39,6 +43,7 @@ class ChatSession(Base):
         return {
             "id": self.id,
             "user_id": self.user_id,
+            "client_session_id": self.client_session_id,
             "title": self.title,
             "message_count": self.message_count,
             "is_active": self.is_active,

@@ -14,19 +14,22 @@ AI 核心算法单元测试套件
 
 3. HerbKnowledgePort 适配器
    - 测试 InMemoryHerbKnowledgeAdapter 的完整接口
-   - 测试 BuiltinHerbKnowledgeAdapter 的兼容性
+   - 测试 HerbProfile 数据模型边界
 
 测试原则:
 - 全部单元测试无需数据库（使用内存适配器）
-- 使用确定性随机种子（random.seed / numpy.random.seed）
+- 使用确定性随机种子（random.seed）
 - 数值精度验证使用 pytest.approx
+
+P1 修复:
+- 修正导入路径：app.domain.herb_ports（原 ports.py 已随 DDD 死代码删除）、
+  app.services.ai.algorithms.*（模块迁移后的实际路径）。
+- GeneticFormulaOptimizer 的 optimize() 为同步方法，评分使用注入的内存药材字典。
 """
 
-import math
 import random
 import asyncio
 import pytest
-from typing import Dict, List
 
 import sys
 import os
@@ -41,14 +44,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 def make_test_herb_profiles():
     """构建测试用的 HerbProfile 集合（确定性数据）"""
-    from app.domain.ports import HerbProfile
+    from app.domain.herb_ports import HerbProfile
 
     return [
         HerbProfile(
             herb_id="hq",
             name_cn="黄芪",
             dosage_min=3.0, dosage_max=30.0, dosage_step=1.0,
-            efficacy_scores={"免疫调节": 0.92, "抗氧化": 0.78, "抗疲劳": 0.85},
+            efficacy_scores={"免疫调节": 0.92, "抗氧化": 0.78, "抗疲劳": 0.85, "补气": 0.90},
             safety_index=0.95,
             cost_per_gram=0.08,
             synergy_partners=["ds", "gz"],
@@ -94,6 +97,37 @@ def make_test_herb_profiles():
             synergy_partners=[],
             antagonistic_pairs=["hq", "ds"],
         ),
+    ]
+
+
+def _make_kb():
+    """构建注入优化器的内存 HerbKnowledgeService（无需数据库）"""
+    from app.services.ai.algorithms.herb_knowledge_service import HerbKnowledgeService
+    from app.infrastructure.herb_knowledge_adapters import InMemoryHerbKnowledgeAdapter
+
+    kb = HerbKnowledgeService(InMemoryHerbKnowledgeAdapter(herbs=make_test_herb_profiles()))
+    asyncio.run(kb.load_herbs())
+    return kb
+
+
+def _make_extra_profiles():
+    """构造 20 味附加测试药材画像（用于凑足 >20 的完整性检查）"""
+    from app.domain.herb_ports import HerbProfile
+
+    extra_ids = [
+        "hqg", "bq", "fp", "jgh", "cs", "lk", "mld", "cx", "yq", "cyh",
+        "dcx", "sj", "gh", "sz", "dsz", "sx", "jq", "lq", "bo", "gy",
+    ]
+    return [
+        HerbProfile(
+            herb_id=hid,
+            name_cn=f"测试药材{i + 1}",
+            dosage_min=3.0, dosage_max=15.0, dosage_step=1.0,
+            efficacy_scores={"免疫调节": 0.70, "抗氧化": 0.60},
+            safety_index=0.90,
+            cost_per_gram=0.10,
+        )
+        for i, hid in enumerate(extra_ids)
     ]
 
 
@@ -162,7 +196,7 @@ class TestInMemoryHerbKnowledgeAdapter:
         assert "hq" in antagonistic
 
     def test_add_herb_dynamically(self):
-        from app.domain.ports import HerbProfile
+        from app.domain.herb_ports import HerbProfile
         new_herb = HerbProfile(
             herb_id="jgh",
             name_cn="菊花",
@@ -183,12 +217,10 @@ class TestIndividualFitness:
     """遗传算法个体适应度评估的正确性测试"""
 
     def setup_method(self):
-        from app.services.ai.genetic_formula_optimizer import (
-            Individual,
-            _BUILTIN_HERBS,
-        )
+        from app.services.ai.algorithms.genetic_formula_optimizer import Individual
         self.Individual = Individual
-        self.herbs = _BUILTIN_HERBS
+        # P1 之后 evaluate 依赖注入的药材字典：这里用测试药材画像构造字典
+        self.herbs = {h.herb_id: h for h in make_test_herb_profiles()}
 
     def test_empty_genes_zero_fitness(self):
         ind = self.Individual({})
@@ -218,16 +250,21 @@ class TestIndividualFitness:
             "包含禁忌配伍的配方安全评分应低于正常配方"
 
     def test_fitness_components_sum_correctly(self):
-        """适应度综合评分应等于各分量的加权和"""
+        """适应度综合评分应等于各分量的加权和（含结构合规因子）"""
         ind = self.Individual({"hq": 10.0, "ds": 8.0, "gz": 6.0, "gq": 3.0})
         ind.evaluate(["免疫调节", "抗氧化"], herb_dict=self.herbs)
 
+        # 当前 Individual.DEFAULT_OBJECTIVE_WEIGHTS:
+        #   efficacy0.30 / safety0.25 / taste0.10 / cost0.15 / synergy0.10 / stability0.10
+        # fitness = 加权和 * (0.5 + 0.5*structural_compliance)，默认 structural_compliance=0.7
         expected = (
-            ind.efficacy * 0.40 +
+            ind.efficacy * 0.30 +
             ind.safety * 0.25 +
-            ind.taste * 0.15 +
-            ind.cost * 0.20
-        )
+            ind.taste * 0.10 +
+            ind.cost * 0.15 +
+            ind.synergy * 0.10 +
+            ind.stability * 0.10
+        ) * (0.5 + 0.5 * ind.structural_compliance)
         assert ind.fitness == pytest.approx(expected, abs=1e-6), \
             f"适应度应等于加权分量之和"
 
@@ -242,7 +279,7 @@ class TestIndividualFitness:
 
     def test_reproducible_with_same_seed(self):
         """使用相同随机种子，遗传算法结果应可复现"""
-        from app.services.ai.genetic_formula_optimizer import (
+        from app.services.ai.algorithms.genetic_formula_optimizer import (
             GeneticFormulaOptimizer, GAConfig
         )
         config = GAConfig(
@@ -251,15 +288,15 @@ class TestIndividualFitness:
             target_effects=["免疫调节"],
         )
 
-        async def run_once(seed: int):
+        def run_once(seed: int):
             random.seed(seed)
-            opt = GeneticFormulaOptimizer(config=config)
-            results, history = await opt.optimize(["免疫调节"])
+            opt = GeneticFormulaOptimizer(config=config, herb_knowledge=_make_kb())
+            results, history = opt.optimize(["免疫调节"])
             return results[0].fitness if results else 0.0
 
         seed = 42
-        fitness1 = asyncio.run(run_once(seed))
-        fitness2 = asyncio.run(run_once(seed))
+        fitness1 = run_once(seed)
+        fitness2 = run_once(seed)
         assert fitness1 == pytest.approx(fitness2, abs=1e-8), \
             "相同随机种子下遗传算法结果应完全可复现"
 
@@ -271,30 +308,27 @@ class TestIndividualFitness:
 class TestGeneticFormulaOptimizer:
     """遗传算法优化器的集成测试（使用内存知识库）"""
 
-    @pytest.mark.asyncio
-    async def test_optimize_returns_results(self):
-        from app.services.ai.genetic_formula_optimizer import (
+    def test_optimize_returns_results(self):
+        from app.services.ai.algorithms.genetic_formula_optimizer import (
             GeneticFormulaOptimizer, GAConfig
         )
-        from app.infrastructure.herb_knowledge_adapters import InMemoryHerbKnowledgeAdapter
 
         config = GAConfig(population_size=20, generations=5)
-        kb = InMemoryHerbKnowledgeAdapter(herbs=make_test_herb_profiles())
-        opt = GeneticFormulaOptimizer(config=config, herb_knowledge=kb)
+        opt = GeneticFormulaOptimizer(config=config, herb_knowledge=_make_kb())
 
-        results, history = await opt.optimize(["免疫调节"])
+        results, history = opt.optimize(["免疫调节"])
 
         assert len(results) > 0, "优化结果不能为空"
         assert len(history) == 5, f"进化历史应有 5 代，实际: {len(history)}"
 
-    @pytest.mark.asyncio
-    async def test_optimize_with_kb_finds_more_herbs(self):
+    def test_optimize_with_kb_finds_more_herbs(self):
         """注入知识库后，优化器应能访问所有注入的药材"""
-        from app.services.ai.genetic_formula_optimizer import (
+        from app.services.ai.algorithms.genetic_formula_optimizer import (
             GeneticFormulaOptimizer, GAConfig
         )
+        from app.services.ai.algorithms.herb_knowledge_service import HerbKnowledgeService
         from app.infrastructure.herb_knowledge_adapters import InMemoryHerbKnowledgeAdapter
-        from app.domain.ports import HerbProfile
+        from app.domain.herb_ports import HerbProfile
 
         # 创建包含额外"新药材"的知识库
         herbs = make_test_herb_profiles() + [
@@ -307,41 +341,40 @@ class TestGeneticFormulaOptimizer:
                 cost_per_gram=0.01,
             )
         ]
-        kb = InMemoryHerbKnowledgeAdapter(herbs=herbs)
+        kb = HerbKnowledgeService(InMemoryHerbKnowledgeAdapter(herbs=herbs))
+        asyncio.run(kb.load_herbs())
         opt = GeneticFormulaOptimizer(
             config=GAConfig(population_size=20, generations=3),
             herb_knowledge=kb,
         )
 
-        await opt._ensure_herbs_loaded()
+        opt._try_load_herb_knowledge()
         assert "test_new_herb" in opt._herbs, \
             "注入知识库后应包含新增药材"
 
-    @pytest.mark.asyncio
-    async def test_optimize_results_fitness_ordered(self):
+    def test_optimize_results_fitness_ordered(self):
         """优化结果应按适应度降序排列"""
-        from app.services.ai.genetic_formula_optimizer import (
+        from app.services.ai.algorithms.genetic_formula_optimizer import (
             GeneticFormulaOptimizer, GAConfig
         )
         config = GAConfig(population_size=20, generations=5)
-        opt = GeneticFormulaOptimizer(config=config)
-        results, _ = await opt.optimize(["免疫调节"])
+        opt = GeneticFormulaOptimizer(config=config, herb_knowledge=_make_kb())
+        results, _ = opt.optimize(["免疫调节"])
 
         if len(results) >= 2:
             fitnesses = [r.fitness for r in results]
             assert fitnesses == sorted(fitnesses, reverse=True), \
                 "结果应按适应度降序排列"
 
-    @pytest.mark.asyncio
-    async def test_exclude_herbs_respected(self):
+    def test_exclude_herbs_respected(self):
         """exclude_herbs 参数应排除指定药材"""
-        from app.services.ai.genetic_formula_optimizer import (
+        from app.services.ai.algorithms.genetic_formula_optimizer import (
             GeneticFormulaOptimizer, GAConfig
         )
         config = GAConfig(population_size=20, generations=3)
-        opt = GeneticFormulaOptimizer(config=config)
+        opt = GeneticFormulaOptimizer(config=config, herb_knowledge=_make_kb())
         # 排除危险附子
-        results, _ = await opt.optimize(["免疫调节"], exclude_herbs={"fz"})
+        results, _ = opt.optimize(["免疫调节"], exclude_herbs={"fz"})
 
         for ind in results:
             assert "fz" not in ind.genes, "排除的药材不应出现在优化结果中"
@@ -355,7 +388,7 @@ class TestBayesianFormulaOptimizer:
     """贝叶斯优化器配置校验和知识库注入测试"""
 
     def test_config_defaults(self):
-        from app.services.ai.bayesian_formula_optimizer import BayesianConfig
+        from app.services.ai.algorithms.bayesian_formula_optimizer import BayesianConfig
         cfg = BayesianConfig()
         assert cfg.n_initial_random == 10
         assert cfg.n_optimization_rounds == 30
@@ -364,9 +397,10 @@ class TestBayesianFormulaOptimizer:
     @pytest.mark.asyncio
     async def test_optimizer_with_kb_loads_herbs(self):
         """验证注入 HerbKnowledgePort 后，贝叶斯优化器能加载药材"""
-        from app.services.ai.bayesian_formula_optimizer import (
+        from app.services.ai.algorithms.bayesian_formula_optimizer import (
             BayesianFormulaOptimizer, BayesianConfig
         )
+        from app.services.ai.algorithms.herb_knowledge_service import HerbKnowledgeService
         from app.infrastructure.herb_knowledge_adapters import InMemoryHerbKnowledgeAdapter
 
         config = BayesianConfig(
@@ -374,18 +408,22 @@ class TestBayesianFormulaOptimizer:
             n_optimization_rounds=2,
             n_candidates=2,
         )
-        kb = InMemoryHerbKnowledgeAdapter(herbs=make_test_herb_profiles())
+        # 在异步上下文中直接 await 加载，避免 asyncio.run 嵌套
+        kb = HerbKnowledgeService(InMemoryHerbKnowledgeAdapter(
+            herbs=make_test_herb_profiles() + _make_extra_profiles(),
+        ))
+        await kb.load_herbs()
         opt = BayesianFormulaOptimizer(config=config, herb_knowledge=kb)
 
-        # 加载后应有注入的5种药材
+        # 加载后应至少有 20 种药材（满足数据库完整性检查）
         await opt._ensure_herbs_loaded(["免疫调节"])
-        assert len(opt._herbs) >= 5, \
-            f"加载后应至少有 5 种药材，实际: {len(opt._herbs)}"
+        assert len(opt._herbs) >= 20, \
+            f"加载后应至少有 20 种药材，实际: {len(opt._herbs)}"
 
     @pytest.mark.asyncio
     async def test_generate_returns_candidates(self):
         """验证 generate 方法返回候选方案"""
-        from app.services.ai.bayesian_formula_optimizer import (
+        from app.services.ai.algorithms.bayesian_formula_optimizer import (
             BayesianFormulaOptimizer, BayesianConfig
         )
         config = BayesianConfig(
@@ -411,7 +449,7 @@ class TestHerbProfile:
     """HerbProfile 数据模型的边界情况测试"""
 
     def test_default_values(self):
-        from app.domain.ports import HerbProfile
+        from app.domain.herb_ports import HerbProfile
         herb = HerbProfile(herb_id="test", name_cn="测试药材")
         assert herb.dosage_min == 0.0
         assert herb.dosage_max == 30.0
@@ -421,7 +459,7 @@ class TestHerbProfile:
         assert herb.antagonistic_pairs == []
 
     def test_custom_values(self):
-        from app.domain.ports import HerbProfile
+        from app.domain.herb_ports import HerbProfile
         herb = HerbProfile(
             herb_id="custom",
             name_cn="自定义药材",

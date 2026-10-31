@@ -1,11 +1,15 @@
 """Models and tools module - /taste-predict, /stability, /peptide-score, /models/status, /models/config, /models/list, /stats/summary"""
-from typing import Any, Optional
+import ipaddress
+import socket
+import urllib.parse
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...core.performance.resilience import AIRateLimiter, AIRateLimitConfig
 from ...services.ai.shared.observability import ai_observability
 from ...services.ai.shared.response_cache import ai_cache
 from . import (
@@ -38,6 +42,125 @@ class LLMModelsListRequest(BaseModel):
     timeout_ms: int = Field(8000, ge=2000, le=20000, description="请求超时（毫秒）")
 
 
+# ════════════════════════════════════════════════════════════════
+# 认证 SSRF 防护（P2 安全修复）
+#
+# 用户提交的 base_url 会被后端代理请求（GET {base_url}/models、
+# POST {base_url}/chat/completions）。若不校验，认证用户可将其指向
+# 内网/云元数据地址进行 SSRF 探测。校验策略：
+# - 协议白名单：仅 http/https，拒绝 file://、gopher:// 等；
+# - 解析主机名，解析失败或任一解析结果落入内网/保留网段则拒绝
+#   （127.0.0.0/8、10.0.0.0/8、172.16.0.0/12、192.168.0.0/16、
+#    169.254.169.254 云元数据、0.0.0.0、::1、localhost 等）。
+# 仅校验用户提交的 base_url；服务端配置/提供商默认值属于可信配置，
+# 不校验，避免破坏自建网关等合法部署。
+# ════════════════════════════════════════════════════════════════
+_ALLOWED_URL_SCHEMES = ("http", "https")
+
+
+def _is_forbidden_ip(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+    """判断 IP 是否属于内网/回环/链路本地/未指定/保留/组播地址"""
+    return bool(
+        ip.is_private
+        or ip.is_loopback
+        or ip.is_link_local
+        or ip.is_unspecified
+        or ip.is_reserved
+        or ip.is_multicast
+    )
+
+
+def _validate_base_url(base_url: str) -> str:
+    """
+    校验用户提交的 base_url，防止认证 SSRF。
+
+    返回规范化后的 base_url（去除首尾空白）。校验失败抛出 400。
+    """
+    base_url = (base_url or "").strip()
+    parsed = urllib.parse.urlparse(base_url)
+
+    # 1. 协议白名单
+    if parsed.scheme not in _ALLOWED_URL_SCHEMES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="base_url 仅支持 http/https 协议",
+        )
+
+    hostname = parsed.hostname
+    if not hostname:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="base_url 缺少有效主机名",
+        )
+
+    # 2. 显式拒绝 localhost（避免依赖 DNS 解析结果）
+    if hostname == "localhost" or hostname.endswith(".localhost"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="base_url 不允许指向 localhost",
+        )
+
+    # 3. 端口合法性（urlparse.port 对非法端口抛 ValueError）
+    try:
+        port = parsed.port
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="base_url 端口无效",
+        )
+
+    # 4. DNS 解析并检查所有结果（多 IP 含内网则拒绝）
+    try:
+        infos = socket.getaddrinfo(hostname, port or None, type=socket.SOCK_STREAM)
+    except socket.gaierror:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"base_url 主机解析失败: {hostname}",
+        )
+    if not infos:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"base_url 主机无法解析: {hostname}",
+        )
+
+    for info in infos:
+        ip_str = info[4][0]
+        try:
+            ip = ipaddress.ip_address(ip_str)
+        except ValueError:
+            continue
+        if _is_forbidden_ip(ip):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"base_url 指向不允许访问的地址: {ip_str}",
+            )
+
+    return base_url
+
+
+# 独立限流器：仅用于 /models/list 与 /models/config/test 两个代理端点，
+# 与 AI 对话/SSE 的全局限流器隔离，避免互相挤占配额。
+_models_proxy_rate_limiter = AIRateLimiter(
+    AIRateLimitConfig(global_rpm=60, per_user_rpm=10)
+)
+
+
+async def _check_models_proxy_rate_limit(user_id: int) -> None:
+    """对代理端点执行 per-user + 全局独立限流，超限抛 429"""
+    allowed, error_msg = await _models_proxy_rate_limiter.check_request(user_id)
+    if not allowed:
+        logger.warning(f"[models/proxy] 用户 {user_id} 触发限流: {error_msg}")
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail={
+                "error": "RATE_LIMIT_EXCEEDED",
+                "message": error_msg,
+                "retry_after": 60,
+            },
+            headers={"Retry-After": "60"},
+        )
+
+
 @sub_router.post("/models/list", summary="代理获取 LLM 可用模型列表（密钥不出后端）")
 async def list_llm_models(
     req: LLMModelsListRequest,
@@ -52,7 +175,12 @@ async def list_llm_models(
       导致 CORS 拦截与 API 密钥暴露
     - 前端配置管理的「获取模型」按钮依赖此端点；此前该端点不存在，
       前端调用 /models/models/list 得到 404 后降级直连失败，表现为「获取不到模型」
+    - 已做 SSRF 防护：用户提交的 base_url 仅允许 http/https，且解析结果
+      不得落入内网/保留网段；并施加独立限流。
     """
+    # ── 独立限流（per-user + 全局） ──
+    await _check_models_proxy_rate_limit(current_user.id)
+
     import httpx
 
     from ...services.llm_service import PROVIDER_DEFAULTS, llm_service
@@ -80,6 +208,10 @@ async def list_llm_models(
 
     if not base_url:
         raise HTTPException(status_code=400, detail="base_url 为空且无提供商默认值，请填写 API 地址")
+
+    # 🔒 SSRF 防护：仅校验用户提交的 base_url（服务端回退值属可信配置）
+    if (req.base_url or "").strip():
+        base_url = _validate_base_url(base_url)
 
     timeout_s = max(min(req.timeout_ms / 1000.0, 20.0), 2.0)
     headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
@@ -134,7 +266,13 @@ async def test_llm_config(
       detail   — 失败原因（认证 401 / 权限 403 / 限流 429 / 网络等）
       model    — 成功时实际响应的模型名
       provider / base_url — 回显本次使用的提供商与地址
+
+    已做 SSRF 防护：用户提交的 base_url 仅允许 http/https，且解析结果
+    不得落入内网/保留网段；并施加独立限流。
     """
+    # ── 独立限流（per-user + 全局） ──
+    await _check_models_proxy_rate_limit(current_user.id)
+
     import httpx
 
     from ...services.llm_service import PROVIDER_DEFAULTS
@@ -151,6 +289,10 @@ async def test_llm_config(
 
     if not base_url:
         return {"success": False, "detail": "无法确定 Base URL：未知提供商且未填写地址", "provider": provider, "base_url": "", "model": model}
+
+    # 🔒 SSRF 防护：仅校验用户提交的 base_url（服务端回退值属可信配置）
+    if (req.base_url or "").strip():
+        base_url = _validate_base_url(base_url)
 
     url = f"{base_url.rstrip('/')}/chat/completions"
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {req.api_key}"}
@@ -273,9 +415,14 @@ async def peptide_score(
 
 @sub_router.get("/models/status", summary="AI 模型服务状态")
 async def model_status(
-    current_user: Optional[User] = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
-    """查看各 AI 子模型服务的状态，包括 LLM 连接状态与密钥来源（db/env/none）"""
+    """
+    查看各 AI 子模型服务的状态，包括 LLM 连接状态与密钥来源（db/env/none）。
+
+    🔒 该接口会暴露全局 API Key 长度、base_url、密钥来源等配置信息，
+    因此强制要求认证（匿名访问返回 401）。
+    """
     try:
         # 判定 LLM 密钥来源：用户级密钥 > 全局 db > 全局 env > none
         key_source = "none"

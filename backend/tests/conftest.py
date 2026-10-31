@@ -21,19 +21,17 @@ if _PROJECT_ROOT not in sys.path:
 os.environ.setdefault("CHROMA_NO_TELEMETRY", "1")
 
 # 在导入任何模型前先加载 base，确保 SQLAlchemy metadata 唯一
-import app.models.base  # noqa: F401
+import app.models.base  # noqa: F401, E402
 
 # ── 共享测试夹具 ───────────────────────────────────────────────────
-import pytest
-from unittest.mock import AsyncMock, MagicMock
-from fastapi.testclient import TestClient
-
-from app.main import create_app
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
 
 
 @pytest.fixture()
 def client():
     """创建 FastAPI TestClient，不启动实际服务器。"""
+    from app.main import create_app
     app = create_app()
     with TestClient(app) as test_client:
         yield test_client
@@ -43,6 +41,7 @@ def client():
 def async_client():
     """创建异步 FastAPI TestClient。"""
     from httpx import AsyncClient, ASGITransport
+    from app.main import create_app
     app = create_app()
     return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
 
@@ -87,9 +86,8 @@ def admin_headers():
 
 
 # ── 数据库会话夹具（迁移自 conftest_db.py，供 tests/unit 使用） ──────────
-import asyncio
-from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import AsyncGenerator  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession  # noqa: E402
 
 # 各测试文件中固定使用的测试用户名（服务直接注册/创建用户时无法通过 create_user
 # 夹具清理，需在会话级预先删除上次运行可能残留的数据）
@@ -214,3 +212,15 @@ def pytest_configure(config: "pytest.Config") -> None:
 
     import tests.conftest_clean_users as _ccu
     _ccu.pytest_configure(config)
+
+
+def pytest_sessionfinish(session, exitstatus) -> None:
+    """在解释器关闭前执行测试用户/机器人清理。
+
+    仅依赖 atexit 会在解释器终结阶段触发
+    「cannot schedule new futures after interpreter shutdown」噪音。
+    这里在 pytest 会话结束时（事件循环仍可新建）提前执行一次，
+    atexit 注册的清理函数仍保留作为兜底（_SWEPT 标志保证只跑一次）。
+    """
+    import tests.conftest_clean_users as _ccu
+    _ccu._run_sweep()

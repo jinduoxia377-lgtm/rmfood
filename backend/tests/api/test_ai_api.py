@@ -1,6 +1,5 @@
 """AI API 端点测试"""
 import pytest
-from httpx import AsyncClient
 from fastapi.testclient import TestClient
 
 
@@ -403,3 +402,31 @@ async def test_func(async_test_client, researcher_headers: dict):
         headers=researcher_headers,
     )
     assert response.status_code == 422 or response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_chat_rule_engine_fallback_marks_model(async_test_client, researcher_headers: dict):
+    """LLM 不可用时非流式 /chat 降级规则引擎：
+    - 必须返回 model=rule-engine-fallback（与流式一致，供前端显示降级徽标）；
+    - 回复内容必须内嵌「规则引擎」来源水印，防止复制后冒充大模型。
+    """
+    from unittest.mock import MagicMock, patch
+
+    import app.api.ai_modules.chat as chat_module
+
+    fake_llm = MagicMock()
+    fake_llm.is_available = False
+    fake_llm.config = MagicMock(provider="test", model="test", api_key=None, key_from_db=False)
+
+    question = f"设计一个补气配方-降级标注测试-{id(fake_llm)}"
+    with patch.object(chat_module, "_get_llm_service", return_value=fake_llm):
+        response = await async_test_client.post(
+            "/api/v1/ai/chat",
+            json={"question": question, "history": None, "stream": False},
+            headers=researcher_headers,
+        )
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data.get("model") == "rule-engine-fallback"
+    assert "规则引擎" in data.get("content", "")
+    assert "非大模型推理" in data.get("content", "")
