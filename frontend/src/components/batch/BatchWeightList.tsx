@@ -3,7 +3,7 @@
  * 用于打印和实际操作时的称量指导
  */
 import { useState } from 'react'
-import { Printer, CheckCircle2, Circle } from 'lucide-react'
+import { Printer, CheckCircle2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { cn } from '@/lib/utils'
 

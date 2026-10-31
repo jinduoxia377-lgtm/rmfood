@@ -18,9 +18,10 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ChatMessage } from '../../hooks/useChatMessages'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { MessageBubble } from './MessageBubble'
+import { RealAIAvatar } from '@/components/ai/shared/RealAIAvatar'
 import { VIRTUALIZE_THRESHOLD } from '@/config/ai/constants'
 import {
-	Bot, Sparkles, ChevronDown, Leaf, Handshake, Dna, Shield, RefreshCw,
+	Sparkles, ChevronDown, Leaf, Handshake, Dna, Shield, RefreshCw,
 } from 'lucide-react'
 
 export interface MessageListProps {
@@ -95,7 +96,7 @@ export function MessageList({
 			// AI回复：基础高度 + 内容长度（每80字符约25px）+ thinking步骤额外空间
 			const baseHeight = 80
 			const contentHeight = Math.min(Math.floor(msg.content.length / 80) * 25, 400)
-			const stepHeight = (((msg as unknown as Record<string, unknown>).thinking_steps as unknown as number[])?.length ?? 0) * 30
+			const stepHeight = ((msg.thinking_steps?.length ?? 0)) * 30
 			return baseHeight + contentHeight + stepHeight
 		}
 
@@ -277,7 +278,7 @@ export function MessageList({
 					<p className="text-error-600 dark:text-error-600 text-sm">{chatError.message}</p>
 					{onRetry && (
 						<button onClick={onRetry} className="text-xs flex items-center gap-1 hover:underline mx-auto">
-							<RefreshCw className="w-3 h-3" /> 重新发送
+							<RefreshCw className="w-3 h-3" /> {t('ai.chat.retry')}
 						</button>
 					)}
 				</div>
@@ -320,7 +321,7 @@ export function MessageList({
 			{isStreaming && messages.length > 0 && !messages[messages.length - 1]?.isLoading && (
 				<div className="chat-message-row">
 					<div className="avatar-ai">
-						<Bot className="w-4 h-4" />
+						<RealAIAvatar size="sm" />
 						<span className="avatar-status-indicator avatar-status-thinking" />
 					</div>
 					<div className="chat-typing-indicator">
@@ -339,7 +340,7 @@ export function MessageList({
 					className="sticky bottom-3 left-1/2 -translate-x-1/2 min-h-[36px] px-4 py-2 rounded-full surface-overlay80 backdrop-blur-md border border-neutral-200/60/60 shadow-lg shadow-neutral-200/50 dark:shadow-black/20 text-xs font-medium text-neutral-600 flex items-center gap-2 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xl hover:bg-white hover:border-primary-300/60 dark:hover:border-primary-600/40 active:translate-y-0 animate-fade-in"
 				>
 					<ChevronDown className="w-4 h-4" />
-					<span>回到最新</span>
+					<span>{t('ai.chat.backToLatest')}</span>
 				</button>
 			)}
 		</div>

@@ -18,7 +18,7 @@ export function EffectTrendChart({
   peakTime,
   peakConcentration,
   optimalWindow,
-  effectDuration,
+  effectDuration: _effectDuration,
   auc,
 }: EffectTrendChartProps) {
   const W = 320;

@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Upload, Camera, X, Loader2, Image as ImageIcon, Sparkles, RefreshCw } from 'lucide-react';
 import { resolveAvatarUrl } from '@/utils/avatarUrl';
@@ -26,12 +26,6 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-
-  const handleClick = useCallback(() => {
-    if (!disabled && !uploading && !generating) {
-      inputRef.current?.click();
-    }
-  }, [disabled, uploading, generating]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -166,7 +160,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
               e.stopPropagation();
               onRemove();
             }}
-            className="inline-flex items-center gap-1 rounded-[var(--radius-pill)] px-[var(--space-apple-sm)] py-1 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-danger-500 transition-colors"
+            className="inline-flex items-center gap-1 min-h-[44px] rounded-[var(--radius-pill)] px-[var(--space-apple-sm)] py-1 text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-danger-500 transition-colors"
           >
             <X className="w-3 h-3" />
             移除

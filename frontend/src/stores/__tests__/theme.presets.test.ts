@@ -224,7 +224,6 @@ describe('generateCSSVariables — A3 字体键名 kebab 化', () => {
 import {
   generateModeRampCSS,
   applyThemeToDOM,
-  presetThemes,
   type ThemeConfig,
 } from '../theme.presets';
 

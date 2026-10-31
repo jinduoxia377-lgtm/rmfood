@@ -47,7 +47,7 @@ export default function ReportDialog({
             <div className="flex gap-1.5">
               {(['pdf', 'word', 'html'] as const).map(fmt => (
                 <button key={fmt} onClick={() => onSetReportConfig({ format: fmt })}
-                  className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium uppercase transition-colors ${reportConfig.format === fmt ? 'bg-accent-500 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-600'}`}>
+                  className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium uppercase transition-colors ${reportConfig.format === fmt ? 'bg-[var(--color-accent-surface)] text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-600'}`}>
                   {fmt}
                 </button>
               ))}

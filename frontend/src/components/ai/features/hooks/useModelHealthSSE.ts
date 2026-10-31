@@ -22,13 +22,17 @@ export function useModelHealthSSE() {
   // 注定失败的请求，同时轮询方案还在正常跑，等于双倍开销。
   const [sseAvailable, setSseAvailable] = useState(false);
   const probedRef = useRef(false);
+  // 用 ref 保存最新值：首次连接成功后 probedRef.current=true，
+  // 但 state 闭包中的 sseAvailable 仍是初始 false。若 probeEndpoint 读取 state，
+  // 断线重试时（stale closure）会返回旧值 false，导致 EventSource 永不重建。
+  const sseAvailableRef = useRef(false);
 
   /**
    * 探测 /ai/models/health/stream 是否真的存在。
-   * 只探测一次，结果缓存。
+   * 只探测一次，结果缓存（同步写入 ref，供任意闭包读取最新值）。
    */
   const probeEndpoint = useCallback(async (): Promise<boolean> => {
-    if (probedRef.current) return sseAvailable;
+    if (probedRef.current) return sseAvailableRef.current;
     try {
       // Accept: text/event-stream 使探测请求与被 EventSource 使用的资源类型一致
       const res = await fetch('/api/v1/ai/models/health/stream', {
@@ -40,15 +44,17 @@ export function useModelHealthSSE() {
         logger.info(`[SSE] /ai/models/health/stream 不可用（HTTP ${res.status}），改用轮询`);
       }
       probedRef.current = true;
+      sseAvailableRef.current = ok;
       setSseAvailable(ok);
       return ok;
     } catch (err) {
       logger.warn('[SSE] 探测健康流端点失败，改用轮询:', err);
       probedRef.current = true;
+      sseAvailableRef.current = false;
       setSseAvailable(false);
       return false;
     }
-  }, [sseAvailable]);
+  }, []);
 
   /**
    * 连接 SSE 流
@@ -103,7 +109,7 @@ export function useModelHealthSSE() {
         connect();
       }, HEALTH_REFRESH_INTERVAL_MS);
     };
-  }, []);
+  }, [probeEndpoint]);
 
   /**
    * 断开连接

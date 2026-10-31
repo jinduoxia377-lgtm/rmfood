@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 配方模板库页面 - 真实数据版
  * 模板数据来自后端 GET /api/v1/formulas/templates（真实数据库）
  * 支持搜索、分类筛选、收藏、一键使用模板（跳转新建配方页并预填）
@@ -6,11 +6,11 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
-import { Plus, Search, FlaskConical, Sparkles, Star, ArrowRight, Copy, Clock, Zap, RefreshCw } from 'lucide-react'
+import { Plus, Search, FlaskConical, Sparkles, Star, Copy, Clock, Zap, RefreshCw } from 'lucide-react'
 import { Button, Input, Badge, Card, CardContent } from '@/components/ui'
 import { EmptyState, Skeleton } from '@/components/ui/Common'
 import { cn } from '@/lib/utils'
-import { formulaApi, getFormulaTemplates, type FormulaTemplateItem } from '@/api/formula'
+import { getFormulaTemplates, type FormulaTemplateItem } from '@/api/formula'
 
 type Category = 'all' | '热门' | '免疫力' | '睡眠' | '肠胃' | '美容' | '慢性病' | '其他'
 

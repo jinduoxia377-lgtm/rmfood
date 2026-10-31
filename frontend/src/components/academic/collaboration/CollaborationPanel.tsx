@@ -186,6 +186,7 @@ export function CollaborationPanel() {
 
   useEffect(() => {
     const active = getActiveParticipants();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveUsers(active.map(p => ({
       userId: p.user.id,
       name: p.user.name,

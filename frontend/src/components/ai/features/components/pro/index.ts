@@ -7,6 +7,7 @@ export type { HistorySession } from './ChatHistory'
 export { default as ReasoningRow } from './ReasoningRow'
 export type { ReasoningStep } from './ReasoningRow'
 export { default as ComposerStatusBar } from './ComposerStatusBar'
+export { default as ChatProgressBar } from './ChatProgressBar'
 
 // TopBar / EmptyState / ScenarioToolbar — 布局组件
 export { TopBar } from '../TopBar'

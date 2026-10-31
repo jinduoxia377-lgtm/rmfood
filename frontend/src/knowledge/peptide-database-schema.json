@@ -1,4 +1,5 @@
 {
+  "_note": "Schema 资源（暂未接入代码）。用途：食源性多肽数据库 Schema 定义。建议接入点：多肽数据库迁移/ORM 模型生成参考。详见 src/knowledge/README.md",
   "schema": {
     "version": "1.0.0",
     "lastUpdated": "2026-05-17",

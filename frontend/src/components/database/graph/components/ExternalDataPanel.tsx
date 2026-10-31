@@ -44,14 +44,14 @@ export default function ExternalDataPanel({
         <div className="flex items-center gap-2">
           <span>🔬</span>
           <span className="text-sm font-bold text-info-700 dark:text-info-700">外部数据库</span>
-          <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-medium ${statusClasses[syncStatus]}`}>
+          <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-medium ${statusClasses[syncStatus]}`}>
             {statusText[syncStatus]}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={onQueryExternalData} disabled={!!externalLoadingId}
-            className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-info-500 text-white hover:bg-info-600 disabled:opacity-50">刷新</button>
-          <button onClick={onTriggerAutoSync} className="px-1.5 py-0.5 rounded text-[9px] font-medium text-info-500 hover:bg-info-50 dark:hover:bg-info-900/20">同步</button>
+            className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-[var(--color-info-surface)] text-white hover:bg-[var(--color-info-surface-deep)] disabled:opacity-50">刷新</button>
+          <button onClick={onTriggerAutoSync} className="px-1.5 py-0.5 rounded text-[11px] font-medium text-info-500 hover:bg-info-50 dark:hover:bg-info-900/20">同步</button>
           <button onClick={onClose} className="w-5 h-5 rounded flex items-center justify-center hover:bg-info-100 dark:hover:bg-info-800/30 text-neutral-400">✕</button>
         </div>
       </div>
@@ -82,11 +82,11 @@ function ExternalDataContent({ data }: { data: ExternalData }) {
       {data.molecularFormula && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="rounded-lg bg-info-50/80 dark:bg-info-950/20 p-2">
-            <div className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分子式</div>
+            <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分子式</div>
             <div className="text-xs font-mono font-bold text-info-700 dark:text-info-700">{data.molecularFormula}</div>
           </div>
           <div className="rounded-lg bg-info-50/80 dark:bg-info-950/20 p-2">
-            <div className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分子量</div>
+            <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">分子量</div>
             <div className="text-xs font-bold text-info-700 dark:text-info-700">{data.molecularWeight?.toFixed(1)}</div>
           </div>
         </div>
@@ -109,7 +109,7 @@ function ExternalDataContent({ data }: { data: ExternalData }) {
           <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">靶点 ({data.targets.length})</span>
           <div className="flex flex-wrap gap-1 mt-1">
             {data.targets.map(t => (
-              <span key={t} className="px-1.5 py-0.5 rounded-md text-[9px] bg-error-50 dark:bg-error-300/20 text-error-600 dark:text-error-600 font-mono">{t}</span>
+              <span key={t} className="px-1.5 py-0.5 rounded-md text-[11px] bg-error-50 dark:bg-error-300/20 text-error-600 dark:text-error-600 font-mono">{t}</span>
             ))}
           </div>
         </div>
@@ -119,7 +119,7 @@ function ExternalDataContent({ data }: { data: ExternalData }) {
           <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">通路 ({data.pathways.length})</span>
           <div className="flex flex-wrap gap-1 mt-1">
             {data.pathways.map(p => (
-              <span key={p} className="px-1.5 py-0.5 rounded-md text-[9px] bg-accent-50 dark:bg-accent-300/20 text-accent-600 dark:text-accent-700">{p}</span>
+              <span key={p} className="px-1.5 py-0.5 rounded-md text-[11px] bg-accent-50 dark:bg-accent-300/20 text-accent-600 dark:text-accent-700">{p}</span>
             ))}
           </div>
         </div>
@@ -129,14 +129,14 @@ function ExternalDataContent({ data }: { data: ExternalData }) {
           <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">相关疾病</span>
           <div className="flex flex-wrap gap-1 mt-1">
             {data.diseases.map(d => (
-              <span key={d} className="px-1.5 py-0.5 rounded-md text-[9px] bg-warning-50 dark:bg-warning-300/20 text-warning-600 dark:text-warning-700">{d}</span>
+              <span key={d} className="px-1.5 py-0.5 rounded-md text-[11px] bg-warning-50 dark:bg-warning-300/20 text-warning-600 dark:text-warning-700">{d}</span>
             ))}
           </div>
         </div>
       )}
       <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-700/30">
-        <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">📚 {data.source.toUpperCase()} · 📄 {data.literatureCount?.toLocaleString()} 文献</span>
-        <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">更新: {data.lastUpdated || '未知'}</span>
+        <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">📚 {data.source.toUpperCase()} · 📄 {data.literatureCount?.toLocaleString()} 文献</span>
+        <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">更新: {data.lastUpdated || '未知'}</span>
       </div>
     </div>
   )

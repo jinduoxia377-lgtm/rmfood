@@ -2,7 +2,7 @@ import { logger } from '@/utils/safeLogger';
 
 // Polyfill 的 EventEmitter 兼容方法签名使用下划线前缀参数（_event/_listener/_args），
 // 它们是文档性占位参数，从未在函数体内使用，故对本文件关闭 no-unused-vars。
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
 
 /**
  * 浏览器环境 Polyfills

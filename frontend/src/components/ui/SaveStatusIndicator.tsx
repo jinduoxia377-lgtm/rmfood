@@ -3,7 +3,7 @@
  * 显示表单的保存状态：未保存 / 保存中 / 已保存
  */
 import { cn } from'@/lib/utils'
-import { CheckCircle2, Cloud, CloudOff, Loader2 } from'lucide-react'
+import { CheckCircle2, CloudOff, Loader2 } from'lucide-react'
 
 export type SaveStatus ='unsaved' |'saving' |'saved' |'error'
 

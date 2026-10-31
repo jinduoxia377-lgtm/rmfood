@@ -52,7 +52,7 @@ export default function SPathToolbar({
             <span className="text-xs font-semibold text-warning-700 dark:text-warning-700">🌉 关键桥梁:</span>
             <div className="flex gap-1 mt-1 flex-wrap">
               {smartPathResult.keyBridges.map(bid => (
-                <span key={bid} className="px-1.5 py-0.5 rounded text-[9px] bg-warning-100 dark:bg-warning-300/25 text-warning-600 dark:text-warning-700">
+                <span key={bid} className="px-1.5 py-0.5 rounded text-[11px] bg-warning-100 dark:bg-warning-300/25 text-warning-600 dark:text-warning-700">
                   {filteredNodes.find(n => (n.id || n.label) === bid)?.label?.slice(0, 8)}
                 </span>
               ))}

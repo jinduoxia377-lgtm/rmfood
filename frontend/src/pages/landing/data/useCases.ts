@@ -6,7 +6,6 @@
  *   scenario: 'peptide'→ 生物活性肽设计（靛蓝）
  *   scenario: 'eln'   → 实验数据管理（琥珀金）
  */
-import type { LucideProps } from 'lucide-react';
 
 export type Scenario = 'tcm' | 'peptide' | 'eln';
 

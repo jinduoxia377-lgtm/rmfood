@@ -1,6 +1,14 @@
 /**
  * FormulaDesignEngine — 食品配方智能设计引擎 v1.0
  *
+ * ⚠️ @deprecated 前端遗留引擎（task-4 死代码治理）：
+ * - 本文件 INGREDIENT_DATABASE 为硬编码英文-key 小数据集（18 种成分），
+ *   与后端真实药食同源/原料库（POST /api/v1/ai/formula/knowledge）完全脱节。
+ * - GenerateTab 主流程不依赖本模块：真实配方生成走 aiApi.generate
+ *   （POST /api/v1/ai/generate → 后端 GA/规则引擎）。
+ * - 保留仅用于兼容历史 import 链（formulaIntelligenceService / FormulaDialogueManager），
+ *   新代码请直接调用 @/api/ai。
+ *
  * 基于专利级配方的多维度智能算法，实现：
  * 1. 君臣佐使配伍分析（中医理论数字化）
  * 2. 成分兼容性矩阵（协同/拮抗/十八反十九畏）

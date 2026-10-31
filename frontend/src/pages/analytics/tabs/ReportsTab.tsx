@@ -1,8 +1,8 @@
-﻿/**
+/**
  * 报表中心 Tab — 参考 Dashboard 设计风格
  * 使用 Card+CardHeader+CardContent 统一卡片样式
  */
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { logger } from '@/utils/safeLogger'
 import {
   FileText, Download, Clock, Plus,
@@ -48,8 +48,6 @@ export default function ReportsTab({ filters }: Props) {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>(filters?.timeRange ?? '30d')
   const [selectedDimensions, setSelectedDimensions] = useState<string[]>(['formulas'])
   const [exportFormat, setExportFormat] = useState<'pdf' | 'excel' | 'csv'>('excel')
-
-  const formatRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     api.get('/analytics/reports/templates')

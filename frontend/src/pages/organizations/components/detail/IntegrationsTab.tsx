@@ -88,7 +88,7 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
   const navigate = useNavigate()
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-8 space-y-4 sm:space-y-8">
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">集成配置</h2>
@@ -211,3 +211,4 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
 })
 
 export default IntegrationsTab
+

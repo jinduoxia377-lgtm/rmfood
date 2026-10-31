@@ -127,7 +127,7 @@ export function useTooltip({ delay = 200 }: { delay?: number } = {}) {
   const triggerRef = useRef<HTMLElement | null>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const show = useCallback((e: React.MouseEvent | React.FocusEvent) => {
+  const show = useCallback((_e: React.MouseEvent | React.FocusEvent) => {
     timeoutRef.current = setTimeout(() => {
       setIsVisible(true)
     }, delay)

@@ -376,7 +376,6 @@ export function withOperationLogging<T extends (...args: any[]) => any>(
     const targetName = String(args[0]?.name || args[0]?.title || targetId)
 
     let result: ReturnType<T>
-    let logResult: 'success' | 'failure' | 'partial' = 'success'
     let errorMessage: string | undefined
 
     try {
@@ -396,7 +395,6 @@ export function withOperationLogging<T extends (...args: any[]) => any>(
             return res
           })
           .catch((error: Error) => {
-            logResult = 'failure'
             errorMessage = error.message
             operationLogger.log({
               action,
@@ -420,7 +418,6 @@ export function withOperationLogging<T extends (...args: any[]) => any>(
 
       return result
     } catch (error: any) {
-      logResult = 'failure'
       errorMessage = error?.message
 
       operationLogger.log({

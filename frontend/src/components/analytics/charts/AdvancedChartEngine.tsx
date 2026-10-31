@@ -170,7 +170,7 @@ export const AdvancedChartEngine: React.FC<ChartConfig> = ({
   error,
 }) => {
   const isDark = useIsDarkMode();
-  const [activeIndex, setActiveIndex] = useState(-1);
+  const [_activeIndex, setActiveIndex] = useState(-1);
 
   const colors = useMemo(() => (isDark ? DARK_CHART_COLORS : CHART_COLORS), [isDark]);
 

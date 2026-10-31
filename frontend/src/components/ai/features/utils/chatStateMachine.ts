@@ -19,7 +19,7 @@ const VALID_TRANSITIONS: Record<ChatState, ChatState[]> = {
   [ChatState.Idle]: [ChatState.Validating, ChatState.Thinking],
   [ChatState.Validating]: [ChatState.Sending, ChatState.Error, ChatState.Idle],
   [ChatState.Sending]: [ChatState.Streaming, ChatState.Thinking, ChatState.Error, ChatState.Success],
-  [ChatState.Streaming]: [ChatState.Success, ChatState.Error, ChatState.Paused],
+  [ChatState.Streaming]: [ChatState.Success, ChatState.Error, ChatState.Paused, ChatState.Idle],
   [ChatState.Success]: [ChatState.Idle],
   [ChatState.Error]: [ChatState.Idle, ChatState.Retrying],
   [ChatState.RateLimited]: [ChatState.Idle],

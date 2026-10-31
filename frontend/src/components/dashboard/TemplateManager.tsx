@@ -42,6 +42,7 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
     const savedTemplates = localStorage.getItem('rmfood_dashboard_templates')
     if (savedTemplates) {
       try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTemplates(JSON.parse(savedTemplates))
       } catch (error) {
         logger.error('Error loading templates:', error)

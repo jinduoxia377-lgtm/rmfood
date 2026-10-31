@@ -1,6 +1,13 @@
 /**
  * FormulaGeneticOptimizer — 遗传算法配方优化器 v2.0
  *
+ * ⚠️ @deprecated 前端遗留引擎（task-4 死代码治理）：
+ * - 本优化器基于 FormulaKnowledgeGraph 的硬编码英文-key 小数据集（18 个 id），
+ *   无业务运行时调用点，仅作为历史实现保留。
+ * - GenerateTab 主流程不依赖本模块：真实 GA 由后端
+ *   POST /api/v1/ai/generate（run_ga_generation）与 /ai/generate/genetic 提供。
+ * - 新代码请直接调用 @/api/ai 的 aiApi.generateGenetic / unifiedOptimize。
+ *
  * 实数编码遗传算法，多目标优化
  * NSGA-II 非支配排序 + 拥挤度距离
  */

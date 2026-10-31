@@ -5,7 +5,7 @@ import type { FC } from 'react'
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Plus, TestTubes, Clock, Brain, Database, ArrowRight, Pencil, Trash2, Check, X } from 'lucide-react'
+import { Plus, TestTubes, Clock, Brain, Database, ArrowRight, Pencil, Trash2, Check } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Modal, Input } from '@/components/ui'
 
 const STORAGE_KEY = 'rmfood_quick_actions'
@@ -111,6 +111,7 @@ export const QuickActions: FC = () => {
           iconBg: 'bg-primary-100 dark:bg-primary-300/25',
           iconColor: 'text-primary-700 dark:text-primary-700',
         }))
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setActions(mapped)
       } catch {
         setActions(DEFAULT_ACTIONS)

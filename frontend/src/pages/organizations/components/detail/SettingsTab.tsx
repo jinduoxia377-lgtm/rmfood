@@ -220,7 +220,7 @@ const SettingsTab = memo(({ organizationId, organization, onArchive, onDelete, o
   )
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-8 space-y-4 sm:space-y-8">
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">组织设置</h2>
@@ -481,3 +481,4 @@ const SettingsTab = memo(({ organizationId, organization, onArchive, onDelete, o
 })
 
 export default SettingsTab
+

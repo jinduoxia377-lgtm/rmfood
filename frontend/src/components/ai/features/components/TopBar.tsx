@@ -29,13 +29,10 @@ import {
 } from 'lucide-react'
 import type { ScenarioMode } from '../services/scenarioSwitcher'
 import type { HistorySession } from './pro'
+import { useModelStore, getModelMeta } from '@/stores/modelStore'
+import type { ModelMeta } from '@/stores/modelStore'
 
-// ─── 模型配置 ──────────────────────────────────────────────────────
-const MODELS: { id: string; label: string; descKey: string; color: string }[] = [
-  { id: 'deepseek-chat', label: 'DeepSeek', descKey: 'modelDeepDesc', color: 'text-success-500' },
-  { id: 'gpt-4o-mini', label: 'GPT-4o Mini', descKey: 'modelGptDesc', color: 'text-secondary-500' },
-  { id: 'glm-4-flash', label: 'GLM-4 Flash', descKey: 'modelGlmDesc', color: 'text-accent-500' },
-]
+// ─── 模型配置（动态从 useModelStore 获取，见下方组件内逻辑） ────────
 
 // ─── 场景模式配置 ──────────────────────────────────────────────────
 const SCENARIO_OPTIONS: Array<{ mode: ScenarioMode; icon: LucideIcon; labelKey: string }> = [
@@ -177,7 +174,13 @@ export function TopBar({
   messageCount, onClearChat, onOpenKBPanel,
   onOpenUserProfile, onToggleSearch, searchOpen, t,
 }: TopBarProps) {
-  const currentModel = MODELS.find(m => m.id === llmModel) || MODELS[0]
+  // 动态模型列表：从 store 获取，若无则降级为已知提供商默认模型
+  const { selectedModel, availableModels } = useModelStore()
+  const effectiveModel = selectedModel || llmModel || ''
+  const currentModel: ModelMeta = getModelMeta(effectiveModel)
+  const dynamicModels: ModelMeta[] = (availableModels.length > 0 ? availableModels : [
+    'deepseek-chat', 'gpt-4o-mini', 'glm-4-flash',
+  ]).map(getModelMeta)
   const ScenarioIcon = getScenarioIcon(scenarioMode)
   const currentScenario = SCENARIO_OPTIONS.find(s => s.mode === scenarioMode) || SCENARIO_OPTIONS[0]
 
@@ -220,13 +223,13 @@ export function TopBar({
             <ChevronDown className="w-3 h-3 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           </button>
         }>
-          {MODELS.map(m => (
+          {dynamicModels.map(m => (
             <button key={m.id} onClick={() => onModelChange?.(m.id)}
               className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors">
               <span className={m.color}><Leaf className="w-3.5 h-3.5" /></span>
               <div>
                 <div className="text-neutral-800 dark:text-neutral-200 font-medium text-xs">{m.label}</div>
-                <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t(`ai.chat.topbar.${m.descKey}`)}</div>
+                <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{m.descKey ? t(`ai.chat.topbar.${m.descKey}`) : ''}</div>
               </div>
             </button>
           ))}
@@ -280,7 +283,15 @@ export function TopBar({
           >
             <Database className={`w-3.5 h-3.5 ${ragEnabled && ragIsSeeded ? 'text-success-500' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`} />
             <span className="hidden sm:inline">
-              {ragIsSeeding ? t('ai.chat.topbar.ragInitializing') : ragEnabled && ragIsSeeded ? t('ai.chat.topbar.ragOn') : !ragEnabled ? t('ai.chat.topbar.ragOff') : t('ai.chat.topbar.ragReady')}
+              {ragIsSeeding
+                ? t('ai.chat.topbar.ragInitializing')
+                : ragEnabled && ragIsSeeded
+                  ? t('ai.chat.topbar.ragOn')
+                  : !ragEnabled && !ragIsSeeded
+                    ? t('ai.chat.topbar.ragInit')
+                    : !ragEnabled
+                      ? t('ai.chat.topbar.ragOff')
+                      : t('ai.chat.topbar.ragReady')}
             </span>
           </button>
           {ragEnabled && ragIsSeeded && (

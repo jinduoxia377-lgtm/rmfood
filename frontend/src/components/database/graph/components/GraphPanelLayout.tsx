@@ -7,15 +7,16 @@
  * Total panel count: 41 components in graph/components/
  */
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import * as d3 from 'd3'
 import { cn } from '@/lib/utils'
+import { Activity, BarChart3, MapPin } from 'lucide-react'
 import { GraphEngine } from '../engine/forceSimulation'
 import type {
   GraphNode, GraphEdge, LayoutType, ThemeConfig, LODLevel, AnimationPreset,
 } from '../types'
+import { TYPE_CONFIG } from '../types'
 import type { SortByOption } from './CentralityPanel'
-import type { ExternalDataItem } from './ExternalDataPanel'
 import type { GraphCompareResult } from './ComparisonPanel'
 import type {
   GraphBookmark, ReportConfig as ReportConfigT, CommunityResult as CommunityResultT,
@@ -64,10 +65,12 @@ import ExportMenu from './ExportMenu'
 import SearchOverlay from './SearchOverlay'
 import SearchHistoryPanel from './SearchHistoryPanel'
 import AnnotationControls from './AnnotationControls'
+import LegendPanel from './LegendPanel'
+import Tooltip from './Tooltip'
 // 真实类型从 useGraphState 导入。此前这里有一批「ad-hoc 桩类型」用来糊住编译器，
 // 其中 ShareLink 桩被写成 { url, shortcode, views }，与真实 { url, shortCode, viewCount }
 // 字段名都不符，导致 <SharePanel shareLink> 长期类型不匹配（且语义上是错的）。
-import type { ShareLink, ImportState, GraphSnapshot, NodeAnnotation, ExternalData } from '../hooks/useGraphState'
+import type { ShareLink, ImportState, NodeAnnotation, ExternalData } from '../hooks/useGraphState'
 
 // ── 无对应真实类型的局部定义 ──
 type ExportFormat = 'json' | 'svg' | 'gexf'
@@ -158,10 +161,13 @@ export interface GraphPanelLayoutProps {
 
   // Toggle helpers
   setTooltip: (t: any) => void
+  tooltip: { x: number; y: number; content: string } | null
   setSelectedNode: (n: GraphNode | null) => void
   setZoomTransform: (z: any) => void
   setActiveFilter: (f: string | null) => void
   setSelectedNodes: (s: Set<string>) => void
+  legendOpen: boolean
+  toggleLegend: () => void
   setShowExportMenu: (v: boolean) => void
   setExportStatus: (s: string | null) => void
 
@@ -287,6 +293,7 @@ export default function GraphPanelLayout({
   state, dispatch,
   filteredData, lodLevel, dataChanged, detectedCommunities, generatedCommunityColors,
   centralityData, nodeConnections, searchMatches,
+  allTypes, typeCounts,
   svgRef, containerRef, zoomBehaviorRef, engineRef,
   // Handlers
   handleSearchChange, handleSearchSelect, clearSearch,
@@ -304,6 +311,7 @@ export default function GraphPanelLayout({
   handleSelectionComplete, handleContextAction, exportSubgraphJSON,
   // Setters
   setTooltip, setSelectedNode, setZoomTransform, setActiveFilter, setSelectedNodes,
+  tooltip, legendOpen, toggleLegend,
   setShowExportMenu,
   setShowPerfPanel, setShowMinimap, setShowImportDialog, setShowCompareMode, setShowSharePanel,
   setShowAnnotationPanel, setShowHistoryPanel, setShowBookmarkPanel, setShowReportDialog,
@@ -423,6 +431,20 @@ export default function GraphPanelLayout({
     }
   }, [showCentralityPanel, centralityMetrics, filteredData.filteredNodes.length, runCentralityAnalysis])
 
+  // 图例数据：由当前可见类型动态生成（挂载 LegendPanel，修复「画布无类型图例」）
+  const legendItems = useMemo(
+    () =>
+      allTypes
+        .map((type) => ({
+          type,
+          color: TYPE_CONFIG[type]?.color || 'var(--color-knowledge-default, #9CA3AF)',
+          label: TYPE_CONFIG[type]?.label || type,
+          icon: TYPE_CONFIG[type]?.icon || '●',
+        }))
+        .filter((item) => (typeCounts[item.type] || 0) > 0),
+    [allTypes, typeCounts],
+  )
+
   return (
     <div ref={containerRef} className={cn('relative select-none', className)}
       onKeyDown={(e) => {
@@ -442,7 +464,15 @@ export default function GraphPanelLayout({
         else if ((e.key === 'z' || e.key === 'Z') && e.ctrlKey && !e.shiftKey) { e.preventDefault(); undoHistory() }
         else if ((e.key === 'z' || e.key === 'Z') && e.ctrlKey && e.shiftKey) { e.preventDefault(); redoHistory() }
       }}
-      onPointerDown={(e) => { const { pointerId } = e; e.currentTarget.setPointerCapture(pointerId); 
+      onPointerDown={(e) => { const { pointerId } = e;
+        const target = e.target as HTMLElement | null
+        // 修复：此前无条件 setPointerCapture，会把子控件（图例/缩放/搜索/主题等按钮）
+        // 的 pointerup/click 重定向到容器，导致图内所有按钮真实点击失效。
+        // 仅在选择框模式（Ctrl/Shift/Meta+拖拽）或点击画布空白时捕获指针。
+        const isInteractive = !!target?.closest?.('button, input, select, a, textarea, [role="button"], [contenteditable]')
+        if ((e.ctrlKey || e.metaKey || e.shiftKey) || !isInteractive) {
+          e.currentTarget.setPointerCapture(pointerId)
+        }
         if ((e.ctrlKey || e.metaKey || e.shiftKey) && e.button === 0) {
           const rect = containerRef.current?.getBoundingClientRect()
           if (!rect) return
@@ -490,19 +520,30 @@ export default function GraphPanelLayout({
       tabIndex={0}
     >
       {/* SVG Canvas — wraps engine ref and provides base layer */}
-      <svg ref={svgRef} className="w-full rounded-xl border" style={{ minHeight: height }}>
+      {/* 画布背景跟随 activeTheme.canvasBg（academic 为 var(--bg-secondary) 自适应全局主题） */}
+      <svg ref={svgRef} className="w-full rounded-xl border border-[var(--border-color)]"
+        style={{ minHeight: height, backgroundColor: activeTheme?.canvasBg || 'var(--bg-secondary, transparent)' }}>
         <style>{`
           @keyframes edge-flow { to { stroke-dashoffset: -24; } }
           @keyframes graph-fade-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
           .graph-animate-fade-in { animation: graph-fade-in 800ms ease-out both; }
           .hub-glow-ring { animation: hub-pulse 3s ease-in-out infinite; }
+          @media (prefers-reduced-motion: reduce) {
+            .node-group, .edge-link, .graph-animate-fade-in, .hub-glow-ring {
+              animation: none !important;
+              transition: none !important;
+            }
+          }
         `}</style>
       </svg>
 
+      {/* v7.3: Hover Tooltip（修复：此前 Tooltip 已实现但从未挂载） */}
+      <Tooltip tooltip={tooltip} />
+
       {/* v7.5: Performance Monitor Hook (RAF-based, runs independently) */}
       <div className="absolute bottom-3 right-3 z-30 w-6 h-6">
-        <button onClick={() => setShowPerfPanel(!showPerfPanel)} title="性能监控 (Shift+P)">
-          <span>📊</span>
+        <button onClick={() => setShowPerfPanel(!showPerfPanel)} title="性能监控 (Shift+P)" aria-label="性能监控">
+          <Activity className="w-4 h-4 text-[var(--text-muted)] dark:text-[var(--text-secondary)]" />
         </button>
       </div>
 
@@ -545,7 +586,7 @@ export default function GraphPanelLayout({
 
       {/* v7.6: Path Animation Indicator */}
       {pathAnimation && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-45 px-4 py-2 rounded-xl bg-gradient-to-r from-accent-600 to-accent-600 shadow-lg">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-45 px-4 py-2 rounded-xl bg-[var(--color-accent-surface-deep)] shadow-lg">
           <span className="text-xs font-medium text-white">{pathAnimation.pathNodes.length} nodes · {pathAnimation.pathEdges.length} edges</span>
         </div>
       )}
@@ -559,7 +600,7 @@ export default function GraphPanelLayout({
       {showMinimap && filteredData.filteredNodes.length > 0 && (
         <div className="absolute bottom-3 left-3 z-35 bg-white/92 dark:bg-neutral-900/92 backdrop-blur-sm rounded-lg border border-neutral-200/70 dark:border-neutral-700/50 shadow-md overflow-hidden" style={{ width: 160, height: 110 }}>
           <div className="flex items-center justify-between px-2 py-1 border-b border-neutral-100 dark:border-neutral-700/40">
-            <span className="text-[8px] font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">导航图</span>
+            <span className="text-[11px] font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider">导航图</span>
             <button onClick={() => setShowMinimap(false)} title="关闭小地图"><span className="text-xs">✕</span></button>
           </div>
           <MinimapCanvas nodes={filteredData.filteredNodes} edges={filteredData.filteredEdges} width={158} height={94}
@@ -578,7 +619,9 @@ export default function GraphPanelLayout({
       {/* v7.7: Centrality Panel Trigger + Panel */}
       {!showCentralityPanel && (
         <div className="absolute bottom-14 right-3 z-30 w-6 h-6">
-          <button onClick={() => setShowCentralityPanel(true)} title="中心性分析 (Shift+C)"><span>📈</span></button>
+          <button onClick={() => setShowCentralityPanel(true)} title="中心性分析 (Shift+C)" aria-label="中心性分析">
+            <BarChart3 className="w-4 h-4 text-[var(--text-muted)] dark:text-[var(--text-secondary)]" />
+          </button>
         </div>
       )}
       {showCentralityPanel && centralityData.stats && (
@@ -621,6 +664,17 @@ export default function GraphPanelLayout({
       {communities.size > 0 && (
         <CommunityLegend communities={communities} generatedCommunityColors={generatedCommunityColors} />
       )}
+
+      {/* v7.9: 节点类型图例（挂载 LegendPanel，修复「画布无类型图例」） */}
+      <LegendPanel
+        showLegend={filteredData.filteredNodes.length > 0}
+        legendOpen={legendOpen}
+        legendItems={legendItems}
+        typeCounts={typeCounts}
+        nodeCount={filteredData.filteredNodes.length}
+        edgeCount={filteredData.filteredEdges.length}
+        onToggle={toggleLegend}
+      />
 
       {/* v7.9: Theme Panel */}
       {showThemePanel && (
@@ -790,13 +844,14 @@ export default function GraphPanelLayout({
       {pinnedNodes.size > 0 && !showPinnedPanel && (
         <button onClick={() => setShowPinnedPanel(true)} title={`固定节点 (${pinnedNodes.size})`}
           className="absolute top-14 left-3 z-30 w-6 h-6">
-          <span>📌</span><span className="absolute -top-1 -right-1 w-3.5 h-3.5">{pinnedNodes.size}</span>
+          <MapPin className="w-4 h-4 text-[var(--text-muted)] dark:text-[var(--text-secondary)]" />
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 text-[11px] font-bold text-[var(--text-primary)] dark:text-[var(--text-secondary)]">{pinnedNodes.size}</span>
         </button>
       )}
 
       {/* v7.8: Adding annotation indicator */}
       {isAddingAnnotation && (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-35 px-3 py-1.5 rounded-lg bg-warning-500 text-white text-xs animate-pulse">
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-35 px-3 py-1.5 rounded-lg bg-[var(--color-warning-surface)] text-white text-xs animate-pulse">
           ✏️ 点击图谱添加标注 — 按 Esc 取消
         </div>
       )}

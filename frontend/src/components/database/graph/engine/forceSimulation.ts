@@ -81,8 +81,19 @@ export class GraphEngine {
   private allLinksSel: d3.Selection<SVGPathElement, SimEdge,SVGGElement, unknown> | null = null
   private allLabelsSel: d3.Selection<SVGTextElement, SimEdge, SVGGElement, unknown> | null = null
   private allNodesSel: d3.Selection<SVGGElement, SimNode, SVGGElement, unknown> | null = null
+  // 无障碍：尊重 prefers-reduced-motion，动画时长归零、布局立即稳定（P2-5）
+  private readonly reducedMotion: boolean
 
-  constructor(private input: GraphEngineInput) {}
+  constructor(private input: GraphEngineInput) {
+    this.reducedMotion = typeof window !== 'undefined'
+      && typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }
+
+  /** reduced-motion 下所有过渡时长归零 */
+  private dur(ms: number): number {
+    return this.reducedMotion ? 0 : ms
+  }
 
   getZoomBehavior(): d3.ZoomBehavior<SVGSVGElement, unknown> | null {
     return this.zoomBehavior
@@ -131,10 +142,10 @@ export class GraphEngine {
       this.prevLayout = layout
       const allNodesSel = this.g!.selectAll<SVGGElement, SimNode>('g.node-group')
       allNodesSel
-        .transition().duration(600).ease(d3.easeCubicInOut)
+        .transition().duration(this.dur(600)).ease(d3.easeCubicInOut)
         .attr('transform', (d: SimNode) => `translate(${d.x ?? 0},${d.y ?? 0})`)
       this.g!.selectAll<SVGPathElement, SimEdge>('path.edge-link')
-        .transition().duration(600).ease(d3.easeCubicInOut)
+        .transition().duration(this.dur(600)).ease(d3.easeCubicInOut)
         .style('opacity', 1)
     }
 
@@ -172,7 +183,7 @@ export class GraphEngine {
     if (!this.svg || !this.zoomBehavior) return
     // d3 v7 对 transition().call(zoom.transform, t) 的泛型约束比 v5 严格，
     // 这里显式收窄到 d3 期望的过渡选择集。
-    this.svg.transition().duration(350).call(
+    this.svg.transition().duration(this.dur(350)).call(
       (sel) => this.zoomBehavior!.transform!(sel as d3.Transition<SVGSVGElement, unknown, null, undefined>, transform),
     )
   }
@@ -261,7 +272,7 @@ export class GraphEngine {
     this.zoomBehavior!(this.svg!)
 
     this.svgEl?.addEventListener('dblclick', () => {
-      this.svg?.transition().duration(600).call(
+      this.svg?.transition().duration(this.dur(600)).call(
         (sel) => this.zoomBehavior!.transform!(sel as d3.Transition<SVGSVGElement, unknown, null, undefined>, d3.zoomIdentity),
       ).ease(d3.easeCubicOut)
     })
@@ -273,7 +284,7 @@ export class GraphEngine {
     const allLinks = g.select<SVGGElement>('g.links')?.selectAll<SVGPathElement, SimEdge>('path.edge-link')
 
     allNodes.select('.node-body')
-      .transition().duration(200)
+      .transition().duration(this.dur(200))
       .attr('fill', (d: SimNode) => {
         if (this.input.communities.size > 0) {
           const commId = this.input.communities.get(d.id || d.label)
@@ -299,6 +310,15 @@ export class GraphEngine {
     allNodes.select('.degree-badge-text').style('opacity', showDecorations ? 1 : 0)
     allNodes.select('.label-bg').style('opacity', showLabels && showDecorations ? 0.85 : 0)
     allNodes.select('.node-label').style('opacity', showLabels ? 1 : 0)
+
+    // 主题切换时同步标签文字/光晕/底板颜色（academic 用 var() 自适应，自定义主题用各自色板）
+    if (this.input.theme) {
+      allNodes.select('.node-label')
+        .attr('fill', this.input.theme.textPrimary || 'var(--text-primary, #1F2937)')
+        .style('stroke', this.input.theme.canvasBg || 'var(--bg-secondary, #ffffff)')
+      allNodes.select('.label-bg')
+        .attr('fill', this.input.theme.panelBg || 'var(--bg-secondary, rgba(255,255,255,0.75))')
+    }
 
     if (allLinks && !allLinks.empty()) {
       allLinks.style('opacity', this.currentLodLevel === 'minimal' ? '0.3' : '1')
@@ -539,6 +559,13 @@ export class GraphEngine {
     this.simulation.on('end', () => {
       this.input.onSimulationEnd?.()
     })
+
+    // 无障碍：reduced-motion 下跳过动画，立即完成布局稳定
+    if (this.reducedMotion) {
+      this.simulation.tick(3)
+      this.simulation.stop()
+      this.applyTickPositions()
+    }
   }
 
   private renderEdges(simEdges: SimEdge[], highlightSet: Set<string>): void {
@@ -576,7 +603,7 @@ export class GraphEngine {
       })
 
     linkSelection.exit()
-      .transition().duration(300)
+      .transition().duration(this.dur(300))
       .style('opacity', 0)
       .remove()
 
@@ -625,7 +652,7 @@ export class GraphEngine {
         return `M${sx},${sy} L${tx},${ty}`
       })
       .style('opacity', 0)
-      .transition().duration(500)
+      .transition().duration(this.dur(500))
       .style('opacity', 1)
 
     // Animated edge flow
@@ -655,7 +682,7 @@ export class GraphEngine {
       .merge(linkLabelSel)
       .text(d => d.label || '')
       .attr('fill', 'var(--color-knowledge-default, #9CA3AF)')
-      .attr('font-size', 9)
+      .attr('font-size', 11)
       .attr('font-family', 'system-ui, sans-serif')
       .attr('text-anchor', 'middle')
       .attr('pointer-events', 'none')
@@ -677,6 +704,9 @@ export class GraphEngine {
     const g = this.g!
     const nodeG = g.select<SVGGElement>('g.nodes').empty()
       ? g.append('g').attr('class', 'nodes') : g.select<SVGGElement>('g.nodes')
+    // reduced-motion 时长助手：在 .each(function(){...}) 回调中 this 指向 DOM 元素，
+    // 需提前绑定类实例的 dur 方法供回调内使用。
+    const dur = this.dur.bind(this)
 
     // Sort by degree for Z-axis layering
     const sortedSimNodes = [...simNodes].sort((a, b) => (a.degree || 0) - (b.degree || 0))
@@ -687,9 +717,9 @@ export class GraphEngine {
     // Exit
     const exited = nodeSelection.exit()
     exited.selectAll('.node-body')
-      .transition().duration(300)
+      .transition().duration(this.dur(300))
       .attr('r', 0)
-    exited.transition().duration(350).style('opacity', 0).remove()
+    exited.transition().duration(this.dur(350)).style('opacity', 0).remove()
 
     // Enter
     const entered = nodeSelection.enter()
@@ -708,7 +738,7 @@ export class GraphEngine {
       .attr('r', 0)
       .attr('fill', (d: SimNode) => getTypeConf(d.type).glow)
       .attr('filter', 'url(#glow-outer)')
-      .transition().delay((_, i) => Math.min(i * 30, 600)).duration(550)
+      .transition().delay((_, i) => Math.min(i * 30, 600)).duration(this.dur(550))
       .ease(d3.easeElasticOut.amplitude(0.8).period(0.6))
       .attr('r', (d: SimNode) => calcNodeRadius(d, densityScale) + 10)
 
@@ -720,7 +750,7 @@ export class GraphEngine {
       .attr('stroke', (d: SimNode) => getTypeConf(d.type).color)
       .attr('stroke-opacity', 0.25)
       .attr('stroke-width', 1.5)
-      .transition().delay((_, i) => Math.min(i * 30 + 80, 650)).duration(450)
+      .transition().delay((_, i) => Math.min(i * 30 + 80, 650)).duration(this.dur(450))
       .attr('r', (d: SimNode) => calcNodeRadius(d, densityScale) + 4)
 
     // Body
@@ -748,7 +778,7 @@ export class GraphEngine {
       })
       .attr('fill-opacity', (d: SimNode) => highlightSet.size === 0 || highlightSet.has(d.id || d.label) ? 0.94 : 0.28)
       .attr('filter', (d: SimNode) => isCoreNode(d) ? 'url(#core-node-shadow)' : 'url(#node-drop-shadow)')
-      .transition().delay((_, i) => Math.min(i * 30, 600)).duration(480)
+      .transition().delay((_, i) => Math.min(i * 30, 600)).duration(this.dur(480))
       .ease(d3.easeBackOut.overshoot(1.35))
       .attr('r', (d: SimNode) => calcNodeRadius(d, densityScale))
 
@@ -760,7 +790,7 @@ export class GraphEngine {
       .attr('cy', (d: SimNode) => -calcNodeRadius(d, densityScale) * 0.22)
       .attr('fill', 'white')
       .attr('fill-opacity', 0.3)
-      .transition().delay((_, i) => Math.min(i * 30 + 120, 720)).duration(380)
+      .transition().delay((_, i) => Math.min(i * 30 + 120, 720)).duration(this.dur(380))
       .attr('r', (d: SimNode) => calcNodeRadius(d, densityScale) * 0.38)
 
     // Degree badge (for nodes with degree >= 5)
@@ -777,20 +807,20 @@ export class GraphEngine {
           .attr('fill', 'rgba(255,255,255,0.9)')
           .attr('stroke', getTypeConf(d.type).color)
           .attr('stroke-width', 1.5)
-          .transition().delay(400 + Math.random() * 300).duration(300)
+          .transition().delay(400 + Math.random() * 300).duration(dur(300))
           .attr('r', badgeR + 2)
         group.append('text')
           .attr('class', 'degree-badge-text')
           .attr('x', dynamicR * 0.65)
           .attr('y', -dynamicR * 0.65 + 3.5)
           .attr('text-anchor', 'middle')
-          .attr('font-size', Math.min(badgeR * 1.2, 8))
+          .attr('font-size', Math.min(badgeR * 1.2, 10))
           .attr('font-weight', '700')
           .attr('fill', getTypeConf(d.type).color)
           .attr('pointer-events', 'none')
           .text(String(Math.min(d.degree || 0, 99)))
           .style('opacity', 0)
-          .transition().delay(500 + Math.random() * 300).duration(250)
+          .transition().delay(500 + Math.random() * 300).duration(dur(250))
           .style('opacity', 1)
       }
     })
@@ -819,7 +849,7 @@ export class GraphEngine {
           .attr('stroke-opacity', 0)
           .attr('stroke-width', 2 + (degree / maxDegree) * 2)
           .style('filter', 'url(#glow-outer)')
-          .transition().delay(600 + Math.random() * 400).duration(800)
+          .transition().delay(600 + Math.random() * 400).duration(dur(800))
           .ease(d3.easeCubicOut)
           .attr('r', hubRingR)
           .attr('stroke-opacity', 0.35 - (degree / maxDegree) * 0.15)
@@ -832,16 +862,22 @@ export class GraphEngine {
       .text((d: SimNode) => d.label.length > 10 ? d.label.slice(0, 10) + '...' : d.label)
       .attr('dy', (d: SimNode) => calcNodeRadius(d, densityScale) + 18)
       .attr('text-anchor', 'middle')
-      .attr('fill', '#1F2937')
+      // CHK-04：标签文字跟随 activeTheme.textPrimary（academic 为 var(--text-primary) 自适应主题）
+      .attr('fill', this.input.theme?.textPrimary || 'var(--text-primary, #1F2937)')
       .attr('font-size', (d: SimNode) => isCoreNode(d)
-        ? Math.max(11, Math.min(14, calcNodeRadius(d, densityScale) * 0.42))
-        : Math.max(9, Math.min(11, calcNodeRadius(d, densityScale) * 0.50)))
+        ? Math.max(12, Math.min(14, calcNodeRadius(d, densityScale) * 0.42))
+        : Math.max(11, Math.min(12, calcNodeRadius(d, densityScale) * 0.50)))
       .attr('font-weight', (d: SimNode) => isCoreNode(d) ? '700' : '600')
       .attr("font-family", "'Noto Sans SC', system-ui, sans-serif")
-      .style('text-shadow', '0 1px 2px rgba(255,255,255,0.9), 0 0 6px rgba(255,255,255,0.7)')
+      // 用「描边光晕」替代白色 text-shadow：paint-order 让描边垫在文字底层，
+      // 描边色取 activeTheme.canvasBg（画布底色），自动适配主题。
+      .style('paint-order', 'stroke')
+      .style('stroke', this.input.theme?.canvasBg || 'var(--bg-secondary, #ffffff)')
+      .style('stroke-width', '3px')
+      .style('stroke-linejoin', 'round')
       .attr('pointer-events', 'none')
       .style('opacity', 0)
-      .transition().delay((_, i) => Math.min(i * 30 + 220, 850)).duration(320)
+      .transition().delay((_, i) => Math.min(i * 30 + 220, 850)).duration(this.dur(320))
       .style('opacity', 1)
 
     // Label background
@@ -852,16 +888,17 @@ export class GraphEngine {
       .attr('width', (d: SimNode) => calcNodeRadius(d, densityScale) * 3.6)
       .attr('height', 16)
       .attr('rx', 3)
-      .attr('fill', 'rgba(255,255,255,0.75)')
-      .attr('stroke', 'rgba(148,163,184,0.15)')
+      // CHK-04：标签底板跟随 activeTheme.panelBg（academic 为 var(--bg-secondary) 自适应主题）
+      .attr('fill', this.input.theme?.panelBg || 'var(--bg-secondary, rgba(255,255,255,0.75))')
+      .attr('stroke', 'var(--border-color, rgba(148,163,184,0.15))')
       .attr('stroke-width', 0.5)
       .style('pointer-events', 'none')
       .style('opacity', 0)
-      .transition().delay((_, i) => Math.min(i * 30 + 200, 830)).duration(320)
+      .transition().delay((_, i) => Math.min(i * 30 + 200, 830)).duration(this.dur(320))
       .style('opacity', 0.85)
 
     // Fade in enter selection
-    entered.transition().delay((_, i) => Math.min(i * 20, 520)).duration(320)
+    entered.transition().delay((_, i) => Math.min(i * 20, 520)).duration(this.dur(320))
       .style('opacity', 1)
 
     const mergedNodes = entered.merge(nodeSelection)
@@ -880,33 +917,33 @@ export class GraphEngine {
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '4 2')
       .style('pointer-events', 'none')
-      .transition().duration(200)
+      .transition().duration(this.dur(200))
       .attr('r', (d: any) => calcNodeRadius(d as SimNode, densityScale) + 8)
     mergedNodes.selectAll('.keyboard-focus-ring')
       .attr('r', (d: any, i: number) => i === this.input.focusedNodeIndex ? calcNodeRadius(d as SimNode, densityScale) + 8 : 0)
 
     // ── Update phase: sync all elements ──
     mergedNodes.select('.node-glow-outer')
-      .transition().duration(350).attr('r', (d: SimNode) => calcNodeRadius(d, densityScale) + 10)
+      .transition().duration(this.dur(350)).attr('r', (d: SimNode) => calcNodeRadius(d, densityScale) + 10)
     mergedNodes.select('.node-glow-ring')
-      .transition().duration(350).attr('r', (d: SimNode) => calcNodeRadius(d, densityScale) + 4)
+      .transition().duration(this.dur(350)).attr('r', (d: SimNode) => calcNodeRadius(d, densityScale) + 4)
     mergedNodes.select('.node-highlight')
-      .transition().duration(300).attr('r', (d: SimNode) => calcNodeRadius(d, densityScale) * 0.38)
+      .transition().duration(this.dur(300)).attr('r', (d: SimNode) => calcNodeRadius(d, densityScale) * 0.38)
     mergedNodes.select('.label-bg')
-      .transition().duration(300)
+      .transition().duration(this.dur(300))
       .attr('x', (d: SimNode) => -calcNodeRadius(d, densityScale) * 1.8)
       .attr('y', (d: SimNode) => calcNodeRadius(d, densityScale) + 6)
       .attr('width', (d: SimNode) => calcNodeRadius(d, densityScale) * 3.6)
     mergedNodes.select('.node-label')
-      .transition().duration(300)
+      .transition().duration(this.dur(300))
       .attr('dy', (d: SimNode) => calcNodeRadius(d, densityScale) + 18)
       .attr('font-size', (d: SimNode) => isCoreNode(d)
-        ? Math.max(11, Math.min(14, calcNodeRadius(d, densityScale) * 0.42))
-        : Math.max(9, Math.min(11, calcNodeRadius(d, densityScale) * 0.50)))
+        ? Math.max(12, Math.min(14, calcNodeRadius(d, densityScale) * 0.42))
+        : Math.max(11, Math.min(12, calcNodeRadius(d, densityScale) * 0.50)))
       .attr('font-weight', (d: SimNode) => isCoreNode(d) ? '700' : '600')
 
     mergedNodes.select('.node-body')
-      .transition().duration(300)
+      .transition().duration(this.dur(300))
       .attr('fill', (d: SimNode) => {
         if (communities.size > 0) {
           const commId = communities.get(d.id || d.label)
@@ -994,8 +1031,8 @@ export class GraphEngine {
       }
       const sel = d3.select(event.currentTarget as SVGGElement)
       sel.select('.node-body')
-        .transition().duration(150).attr('stroke', '#FF3B30').attr('stroke-width', 4)
-        .transition().duration(300).attr('stroke', 'white').attr('stroke-width', 2)
+        .transition().duration(this.dur(150)).attr('stroke', '#FF3B30').attr('stroke-width', 4)
+        .transition().duration(this.dur(300)).attr('stroke', 'white').attr('stroke-width', 2)
     })
 
     // Hover in/out
@@ -1034,7 +1071,7 @@ export class GraphEngine {
       })
 
       d3.select(el).select('.node-body')
-        .transition().duration(160).ease(d3.easeCubicOut)
+        .transition().duration(this.dur(160)).ease(d3.easeCubicOut)
         .attr('r', dynamicR + 6)
         .attr('fill-opacity', 1)
         .attr('stroke-width', 3.5)
@@ -1043,7 +1080,7 @@ export class GraphEngine {
       // O(度数) 邻居查询（替代原 O(E) 全边扫描）
       const connectedIds = new Set<string>([d.id, ...(adjacency.get(d.id) ?? [])])
 
-      allLinks?.transition().duration(160)
+      allLinks?.transition().duration(this.dur(160))
         .attr('stroke-opacity', (e: SimEdge) => {
           const sId = typeof e.source === 'object' ? e.source.id : e.source
           const tId = typeof e.target === 'object' ? e.target.id : e.target
@@ -1058,26 +1095,26 @@ export class GraphEngine {
         })
 
       allNodes?.select('.node-body')
-        .transition().duration(160)
+        .transition().duration(this.dur(160))
         .attr('fill-opacity', (n: SimNode) => connectedIds.has(n.id) ? 1 : 0.14)
     }
 
     const handleHoverOut = (el: SVGGElement) => {
       this.input.onSetTooltip?.(null)
       d3.select(el).select('.node-body')
-        .transition().duration(220)
+        .transition().duration(this.dur(220))
         .attr('r', (d: any) => calcNodeRadius(d))
         .attr('fill-opacity', 0.92)
         .attr('stroke-width', 2)
         .attr('filter', null)
 
       // 原回调里计算了 sId/tId 但恒返回 0.55（死代码），改为常量赋值
-      allLinks?.transition().duration(220)
+      allLinks?.transition().duration(this.dur(220))
         .attr('stroke-opacity', 0.55)
         .attr('stroke-width', (e: SimEdge) => calcEdgeWidth(e.type, e.strength))
 
       allNodes?.select('.node-body')
-        .transition().duration(220)
+        .transition().duration(this.dur(220))
         .attr('fill-opacity', 0.92)
     }
 

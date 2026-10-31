@@ -303,6 +303,13 @@ function useSafetyHistory() {
 
 // ===== 工具函数 =====
 
+/** 风险等级颜色 → Tailwind 静态类名映射（JIT 无法解析动态类名） */
+const RISK_COLOR_CLASSES: Record<string, { text: string; bg: string }> = {
+  green: { text: 'text-success-600 dark:text-success-600', bg: 'bg-success-500' },
+  yellow: { text: 'text-warning-600 dark:text-warning-600', bg: 'bg-warning-500' },
+  red: { text: 'text-danger-600 dark:text-danger-600', bg: 'bg-danger-500' },
+}
+
 function calculateComplianceRate(checks: Record<string, { passed?: boolean } | undefined>): number {
   // 只统计后端明确返回 passed === true 的类别。
   //
@@ -351,7 +358,7 @@ function ComplianceRateDisplay({ complianceRate, passed }: ComplianceRateDisplay
         <span className={`font-medium ${
           passed
             ? 'text-success-600 dark:text-success-600'
-            : `text-${riskLevel.color}-600 dark:text-${riskLevel.color}-400`
+            : RISK_COLOR_CLASSES[riskLevel.color]?.text || 'text-neutral-600'
         }`}>
           {complianceRate}%
         </span>
@@ -360,7 +367,7 @@ function ComplianceRateDisplay({ complianceRate, passed }: ComplianceRateDisplay
       <div className="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${
-            passed ? 'bg-success-500' : `bg-${riskLevel.color}-500`
+            passed ? 'bg-success-500' : RISK_COLOR_CLASSES[riskLevel.color]?.bg || 'bg-neutral-500'
           }`}
           style={{ width: `${complianceRate}%` }}
         />

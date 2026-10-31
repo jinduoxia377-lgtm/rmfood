@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SocialProof 组件 v11 — 学术引用风格（升级 v11）
  *
  * 升级要点（v11）：
@@ -62,7 +62,7 @@ function PartnerLogos() {
         <div className="lp-section-tag mb-[var(--space-apple-md)]">
           合作机构
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           {partnerOrgs.map((org) => {
             const s = categoryStyle[org.category];
             const label = categoryLabel[org.category];
@@ -167,7 +167,7 @@ function Testimonials() {
 
 export default function SocialProof() {
   return (
-    <section id="social-proof" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
+    <section id="social-proof" aria-label="信任证明与合作机构" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
 
         {/* 标题 */}

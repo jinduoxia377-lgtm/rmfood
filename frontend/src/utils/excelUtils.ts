@@ -58,7 +58,10 @@ export function calculateStringWidth(str: string): number {
   for (const char of str) {
     if (/[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef\u3400-\u4dbf]/.test(char)) {
       width += CHINESE_CHAR_WIDTH
-    } else if (/[\u0000-\u001f]/.test(char)) {
+    } else if (
+      // eslint-disable-next-line no-control-regex
+      /[\u0000-\u001f]/.test(char)
+    ) {
       width += 0.5
     } else {
       width += ASCII_CHAR_WIDTH

@@ -87,6 +87,7 @@ export default function HerbsTab({
 
   // 当父组件通过 initKeyword 传入新搜索词时（全局搜索点击结果），同步更新内部状态
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setKeyword(initKeyword || '');
   }, [initKeyword]);
 
@@ -145,6 +146,7 @@ export default function HerbsTab({
     if (initialSelectedHerbName && (herbData.data?.items?.length ?? 0)) {
       const match = ((herbData.data?.items ?? []) as (TCMHerb | SymMapHerb)[]).find((h: TCMHerb | SymMapHerb) => { const name = (h as TCMHerb).name_cn || (h as SymMapHerb).nameCn; return name === initialSelectedHerbName; });
       if (match) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedHerb(match);
         onHerbSelectionConsumed?.();
       }

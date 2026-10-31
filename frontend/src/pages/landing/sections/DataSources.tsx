@@ -139,7 +139,7 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
 // ── 主组件 ──────────────────────────────────────────────────────────
 export default function DataSources() {
   return (
-    <section id="data-sources" className="py-16 lg:py-20" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
+    <section id="data-sources" aria-label="数据底座与权威数据源" className="py-16 lg:py-20" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
 
         {/* 标题区 */}

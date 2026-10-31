@@ -48,7 +48,7 @@ export default function CentralityMetricsPanel({
         <div className="flex items-center gap-1">
           {(['pageRank', 'betweenness', 'closeness', 'degree'] as const).map(mode => (
             <button key={mode} onClick={() => { onSetCentralityMode(mode); onRunCentralityAnalysis(mode) }}
-              className={`px-2 py-0.5 rounded-md text-xs font-medium transition-colors ${centralityMode === mode ? 'bg-error-500 text-white' : 'hover:bg-error-100 dark:hover:bg-error-800/30 text-neutral-600 dark:text-neutral-300'}`}>
+              className={`px-2 py-0.5 rounded-md text-xs font-medium transition-colors ${centralityMode === mode ? 'bg-[var(--color-danger-surface)] text-white' : 'hover:bg-error-100 dark:hover:bg-error-800/30 text-neutral-600 dark:text-neutral-300'}`}>
               {mode === 'pageRank' ? 'PR' : mode === 'betweenness' ? 'BC' : mode === 'closeness' ? 'CC' : 'DEG'}
             </button>
           ))}

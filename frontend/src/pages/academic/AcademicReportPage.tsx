@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import {
   FileText, Search, Filter, Plus, Edit, Trash2, Eye,
   Calendar, BookOpen, Link2, User, X, MoreVertical,
@@ -24,6 +25,8 @@ type SortOrder = 'asc' | 'desc'
 
 export default function AcademicReportPage() {
   const { t, i18n } = useTranslation()
+  const [searchParams] = useSearchParams()
+  const reportIdFromQuery = searchParams.get('reportId')
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
@@ -48,9 +51,10 @@ export default function AcademicReportPage() {
       reports: [], isLoading: false, error: null,
       fetchReports: async () => {}, deleteReport: () => {},
       loadReport: () => {}, createReport: () => {},
+      duplicateReport: () => undefined,
     }
   }
-  const { reports, isLoading, error, fetchReports, deleteReport, loadReport, createReport } = store
+  const { reports, isLoading, error, fetchReports, deleteReport, loadReport, createReport, duplicateReport } = store
   const { addToast } = useToastStore()
 
   const fetchRef = useRef(fetchReports)
@@ -60,6 +64,33 @@ export default function AcademicReportPage() {
   useEffect(() => {
     fetchRef.current()
   }, [])
+
+  // 深链：/academic-report?reportId=xxx → fetch 完成后按 reportId 打开编辑器。
+  // 用 ref 记录已处理的 reportId，防止 StrictMode 双执行重复打开；query 变化时允许再次处理。
+  const processedReportIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!reportIdFromQuery) return
+    if (processedReportIdRef.current === reportIdFromQuery) return
+    processedReportIdRef.current = reportIdFromQuery
+
+    const openLinkedReport = async () => {
+      await fetchRef.current()
+      const report = useAcademicReportStore.getState().reports.find(r => r.id === reportIdFromQuery)
+      if (report) {
+        loadReport(report.id)
+        setSelectedReport(report)
+        setViewMode('editor')
+      } else {
+        addToast({
+          type: 'error',
+          title: t('pages.academic.reportNotFound', '报告不存在'),
+          message: t('pages.academic.reportNotFoundDesc', '未找到该报告，可能已被删除。'),
+        })
+        setViewMode('list')
+      }
+    }
+    void openLinkedReport()
+  }, [reportIdFromQuery, loadReport, addToast, t])
 
   const filteredAndSortedReports = useMemo(() => {
     const result = reports.filter(report => {
@@ -112,9 +143,13 @@ export default function AcademicReportPage() {
   }
 
   const handleDuplicate = (report: ReportItem) => {
-    void report;
-    createReport('research')
-    addToast({ type: 'success', message: t('pages.academic.reportDuplicated') })
+    // 真实复制：深拷贝章节/参考文献/摘要/作者/关键词/配方名，生成新 id 并写入 reports（zustand persist 自动持久化）
+    const newId = duplicateReport(report.id)
+    if (newId) {
+      addToast({ type: 'success', message: t('pages.academic.reportDuplicated') })
+    } else {
+      addToast({ type: 'error', message: t('pages.academic.reportNotFound') })
+    }
     setShowMoreMenu(null)
   }
 
@@ -123,6 +158,16 @@ export default function AcademicReportPage() {
   }
   const handleEdit = (report: ReportItem) => {
     setSelectedReport(report); loadReport(report.id); setViewMode('editor'); setShowMoreMenu(null)
+  }
+
+  // 新建报告：先 createReport 重置 store currentReport（避免旧报告残留污染），
+  // 再取新建的 ReportItem 作为编辑器 initialReport，保存走 update 分支。
+  const handleNewReport = () => {
+    createReport('research')
+    const newReport = useAcademicReportStore.getState().currentReport
+    setSelectedReport(newReport)
+    setViewMode('editor')
+    setShowMoreMenu(null)
   }
 
   const handleDelete = (id: string) => {
@@ -192,7 +237,10 @@ export default function AcademicReportPage() {
           )}
         </div>
         <div className="flex-1 overflow-hidden">
-          <AcademicReportEditor />
+          <AcademicReportEditor
+            key={selectedReport?.id ?? 'new'}
+            initialReport={selectedReport ?? undefined}
+          />
         </div>
       </div>
     )
@@ -214,7 +262,7 @@ export default function AcademicReportPage() {
             icon={<Plus size={16} />}
             size="md"
             className="bg-[var(--bg-secondary)] text-[var(--color-primary-text)] hover:bg-[var(--bg-tertiary)] shadow-sm"
-            onClick={() => { setSelectedReport(null); setViewMode('editor') }}
+            onClick={handleNewReport}
           >
             {t('pages.academic.newReport')}
           </Button>
@@ -319,13 +367,13 @@ export default function AcademicReportPage() {
         </Card>
       ) : filteredAndSortedReports.length === 0 ? (
         <EmptyState
-          icon={<div className="w-12 h-12 rounded-[var(--radius-Apple-md)] bg-[var(--color-primary-container)] flex items-center justify-center"><FileText size={24} className="text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)]" /></div>}
+          icon={<div className="w-12 h-12 rounded-[var(--radius-Apple-md)] bg-[var(--color-primary-container)] flex items-center justify-center"><FileText size={24} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" /></div>}
           title={hasActiveFilters ? t('pages.academic.noMatchingReports') : t('pages.academic.noReports')}
           description={hasActiveFilters ? t('pages.academic.noMatchingDesc') : t('pages.academic.noReportsDesc')}
           action={
             hasActiveFilters
               ? <Button variant="outline" size="sm" onClick={clearFilters}>{t('pages.academic.clearFilters')}</Button>
-              : <Button icon={<Plus size={14} />} size="sm" className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)]" onClick={() => setViewMode('editor')}>{t('pages.academic.newReport')}</Button>
+              : <Button icon={<Plus size={14} />} size="sm" className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)]" onClick={handleNewReport}>{t('pages.academic.newReport')}</Button>
           }
         />
       ) : (
@@ -377,7 +425,7 @@ export default function AcademicReportPage() {
                     className="flex-1 min-w-0 text-left"
                   >
                     <div className="flex items-center gap-2 mb-0.5">
-                      <BookOpen size={13} className="text-[var(--color-primary-text)]0 shrink-0" />
+                      <BookOpen size={13} className="text-[var(--color-primary-text)] shrink-0" />
                       <span className="text-sm font-medium text-[var(--text-primary)] truncate group-hover:text-[var(--color-primary-text)] dark:group-hover:text-[var(--color-primary-text)] transition-colors">
                         {report.title}
                       </span>
@@ -399,7 +447,7 @@ export default function AcademicReportPage() {
                   {/* 状态 */}
                   <div className="hidden sm:block shrink-0">
                     <span className={`inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-2.5 py-0.5 text-xs font-medium ${statusCls(report.status)}`}>
-                      <span className={cn('w-1.5 h-1.5 rounded-[var(--radius-pill)]', report.status === 'published' ? 'bg-[var(--color-primary-container)]0' : report.status === 'in_review' ? 'bg-[var(--color-warning-container)]0' : 'bg-neutral-400')} />
+                      <span className={cn('w-1.5 h-1.5 rounded-[var(--radius-pill)]', report.status === 'published' ? 'bg-[var(--color-primary-container)]' : report.status === 'in_review' ? 'bg-[var(--color-warning-container)]' : 'bg-neutral-400')} />
                       {report.status === 'draft' ? t('pages.academic.statusDraft') : report.status === 'in_review' ? t('pages.academic.statusInReview') : t('pages.academic.statusPublished')}
                     </span>
                   </div>
@@ -459,7 +507,17 @@ export default function AcademicReportPage() {
       >
         <div className="flex gap-[var(--space-apple-sm)] justify-end mt-6">
           <Button variant="ghost" onClick={() => { setShowDeleteConfirm(false); setDeleteTargetId(null) }}>{t('pages.academic.cancel')}</Button>
-          <Button variant="danger" onClick={() => selectedIds.size > 1 ? handleBulkDelete() : deleteTargetId && handleDelete(deleteTargetId)}>{t('pages.academic.confirmDeleteBtn')}</Button>
+          <Button variant="danger" onClick={() => {
+              if (selectedIds.size > 1) {
+                handleBulkDelete()
+              } else if (selectedIds.size === 1) {
+                // 单条勾选：直接删除该条（deleteTargetId 仅在行内菜单删除时设置）
+                const id = Array.from(selectedIds)[0]
+                if (id) handleDelete(id)
+              } else if (deleteTargetId) {
+                handleDelete(deleteTargetId)
+              }
+            }}>{t('pages.academic.confirmDeleteBtn')}</Button>
         </div>
       </Modal>
       </div>

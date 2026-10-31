@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   ChevronLeft, ChevronRight, SkipBack, SkipForward,
   ChevronDown, ChevronUp, Search, Filter,
-  Lightbulb, Cog, Eye, FileText, Clock, CheckCircle, XCircle,
+  Lightbulb, Cog, Eye, Clock, CheckCircle, XCircle,
   Hash, BarChart3,
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -150,6 +150,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
 
   // 搜索同步
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilterOptions(prev => ({ ...prev, searchQuery }));
   }, [searchQuery]);
 

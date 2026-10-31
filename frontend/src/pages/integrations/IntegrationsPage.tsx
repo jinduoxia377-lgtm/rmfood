@@ -15,7 +15,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import {
   Plug, Webhook, Key, Plus, Copy, Trash2, ExternalLink,
-  Slack, MessageCircle, Bell, RefreshCw, Check, AlertCircle,
+  Slack, MessageCircle, Bell, RefreshCw, Check,
   CheckCircle2, Info,
 } from 'lucide-react'
 import {

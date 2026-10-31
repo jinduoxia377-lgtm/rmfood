@@ -5,11 +5,12 @@
 
 import type { AcademicReport } from './academicReportService';
 import type { Reference } from '@/types/academic-report';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import type { CitationStyle } from './citationFormatter';
 import { CitationFormatterFactory } from './citationFormatter';
 import { FigureNumberingManager } from './figureNumbering';
+import { exportHtmlAsPdf } from '@/utils/pdfPrintExporter';
+import { feedbackService } from './feedbackService';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType } from 'docx';
 
 export type ExportFormat = 'markdown' | 'html' | 'word' | 'pdf';
 
@@ -107,31 +108,6 @@ const HTML_TEMPLATE = `
 </html>
 `;
 
-/**
- * Word模板样式（用于RTF转换）
- */
-const WORD_STYLES = `
-<!--[if gte mso 9]>
-<xml>
-  <w:WordDocument>
-    <w:View>Print</w:View>
-    <w:Zoom>100</w:Zoom>
-    <w:DoNotOptimizeForBrowser/>
-  </w:WordDocument>
-</xml>
-<![endif]-->
-<style>
-  body { font-family: "SimSun", serif; font-size: 12pt; line-height: 1.5; }
-  h1 { font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 12pt; }
-  h2 { font-size: 14pt; font-weight: bold; margin-top: 24pt; margin-bottom: 12pt; }
-  h3 { font-size: 12pt; font-weight: bold; margin-top: 18pt; margin-bottom: 10pt; }
-  p { margin-bottom: 12pt; text-indent: 24pt; }
-  table { border-collapse: collapse; margin: 12pt 0; }
-  th, td { border: 1pt solid #000; padding: 6pt 12pt; }
-  th { background-color: #f0f0f0; }
-</style>
-`;
-
 export class AcademicExportService {
   private report: AcademicReport;
   private citationFormatter = CitationFormatterFactory;
@@ -146,6 +122,17 @@ export class AcademicExportService {
    */
   async export(options: ExportOptions): Promise<ExportResult> {
     try {
+      // Word 使用 docx 库生成真实 .docx
+      if (options.format === 'word') {
+        return await this.exportToDocx(options);
+      }
+
+      // PDF 使用浏览器打印方案（新窗口 → window.print → 另存为 PDF），
+      // 避免生成空 Blob 导致下载 0 字节文件。
+      if (options.format === 'pdf') {
+        return await this.exportToPdf(options);
+      }
+
       const content = await this.generateContent(options);
       const blob = await this.createBlob(content, options.format);
       const filename = this.generateFilename(options.format);
@@ -165,7 +152,7 @@ export class AcademicExportService {
   }
 
   /**
-   * 生成导出内容
+   * 生成导出内容（word/pdf 已在 export() 中短路到专用导出分支）
    */
   private async generateContent(options: ExportOptions): Promise<string> {
     switch (options.format) {
@@ -173,10 +160,6 @@ export class AcademicExportService {
         return this.generateMarkdown(options);
       case 'html':
         return this.generateHtml(options);
-      case 'word':
-        return this.generateWord(options);
-      case 'pdf':
-        return '';
       default:
         return '';
     }
@@ -271,370 +254,28 @@ export class AcademicExportService {
   }
 
   /**
-   * 生成Word格式（HTML格式，Word可直接打开）
-   */
-  private generateWord(options: ExportOptions): string {
-    const sections: string[] = [];
-
-    sections.push(WORD_STYLES);
-
-    if (this.report.title) {
-      sections.push(`<h1>${this.report.title}</h1>`);
-    }
-
-    if (this.report.authors && this.report.authors.length > 0) {
-      sections.push(`<p style="text-align:center;">作者：${this.report.authors.join('、')}</p>`);
-    }
-
-    if (this.report.keywords) {
-      sections.push(`<p style="text-align:center;">关键词：${this.report.keywords.join('、')}</p>`);
-    }
-
-    if (this.report.abstract) {
-      sections.push(`<p style="text-indent:24pt;"><strong>摘要：</strong>${this.report.abstract}</p>`);
-    }
-
-    if (this.report.chapters) {
-      this.report.chapters.forEach((section, index) => {
-        sections.push(`<h2>${index + 1}. ${section.title}</h2>`);
-        sections.push(this.convertToHtml(section.content));
-      });
-    }
-
-    if (options.includeReferences && this.report.references && this.report.references.length > 0) {
-      sections.push('<h2>参考文献</h2>');
-      sections.push('<div style="margin-left:24pt;">');
-      const formattedReferences = this.citationFormatter.formatMultiple(
-        this.report.references as unknown as Reference[],
-        options.citationStyle,
-      );
-      formattedReferences.forEach((ref, i) => {
-        sections.push(`<p style="text-indent:-24pt; margin-left:48pt;">${i + 1}. ${ref}</p>`);
-      });
-      sections.push('</div>');
-    }
-
-    return `<!DOCTYPE html>
-<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
-<head>
-<meta charset="UTF-8">
-<title>${this.report.title || '学术报告'}</title>
-${WORD_STYLES}
-</head>
-<body>
-${sections.join('\n')}
-</body>
-</html>`;
-  }
-
-  /**
-   * 导出为PDF（中文优化版本）
+   * 导出为PDF（中文优化版本，浏览器打印方案）
    */
   async exportToPdf(options: ExportOptions): Promise<ExportResult> {
     try {
-      const config = DEFAULT_CHINESE_PDF_CONFIG;
-
-      const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      doc.setFont(CHINESE_FONT_NAME, 'normal');
-
-      let currentY = config.margins.top;
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const maxContentWidth = pageWidth - config.margins.left - config.margins.right;
-
-      const addHeader = () => {
-        doc.setFontSize(config.smallFontSize);
-        doc.setTextColor(150, 150, 150);
-        doc.text(
-          this.report.formulaName || '配方学术报告',
-          pageWidth / 2,
-          15,
-          { align: 'center' },
-        );
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.2);
-        doc.line(config.margins.left, 18, pageWidth - config.margins.right, 18);
-        currentY = 22;
-      };
-
-      const addFooter = (pageNum: number, totalPages: number) => {
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.2);
-        doc.line(config.margins.left, pageHeight - config.margins.bottom + 8, pageWidth - config.margins.right, pageHeight - config.margins.bottom + 8);
-
-        doc.setFontSize(config.smallFontSize);
-        doc.setTextColor(150, 150, 150);
-        doc.text(
-          '© 莱茵分子生物科技有限公司',
-          config.margins.left,
-          pageHeight - config.margins.bottom + 13,
-        );
-        doc.text(
-          `第 ${pageNum} 页 / 共 ${totalPages} 页`,
-          pageWidth - config.margins.right,
-          pageHeight - config.margins.bottom + 13,
-          { align: 'right' },
-        );
-      };
-
-      const checkPageBreak = (requiredSpace: number) => {
-        if (currentY + requiredSpace > pageHeight - config.margins.bottom) {
-          return true;
-        }
-        return false;
-      };
-
-      addHeader();
-
-      if (this.report.title) {
-        doc.setFontSize(config.titleFontSize);
-        doc.setTextColor(...config.primaryColor);
-        doc.setFont(CHINESE_FONT_NAME, 'bold');
-        const titleLines = doc.splitTextToSize(this.report.title, maxContentWidth);
-        doc.text(titleLines, pageWidth / 2, currentY + 10, { align: 'center' });
-        currentY += 10 + titleLines.length * 8;
-
-        doc.setDrawColor(...config.primaryColor);
-        doc.setLineWidth(0.5);
-        doc.line(config.margins.left, currentY, pageWidth - config.margins.right, currentY);
-        currentY += 10;
-        doc.setFont(CHINESE_FONT_NAME, 'normal');
-      }
-
-      doc.setFontSize(config.bodyFontSize);
-      doc.setTextColor(...config.secondaryColor);
-      doc.text(`配方名称：${this.report.formulaName}`, config.margins.left, currentY);
-      currentY += 7;
-      doc.text(`配方类型：${this.report.formulaType}`, config.margins.left, currentY);
-      currentY += 7;
-      doc.text(`目标人群：${this.report.targetPopulation}`, config.margins.left, currentY);
-      currentY += 7;
-      doc.text(`功效声称：${this.report.efficacyClaims.join('、')}`, config.margins.left, currentY);
-      currentY += 7;
-      doc.text(`作者：${this.report.authors?.join('、') || '配方研发项目组'}`, config.margins.left, currentY);
-      currentY += 7;
-      doc.text(`单位：${this.report.institution || '莱茵分子生物科技有限公司'}`, config.margins.left, currentY);
-      currentY += 7;
-      doc.text(`日期：${this.report.date || new Date().toLocaleDateString('zh-CN')}`, config.margins.left, currentY);
-      currentY += 15;
-
-      doc.setFontSize(config.headingFontSize);
-      doc.setTextColor(...config.primaryColor);
-      doc.setFont(CHINESE_FONT_NAME, 'bold');
-      doc.text('摘要', config.margins.left, currentY);
-      currentY += 8;
-
-      doc.setFont(CHINESE_FONT_NAME, 'normal');
-      doc.setFontSize(config.bodyFontSize);
-      doc.setTextColor(...config.textColor);
-      if (checkPageBreak(40)) {
-        addFooter(1, 1);
-        doc.addPage();
-        addHeader();
-      }
-      const abstractLines = doc.splitTextToSize(this.report.abstract, maxContentWidth);
-      doc.text(abstractLines, config.margins.left, currentY);
-      currentY += abstractLines.length * 6 + 5;
-
-      doc.setFontSize(config.bodyFontSize);
-      doc.setTextColor(...config.secondaryColor);
-      doc.text(`关键词：${this.report.keywords?.join('、') || '药食同源, 配方研发'}`, config.margins.left, currentY);
-      currentY += 15;
-
-      let pageCount = 1;
-      if (this.report.chapters) {
-        this.report.chapters.forEach((section, index) => {
-          if (checkPageBreak(25)) {
-            addFooter(pageCount, pageCount);
-            doc.addPage();
-            pageCount++;
-            addHeader();
-          }
-
-          doc.setFontSize(config.headingFontSize);
-          doc.setTextColor(...config.primaryColor);
-          doc.setFont(CHINESE_FONT_NAME, 'bold');
-          doc.text(`${index + 1}. ${section.title}`, config.margins.left, currentY);
-          currentY += 8;
-
-          doc.setDrawColor(...config.primaryColor);
-          doc.setLineWidth(0.3);
-          doc.line(config.margins.left, currentY, pageWidth - config.margins.right, currentY);
-          currentY += 8;
-
-          doc.setFont(CHINESE_FONT_NAME, 'normal');
-          doc.setFontSize(config.bodyFontSize);
-          doc.setTextColor(...config.textColor);
-
-          const paragraphs = section.content.split('\n');
-          paragraphs.forEach(para => {
-            const trimmed = para.trim();
-            if (!trimmed) return;
-
-            if (trimmed.startsWith('### ')) {
-              if (checkPageBreak(15)) {
-                addFooter(pageCount, pageCount);
-                doc.addPage();
-                pageCount++;
-                addHeader();
-              }
-              doc.setFontSize(config.bodyFontSize + 1);
-              doc.setTextColor(...config.textColor);
-              doc.setFont(CHINESE_FONT_NAME, 'bold');
-              doc.text(trimmed.replace('### ', ''), config.margins.left + 5, currentY);
-              currentY += 7;
-              doc.setFont(CHINESE_FONT_NAME, 'normal');
-            } else if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
-              if (checkPageBreak(10)) {
-                addFooter(pageCount, pageCount);
-                doc.addPage();
-                pageCount++;
-                addHeader();
-              }
-              doc.setFont(CHINESE_FONT_NAME, 'bold');
-              const boldText = trimmed.replace(/\*\*/g, '');
-              const boldLines = doc.splitTextToSize(boldText, maxContentWidth);
-              doc.text(boldLines, config.margins.left, currentY);
-              currentY += boldLines.length * 6;
-              doc.setFont(CHINESE_FONT_NAME, 'normal');
-            } else if (trimmed.startsWith('- ')) {
-              if (checkPageBreak(10)) {
-                addFooter(pageCount, pageCount);
-                doc.addPage();
-                pageCount++;
-                addHeader();
-              }
-              doc.setTextColor(...config.textColor);
-              doc.text('•', config.margins.left + 5, currentY);
-              const bulletLines = doc.splitTextToSize(trimmed.substring(2), maxContentWidth - 10);
-              doc.text(bulletLines, config.margins.left + 10, currentY);
-              currentY += bulletLines.length * 6;
-            } else if (/^\d+\./.exec(trimmed)) {
-              if (checkPageBreak(10)) {
-                addFooter(pageCount, pageCount);
-                doc.addPage();
-                pageCount++;
-                addHeader();
-              }
-              doc.text(trimmed, config.margins.left, currentY);
-              currentY += 6;
-            } else {
-              if (checkPageBreak(10)) {
-                addFooter(pageCount, pageCount);
-                doc.addPage();
-                pageCount++;
-                addHeader();
-              }
-              const contentLines = doc.splitTextToSize(trimmed, maxContentWidth);
-              doc.text(contentLines, config.margins.left + 10, currentY);
-              currentY += contentLines.length * 6;
-            }
-          });
-
-          if (section.tables && section.tables.length > 0) {
-            section.tables.forEach(table => {
-              if (checkPageBreak(20)) {
-                addFooter(pageCount, pageCount);
-                doc.addPage();
-                pageCount++;
-                addHeader();
-              }
-
-              doc.setFontSize(config.bodyFontSize);
-              doc.setTextColor(...config.secondaryColor);
-              doc.setFont(CHINESE_FONT_NAME, 'bold');
-              doc.text(table.title, config.margins.left, currentY);
-              currentY += 5;
-
-              autoTable(doc, {
-                head: [table.headers],
-                body: table.rows,
-                startY: currentY,
-                margin: {
-                  left: config.margins.left,
-                  right: config.margins.right,
-                },
-                styles: {
-                  font: CHINESE_FONT_NAME,
-                  fontSize: config.smallFontSize,
-                  cellPadding: 2,
-                  lineColor: [180, 180, 180],
-                  lineWidth: 0.1,
-                },
-                headStyles: {
-                  fillColor: config.primaryColor,
-                  textColor: [255, 255, 255],
-                  fontStyle: 'bold',
-                  halign: 'center',
-                },
-                bodyStyles: {
-                  textColor: config.textColor,
-                  halign: 'left',
-                },
-                alternateRowStyles: {
-                  fillColor: [248, 248, 248],
-                },
-              });
-
-              currentY = ((doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10);
-            });
-          }
-
-          currentY += 10;
-        });
-      }
-
-      if (options.includeReferences && this.report.references && this.report.references.length > 0) {
-        if (checkPageBreak(25)) {
-          addFooter(pageCount, pageCount);
-          doc.addPage();
-          pageCount++;
-          addHeader();
-        }
-
-        doc.setFontSize(config.headingFontSize);
-        doc.setTextColor(...config.primaryColor);
-        doc.setFont(CHINESE_FONT_NAME, 'bold');
-        doc.text('参考文献', config.margins.left, currentY);
-        currentY += 8;
-
-        doc.setFont(CHINESE_FONT_NAME, 'normal');
-        doc.setFontSize(config.smallFontSize);
-        doc.setTextColor(...config.secondaryColor);
-
-        const formattedReferences = this.citationFormatter.formatMultiple(
-          this.report.references as unknown as Reference[],
-          options.citationStyle,
-        );
-
-        formattedReferences.forEach((ref, i) => {
-          if (checkPageBreak(12)) {
-            addFooter(pageCount, pageCount);
-            doc.addPage();
-            pageCount++;
-            addHeader();
-          }
-          const refText = `[${i + 1}] ${ref}`;
-          const refLines = doc.splitTextToSize(refText, maxContentWidth);
-          doc.text(refLines, config.margins.left + 5, currentY);
-          currentY += refLines.length * 5;
-        });
-      }
-
-      addFooter(pageCount, pageCount);
-
-      const blob = doc.output('blob');
+      // 生成完整 HTML（含打印样式），交由浏览器原生渲染中文并打印为 PDF
+      const html = this.generateHtml(options);
       const filename = this.generateFilename('pdf');
+
+      exportHtmlAsPdf(html, {
+        title: this.report.title || '学术报告',
+        onSuccess: () => {
+          feedbackService.showSuccess('导出成功', 'PDF 打印窗口已打开，请在打印对话框中选择“另存为 PDF”');
+        },
+        onError: (message) => {
+          feedbackService.showError('导出失败', message);
+        },
+      });
 
       return {
         success: true,
         filename,
-        data: blob,
+        data: undefined,
       };
     } catch (error) {
       return {
@@ -646,13 +287,159 @@ ${sections.join('\n')}
   }
 
   /**
+   * 导出为真实 Word 文档（.docx，使用 docx 库）
+   */
+  async exportToDocx(options: ExportOptions): Promise<ExportResult> {
+    try {
+      const children: any[] = [];
+
+      // 标题
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: this.report.title || '学术报告', bold: true, size: 36, font: 'SimSun' })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `作者：${this.report.authors?.join('、') || ''}`, size: 24, font: 'SimSun' })],
+          alignment: AlignmentType.CENTER,
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `单位：${this.report.institution || ''}`, size: 24, font: 'SimSun' })],
+          alignment: AlignmentType.CENTER,
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `日期：${this.report.date || ''}`, size: 24, font: 'SimSun' })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
+        }),
+      );
+
+      // 摘要
+      if (this.report.abstract) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: '摘要', bold: true, size: 32, font: 'SimSun' })],
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 300, after: 150 },
+          }),
+          new Paragraph({
+            children: [new TextRun({ text: this.report.abstract, size: 24, font: 'SimSun' })],
+            spacing: { after: 100 },
+          }),
+        );
+      }
+
+      // 章节
+      this.report.chapters.forEach((section, index) => {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: `${index + 1}. ${section.title}`, bold: true, size: 32, font: 'SimSun' })],
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 300, after: 150 },
+          }),
+        );
+
+        const lines = section.content.split('\n');
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          const plain = trimmed
+            .replace(/^#{1,6}\s+/, '')
+            .replace(/^\s*[-*+]\s+/, '• ')
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+            .replace(/\|/g, ' ')
+            .trim();
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: plain, size: 24, font: 'SimSun' })],
+              spacing: { after: 100 },
+            }),
+          );
+        }
+
+        if (section.tables) {
+          section.tables.forEach(table => {
+            children.push(
+              new Paragraph({
+                children: [new TextRun({ text: table.title, bold: true, size: 24, font: 'SimSun' })],
+                spacing: { before: 200, after: 100 },
+              }),
+            );
+            const headerRow = new TableRow({
+              tableHeader: true,
+              children: table.headers.map(h =>
+                new TableCell({
+                  children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, font: 'SimSun' })] })],
+                }),
+              ),
+            });
+            const bodyRows = table.rows.map(row =>
+              new TableRow({
+                children: row.map(c =>
+                  new TableCell({
+                    children: [new Paragraph({ children: [new TextRun({ text: c, font: 'SimSun' })] })],
+                  }),
+                ),
+              }),
+            );
+            children.push(
+              new Table({
+                width: { size: 100, type: WidthType.PERCENTAGE },
+                rows: [headerRow, ...bodyRows],
+              }),
+            );
+          });
+        }
+      });
+
+      // 参考文献
+      if (options.includeReferences && this.report.references && this.report.references.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: '参考文献', bold: true, size: 32, font: 'SimSun' })],
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 300, after: 150 },
+          }),
+        );
+        this.report.references.forEach(ref => {
+          const text = `${ref.number}. ${ref.authors}. ${ref.title}[J]. ${ref.journal}, ${ref.year}${ref.volume ? `, ${ref.volume}` : ''}${ref.pages ? `(${ref.pages})` : ''}${ref.doi ? `. DOI: ${ref.doi}` : ''}`;
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text, size: 20, font: 'SimSun' })],
+              spacing: { after: 80 },
+            }),
+          );
+        });
+      }
+
+      const doc = new Document({ sections: [{ properties: {}, children }] });
+      const blob = await Packer.toBlob(doc);
+      const filename = this.generateFilename('word');
+
+      return {
+        success: true,
+        filename,
+        data: blob,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        filename: '',
+        error: error instanceof Error ? error.message : 'Word导出失败',
+      };
+    }
+  }
+
+  /**
    * 创建Blob文件
    */
   private async createBlob(content: string, format: ExportFormat): Promise<Blob> {
     const mimeTypes: Record<ExportFormat, string> = {
       markdown: 'text/markdown;charset=utf-8',
       html: 'text/html;charset=utf-8',
-      word: 'application/msword',
+      word: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       pdf: 'application/pdf',
     };
 
@@ -668,7 +455,7 @@ ${sections.join('\n')}
     const extension: Record<ExportFormat, string> = {
       markdown: '.md',
       html: '.html',
-      word: '.doc',
+      word: '.docx',
       pdf: '.pdf',
     };
 

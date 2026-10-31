@@ -11,15 +11,69 @@
  * - 登录成功后必须先验证 Cookie 可用（getMe），再标记 isAuthenticated
  * - 启动时的静默检查只更新 user/isAuthenticated，不覆盖 isLoading
  * - 避免 setTimeout(0) 与登录流程产生状态竞争
+ *
+ * 🔇 降噪修复:
+ * - 认证状态缓存到 sessionStorage（5 分钟 TTL），避免启动时重复请求 auth/me
+ * - 缓存仅存非敏感用户档案（不含 token），符合 P0「不持久化 token」约束
+ * - fetchUser 使用 _silent 请求：401 属预期态，不触发 token 刷新/重定向
+ * - 并发 fetchUser 共享同一 in-flight promise，避免重复请求
  */
 import { create } from 'zustand'
 import type { User } from '@/types'
-import { UserRole } from '@/types'
 import { authApi } from '@/api/auth'
 import { connectWebSocket, disconnectWebSocket } from '@/services/websocket'
 import { logger } from '@/utils/safeLogger';
 import { normalizeUser } from '@/utils/userNormalizer';
 import api from '@/api/client'
+
+// ═══════════════════════════════════════════
+// 认证状态缓存 (sessionStorage, 5 分钟 TTL)
+// 仅缓存非敏感用户档案（不含 token），符合 P0「不持久化 token」约束
+// ═══════════════════════════════════════════
+const AUTH_CACHE_KEY = 'rmfood_auth_cache_v1'
+const AUTH_CACHE_TTL_MS = 5 * 60 * 1000
+
+interface AuthCacheEntry {
+  user: Record<string, unknown>
+  ts: number
+}
+
+function readAuthCache(): Record<string, unknown> | null {
+  try {
+    const raw = sessionStorage.getItem(AUTH_CACHE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as AuthCacheEntry
+    if (!parsed?.user || typeof parsed.ts !== 'number') return null
+    // 过期即清除，避免返回陈旧缓存
+    if (Date.now() - parsed.ts > AUTH_CACHE_TTL_MS) {
+      sessionStorage.removeItem(AUTH_CACHE_KEY)
+      return null
+    }
+    return parsed.user
+  } catch {
+    // sessionStorage 不可用（隐私模式 / SSR）时静默降级为无缓存
+    return null
+  }
+}
+
+function writeAuthCache(user: Record<string, unknown>): void {
+  try {
+    sessionStorage.setItem(AUTH_CACHE_KEY, JSON.stringify({ user, ts: Date.now() }))
+  } catch { /* 忽略配额/隐私模式错误 */ }
+}
+
+function clearAuthCache(): void {
+  try {
+    sessionStorage.removeItem(AUTH_CACHE_KEY)
+  } catch { /* 忽略 */ }
+}
+
+// ═══════════════════════════════════════════
+// 并发去重：共享同一 in-flight promise
+// 多个组件同时调用 fetchUser 时只发一个网络请求
+// ═══════════════════════════════════════════
+let fetchUserInFlight: Promise<void> | null = null
+
 interface AuthState {
   user: User | null
   isAuthenticated: boolean
@@ -34,23 +88,35 @@ interface AuthState {
   clearTwoFactor: () => void
 }
 
-export const useAuthStore = create<AuthState>()((set, get) => {
+export const useAuthStore = create<AuthState>()((set, _get) => {
 
   // ═══════════════════════════════════════════
   // 启动时静默检查认证状态
-  // 使用 Cookie 自动携带机制验证登录态
+  // 使用 Cookie 自动携带机制验证登录态；优先读取 sessionStorage 缓存
   // ═══════════════════════════════════════════
   setTimeout(async () => {
     try {
+      // 1. 5 分钟内的缓存直接复用，避免重复 auth/me 网络请求
+      const cached = readAuthCache()
+      if (cached) {
+        set({ user: normalizeUser(cached), isAuthenticated: true, isLoading: false })
+        return
+      }
+
+      // 2. 静默网络请求（_silent → 401 时由拦截器完全静默降级）
       const response = await api.get('/auth/me', { params: { _silent: true } })
       const user = response.data
       if (user) {
-        set({ user: normalizeUser(user), isAuthenticated: true })
+        const normalized = normalizeUser(user as Record<string, unknown>)
+        writeAuthCache(normalized as unknown as Record<string, unknown>)
+        set({ user: normalized, isAuthenticated: true })
       } else {
+        clearAuthCache()
         set({ user: null, isAuthenticated: false })
       }
     } catch {
       // 静默失败 — 不覆盖 isLoading，让登录流程自行处理
+      clearAuthCache()
       set({ user: null, isAuthenticated: false })
     } finally {
       set({ isLoading: false })
@@ -85,7 +151,8 @@ export const useAuthStore = create<AuthState>()((set, get) => {
 
         // 保存 token 作为 Cookie 失效时的降级方案
         // 后端返回 snake_case access_token；同时兼容 camelCase accessToken
-        fallbackToken = (loginResult as any)?.access_token || (loginResult as any)?.accessToken || null
+        const loginResultToken = loginResult as { access_token?: string | null; accessToken?: string | null }
+        fallbackToken = loginResultToken?.access_token || loginResultToken?.accessToken || null
 
         // 2. 获取 CSRF token（必须在登录成功后、任何状态变更请求之前）
         // 说明: 后端并无 /auth/csrf 路由（只有 /agent/csrf-token）。
@@ -99,7 +166,9 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           const { data: user } = await api.get<User>('/auth/me', {
             _loginFlow: true,
           } as Record<string, unknown>)
-          set({ user: normalizeUser(user as unknown as Record<string, unknown>), isAuthenticated: true, requiresTwoFactor: false, twoFactorUsername: null })
+          const normalized = normalizeUser(user as unknown as Record<string, unknown>)
+          writeAuthCache(normalized as unknown as Record<string, unknown>)
+          set({ user: normalized, isAuthenticated: true, requiresTwoFactor: false, twoFactorUsername: null })
           userFetched = true
         } catch (error) {
           // Cookie 可能因域名不匹配（如局域网访问）未被浏览器接受
@@ -110,7 +179,9 @@ export const useAuthStore = create<AuthState>()((set, get) => {
                 _loginFlow: true,
                 headers: { Authorization: `Bearer ${fallbackToken}` },
               } as Record<string, unknown>)
-              set({ user: normalizeUser(user as unknown as Record<string, unknown>), isAuthenticated: true, requiresTwoFactor: false, twoFactorUsername: null })
+              const normalized = normalizeUser(user as unknown as Record<string, unknown>)
+              writeAuthCache(normalized as unknown as Record<string, unknown>)
+              set({ user: normalized, isAuthenticated: true, requiresTwoFactor: false, twoFactorUsername: null })
               userFetched = true
             } catch (fallbackError) {
               logger.error('Login fallback failed:', fallbackError)
@@ -157,7 +228,8 @@ export const useAuthStore = create<AuthState>()((set, get) => {
       } catch (error) {
         logger.warn('Logout API failed, continuing with local cleanup:', error)
       } finally {
-        // 清理本地状态
+        // 清理本地状态 + 认证缓存
+        clearAuthCache()
         set({
           user: null,
           isAuthenticated: false,
@@ -169,31 +241,55 @@ export const useAuthStore = create<AuthState>()((set, get) => {
       }
     },
 
-    fetchUser: async () => {
-      try {
-        const user = await authApi.getMe()
-        set({ user: normalizeUser(user as unknown as Record<string, unknown>), isAuthenticated: true, isLoading: false })
+    fetchUser: () => {
+      // 🔄 并发去重：已有 in-flight 请求时直接复用，避免重复 auth/me
+      if (fetchUserInFlight) return fetchUserInFlight
 
-        // 连接 WebSocket
-        connectWebSocket().then((connected) => {
-          logger.info('WebSocket connected after fetchUser:', connected)
-        }).catch((error) => {
-          logger.error('WebSocket connection error after fetchUser:', error)
-        })
-      } catch (error) {
-        // 401 = 未登录 / 令牌过期，属于预期态而非错误；
-        // 原实现打成 WARN，登录未鉴权时刷新/轮询会刷屏 401，
-        // 降噪：降级为 debug（保留上下文，必要时打开 devtools 还能看到）。
-        if ((error as { response?: { status?: number } })?.response?.status === 401) {
-          logger.debug('fetchUser 未认证（预期态），保留现有 auth state')
-        } else {
-          logger.warn('fetchUser failed, keeping existing auth state:', error)
+      fetchUserInFlight = (async () => {
+        try {
+          // 🔇 _silent=true：401 属预期态（未登录），由拦截器静默降级，
+          // 不触发 token 刷新/重定向，仅保留现有 auth state。
+          const user = await authApi.getMe({ silent: true })
+
+          // 401 静默降级时 data 为 null → 保留现有 auth state，不清除登录态
+          if (!user) {
+            set({ isLoading: false })
+            return
+          }
+
+          const normalized = normalizeUser(user as unknown as Record<string, unknown>)
+          writeAuthCache(normalized as unknown as Record<string, unknown>)
+          set({ user: normalized, isAuthenticated: true, isLoading: false })
+
+          // 连接 WebSocket
+          connectWebSocket().then((connected) => {
+            logger.info('WebSocket connected after fetchUser:', connected)
+          }).catch((error) => {
+            logger.error('WebSocket connection error after fetchUser:', error)
+          })
+        } catch (error) {
+          // 401 = 未登录 / 令牌过期，属于预期态而非错误；
+          // 原实现打成 WARN，登录未鉴权时刷新/轮询会刷屏 401，
+          // 降噪：降级为 debug（保留上下文，必要时打开 devtools 还能看到）。
+          if ((error as { response?: { status?: number } })?.response?.status === 401) {
+            logger.debug('fetchUser 未认证（预期态），保留现有 auth state')
+          } else {
+            logger.warn('fetchUser failed, keeping existing auth state:', error)
+          }
+          // 不清除 isAuthenticated — 登录态仍然有效，只是用户信息获取失败
+          set({ isLoading: false })
+        } finally {
+          fetchUserInFlight = null
         }
-        // 不清除 isAuthenticated — 登录态仍然有效，只是用户信息获取失败
-        set({ isLoading: false })
-      }
+      })()
+
+      return fetchUserInFlight
     },
 
-    setUser: (user) => set({ user: normalizeUser(user as unknown as Record<string, unknown>) }),
+    setUser: (user) => {
+      const normalized = normalizeUser(user as unknown as Record<string, unknown>)
+      writeAuthCache(normalized as unknown as Record<string, unknown>)
+      set({ user: normalized })
+    },
   }
 })

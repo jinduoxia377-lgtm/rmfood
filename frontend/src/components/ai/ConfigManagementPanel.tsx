@@ -32,6 +32,7 @@ import { Slider } from '@/components/ui/Slider';
 import { ModelSelector } from '@/components/ai/ModelSelector';
 import { ModelClient } from '@/api/modelClient';
 import type { ModelType } from '@/api/modelClient';
+import { logger } from '@/utils/safeLogger';
 import type { ModelStatus } from '@/api/modelClient';
 import { ConfigManager, dispatchConfigSync, validateConfigSync, decryptKeyAsync } from '@/utils/configManager';
 import type { ModelConfig } from '@/utils/configManager';
@@ -906,7 +907,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
       }
     } catch (error) {
       setMsg({ type: 'error', text: '保存失败，请检查网络或后端服务' });
-      console.error('[ConfigManagementPanel] handleSave error:', error);
+      logger.error('[ConfigManagementPanel] handleSave error:', error);
     } finally {
       setIsSaving(false);
     }

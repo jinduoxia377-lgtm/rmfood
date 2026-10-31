@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, memo } from 'react'
+﻿import { useMemo, useState, useEffect, memo } from 'react'
 import {
   Users,
   Activity,
@@ -234,7 +234,7 @@ const OverviewTab = memo(({ organizationId, members, memberCount, teamCount, org
   )
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-8 space-y-4 sm:space-y-8">
       {/* Stats Grid */}
       <section aria-label="统计概览">
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-5">数据概览</h2>
@@ -356,3 +356,4 @@ const OverviewTab = memo(({ organizationId, members, memberCount, teamCount, org
 })
 
 export default OverviewTab
+

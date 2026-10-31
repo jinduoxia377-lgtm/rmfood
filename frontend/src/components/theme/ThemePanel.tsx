@@ -103,6 +103,7 @@ export const ThemePanel: React.FC = () => {
   const [systemPref, setSystemPref] = useState<'light' | 'dark' | 'unknown'>('unknown');
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSystemPref('unknown');
       return;
     }

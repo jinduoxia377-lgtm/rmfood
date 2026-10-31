@@ -1,4 +1,4 @@
-﻿/**
+/**
  * TCMSP 靶点检索面板
  * 展示 3,300+ 靶点数据，支持关键词搜索
  */
@@ -99,11 +99,13 @@ export default function TargetsTab() {
               <tr className="border-b border-[var(--border-color)] dark:border-neutral-700 bg-[var(--bg-tertiary)]/50">
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
                   <button onClick={() => toggleSort('name')} className="flex items-center gap-1 hover:text-[var(--color-primary-text)] transition-colors">
+                    {/* eslint-disable-next-line react-hooks/static-components -- 局部排序图标 */}
                     靶点名称 <SortIcon field="name" />
                   </button>
                 </th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
                   <button onClick={() => toggleSort('gene_symbol')} className="flex items-center gap-1 hover:text-[var(--color-primary-text)] transition-colors">
+                    {/* eslint-disable-next-line react-hooks/static-components -- 局部排序图标 */}
                     基因符号 <SortIcon field="gene_symbol" />
                   </button>
                 </th>

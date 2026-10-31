@@ -499,7 +499,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                             <div className="candidate-info">
                               <span className="candidate-rank">方案 {index + 1}</span>
                               <Badge variant={getRankBadgeVariant(candidate.rank)}>
-                                Pareto Rank {candidate.rank}
+                                Pareto 排名 {candidate.rank}
                               </Badge>
                             </div>
                             <button className="expand-btn">

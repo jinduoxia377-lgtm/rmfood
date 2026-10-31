@@ -293,7 +293,7 @@ function DataTable({
                         size="sm"
                         onClick={() => deleteMut.mutate(d.id)}
                         disabled={deleteMut.isPending}
-                        className="!p-1 text-[var(--text-muted)] hover:text-[var(--color-error-text)]0 hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/20"
+                        className="!p-1 text-[var(--text-muted)] hover:text-[var(--color-error-text)] hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/20"
                       >
                         <Trash2 size={13} />
                       </Button>
@@ -448,7 +448,7 @@ function ExperimentTimeline({ experiment, progress }: { experiment: any; progres
     const Icon = experiment.status === 'failed' ? XCircle : Clock
     return (
       <div className="flex items-center gap-[var(--space-apple-sm)] p-[var(--space-apple-md)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-md)]">
-        <Icon size={20} className={experiment.status === 'failed' ? 'text-[var(--color-error-text)]0' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'} />
+        <Icon size={20} className={experiment.status === 'failed' ? 'text-[var(--color-error-text)]' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'} />
         <div>
           <p className="text-sm font-medium text-[var(--text-primary)]">
             {experiment.status === 'failed' ? t('pages.experimentDetail.experimentFailed') : t('pages.experimentDetail.experimentCancelled')}
@@ -475,7 +475,7 @@ function ExperimentTimeline({ experiment, progress }: { experiment: any; progres
           <div
             className={cn(
               'h-full rounded-[var(--radius-pill)] transition-all duration-700',
-              progress >= 100 ? 'bg-[var(--color-success-container)]0' : progress >= 50 ? 'bg-[var(--color-primary-container)]0' : 'bg-[var(--color-warning-container)]0',
+              progress >= 100 ? 'bg-[var(--color-success-container)]' : progress >= 50 ? 'bg-[var(--color-primary-container)]' : 'bg-[var(--color-warning-container)]',
             )}
             style={{ width: `${progress}%` }}
           />
@@ -494,7 +494,7 @@ function ExperimentTimeline({ experiment, progress }: { experiment: any; progres
               !isActive && !isDone && 'bg-[var(--bg-tertiary)]/30 border border-[var(--border-color)]',
             )}>
               <Icon size={14} className={cn(
-                isDone ? 'text-[var(--color-success-text)]0' : isActive ? 'text-[var(--color-primary-text)]0' : 'text-[var(--text-muted)] dark:text-[var(--text-muted)]',
+                isDone ? 'text-[var(--color-success-text)]' : isActive ? 'text-[var(--color-primary-text)]' : 'text-[var(--text-muted)] dark:text-[var(--text-muted)]',
               )} />
               <span className={cn(
                 'text-xs font-medium',
@@ -554,7 +554,7 @@ function BatchImportForm({
     <div className="rounded-[var(--radius-Apple-md)] border border-[var(--border-color)] bg-[var(--bg-secondary)] p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)] animate-slide-down">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <ClipboardPaste size={14} className="text-[var(--color-primary-text)]0" />
+          <ClipboardPaste size={14} className="text-[var(--color-primary-text)]" />
           {t('pages.experimentDetail.batchImportData')}
         </h2>
         <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-muted)] transition-colors">
@@ -572,7 +572,7 @@ function BatchImportForm({
       {result && (
         <div className="flex items-center gap-[var(--space-apple-sm)] text-xs">
           <span className="text-[var(--color-success-text)]">{t('pages.experimentDetail.importSuccessCount', { count: result.success })}</span>
-          {result.errors > 0 && <span className="text-[var(--color-error-text)]0">{t('pages.experimentDetail.importErrorCount', { count: result.errors })}</span>}
+          {result.errors > 0 && <span className="text-[var(--color-error-text)]">{t('pages.experimentDetail.importErrorCount', { count: result.errors })}</span>}
         </div>
       )}
       <div className="flex justify-end gap-2">
@@ -741,7 +741,7 @@ function DataParseModal({ experimentId, onClose }: { experimentId: number; onClo
 }
 
 export default function ExperimentDetailPage() {
-  const { t, i18n } = useTranslation()
+  const { t, i18n: _i18n } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const qc = useQueryClient()
@@ -1018,7 +1018,7 @@ export default function ExperimentDetailPage() {
                   <div
                     className={cn(
                       'h-full rounded-[var(--radius-pill)] transition-all duration-700',
-                      progress >= 100 ? 'bg-[var(--color-success-container)]0' : progress >= 50 ? 'bg-[var(--color-primary-container)]0' : 'bg-[var(--color-warning-container)]0',
+                      progress >= 100 ? 'bg-[var(--color-success-container)]' : progress >= 50 ? 'bg-[var(--color-primary-container)]' : 'bg-[var(--color-warning-container)]',
                     )}
                     style={{ width: `${progress}%` }}
                   />
@@ -1074,7 +1074,7 @@ export default function ExperimentDetailPage() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
-                    <Target size={16} className="text-[var(--color-primary-text)]0" />
+                    <Target size={16} className="text-[var(--color-primary-text)]" />
                   </div>
                   <CardTitle as="h2">{t('pages.experimentDetail.objectives')}</CardTitle>
                 </div>
@@ -1083,7 +1083,7 @@ export default function ExperimentDetailPage() {
                 <ul className="space-y-2">
                   {experiment.objectives.map((obj: string, i: number) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)]0 shrink-0" />
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)] shrink-0" />
                       {obj}
                     </li>
                   ))}
@@ -1096,7 +1096,7 @@ export default function ExperimentDetailPage() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
-                    <FileText size={16} className="text-[var(--color-primary-text)]0" />
+                    <FileText size={16} className="text-[var(--color-primary-text)]" />
                   </div>
                   <CardTitle as="h2">{t('pages.experimentDetail.methodology')}</CardTitle>
                 </div>
@@ -1115,7 +1115,7 @@ export default function ExperimentDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-[var(--space-apple-sm)]">
               <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
-                <BarChart3 size={16} className="text-[var(--color-primary-text)]0" />
+                <BarChart3 size={16} className="text-[var(--color-primary-text)]" />
               </div>
               <div>
                 <CardTitle as="h2">{t('pages.experimentDetail.experimentData')}</CardTitle>
@@ -1311,7 +1311,7 @@ export default function ExperimentDetailPage() {
                   </div>
                   <button
                     onClick={() => deleteAttachMut.mutate(att.id)}
-                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)]0 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)] opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <X size={14} />
                   </button>

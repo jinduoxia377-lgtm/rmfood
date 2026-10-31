@@ -69,7 +69,7 @@ export function useOperationFeedback() {
       finalConfig = config
     }
 
-    const { type, title: configTitle, message: configMessage, duration: configDuration, code, solution, retryable } = finalConfig
+    const { type, title: configTitle, message: configMessage, duration: configDuration, code, solution: _solution, retryable } = finalConfig
     const displayDuration = configDuration ?? (type === 'error' ? 5000 : 3000)
     const fullMessage = configMessage ? `${configTitle}\n${configMessage}` : configTitle
 

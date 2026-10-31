@@ -23,13 +23,13 @@ const LAYOUT_NAMES: Record<LayoutType, string> = {
 
 export default function LayoutIndicator({ localLayout, showLayoutMenu, onToggleLayoutMenu, onSwitchLayout }: LayoutIndicatorProps) {
   return (
-    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5">
+    <div className="absolute top-14 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-1.5">
       <div
         className="px-3 py-1 rounded-full text-xs font-medium bg-white/92 dark:bg-neutral-800/92 backdrop-blur-md border border-neutral-200/60 dark:border-neutral-700/60 shadow-sm text-neutral-600 dark:text-neutral-400 cursor-pointer hover:bg-white dark:hover:bg-neutral-700 transition-colors"
          role="button" tabIndex={0} onClick={onToggleLayoutMenu}
       >
         布局: {LAYOUT_NAMES[localLayout]}
-        <span className="ml-1 text-[8px]">▾</span>
+        <span className="ml-1 text-[11px]">▾</span>
       </div>
       {showLayoutMenu && (
         <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200/60 dark:border-neutral-700/60 p-1.5 min-w-[140px] z-50 animate-fade-in">

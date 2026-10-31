@@ -12,13 +12,12 @@
  * @version 3.1.0
  */
 
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import type { HistorySession } from '../components/pro'
 import { logger } from '@/utils/safeLogger'
 import type { ChatMessage } from '../types'
 import { chatApi } from '@/api/chat'
-import type { ChatSession as BackendSession } from '@/api/chat'
 import { chatStorageService } from '../capabilities/storage/ChatStorageService'
 
 export interface UseChatCallbacksOptions {
@@ -56,6 +55,9 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
     messages, setMessages, activeSessionId,
   } = options
 
+  // 云端同步防抖定时器（治本：消息定期备份到服务器，刷新/清本地后可恢复）
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const handleClearChat = useCallback(() => {
     clearMessages()
     clearAllFormulas()
@@ -77,6 +79,12 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
     } catch (e) {
       logger.warn('[useChatCallbacks] 保存会话消息失败:', e)
     }
+    // 治本：防抖同步到服务器，刷新/清缓存后仍可云端恢复
+    if (syncTimerRef.current) clearTimeout(syncTimerRef.current)
+    syncTimerRef.current = setTimeout(() => {
+      chatStorageService.syncToServer(sessionId).catch(e =>
+        logger.warn('[useChatCallbacks] 同步会话到服务器失败（本地已保存，不影响使用）:', e))
+    }, 2000)
   }, [setHistorySessions])
 
   const handleNewSession = useCallback(async () => {
@@ -108,8 +116,15 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
       updatedAt: newSession.timestamp,
       messageCount: 0,
     }).catch(e => logger.warn('[useChatCallbacks] 保存新会话元数据失败:', e))
-    handleClearChat()
-  }, [historySessions, setHistorySessions, setActiveSessionId, handleClearChat, activeSessionId, messages, updateSessionMetadata])
+
+    // P0 修复：新建会话时【不能】调用 handleClearChat()/clearMessages()。
+    // clearMessages() 会按 activeSessionIdRef.current（切换后仍指向旧会话）删除 IndexedDB 中
+    // 刚保存的旧会话消息，造成数据丢失。这里改用 replaceMessages([])（即 setMessages([])）
+    // 只清空内存消息，不触碰旧会话的 IndexedDB 数据；配方/多轮上下文一并重置。
+    setMessages([])
+    clearAllFormulas()
+    clearMultiTurnDialogue()
+  }, [historySessions, setHistorySessions, setActiveSessionId, activeSessionId, messages, updateSessionMetadata, setMessages, clearAllFormulas, clearMultiTurnDialogue])
 
   const handleSelectSession = useCallback(async (id: string) => {
     if (id === activeSessionId) return
@@ -151,9 +166,11 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
       logger.warn('[useChatCallbacks] 后端加载失败:', e)
     }
 
-    // 5. 最终降级：清空
-    handleClearChat()
-  }, [setActiveSessionId, activeSessionId, messages, handleClearChat, setMessages, updateSessionMetadata])
+    // 5. 最终降级：清空内存（P0 修复：不调用 clearMessages()，避免误删上一会话刚保存的消息）
+    setMessages([])
+    clearAllFormulas()
+    clearMultiTurnDialogue()
+  }, [setActiveSessionId, activeSessionId, messages, setMessages, updateSessionMetadata, clearAllFormulas, clearMultiTurnDialogue])
 
   const handleDeleteSession = useCallback(async (id: string) => {
     const updated = historySessions.filter(s => s.id !== id)
@@ -162,11 +179,13 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
     try {
       await chatStorageService.deleteMessages(id)
     } catch { /* 删除消息存储失败忽略 */ }
-    // 如果删除的是当前活跃会话，清空消息
+    // 如果删除的是当前活跃会话，清空消息并把 activeSessionId 切到剩余最近会话或 null，
+    // 避免后续发送消息写入已删除的 session id（否则刷新后会话"复活"）。
     if (id === activeSessionId) {
       handleClearChat()
+      setActiveSessionId(updated[0]?.id ?? null)
     }
-  }, [historySessions, setHistorySessions, activeSessionId, handleClearChat])
+  }, [historySessions, setHistorySessions, activeSessionId, handleClearChat, setActiveSessionId])
 
   const handleRenameSession = useCallback(async (id: string, title: string) => {
     const updated = historySessions.map(s => s.id === id ? { ...s, title } : s)
@@ -192,21 +211,50 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
   const syncSessionsFromServer = useCallback(async () => {
     try {
       const data = await chatApi.getSessions({ page_size: 50 })
-      const backendSessions = data.items.map((s: BackendSession) => ({
-        id: String(s.id),
-        title: s.title,
-        messageCount: s.message_count,
-        lastMessage: '',
-        timestamp: new Date(s.updated_at).getTime(),
-      }))
       const existingIds = new Set(historySessions.map(s => s.id))
-      const toMerge = backendSessions.filter((s: any) => !existingIds.has(s.id))
-      if (toMerge.length > 0) {
-        const merged = [...historySessions, ...toMerge]
-        setHistorySessions(merged)
+      const toMerge: Array<{
+        id: string
+        title: string
+        messageCount: number
+        lastMessage: string
+        timestamp: number
+      }> = []
+      // client_session_id 命中已有本地会话 → 复用本地 id，仅刷新元数据（避免重复合并）
+      const toUpdate: Array<{ id: string; title: string; messageCount: number; timestamp: number }> = []
+
+      for (const s of data.items) {
+        const clientId = s.client_session_id
+        const mapped = {
+          // P2 统一会话 ID：后端返回 client_session_id 时直接用它作为本地会话 id，
+          // 使前后端 ID 空间一致；旧数据（无 client_session_id）仍用后端 int id 兜底。
+          id: clientId || String(s.id),
+          title: s.title,
+          messageCount: s.message_count,
+          lastMessage: '',
+          timestamp: new Date(s.updated_at).getTime(),
+        }
+        if (clientId && existingIds.has(clientId)) {
+          // 已存在同 client_session_id 的本地会话 → 复用本地 id，仅刷新元数据
+          toUpdate.push({ id: clientId, title: s.title, messageCount: s.message_count, timestamp: mapped.timestamp })
+          continue
+        }
+        if (!existingIds.has(mapped.id)) {
+          toMerge.push(mapped)
+        }
+      }
+
+      if (toMerge.length > 0 || toUpdate.length > 0) {
+        const updateMap = new Map(toUpdate.map(u => [u.id, u]))
+        setHistorySessions(prev => {
+          const next = [...prev, ...toMerge]
+          return next.map(s => {
+            const upd = updateMap.get(s.id)
+            return upd ? { ...s, title: upd.title, messageCount: upd.messageCount, timestamp: upd.timestamp } : s
+          })
+        })
         // 同步写入 IndexedDB，废弃 localStorage
         try {
-          for (const s of toMerge) {
+          for (const s of [...toMerge, ...toUpdate]) {
             await chatStorageService.saveSessionMeta(s.id, {
               title: s.title,
               tags: [],
@@ -218,7 +266,7 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
         } catch (e) {
           logger.warn('[useChatCallbacks] 服务端会话写入 IndexedDB 失败:', e)
         }
-        logger.info(`[useChatCallbacks] 手动同步新增 ${toMerge.length} 个会话`)
+        logger.info(`[useChatCallbacks] 手动同步：新增 ${toMerge.length} 个会话，刷新 ${toUpdate.length} 个会话`)
       }
     } catch (err) {
       logger.warn('[useChatCallbacks] 手动同步失败:', err)

@@ -293,6 +293,7 @@ class SafeLogger {
    * formulaLogger.info('保存成功'); // 输出: [INFO] [FormulaEditor] 保存成功
    */
   withContext(context: string) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- 需要捕获 this 供返回对象的方法使用
     const parent = this;
 
     return {

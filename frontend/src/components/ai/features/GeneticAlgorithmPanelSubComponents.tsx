@@ -92,22 +92,25 @@ interface CandidateCardProps {
 }
 
 export function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: CandidateCardProps) {
+  // P0 契约适配：归一化后字段必然存在，此处仍做防御，避免历史/异常数据导致 NaN 崩溃
+  const overallScore = Number.isFinite(candidate.overall_score) ? candidate.overall_score : 0
+  const confidence = Number.isFinite(candidate.confidence) ? candidate.confidence : 0.8
   const scoreColor =
-    candidate.overall_score >= 0.85 ? 'text-success-500' :
-    candidate.overall_score >= 0.70 ? 'text-warning-500' :
+    overallScore >= 0.85 ? 'text-success-500' :
+    overallScore >= 0.70 ? 'text-warning-500' :
     'text-error-500'
 
   const scoreLabels = [
-    { key: 'efficacy_score', label: '药效', value: candidate.efficacy_score, icon: <FlaskConical className="w-3.5 h-3.5" />, color: 'text-success-500' },
-    { key: 'safety_score',   label: '安全', value: candidate.safety_score,   icon: <Shield className="w-3.5 h-3.5" />,       color: 'text-secondary-500' },
-    { key: 'taste_score',    label: '口感', value: candidate.taste_score,    icon: <Zap className="w-3.5 h-3.5" />,          color: 'text-warning-500' },
-    { key: 'cost_score',     label: '成本', value: candidate.cost_score,     icon: <DollarSign className="w-3.5 h-3.5" />,   color: 'text-accent-500' },
+    { key: 'efficacy_score', label: '药效', value: Number.isFinite(candidate.efficacy_score) ? candidate.efficacy_score : 0, icon: <FlaskConical className="w-3.5 h-3.5" />, color: 'text-success-500' },
+    { key: 'safety_score',   label: '安全', value: Number.isFinite(candidate.safety_score) ? candidate.safety_score : 0,   icon: <Shield className="w-3.5 h-3.5" />,       color: 'text-secondary-500' },
+    { key: 'taste_score',    label: '口感', value: Number.isFinite(candidate.taste_score) ? candidate.taste_score : 0,    icon: <Zap className="w-3.5 h-3.5" />,          color: 'text-warning-500' },
+    { key: 'cost_score',     label: '成本', value: Number.isFinite(candidate.cost_score) ? candidate.cost_score : 0,     icon: <DollarSign className="w-3.5 h-3.5" />,   color: 'text-accent-500' },
   ]
 
   return (
     <article
       className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm hover:shadow-md hover:border-accent-200 dark:hover:border-accent-800 transition-all duration-200 overflow-hidden"
-      aria-label={`候选方案第 ${rank} 名，综合分 ${(candidate.overall_score * 100).toFixed(1)} 分`}
+      aria-label={`候选方案第 ${rank} 名，综合分 ${(overallScore * 100).toFixed(1)} 分`}
     >
       {/* 卡片头部 */}
       <button
@@ -132,25 +135,31 @@ export function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: C
                 {rank}
               </span>
               <div className={`text-2xl font-bold tabular-nums ${scoreColor}`}>
-                {(candidate.overall_score * 100).toFixed(1)}
+                {(overallScore * 100).toFixed(1)}
                 <span className="text-sm font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">分</span>
               </div>
               <Badge variant="neutral" size="sm">
-                置信度 {(candidate.confidence * 100).toFixed(0)}%
+                置信度 {(confidence * 100).toFixed(0)}%
               </Badge>
             </div>
 
             {/* 药材组成 */}
             <div className="flex flex-wrap gap-1.5 mb-2">
-              {candidate.ingredients.map((ing) => (
-                <span
-                  key={ing.id}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md text-xs text-neutral-700 dark:text-neutral-300"
-                >
-                  {ing.name_cn}
-                  <span className="text-neutral-400 dark:text-neutral-400">{ing.dosage}g</span>
+              {candidate.ingredients.length > 0 ? (
+                candidate.ingredients.map((ing) => (
+                  <span
+                    key={ing.id}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md text-xs text-neutral-700 dark:text-neutral-300"
+                  >
+                    {ing.name_cn}
+                    <span className="text-neutral-400 dark:text-neutral-400">{ing.dosage}g</span>
+                  </span>
+                ))
+              ) : (
+                <span className="inline-flex items-center px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md text-xs text-neutral-400 dark:text-neutral-500">
+                  暂无成分数据
                 </span>
-              ))}
+              )}
             </div>
           </div>
 

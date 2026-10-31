@@ -4,7 +4,6 @@ import { logger } from '@/utils/safeLogger';
 
 // 获取当前访问的主机名和端口
 const hostname = window.location.hostname;
-const port = window.location.port;
 
 // 根据访问 IP 动态配置 API 基地址
 export const getApiBaseUrl = () => {

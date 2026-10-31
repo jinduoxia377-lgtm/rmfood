@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback, useRef, useEffect, useState } from 'react';
+import React, { memo, useMemo, useCallback, useRef } from 'react';
 
 export type PropertyComparator<T> = (prevProps: T, nextProps: T) => boolean;
 

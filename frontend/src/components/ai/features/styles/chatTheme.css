@@ -151,6 +151,9 @@
   --chat-duration-normal: var(--duration-normal, 200ms);
   --chat-duration-slow: var(--duration-slow, 350ms);
 
+  /* 全局字体 */
+  font-family: var(--dsw-font-sans);
+
   /* 兼容旧变量 */
   --chat-ai-border: var(--chat-border);
   --chat-error-bg: #fff5f5;
@@ -221,19 +224,6 @@
 .chat-unified .chat-message-group {
   padding: 2px 0;
 }
-.chat-unified .chat-bubble-ai {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-.chat-unified .chat-bubble-user {
-  background: var(--dsw-accent-subtle, #ecfdf5);
-  border: none;
-  box-shadow: var(--dsw-shadow-sm);
-}
-.chat-unified .chat-bubble-user .chat-bubble-content {
-  color: var(--dsw-text-primary);
-}
 
 /* DSH 操作栏 — 极简风格 */
 .chat-unified .chat-action-bar {
@@ -257,9 +247,11 @@
   background: var(--dsw-bg-primary);
   border-top: 1px solid var(--dsw-border);
 }
-.chat-unified .chat-input-wrapper:focus-within {
-  border-color: var(--dsw-accent);
-  box-shadow: 0 0 0 1px var(--dsw-accent-light);
+/* ChatInputPro v8.1 — 聚焦反馈统一由容器边框 + 极浅阴影承担（无外圈光圈）：
+   抑制 textarea 自身的 focus-visible 阴影，避免键盘聚焦时出现双重焦点环 */
+.chat-unified .chat-input-wrapper textarea:focus-visible {
+  box-shadow: none;
+  outline: none;
 }
 
 /* DSH StatsLine 风格 */
@@ -288,11 +280,6 @@
 .chat-unified .details-panel pre,
 .chat-unified .details-panel code {
   font-family: var(--dsw-font-mono);
-}
-
-/* 全局字体 */
-.chat-unified {
-  font-family: var(--dsw-font-sans);
 }
 
 /* --- 布局容器 --- */
@@ -339,7 +326,7 @@
 
 /* --- 头像 — DSH 简洁风格：无状态点 --- */
 .chat-unified .avatar-ai {
-  width: 28px; height: 28px;
+  width: 32px; height: 32px;
   border-radius: 50%;
   background: var(--chat-avatar-ai-bg, #ecfdf5);
   color: var(--chat-avatar-ai-text, #047857);
@@ -349,6 +336,21 @@
   position: relative;
   box-shadow: var(--chat-shadow-ai, 0 0 0 0 transparent);
   transition: box-shadow 0.3s ease;
+}
+/* AI 真实头像图片（RealAIAvatar 渲染的 img） */
+.chat-unified .avatar-ai img {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.20);
+}
+.chat-unified .avatar-ai img:hover {
+  transform: scale(1.05);
+}
+.dark .chat-unified .avatar-ai img {
+  border-color: rgba(17, 24, 39, 0.85);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.30);
 }
 /* AI 头像流式呼吸光晕 */
 .chat-unified .avatar-ai.streaming {
@@ -390,62 +392,6 @@
 .chat-unified .avatar-img:hover {
   transform: scale(1.05);
 }
-
-/* --- 用户气泡 --- */
-.chat-unified .chat-bubble-user {
-  background: var(--dsw-accent-subtle, #ecfdf5);
-  color: var(--dsw-text-primary, #0f172a);
-  border-radius: var(--chat-radius-lg) 4px var(--chat-radius-md) var(--chat-radius-md);
-  padding: 12px 16px;
-  box-shadow: var(--chat-shadow-sm);
-  max-width: 720px;
-  word-wrap: break-word;
-  animation: chatFadeInUp 0.25s ease-out both;
-  transition: box-shadow var(--chat-duration-normal) ease, transform var(--chat-duration-fast) ease;
-}
-.chat-unified .chat-bubble-user:hover {
-  box-shadow: var(--chat-shadow-md);
-  transform: translateY(-1px);
-}
-.chat-unified .chat-bubble-user.bubble-sending { opacity: 0.75; }
-.chat-unified .chat-bubble-user.bubble-failed {
-  box-shadow: 0 0 0 2px var(--chat-error);
-  opacity: 0.9;
-}
-
-/* --- AI 气泡 --- */
-.chat-unified .chat-bubble-ai {
-  background: transparent;
-  color: var(--chat-ai-text, #0f172a);
-  border: none;
-  border-radius: 4px var(--chat-radius-lg) var(--chat-radius-md) var(--chat-radius-md);
-  padding: 12px 16px;
-  max-width: 720px;
-  word-wrap: break-word;
-  animation: chatFadeInUp 0.25s ease-out both;
-  transition: box-shadow var(--chat-duration-normal) ease;
-}
-/* Markdown 内容内部样式 — 专业排版 */
-.chat-unified .chat-bubble-ai h1 { font-size: 1.3em; font-weight: 700; margin: 14px 0 6px; line-height: 1.25; }
-.chat-unified .chat-bubble-ai h2 { font-size: 1.15em; font-weight: 650; margin: 12px 0 5px; line-height: 1.3; }
-.chat-unified .chat-bubble-ai h3 { font-size: 1.06em; font-weight: 600; margin: 10px 0 4px; line-height: 1.35; }
-.chat-unified .chat-bubble-ai h4 { font-size: 1em; font-weight: 600; margin: 8px 0 3px; line-height: 1.4; }
-.chat-unified .chat-bubble-ai p { margin: 5px 0; line-height: 1.6; }
-.chat-unified .chat-bubble-ai ul,
-.chat-unified .chat-bubble-ai ol { padding-left: 18px; margin: 5px 0; }
-.chat-unified .chat-bubble-ai li { margin-bottom: 2px; line-height: 1.55; }
-.chat-unified .chat-bubble-ai code:not(.chat-code-block code) {
-  background: var(--chat-elevated, #f1f5f9);
-  padding: 1px 5px; border-radius: 4px;
-  font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
-  font-size: 0.875em; color: var(--chat-error, #ef4444);
-}
-.chat-unified .chat-bubble-ai strong { font-weight: 650; }
-.chat-unified .chat-bubble-ai a {
-  color: var(--chat-primary, #10b981); text-decoration: underline;
-  text-underline-offset: 2px; text-decoration-thickness: 1px;
-}
-.chat-unified .chat-bubble-ai a:hover { color: var(--color-primary-700, #047857); }
 
 /* --- 时间戳 — 隐藏独立行，内联到操作栏 --- */
 .chat-unified .chat-timestamp { display: none; }
@@ -623,7 +569,13 @@
   border-radius: var(--chat-radius-lg) var(--chat-radius-sm) var(--chat-radius-md) var(--chat-radius-md);
   padding: 12px 17px;
   box-shadow: var(--chat-shadow-sm);
-  max-width: 85%; word-wrap: break-word;
+  /* P0 修复：max-width 放宽防止短文本被压缩换行；
+     width: fit-content 会导致 CJK min-content 宽度异常（发送中...被拆行），已移除；
+     word-break: break-word 与 CJK 冲突（任意字符断行），已移除，改用 word-wrap；
+     用户气泡放宽到 100%，仅由 .chat-message-group calc(100% - 56px) 约束，
+     避免 85% 上限在窄面板下二次压缩 CJK 文本 */
+  max-width: 100%; min-width: 0;
+  word-wrap: break-word; overflow-wrap: break-word;
   animation: chatScaleIn 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
   transition: box-shadow var(--chat-duration-normal) ease, transform var(--chat-duration-fast) ease;
 }
@@ -644,7 +596,9 @@
   border-radius: 4px var(--chat-radius-lg) var(--chat-radius-md) var(--chat-radius-md);
   padding: 13px 17px;
   box-shadow: var(--chat-shadow-xs);
-  max-width: 85%; word-wrap: break-word;
+  /* P0 修复：max-width 放宽与用户气泡一致；width: fit-content 已移除（CJK 异常） */
+  max-width: 85%; min-width: 0;
+  word-wrap: break-word; overflow-wrap: break-word;
   animation: chatScaleIn 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
   transition: box-shadow var(--chat-duration-normal) ease;
 }
@@ -790,7 +744,10 @@
   display: flex; flex-direction: column;
   max-width: calc(100% - 56px); position: relative;
 }
-.chat-message-row.user-row .chat-message-group { align-items: flex-end; }
+/* P0 修复：打破收缩包裹循环（组撑满行宽），
+   使气泡 max-width 相对"整行"而非"气泡自身宽度"解析，
+   防止 CJK 短文本/发送中...被自身 85% 反噬压缩换行 */
+.chat-message-row.user-row .chat-message-group { align-items: flex-end; flex: 1 1 auto; }
 
 /* GPU 加速提示 */
 .chat-bubble-user,
@@ -1087,21 +1044,15 @@
 
 /* ===== Mobile (< 640px) ===== */
 @media (max-width: 639px) {
-  /* 气泡宽度 */
-  .chat-unified .chat-bubble-user,
+  /* 气泡宽度：用户气泡放宽到 100%（仅由消息组约束），AI 气泡保留 95% */
+  .chat-unified .chat-bubble-user {
+    max-width: 100%;
+  }
   .chat-unified .chat-bubble-ai {
-    max-width: 92%;
+    max-width: 95%;
   }
 
   /* 头像尺寸 28px */
-  .chat-unified .avatar-ai,
-  .chat-unified .avatar-user {
-    width: 28px; height: 28px; font-size: 11px;
-  }
-  .chat-unified .avatar-ai,
-  .chat-unified .avatar-user {
-    width: 28px; height: 28px; font-size: 12px;
-  }
   .chat-unified .avatar-ai,
   .chat-unified .avatar-user {
     width: 28px; height: 28px; font-size: 11px;
@@ -1133,10 +1084,12 @@
 
 /* ===== Tablet (640px ~ 1024px) ===== */
 @media (min-width: 640px) and (max-width: 1023px) {
-  /* 气泡宽度 82% */
-  .chat-unified .chat-bubble-user,
+  /* 气泡宽度：用户气泡放宽到 100%，AI 气泡保留 88%（P0 修复：从 82% 放宽） */
+  .chat-unified .chat-bubble-user {
+    max-width: 100%;
+  }
   .chat-unified .chat-bubble-ai {
-    max-width: 82%;
+    max-width: 88%;
   }
 
   /* 头像尺寸 32px */
@@ -1144,18 +1097,8 @@
   .chat-unified .avatar-user {
     width: 32px; height: 32px; font-size: 12px;
   }
-  .chat-unified .avatar-ai,
-  .chat-unified .avatar-user {
-    width: 32px; height: 32px; font-size: 13px;
-  }
-  .chat-unified .avatar-ai,
-  .chat-unified .avatar-user {
-    width: 32px; height: 32px; font-size: 12px;
-  }
 
-  /* 字号 13.5px */
-  .chat-unified .chat-area { font-size: 13.5px; }
-  .chat-unified .chat-area { font-size: 13.5px; }
+  /* 字号 14.5px */
   .chat-unified .chat-area { font-size: 14.5px; }
 }
 
@@ -1336,9 +1279,11 @@
 
 /* ===== Mobile (< 640px) ===== */
 @media (max-width: 639px) {
-  .chat-unified .chat-bubble-user,
+  .chat-unified .chat-bubble-user {
+    max-width: 100%;
+  }
   .chat-unified .chat-bubble-ai {
-    max-width: 92%;
+    max-width: 95%;
   }
 
   .chat-unified .avatar-ai,
@@ -1369,35 +1314,31 @@
 
 /* ===== Tablet (640px - 1024px) ===== */
 @media (min-width: 640px) and (max-width: 1023px) {
-  .chat-unified .chat-bubble-user,
+  .chat-unified .chat-bubble-user {
+    max-width: 100%;
+  }
   .chat-unified .chat-bubble-ai {
-    max-width: 82%;
+    max-width: 88%;
   }
 
   .chat-unified .avatar-ai,
   .chat-unified .avatar-user { width: 32px; height: 32px; font-size: 12px; }
 
   .chat-unified .chat-area { font-size: 13.5px; }
-  .chat-unified .chat-area { font-size: 13.5px; }
-  .chat-unified .chat-area { font-size: 13.5px; }
 }
 
 /* ===== Desktop (> 1024px) ===== */
 @media (min-width: 1024px) {
-  .chat-unified .chat-bubble-user,
+  .chat-unified .chat-bubble-user {
+    max-width: 100%;
+  }
   .chat-unified .chat-bubble-ai {
-    max-width: 72%;
+    max-width: 85%;
   }
 
   .chat-unified .avatar-ai,
   .chat-unified .avatar-user { width: 36px; height: 36px; font-size: 13px; }
-  .chat-unified .avatar-ai,
-  .chat-unified .avatar-user { width: 38px; height: 38px; font-size: 15px; }
-  .chat-unified .avatar-ai,
-  .chat-unified .avatar-user { width: 36px; height: 36px; font-size: 13px; }
 
-  .chat-unified .chat-area { font-size: 14px; }
-  .chat-unified .chat-area { font-size: 14px; }
   .chat-unified .chat-area { font-size: 14px; }
 
   /* 桌面端操作栏显示文字标签 */
@@ -1413,10 +1354,12 @@
 
 /* ===== Desktop (> 1024px) ===== */
 @media (min-width: 1024px) {
-  /* 气泡宽度 72% */
-  .chat-unified .chat-bubble-user,
+  /* 气泡宽度：用户气泡放宽到 100%（防止短文本被压缩），AI 气泡保留 85% */
+  .chat-unified .chat-bubble-user {
+    max-width: 100%;
+  }
   .chat-unified .chat-bubble-ai {
-    max-width: 72%;
+    max-width: 85%;
   }
 
   /* 头像尺寸 36px */
@@ -1424,23 +1367,11 @@
   .chat-unified .avatar-user {
     width: 36px; height: 36px; font-size: 14px;
   }
-  .chat-unified .avatar-ai,
-  .chat-unified .avatar-user {
-    width: 38px; height: 38px; font-size: 16px;
-  }
-  .chat-unified .avatar-ai,
-  .chat-unified .avatar-user {
-    width: 36px; height: 36px; font-size: 14px;
-  }
 
   /* 字号 14px */
   .chat-unified .chat-area { font-size: 14px; }
-  .chat-unified .chat-area { font-size: 14px; }
-  .chat-unified .chat-area { font-size: 14px; }
 
   /* 时间戳 10.5px */
-  .chat-unified .chat-timestamp,
-  .chat-unified .chat-timestamp,
   .chat-unified .chat-timestamp { font-size: 10.5px; }
 }
 
@@ -2554,39 +2485,7 @@
   animation: tabIndicatorSlide 0.3s ease-out both;
 }
 
-/* 消息气泡悬停效果增强 */
-.chat-bubble-user {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-.chat-bubble-user:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 8px 24px rgba(var(--color-primary-rgb), 0.25) !important;
-}
-
-.chat-bubble-ai {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-.chat-bubble-ai:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
-}
-
-/* 操作按钮悬停效果 */
-.chat-action-btn {
-  transition: all 0.15s ease !important;
-}
-
-.chat-action-btn:hover {
-  transform: scale(1.15) !important;
-  background: rgba(var(--neutral-rgb, 100, 116, 139), 0.1) !important;
-}
-
-/* 输入区域焦点增强 */
-.chat-input-area:focus-within {
-  box-shadow: 0 -2px 20px rgba(var(--color-primary-rgb), 0.08) !important;
-}
+/* 消息气泡悬停效果（已移至 .chat-unified .chat-bubble-user 主定义，此处 !important 覆盖已移除） */
 
 /* 顶部栏玻璃态增强 */
 .top-bar-glass {
@@ -2594,15 +2493,7 @@
   -webkit-backdrop-filter: blur(12px) saturate(180%);
 }
 
-/* 空状态卡片悬停 */
-.empty-state-card-item {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-.empty-state-card-item:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 12px 32px rgba(var(--color-primary-rgb), 0.12) !important;
-}
+/* 空状态卡片悬停（已移至主定义，!important 覆盖已移除） */
 
 /* 徽章脉冲动画 */
 @keyframes badgePulse {
@@ -2704,10 +2595,10 @@
   border: 1px solid var(--chat-divider);
 }
 
-/* 输入区 — DSH 风格聚焦效果 */
+/* 输入区 — DSH 风格聚焦效果（!important 已移除，使用主令牌定义） */
 .chat-input-area textarea:focus {
-  border-color: var(--chat-primary) !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+  border-color: var(--chat-primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 /* 内联思考行 — 展开动画 */
@@ -2723,11 +2614,11 @@
 @media (max-width: 640px) {
   .chat-unified .chat-action-bar {
     /* 移动端始终显示操作栏 */
-    opacity: 1 !important;
-    max-height: 40px !important;
+    opacity: 1;
+    max-height: 40px;
   }
   .chat-unified .chat-timestamp {
-    display: none !important;
+    display: none;
   }
 }
 
@@ -2751,15 +2642,7 @@
   padding: 0 16px;
 }
 
-/* --- DSH 风格气泡优化：移除边框，降低阴影权重 --- */
-.chat-unified .chat-bubble-user {
-  border: none !important;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
-}
-.chat-unified .chat-bubble-ai {
-  border: none !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
-}
+/* --- DSH 风格气泡优化（!important 覆盖已移除，使用主定义中的令牌） --- */
 
 /* --- 更多操作下拉菜单 --- */
 .chat-more-menu {

@@ -2,6 +2,17 @@ import { useRef, useEffect } from 'react'
 import { GraphNode, TYPE_CONFIG } from '../types'
 import { CANVAS_COLORS } from '@/utils/canvas-colors'
 
+/** canvas 直绘不解析 CSS var()，需从 computed style 取回具体色值（CHK-04）。 */
+function resolveColor(value: string): string {
+  if (!value.startsWith('var(')) return value
+  const m = value.match(/var\((--[^,\s)]+)(?:\s*,\s*([^)]+))?\)/)
+  if (!m) return value
+  const resolved = typeof document !== 'undefined'
+    ? getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim()
+    : ''
+  return resolved || (m[2] ? m[2].trim() : value)
+}
+
 export interface MinimapCanvasProps {
   nodes: GraphNode[]
   edges: Array<{ source: string; target: string }>
@@ -88,7 +99,7 @@ export default function MinimapCanvas({
     nodes.forEach(n => {
       if (n.x == null || n.y == null || !isFinite(n.x) || !isFinite(n.y)) return
       const [sx, sy] = toScreen(n.x, n.y)
-      let fill = TYPE_CONFIG[n.type]?.color || '#9CA3AF'
+      let fill = resolveColor(TYPE_CONFIG[n.type]?.color) || '#9CA3AF'
       if (communities && communities.size > 0 && communityColors) {
         const commId = communities.get(n.id || n.label)
         if (commId !== undefined && communityColors[commId]) fill = communityColors[commId]

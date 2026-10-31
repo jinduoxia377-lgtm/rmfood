@@ -33,7 +33,7 @@ function TableRow({ className, ...props }: React.HTMLAttributes<HTMLTableRowElem
   )
 }
 
-function TableCell({ className, colSpan, ...props }: React.HTMLAttributes<HTMLTableCellElement> & { colSpan?: number }) {
+function TableCell({ className, colSpan: _colSpan, ...props }: React.HTMLAttributes<HTMLTableCellElement> & { colSpan?: number }) {
   return (
     <td
       className={cn('p-4 align-middle [&:has([role=checkbox])]:pr-0', className)}

@@ -20,13 +20,6 @@ const SCORE_COLOR = (score: number) => {
   return { color: 'text-error-600 dark:text-error-700', bg: 'bg-error-50 dark:bg-error-300/20', border: 'border-error-200 dark:border-error-800' };
 };
 
-const ROLE_BADGE: Record<string, string> = {
-  core: '君',
-  primary: '臣',
-  supporting: '佐',
-  moderator: '使',
-};
-
 const ROLE_COLOR: Record<string, string> = {
   core: 'bg-accent-100 dark:bg-accent-300/25 text-accent-700 dark:text-accent-700',
   primary: 'bg-secondary-100 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700',

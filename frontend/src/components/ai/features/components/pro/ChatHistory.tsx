@@ -8,6 +8,7 @@ import React, { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MessageSquare, Plus, Trash2, Edit2, Check, X, Clock, GitBranch } from 'lucide-react'
 import i18n from '@/i18n'
+import { logger } from '@/utils/safeLogger'
 
 export interface HistorySession {
   id: string
@@ -84,7 +85,7 @@ export default function ChatHistory({
       const newId = await onForkSession(forkingId, forkTitle.trim())
       if (newId) onSelectSession(newId)
     } catch (e) {
-      console.error('Fork failed:', e)
+      logger.warn('[ChatHistory] Fork failed:', e)
     } finally {
       setForking(false)
       setForkingId(null)

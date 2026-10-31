@@ -28,6 +28,7 @@ export default tseslint.config(
       'build/**',
       '.turbo/**',
       'scripts/theme-audit/**', // 审计工具脚本（.mjs），不在 lint 范围
+      'src/utils/_test_parse.js', // 历史遗留的损坏 scratch 脚本（非源码、未被引用），保留但不参与 lint
     ],
   },
 
@@ -62,6 +63,15 @@ export default tseslint.config(
       // Zustand persist 的 migrate 回调与旧数据反序列化边界使用 `any`
       // 属类型化债（待 TS 严格化清理），此处降为 warn 不阻断 lint
       '@typescript-eslint/no-explicit-any': 'warn',
+      // 下划线前缀约定：`_` 开头的未使用变量/参数/捕获异常视为有意忽略
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
 
@@ -85,5 +95,13 @@ export default tseslint.config(
   {
     plugins: { i18next },
     // 不强制 enforce-pluralization（项目已有大量既有用法，先注册再逐步收紧）
+  },
+
+  // Cordis 插件目录（theme-pro）：以 CommonJS 形式加载，`require` / `module.exports` 为合法用法
+  {
+    files: ['src/theme-pro/**/*.js'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
   },
 );

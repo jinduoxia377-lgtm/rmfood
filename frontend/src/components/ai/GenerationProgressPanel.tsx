@@ -118,6 +118,12 @@ export function GenerationProgressPanel({
       role="region"
       aria-labelledby="progress-panel-title"
     >
+      <style>{`
+        @keyframes indeterminate-slide {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(400%); }
+        }
+      `}</style>
       <span id="progress-panel-title" className="sr-only">配方生成进度面板</span>
       <div aria-live="polite" className="sr-only">
         {announcement}
@@ -189,29 +195,41 @@ export function GenerationProgressPanel({
           <div
             className="h-3 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden"
             role="progressbar"
-            aria-valuenow={progress.progress}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label={`配方生成进度: ${progress.progress}%`}
+            aria-valuetext={progress.indeterminate ? '处理中（无法预估剩余时间）' : `${progress.progress}%`}
+            aria-label={progress.indeterminate ? '配方生成进度：处理中' : `配方生成进度: ${progress.progress}%`}
           >
-            <div
-              className={cn(
-                'h-full rounded-full transition-all duration-500 ease-out',
-                'bg-gradient-to-r ' + config.gradient,
-                isActive && 'animate-pulse',
-              )}
-              style={{ width: `${progress.progress}%` }}
-            />
+            {progress.indeterminate ? (
+              // P1-1：不确定进度 —— 滑动动画条，不伪造百分比
+              <div
+                className="h-full w-1/3 rounded-full bg-gradient-to-r from-transparent via-white/80 to-transparent"
+                style={{ animation: 'indeterminate-slide 1.2s ease-in-out infinite' }}
+              />
+            ) : (
+              <div
+                className={cn(
+                  'h-full rounded-full transition-all duration-500 ease-out',
+                  'bg-gradient-to-r ' + config.gradient,
+                  isActive && 'animate-pulse',
+                )}
+                style={{ width: `${progress.progress}%` }}
+              />
+            )}
           </div>
 
           <div className="flex justify-between text-xs text-neutral-500 dark:text-neutral-400">
             <span>{progress.message}</span>
-            <span className="font-medium text-primary-700 dark:text-primary-700">{progress.progress}%</span>
+            {progress.indeterminate ? (
+              <span className="font-medium text-primary-700 dark:text-primary-700">处理中...</span>
+            ) : (
+              <span className="font-medium text-primary-700 dark:text-primary-700">{progress.progress}%</span>
+            )}
           </div>
 
           <div className="flex justify-between mt-1.5">
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              {progress.progress < 100 ? `${progress.progress}%` : '100%'}
+              {progress.indeterminate ? '正在等待服务响应' : (progress.progress < 100 ? `${progress.progress}%` : '100%')}
             </span>
             <div className="flex gap-1">
               {['preparing', 'generating', 'optimizing', 'validating'].map((stage) => {

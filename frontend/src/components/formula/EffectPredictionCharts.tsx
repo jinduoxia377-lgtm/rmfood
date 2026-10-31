@@ -9,12 +9,11 @@
  * - 导出功能 (PNG/PDF)
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   LineChart as LineIcon,
   Clock,
   TrendingUp,
-  Maximize2,
   Download,
   GitCompare,
   Calendar,

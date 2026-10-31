@@ -31,6 +31,7 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
     // R-06：仅 WS 启用时订阅真实数据更新频道；未启用不伪造模拟变更
     if (!isWebSocketEnabled) return
     const unsubscribe = subscribeToChannel('data_update', (message) => {
+      // eslint-disable-next-line react-hooks/immutability -- 回调中访问后续声明的 handler
       handleDataUpdate(message)
     })
     return () => {

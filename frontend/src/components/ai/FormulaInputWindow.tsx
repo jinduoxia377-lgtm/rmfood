@@ -335,6 +335,16 @@ export function FormulaInputWindow({ onClose, onSubmit }: FormulaInputWindowProp
             <h4 className="font-medium text-primary-800 dark:text-primary-700">分析完成</h4>
           </div>
 
+          {/* P1-5：分析接口失败时显式降级提示，不伪造默认评分 */}
+          {result.candidate.degraded && (
+            <div
+              role="status"
+              className="mb-3 px-3 py-2 rounded-lg bg-warning-50 dark:bg-warning-300/15 border border-warning-200 dark:border-warning-800 text-xs text-warning-700 dark:text-warning-700"
+            >
+              ⚠ 部分评估服务暂不可用：对应评分已标注「暂无数据」，请稍后重试完整分析。
+            </div>
+          )}
+
           {/* 雷达图 */}
           <div className="flex justify-center mb-4">
             <div className="w-48 h-48">

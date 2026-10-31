@@ -1090,7 +1090,7 @@ export default function FormulaNewPage() {
                             <div className="flex flex-wrap gap-1 mt-1">
                               {(['bitter','sweet','umami','astringent','sour'] as const).map(t => (
                                 previewAnalysis.taste?.taste_profile?.[t] != null &&
-                                <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--border-color)] text-[var(--text-secondary)]">
+                                <span key={t} className="text-xs px-1.5 py-0.5 rounded bg-[var(--border-color)] text-[var(--text-secondary)]">
                                   {t}: {Math.round((previewAnalysis.taste?.taste_profile?.[t] ?? 0) * 100)}%
                                 </span>
                               ))}

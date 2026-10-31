@@ -10,7 +10,7 @@ interface KeyboardShortcutOptions {
 }
 
 export function useKeyboardShortcut(options: KeyboardShortcutOptions) {
-  const { key, ctrlKey = false, shiftKey = false, metaKey = false, callback, preventDefault = true } = options
+  const { key, ctrlKey = false, shiftKey = false, metaKey: _metaKey = false, callback, preventDefault = true } = options
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {

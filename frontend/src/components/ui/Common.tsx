@@ -5,7 +5,7 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
-import { ChevronLeft, ChevronRight, Inbox, FlaskConical, AlertTriangle, Lock } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FlaskConical, AlertTriangle, Lock } from 'lucide-react'
 
 /* ═══════════════════════════════════════════
    StatusBadge 状态标签

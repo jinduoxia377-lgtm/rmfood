@@ -16,7 +16,7 @@ import { useCallback, useReducer, useMemo } from 'react'
 import type { Reducer } from 'react'
 import * as d3 from 'd3'
 import type { LayoutType, ThemeConfig, GraphNode, GraphEdge } from '../types'
-import { TYPE_ORDER, TYPE_CONFIG, EDGE_TYPE_LABELS } from '../types'
+import { TYPE_ORDER, TYPE_CONFIG, EDGE_TYPE_LABELS, THEME_PRESETS } from '../types'
 import type { SmartPathResult } from '../analytics'
 import { findSmartPath, findPathBFS } from '../analytics/stats'
 import type { GraphEngine } from '../engine/forceSimulation'
@@ -920,25 +920,9 @@ function createInitialState(initialLayout: LayoutType): GraphState {
     isAddingAnnotation: false,
 
     // Theme / layout / animation
-    activeTheme: {
-      id: 'academic', name: '学术经典', icon: '📚',
-      bgGradient: 'linear-gradient(135deg, #f0f4f8 0%, #E5E7EB 100%)',
-      nodeColors: {
-        herb: { color: '#1E8E3E', glow: 'rgba(4,120,87,0.35)' },
-        compound: { color: '#0052AE', glow: 'rgba(29,78,216,0.35)' },
-        target: { color: '#D97706', glow: 'rgba(180,83,9,0.35)' },
-        disease: { color: '#DC2626', glow: 'rgba(185,28,28,0.35)' },
-        peptide: { color: '#8B5CF6', glow: 'rgba(109,40,217,0.35)' },
-        protein: { color: '#9D174D', glow: 'rgba(190,24,93,0.35)' },
-        food: { color: '#C2410C', glow: 'rgba(194,65,12,0.35)' },
-      },
-      edgeBaseColor: 'var(--color-knowledge-text, #6B7280)',
-      canvasBg: '#ffffff',
-      panelBg: 'rgba(255,255,255,0.95)',
-      textPrimary: '#1F2937',
-      textSecondary: '#6B7280',
-      accentColor: 'var(--color-secondary-500)',
-    },
+    // 默认主题引用 THEME_PRESETS[0]（academic）：其节点颜色使用 var(--kg-*)
+    // 自适应令牌，能跟随全局亮/暗主题，避免暗色下深色节点不可辨（P0-5）。
+    activeTheme: THEME_PRESETS[0],
     showThemePanel: false,
     animationPreset: 'fadeIn',
     showLayoutMenu: false,

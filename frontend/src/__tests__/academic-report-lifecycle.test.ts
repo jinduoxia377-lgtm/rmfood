@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { useAcademicReportStore } from '@/stores/academicReportStore';
+import type { ReportItem } from '@/stores/academicReportStore';
 
 describe('Academic Report Lifecycle Management Tests', () => {
   beforeEach(() => {
@@ -171,6 +173,144 @@ describe('Academic Report Lifecycle Management Tests', () => {
       expect(filtered.length).toBe(2);
       expect(filtered[0]!.name).toBe('期刊论文模板');
 			expect(filtered[1]!.name).toBe('学位论文模板');
+    });
+  });
+
+  describe('syncReport Regression (no duplicate localStorage writes)', () => {
+    const makeReportData = (title: string): Omit<ReportItem, 'id' | 'createdAt' | 'updatedAt'> => ({
+      title,
+      abstract: '摘要',
+      authors: ['张三'],
+      keywords: ['测试'],
+      chapters: [],
+      references: [],
+      templateId: 'research_report',
+      version: '1.0',
+      status: 'draft',
+    });
+
+    beforeEach(() => {
+      useAcademicReportStore.setState({ reports: [], currentReport: null });
+      vi.clearAllMocks();
+    });
+
+    it('persists the new report exactly once via zustand persist', async () => {
+      const existingReport: ReportItem = {
+        ...makeReportData('已有报告'),
+        id: 'report-existing',
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
+      };
+
+      // 模拟 localStorage 中已有持久化数据（zustand persist 写入后的形态）
+      const stored = JSON.stringify({
+        state: { reports: [existingReport], currentReport: null },
+        version: 0,
+      });
+      vi.mocked(Storage.prototype.getItem).mockReturnValue(stored);
+
+      const newId = await useAcademicReportStore.getState().syncReport(makeReportData('新同步报告'));
+      expect(newId).toBeDefined();
+      expect(newId).not.toBe(existingReport.id);
+
+      // zustand persist 在 set() 时同步写入 localStorage；修复后不应再有手动 push 写入
+      const setItemMock = vi.mocked(Storage.prototype.setItem);
+      const writes = setItemMock.mock.calls
+        .map(call => call[1])
+        .filter((value): value is string => typeof value === 'string')
+        .map(value => {
+          try {
+            return JSON.parse(value) as { state?: { reports?: { id: string }[] } };
+          } catch {
+            return null;
+          }
+        })
+        .filter((parsed): parsed is { state?: { reports?: { id: string }[] } } => parsed !== null);
+
+      // 至少有一次持久化写入包含了新报告
+      const writesContainingNew = writes.filter(parsed =>
+        parsed.state?.reports?.some(r => r.id === newId),
+      );
+      expect(writesContainingNew.length).toBeGreaterThan(0);
+
+      // 任意一次写入中，新报告都只能出现一次（回归：syncReport 不再手动 push 重复项）
+      for (const parsed of writesContainingNew) {
+        const occurrences = parsed.state!.reports!.filter(r => r.id === newId).length;
+        expect(occurrences).toBe(1);
+      }
+    });
+  });
+
+  describe('duplicateReport (P1-B 真实复制)', () => {
+    const makeReportData = (title: string): Omit<ReportItem, 'id' | 'createdAt' | 'updatedAt'> => ({
+      title,
+      abstract: '摘要',
+      authors: ['张三'],
+      keywords: ['测试'],
+      chapters: [
+        {
+          id: 'ch-1',
+          title: '第一章',
+          content: '内容',
+          level: 1,
+          order: 1,
+          children: [{ id: 'ch-1-1', title: '子章节', content: '子内容', level: 2, order: 1, children: [] }],
+        },
+      ],
+      references: [{ number: 1, authors: '张三', title: '文献', journal: '期刊', year: 2026 }],
+      templateId: 'research_report',
+      version: '1.0',
+      status: 'draft',
+      formulaId: 'formula-1',
+      formulaName: '测试配方',
+    });
+
+    beforeEach(() => {
+      useAcademicReportStore.setState({ reports: [], currentReport: null });
+      vi.clearAllMocks();
+    });
+
+    it('深拷贝原报告内容并生成新 id 写入 reports', () => {
+      const source: ReportItem = {
+        ...makeReportData('原报告'),
+        id: 'report-source',
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
+      };
+      useAcademicReportStore.setState({ reports: [source], currentReport: null });
+
+      const newId = useAcademicReportStore.getState().duplicateReport('report-source');
+
+      expect(newId).toBeDefined();
+      expect(newId).not.toBe('report-source');
+
+      const reports = useAcademicReportStore.getState().reports;
+      expect(reports.length).toBe(2);
+
+      const copy = reports.find(r => r.id === newId)!;
+      // 内容深拷贝
+      expect(copy.title).toBe('原报告（副本）');
+      expect(copy.abstract).toBe('摘要');
+      expect(copy.authors).toEqual(['张三']);
+      expect(copy.keywords).toEqual(['测试']);
+      expect(copy.formulaName).toBe('测试配方');
+      expect(copy.formulaId).toBe('formula-1');
+      expect(copy.references).toEqual(source.references);
+      expect(copy.chapters).toHaveLength(1);
+      expect(copy.chapters[0]!.title).toBe('第一章');
+      expect(copy.chapters[0]!.children).toHaveLength(1);
+      // 深拷贝：副本章节 id 与原报告不同（独立副本）
+      expect(copy.chapters[0]!.id).not.toBe(source.chapters[0]!.id);
+      // 副本为草稿状态，时间戳为新建
+      expect(copy.status).toBe('draft');
+      expect(copy.id).toMatch(/^report-\d+-/);
+    });
+
+    it('源报告不存在时返回 undefined 且不修改 reports', () => {
+      useAcademicReportStore.setState({ reports: [], currentReport: null });
+      const result = useAcademicReportStore.getState().duplicateReport('not-exist');
+      expect(result).toBeUndefined();
+      expect(useAcademicReportStore.getState().reports).toHaveLength(0);
     });
   });
 });

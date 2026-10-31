@@ -2,7 +2,7 @@
  * 模板编辑器 - 创建/编辑配方模板
  */
 import { useState } from 'react';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { Button, Input, Textarea } from '@/components/ui';
 import { formulaApi } from '@/api/formula';
 import { useToast } from '@/components/ui';
@@ -45,7 +45,7 @@ export function TemplateEditor({ open, onClose, template, onSuccess }: TemplateE
       }
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch {
       addToast({ type: 'error', message: '操作失败' });
     } finally {
       setLoading(false);

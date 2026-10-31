@@ -37,6 +37,8 @@ export interface ChatMessage {
 export interface ChatSession {
   id: number
   user_id: number
+  /** 前端本地会话标识（session-<ts>-<rand>），无则说明是旧数据/未携带创建 */
+  client_session_id?: string | null
   title: string
   message_count: number
   is_active: boolean

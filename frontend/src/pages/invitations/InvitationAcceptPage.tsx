@@ -20,6 +20,7 @@ export default function InvitationAcceptPage() {
 
   useEffect(() => {
     if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus('error');
       setMessage('邀请链接缺少令牌（token），请检查邮件中的链接是否完整。');
       return;

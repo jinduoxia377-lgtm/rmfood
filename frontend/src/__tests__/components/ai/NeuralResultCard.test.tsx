@@ -15,6 +15,9 @@ vi.mock('recharts', () => ({
 }))
 
 const mockCandidate: AICandidate = {
+  id: 'cand-001',
+  name: '测试配方',
+  effects: [],
   formula_name: '测试配方',
   description: '这是一个测试配方描述',
   synergy_score: 0.85,

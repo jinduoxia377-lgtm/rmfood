@@ -1,6 +1,13 @@
 /**
  * FormulaInferenceEngine — 配方推理引擎 v2.0
  *
+ * ⚠️ @deprecated 前端遗留引擎（task-4 死代码治理）：
+ * - 本推理引擎基于 FormulaKnowledgeGraph 的硬编码英文-key 小数据集，
+ *   analyzeFormula 无业务运行时调用点，仅作为历史实现保留。
+ * - GenerateTab 主流程不依赖本模块：安全/配伍分析请调用
+ *   aiApi.validateAiFormula（POST /api/v1/ai/formula/validate）等真实接口。
+ * - 新代码请直接调用 @/api/ai。
+ *
  * 基于产生式规则的前向推理系统：
  * 1. 规则定义 (Rule) — IF (条件) THEN (结论) WITH (置信度)
  * 2. 工作内存 (WorkingMemory) — 动态事实集合

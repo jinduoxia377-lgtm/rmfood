@@ -209,7 +209,7 @@ describe('Excel Export Performance Tests', () => {
         
         const startTime = performance.now()
         
-        const widths = calculateColumnWidths(headers, data, { mode: 'auto' })
+        calculateColumnWidths(headers, data, { mode: 'auto' })
         
         data.forEach(row => {
           headers.forEach(header => {

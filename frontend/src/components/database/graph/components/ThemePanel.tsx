@@ -13,12 +13,12 @@ export default function ThemePanel({ showThemePanel, activeTheme, onApplyTheme, 
   return (
     <>
       <button onClick={onClose}
-        className="absolute top-3 right-14 z-30 w-6 h-6 rounded-lg bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-700/40 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
+        className="absolute top-24 right-3 z-30 w-6 h-6 rounded-lg bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-700/40 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
         title={`主题: ${activeTheme.name}`}>
         <span className="text-xs">{activeTheme.icon}</span>
       </button>
 
-      <div className="absolute top-12 right-3 z-50 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-neutral-200/60 dark:border-neutral-700/60 p-3 min-w-[220px] animate-fade-in">
+      <div className="absolute top-28 right-3 z-50 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-neutral-200/60 dark:border-neutral-700/60 p-3 min-w-[220px] animate-fade-in">
         <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2 px-1">选择配色主题</div>
         <div className="space-y-1">
           {THEME_PRESETS.map(t => (

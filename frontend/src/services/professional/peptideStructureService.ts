@@ -114,7 +114,7 @@ export class PeptideStructureService {
   async init(): Promise<void> {
     if (this.initialized) return;
     try {
-      const response = await request.get('/csrf-token');
+      await request.get('/csrf-token');
       this.initialized = true;
     } catch (error) {
       console.warn('CSRF token initialization failed:', error);
@@ -604,8 +604,11 @@ const response = await request.get(`${this.baseUrl}/database/search`, { params }
 
   /**
    * 真实在线文献检索（NCBI PubMed，可达时返回真实文献，不可达时诚实降级为空）
+   * @param activityType 活性类型关键词（默认 'ACE inhibitory peptide'）
+   * @param limit 返回条数上限
+   * @param sequence 可选肽序列；传入时作为 sequence 查询参数，用于实时检索该肽的相关文献
    */
-  async getOnlineLiterature(activityType = 'ACE inhibitory peptide', limit = 5): Promise<{
+  async getOnlineLiterature(activityType = 'ACE inhibitory peptide', limit = 5, sequence?: string): Promise<{
     success: boolean;
     reachable: boolean;
     references: Array<{ pmid: string; title: string; journal: string; pubdate: string; authors: string[]; doi: string | null; url: string; source_database: string }>;
@@ -613,6 +616,9 @@ const response = await request.get(`${this.baseUrl}/database/search`, { params }
     probe?: any;
   }> {
     const params = new URLSearchParams({ activity_type: activityType, limit: String(limit) });
+    if (sequence && sequence.trim()) {
+      params.set('sequence', sequence.trim());
+    }
     const response = await request.get(`${this.baseUrl}/online-source/literature?${params}`);
     return response.data;
   }

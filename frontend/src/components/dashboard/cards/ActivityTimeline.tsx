@@ -5,7 +5,7 @@ import type { FC } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Activity, FlaskConical, TestTubes, ArrowRight } from 'lucide-react'
-import { Badge, Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
 import { StatusBadge } from '@/components/ui/Common'
 import { cn } from '@/lib/utils'
 

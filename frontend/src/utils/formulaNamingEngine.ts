@@ -127,8 +127,8 @@ function sanitizeName(name: string): string {
   }
 
   let sanitized = name.trim()
-  sanitized = sanitized.replace(/[^\u4e00-\u9fa5a-zA-Z0-9γ-ω\-]/g, '')
-  sanitized = sanitized.replace(/[\-_]+/g, '')
+  sanitized = sanitized.replace(/[^\u4e00-\u9fa5a-zA-Z0-9γ-ω-]/g, '')
+  sanitized = sanitized.replace(/[-_]+/g, '')
   sanitized = sanitized.replace(/\s+/g, '')
 
   if (sanitized.length > MAX_NAME_LENGTH) {

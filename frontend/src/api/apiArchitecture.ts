@@ -806,7 +806,7 @@ export class ApiManager {
       if (adapter && typeof adapter.forceUseMock === 'function') {
         adapter.forceUseMock(false)
       }
-    } catch (e) {
+    } catch {
       // 忽略错误
     }
     logger.info('[ApiManager] 所有缓存已清除')

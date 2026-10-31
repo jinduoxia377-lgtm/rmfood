@@ -34,6 +34,13 @@ import {
 import { Button, Textarea, Badge, Card, Progress } from '@/components/ui'
 import { logger } from '@/utils/safeLogger'
 
+/** 颜色名 → Tailwind 静态类名映射（JIT 无法解析动态类名） */
+const COLOR_CLASSES: Record<string, { bg100: string; text700: string; border300: string }> = {
+  blue: { bg100: 'bg-blue-100', text700: 'text-blue-700', border300: 'border-blue-300' },
+  purple: { bg100: 'bg-purple-100', text700: 'text-purple-700', border300: 'border-purple-300' },
+  orange: { bg100: 'bg-orange-100', text700: 'text-orange-700', border300: 'border-orange-300' },
+}
+
 // ===== 类型定义 =====
 
 type OptimizationLevel = 'basic' | 'advanced' | 'expert'
@@ -271,7 +278,7 @@ export function PromptOptimizer({
                   onClick={() => setLevel(lvl)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                     level === lvl
-                      ? `bg-${LEVEL_CONFIG[lvl].color}-100 text-${LEVEL_CONFIG[lvl].color}-700 border border-${LEVEL_CONFIG[lvl].color}-300`
+                      ? `${COLOR_CLASSES[LEVEL_CONFIG[lvl].color]?.bg100 || ''} ${COLOR_CLASSES[LEVEL_CONFIG[lvl].color]?.text700 || ''} border ${COLOR_CLASSES[LEVEL_CONFIG[lvl].color]?.border300 || ''}`
                       : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 hover:bg-neutral-200'
                   }`}
                 >

@@ -81,8 +81,9 @@ export default function KnowledgeGraph({
   const {
     state, dispatch,
     svgRef, containerRef, zoomBehaviorRef, engineRef,
-    setTooltip, activeFilter, setActiveFilter, selectedNode, setSelectedNode,
+    setTooltip, tooltip, activeFilter, setActiveFilter, selectedNode, setSelectedNode,
     setZoomTransform, detailTab, setDetailTab,
+    legendOpen, toggleLegend,
     searchQuery, searchHistory, setSearchHistory,
     focusedNodeIndex, setFocusedNodeIndex, isSelecting, setIsSelecting, selectionBox, setSelectionBox,
     selectedNodes, setSelectedNodes, contextMenu, setContextMenu,
@@ -188,6 +189,7 @@ export default function KnowledgeGraph({
     handleZoomIn={handleZoomIn} handleZoomOut={handleZoomOut} handleFitToCanvas={handleFitToCanvas} handleResetView={handleResetView}
     handleSelectionComplete={handleSelectionComplete} handleContextAction={handleContextAction} exportSubgraphJSON={exportSubgraphJSON}
     setTooltip={setTooltip} setSelectedNode={setSelectedNode} setZoomTransform={setZoomTransform}
+    tooltip={tooltip} legendOpen={legendOpen} toggleLegend={toggleLegend}
     setContextMenu={setContextMenu} setDetailTab={setDetailTab} detailTab={detailTab}
     setFocusedNodeIndex={setFocusedNodeIndex} setIsSelecting={setIsSelecting} setSelectionBox={setSelectionBox}
     setSearchHistory={setSearchHistory} setNodeAIAnalysis={setNodeAIAnalysis}

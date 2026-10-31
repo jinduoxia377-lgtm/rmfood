@@ -125,6 +125,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
               {algo.backendClass && (
                 <button
                   onClick={handleCopy}
+                  aria-label="复制类名"
                   className="flex items-center gap-1 text-[12px] font-mono px-2 min-h-[44px] rounded transition-colors"
                   style={{ color: 'var(--color-neutral-500, #64748b)', background: 'transparent', border: 'none' }}
                   title="复制类名"
@@ -220,7 +221,7 @@ export default function Algorithms() {
   const optimizerAlgos = algorithms.filter((a) => a.category === 'optimizer');
 
   return (
-    <section id="algorithms" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
+    <section id="algorithms" aria-label="算法引擎与性能基准" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
 
         {/* 标题区 */}

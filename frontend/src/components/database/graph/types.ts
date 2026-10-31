@@ -81,13 +81,13 @@ export const TYPE_CONFIG: Record<string, {
   icon: string
   isCore: boolean
 }> = {
-  herb:     { color: '#1E8E3E', glow: 'rgba(4,120,87,0.35)',   size: 26, minSize: 18, maxSize: 44, label: '药材',   icon: '🌿', isCore: true },
-  compound: { color: '#0052AE', glow: 'rgba(29,78,216,0.35)',   size: 16, minSize: 10, maxSize: 30, label: '化合物', icon: '⚗️', isCore: false },
-  target:   { color: '#D97706', glow: 'rgba(180,83,9,0.35)',    size: 14, minSize: 9,  maxSize: 26, label: '靶点',   icon: '🎯', isCore: false },
-  disease:  { color: '#DC2626', glow: 'rgba(185,28,28,0.35)',    size: 18, minSize: 12, maxSize: 34, label: '疾病',   icon: '🩺', isCore: true },
-  peptide:  { color: '#8B5CF6', glow: 'rgba(109,40,217,0.35)',  size: 18, minSize: 12, maxSize: 34, label: '肽',     icon: '🧬', isCore: true },
-  protein:  { color: '#9D174D', glow: 'rgba(190,24,93,0.35)',  size: 15, minSize: 10, maxSize: 28, label: '蛋白质', icon: '🔬', isCore: false },
-  food:     { color: '#C2410C', glow: 'rgba(194,65,12,0.35)',   size: 16, minSize: 10, maxSize: 30, label: '食物',   icon: '🍽️', isCore: false },
+  herb:     { color: 'var(--kg-herb, #1E8E3E)', glow: 'rgba(4,120,87,0.35)',      size: 26, minSize: 18, maxSize: 44, label: '药材',   icon: '🌿', isCore: true },
+  compound: { color: 'var(--kg-compound, #0052AE)', glow: 'rgba(29,78,216,0.35)', size: 16, minSize: 10, maxSize: 30, label: '化合物', icon: '⚗️', isCore: false },
+  target:   { color: 'var(--kg-target, #D97706)', glow: 'rgba(180,83,9,0.35)',    size: 14, minSize: 9,  maxSize: 26, label: '靶点',   icon: '🎯', isCore: false },
+  disease:  { color: 'var(--kg-disease, #DC2626)', glow: 'rgba(185,28,28,0.35)',  size: 18, minSize: 12, maxSize: 34, label: '疾病',   icon: '🩺', isCore: true },
+  peptide:  { color: 'var(--kg-peptide, #8B5CF6)', glow: 'rgba(109,40,217,0.35)', size: 18, minSize: 12, maxSize: 34, label: '肽',     icon: '🧬', isCore: true },
+  protein:  { color: 'var(--kg-protein, #9D174D)', glow: 'rgba(190,24,93,0.35)',  size: 15, minSize: 10, maxSize: 28, label: '蛋白质', icon: '🔬', isCore: false },
+  food:     { color: 'var(--kg-food, #C2410C)', glow: 'rgba(194,65,12,0.35)',     size: 16, minSize: 10, maxSize: 30, label: '食物',   icon: '🍽️', isCore: false },
 }
 
 export const DEFAULT_TYPE = TYPE_CONFIG.compound
@@ -103,12 +103,12 @@ export const EDGE_COLORS: Record<string, {
   width: number
   priority: 'core' | 'secondary'
 }> = {
-  contains:    { color: '#0052AE', dash: '', animDash: '8 4', width: 2.5, priority: 'core' },
-  targets:     { color: '#D97706', dash: '4,2', animDash: '6 3', width: 2.5, priority: 'core' },
-  treats:      { color: '#DC2626', dash: '',    animDash: '10 5', width: 3.0, priority: 'core' },
-  synergy:     { color: '#1E8E3E', dash: '',    animDash: '',    width: 2.0, priority: 'core' },
-  antagonism:  { color: '#B91C1C', dash: '3,2', animDash: '4 4', width: 1.5, priority: 'secondary' },
-  interacts:   { color: '#8B5CF6', dash: '5,3', animDash: '8 4', width: 1.5, priority: 'secondary' },
+  contains:    { color: 'var(--kg-edge-contains, #0052AE)', dash: '', animDash: '8 4', width: 2.5, priority: 'core' },
+  targets:     { color: 'var(--kg-edge-targets, #D97706)', dash: '4,2', animDash: '6 3', width: 2.5, priority: 'core' },
+  treats:      { color: 'var(--kg-edge-treats, #DC2626)', dash: '',    animDash: '10 5', width: 3.0, priority: 'core' },
+  synergy:     { color: 'var(--kg-edge-synergy, #1E8E3E)', dash: '',    animDash: '',    width: 2.0, priority: 'core' },
+  antagonism:  { color: 'var(--kg-edge-antagonism, #B91C1C)', dash: '3,2', animDash: '4 4', width: 1.5, priority: 'secondary' },
+  interacts:   { color: 'var(--kg-edge-interacts, #8B5CF6)', dash: '5,3', animDash: '8 4', width: 1.5, priority: 'secondary' },
   relates_to:  { color: 'var(--color-knowledge-text, #6B7280)', dash: '',    animDash: '',    width: 1.0, priority: 'secondary' },
 }
 
@@ -292,16 +292,21 @@ export const THEME_PRESETS: ThemeConfig[] = [
     id: 'academic', name: '学术经典', icon: '📚',
     bgGradient: 'linear-gradient(135deg, #f0f4f8 0%, #E5E7EB 100%)',
     nodeColors: {
-      herb: { color: '#1E8E3E', glow: 'rgba(4,120,87,0.35)' },
-      compound: { color: '#0052AE', glow: 'rgba(29,78,216,0.35)' },
-      target: { color: '#D97706', glow: 'rgba(180,83,9,0.35)' },
-      disease: { color: '#DC2626', glow: 'rgba(185,28,28,0.35)' },
-      peptide: { color: '#8B5CF6', glow: 'rgba(109,40,217,0.35)' },
-      protein: { color: '#9D174D', glow: 'rgba(190,24,93,0.35)' },
-      food: { color: '#C2410C', glow: 'rgba(194,65,12,0.35)' },
+      herb: { color: 'var(--kg-herb, #1E8E3E)', glow: 'rgba(4,120,87,0.35)' },
+      compound: { color: 'var(--kg-compound, #0052AE)', glow: 'rgba(29,78,216,0.35)' },
+      target: { color: 'var(--kg-target, #D97706)', glow: 'rgba(180,83,9,0.35)' },
+      disease: { color: 'var(--kg-disease, #DC2626)', glow: 'rgba(185,28,28,0.35)' },
+      peptide: { color: 'var(--kg-peptide, #8B5CF6)', glow: 'rgba(109,40,217,0.35)' },
+      protein: { color: 'var(--kg-protein, #9D174D)', glow: 'rgba(190,24,93,0.35)' },
+      food: { color: 'var(--kg-food, #C2410C)', glow: 'rgba(194,65,12,0.35)' },
     },
-    edgeBaseColor: 'var(--color-knowledge-text, #6B7280)', canvasBg: '#ffffff', panelBg: 'rgba(255,255,255,0.95)',
-    textPrimary: '#1F2937', textSecondary: '#6B7280', accentColor: 'var(--color-secondary-500)',
+    edgeBaseColor: 'var(--color-knowledge-text, #6B7280)',
+    // 学术经典：画布/面板/文字走全局令牌，跟随亮/暗主题（其余预设为各自的画布身份色）
+    canvasBg: 'var(--bg-secondary, #ffffff)',
+    panelBg: 'var(--bg-secondary, rgba(255,255,255,0.95))',
+    textPrimary: 'var(--text-primary, #1F2937)',
+    textSecondary: 'var(--text-secondary, #6B7280)',
+    accentColor: 'var(--color-secondary-500)',
   },
   {
     id: 'deepSpace', name: '深空探索', icon: '🌌',

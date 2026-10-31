@@ -1,7 +1,6 @@
 /**
  * 效果预测曲线图 - PK/PD 时效曲线可视化
  */
-import { useMemo } from 'react';
 
 interface EffectCurveChartProps {
   ctCurve?: Array<{ time_hour: number; concentration: number }>;

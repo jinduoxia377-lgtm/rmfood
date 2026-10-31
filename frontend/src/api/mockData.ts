@@ -31,6 +31,7 @@ export const mockUser: User = {
   email: 'admin@example.com',
   fullName: '管理员',
   role: UserRole.ADMIN,
+  plan: 'free',
   isActive: true,
   createdAt: new Date().toISOString(),
   department: '',

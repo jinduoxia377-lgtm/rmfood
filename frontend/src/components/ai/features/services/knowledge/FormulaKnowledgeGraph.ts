@@ -1,6 +1,15 @@
 /**
  * FormulaKnowledgeGraph — 食品配方知识图谱 v2.0
  *
+ * ⚠️ @deprecated 前端遗留引擎（task-4 死代码治理）：
+ * - 本文件预置节点为硬编码英文-key 小数据集，仅作离线回退/兼容历史 import 链使用。
+ * - GenerateTab 主流程不依赖本模块：真实配方生成走 aiApi.generate
+ *   （POST /api/v1/ai/generate → 后端 GA 引擎），真实药材知识走
+ *   retrieveHerbKnowledge（POST /api/v1/ai/formula/knowledge）。
+ * - 新代码请直接调用 @/api/ai 的 aiApi / retrieveHerbKnowledge。
+ * - 为保留价值，本类新增 initializeFromBackend()：通过真实知识接口异步加载
+ *   平台原料库数据并合并进图谱（失败时静默回退内置预置数据）。
+ *
  * 基于图数据库思维的知识表示系统：
  * - 节点：Ingredient (成分), Effect (功效), Category (分类), Reference (文献)
  * - 边：HAS_EFFECT, INTERACTS_WITH, BELONGS_TO, REFERENCES, SIMILAR_TO
@@ -22,6 +31,8 @@ import {
   FKG_SCORE_MIN,
   FKG_SCORE_MAX,
 } from '@/config/ai/constants'
+import { retrieveHerbKnowledge, type AiHerbKnowledgeItem } from '@/api/ai'
+import { logger } from '@/utils/safeLogger'
 
 /* ================================================================== */
 /*  基础类型定义                                                        */
@@ -176,6 +187,105 @@ export class FormulaKnowledgeGraph {
     this.edges = new Map()
     this.adjacencyList = new Map()
     this.initializePresets()
+  }
+
+  /* ================================================================ */
+  /*  真实数据加载（task-4：接入 /ai/formula/knowledge）              */
+  /* ================================================================ */
+
+  private backendLoadPromise: Promise<void> | null = null
+  private backendLoaded = false
+
+  /**
+   * 从后端真实知识接口（POST /api/v1/ai/formula/knowledge）异步加载
+   * 平台原料库药材知识并合并进图谱。
+   * - 异步初始化：同一实例只触发一次（promise 缓存）
+   * - 失败回退：任何异常/空结果都静默保留内置预置数据，不影响同步调用
+   */
+  async initializeFromBackend(query = '药食同源'): Promise<void> {
+    if (this.backendLoadPromise) return this.backendLoadPromise
+    this.backendLoadPromise = this.doLoadFromBackend(query)
+    return this.backendLoadPromise
+  }
+
+  /** 是否已成功加载后端真实知识（未加载/失败时为 false，仍使用内置回退数据） */
+  get isBackendLoaded(): boolean {
+    return this.backendLoaded
+  }
+
+  private async doLoadFromBackend(query: string): Promise<void> {
+    try {
+      const result = await retrieveHerbKnowledge(query)
+      const items = Array.isArray(result?.items) ? result.items : []
+      if (items.length === 0) {
+        logger.warn('[FormulaKnowledgeGraph] 后端知识接口返回空 items，继续使用内置回退数据')
+        return
+      }
+      let merged = 0
+      for (const item of items) {
+        const node = this.mapHerbKnowledgeToNode(item)
+        if (node) {
+          this.addNode(node)
+          merged++
+        }
+      }
+      this.backendLoaded = merged > 0
+      logger.info(`[FormulaKnowledgeGraph] 已从后端加载 ${merged} 味真实药材知识并合并进图谱`)
+    } catch (error) {
+      this.backendLoaded = false
+      logger.warn('[FormulaKnowledgeGraph] 后端知识加载失败，回退内置预置数据', error)
+    }
+  }
+
+  /** 将后端知识条目映射为图谱 Ingredient 节点（id 使用中文名 name_cn）。 */
+  private mapHerbKnowledgeToNode(
+    item: AiHerbKnowledgeItem,
+  ): GraphNode<{
+    nature: string
+    flavor: string[]
+    meridians: string[]
+    dosageRange: [number, number]
+    safetyLimit: number
+    toxicity: 'none' | 'low' | 'moderate' | 'high'
+    bioavailability: number
+    halfLife?: number
+    solubility?: 'water' | 'lipid' | 'both'
+    quality_markers: string[]
+  }> | null {
+    const name = typeof item.name_cn === 'string' ? item.name_cn.trim() : ''
+    if (!name) return null
+    const minG = typeof item.safe_dose_range?.min_g === 'number' ? item.safe_dose_range.min_g : 3
+    const maxG = typeof item.safe_dose_range?.max_g === 'number' ? item.safe_dose_range.max_g : 15
+    const safeMax = maxG > minG ? maxG : minG + 1
+    return {
+      id: name,
+      type: NodeType.INGREDIENT,
+      label: name,
+      aliases: Array.isArray(item.aliases) ? item.aliases : [],
+      description:
+        Array.isArray(item.effects) && item.effects.length > 0
+          ? `功效：${item.effects.join('、')}`
+          : '',
+      properties: {
+        nature: 'neutral',
+        flavor: [],
+        meridians: [],
+        dosageRange: [minG, safeMax],
+        safetyLimit: Math.round(safeMax * 2 * 10) / 10,
+        toxicity: 'none',
+        bioavailability: 0.5,
+        quality_markers: Array.isArray(item.active_ingredients)
+          ? item.active_ingredients
+          : [],
+      },
+      metadata: {
+        created: Date.now(),
+        updated: Date.now(),
+        source: item.source || 'backend:/ai/formula/knowledge',
+        confidence: typeof item.data_quality === 'number' ? item.data_quality : 0.8,
+        version: 'api',
+      },
+    }
   }
 
   /* ================================================================ */

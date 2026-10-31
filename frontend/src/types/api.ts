@@ -88,7 +88,7 @@ export interface CreateFormulaRequest {
   tags?: string[]
 }
 
-export interface UpdateFormulaRequest extends Partial<CreateFormulaRequest> {}
+export type UpdateFormulaRequest = Partial<CreateFormulaRequest>;
 
 // ============ 实验相关 ============
 

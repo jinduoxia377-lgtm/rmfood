@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 趋势分析 Tab — 参考 Dashboard 设计风格
  * 使用 Card+CardHeader+CardContent 统一卡片样式
  */
@@ -42,6 +42,7 @@ export default function TrendsTab({ filters }: Props) {
   // 当父级 timeRange 变化时同步初始值
   useEffect(() => {
     const v = _daysMap[filters.timeRange] ?? 30
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDays(v)
   }, [filters.timeRange])
 

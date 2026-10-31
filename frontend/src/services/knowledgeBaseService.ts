@@ -1,4 +1,3 @@
-import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import apiClient from '../api/client';
 

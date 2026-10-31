@@ -38,12 +38,14 @@ export const EFFECT_OPTIONS: EffectOption[] = [
   { id: 'yin_nourishing', label: '滋阴补肾', labelKey: 'yin_nourishing', category: '滋补', categoryKey: 'nourishing', popular: false },
   { id: 'spleen_qi_tonifying', label: '健脾益气', labelKey: 'spleen_qi_tonifying', category: '滋补', categoryKey: 'nourishing', popular: false },
   { id: 'blood_nourishing', label: '补血养血', labelKey: 'blood_nourishing', category: '滋补', categoryKey: 'nourishing', popular: false },
+  { id: 'qi_blood_nourishing', label: '补气养血', labelKey: 'qi_blood_nourishing', category: '滋补', categoryKey: 'nourishing', popular: false },
 
   // ═══════════════════════════════════════════
   // 心血管类（4条）
   // ═══════════════════════════════════════════
   { id: 'blood_pressure', label: '降血压', labelKey: 'blood_pressure', category: '心血管', categoryKey: 'cardiovascular', popular: false },
   { id: 'blood_lipid', label: '降血脂', labelKey: 'blood_lipid', category: '心血管', categoryKey: 'cardiovascular', popular: false },
+  { id: 'blood_lipid_assist', label: '辅助降血脂', labelKey: 'blood_lipid_assist', category: '心血管', categoryKey: 'cardiovascular', popular: false },
   { id: 'vascular_protection', label: '保护血管', labelKey: 'vascular_protection', category: '心血管', categoryKey: 'cardiovascular', popular: false },
   { id: 'circulation_promotion', label: '促进循环', labelKey: 'circulation_promotion', category: '心血管', categoryKey: 'cardiovascular', popular: false },
 

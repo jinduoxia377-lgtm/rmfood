@@ -35,7 +35,7 @@ export default function AnnotationRenderer({ annotations, onRemoveAnnotation }: 
               <span className="text-xs font-medium text-warning-800 dark:text-warning-200">{anno.text}</span>
             </div>
             <button onClick={() => onRemoveAnnotation(anno.id)}
-              className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-neutral-700 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none">
+              className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-neutral-700 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[11px] leading-none">
               ×
             </button>
           </div>

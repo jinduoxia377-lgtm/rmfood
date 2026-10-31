@@ -12,8 +12,9 @@ vi.mock('../../../services/chatService', () => ({
     sendMessageStream: vi.fn(),
     clearAuthToken: vi.fn(),
     closeAllPendingRequests: vi.fn(),
+    abortCurrentStream: vi.fn(),
     retryLastMessage: vi.fn().mockResolvedValue({ content: '重试回复', role: 'assistant', formulas: [], timestamp: 0 }),
-    getStateMachine: vi.fn(() => ({ addStateListener: () => () => {} })),
+    getStateMachine: vi.fn(() => ({ addStateListener: () => () => {}, transition: vi.fn() })),
   },
 }))
 
@@ -202,5 +203,71 @@ describe('useChatMessages', () => {
       'auth:required',
       expect.any(Function),
     )
+  })
+
+  it('progress 事件驱动 streamProgress 只进不退（30→60→50 最终 60）', async () => {
+    ;(chatService.sendMessageStream as Mock).mockImplementation(async function* () {
+      yield { done: false, content: '', progress: { stage: 'generating', percent: 30 } }
+      yield { done: false, content: '', progress: { stage: 'generating', percent: 60 } }
+      yield { done: false, content: '', progress: { stage: 'generating', percent: 50 } }
+    })
+
+    const { result } = renderHook(() => useChatMessages())
+
+    await act(async () => {
+      await result.current.sendMessage('你好')
+    })
+
+    // 进度只进不退：虽然最后一个事件是 50，但已到达过 60
+    expect(result.current.streamProgress).toBe(60)
+    expect(result.current.streamStatus).toBe('active')
+  })
+
+  it('流式与非流式均失败后 streamStatus 为 error、占位不残留 isLoading', async () => {
+    ;(chatService.sendMessageStream as Mock).mockImplementation(async function* () {
+      throw new Error('Network error')
+      yield undefined
+    })
+    ;(chatService.sendMessage as Mock).mockRejectedValue(new Error('Network error'))
+
+    const { result } = renderHook(() => useChatMessages())
+
+    await act(async () => {
+      await result.current.sendMessage('你好')
+    })
+
+    // 双重失败：进度条进入 error 状态，错误气泡已追加
+    expect(result.current.streamStatus).toBe('error')
+    expect(result.current.chatError).not.toBeNull()
+    // 用户消息标记为失败
+    const userMessage = result.current.messages.find((m) => m.role === 'user')
+    expect(userMessage?.sendStatus).toBe('failed')
+    // assistant 占位不残留 isLoading（已被清理或错误气泡接管）
+    const loadingAssistant = result.current.messages.find((m) => m.role === 'assistant' && m.isLoading)
+    expect(loadingAssistant).toBeUndefined()
+    // 存在错误气泡
+    const errorBubble = result.current.messages.find((m) => m.role === 'assistant' && m.error)
+    expect(errorBubble).toBeDefined()
+  })
+
+  it('pause 后保留 streamStatus（不复位为 idle）且 isPaused 置位', async () => {
+    ;(chatService.sendMessageStream as Mock).mockImplementation(async function* () {
+      yield { done: false, content: '部分内容', progress: { stage: 'generating', percent: 60 } }
+    })
+
+    const { result } = renderHook(() => useChatMessages())
+
+    await act(async () => {
+      await result.current.sendMessage('你好')
+    })
+    expect(result.current.streamStatus).toBe('active')
+
+    act(() => {
+      result.current.pauseStreaming()
+    })
+
+    // pause 只中止流并置位 isPaused，不重置进度状态（保留 active 供恢复后继续展示）
+    expect(result.current.isPaused).toBe(true)
+    expect(result.current.streamStatus).toBe('active')
   })
 })

@@ -35,6 +35,13 @@ export interface ChatMessage {
   originalContent?: string;
   isRetracted?: boolean;
   retractedAt?: number;
+  /** 思考步骤（由后端 chat_engine 生成，用于前端 ReasoningRow / Sidebar 展示） */
+  thinking_steps?: Array<{
+    step: string;
+    content: string;
+    status: string;
+    detail?: string;
+  }>;
   /** 发送状态：sending / sent / failed */
   sendStatus?: 'sending' | 'sent' | 'failed';
   /** 重试次数 */

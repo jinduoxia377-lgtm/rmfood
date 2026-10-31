@@ -105,7 +105,7 @@ export function ScatterChartSection({ scatterData, axisX, axisY }: ScatterChartP
         {[1, 2, 3, 4, 5].map((rank) => (
           <div key={rank} className="flex items-center gap-1.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
             <span className="w-3 h-3 rounded-full" style={{ backgroundColor: getParetoColor(rank) }} />
-            Rank {rank}
+            排名 {rank}
           </div>
         ))}
         <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-2">· 大小 = 拥挤距离</span>

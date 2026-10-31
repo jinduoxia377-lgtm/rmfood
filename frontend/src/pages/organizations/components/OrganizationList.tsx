@@ -11,7 +11,6 @@ import {
   Zap,
   Star,
   Pin,
-  MoreVertical,
   Crown,
   Shield,
   UserCheck,

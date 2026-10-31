@@ -79,9 +79,23 @@ export class NSGAIIOptimizer {
   private initializePopulation(): void {
     this.population = [];
     const ingredientNames = this.baseIngredients.map((ing) => ing.name);
-    
+
+    // P0 防御：NSGA-II 初始化要求每个个体至少 3 种成分。当可选成分 < 3 时，
+    // 随机挑选不重复下标的 while 循环永远无法满足 numIngredients >= 3，会死循环冻结浏览器。
+    // 前置抛错，让调用方显式提示用户补充成分。
+    if (this.baseIngredients.length < 3) {
+      throw new Error(
+        `至少需要 3 种成分才能运行多目标优化，当前仅有 ${this.baseIngredients.length} 种成分`,
+      );
+    }
+
     for (let i = 0; i < this.params.populationSize; i++) {
-      const numIngredients = Math.max(3, Math.floor(Math.random() * (this.baseIngredients.length - 2)) + 3);
+      // 个体成分数在 [3, baseIngredients.length] 之间随机，上限收敛到可选集大小，
+      // 确保 while 循环一定能收集到 numIngredients 个不重复下标。
+      const numIngredients = Math.min(
+        Math.max(3, Math.floor(Math.random() * (this.baseIngredients.length - 2)) + 3),
+        this.baseIngredients.length,
+      );
       const selectedIndices = new Set<number>();
       
       while (selectedIndices.size < numIngredients) {

@@ -131,7 +131,7 @@ export function useRealtimeSync() {
         if (message.type === 'data_change') {
           handleCDCMessage(message)
         }
-      } catch (error) {
+      } catch {
         // 忽略非 CDC 消息
       }
     })

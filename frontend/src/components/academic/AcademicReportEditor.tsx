@@ -15,14 +15,27 @@ import { SaveStatusIndicator, AutoSaveIndicator } from './editor/SaveStatusIndic
 import { createNewDocument } from '@/data/reportTemplates';
 import { AcademicExportService } from '@/services/academicExportService';
 import { useAcademicReportStore } from '@/stores/academicReportStore';
+import type { ReportItem } from '@/stores/academicReportStore';
 import { useToastStore } from '@/stores/toastStore';
 import type { ReportDocument, Chapter, Citation, ReportType, CitationStyle } from '@/types/academicReport';
 import { ReportTypeConfig } from '@/types/academicReport';
+import {
+  reportItemToReportDocument,
+  reportDocumentToReportItemData,
+} from '@/utils/academicReportLinkage';
 import { logger } from '@/utils/safeLogger';
 
+interface AcademicReportEditorProps {
+  /** 打开已有报告时传入，编辑器以该报告内容初始化文档并绑定保存目标 */
+  initialReport?: ReportItem;
+}
 
-export function AcademicReportEditor() {
-  const [reportDoc, setReportDoc] = useState<ReportDocument | null>(() => createNewDocument('research'));
+export function AcademicReportEditor({ initialReport }: AcademicReportEditorProps = {}) {
+  const [reportDoc, setReportDoc] = useState<ReportDocument | null>(
+    () => initialReport ? reportItemToReportDocument(initialReport) : createNewDocument('research'),
+  );
+  // 已绑定到 store 的报告 id：新建文档保存后经 syncReport 绑定，之后保存走 update 分支
+  const [boundReportId, setBoundReportId] = useState<string | undefined>(initialReport?.id);
   const [selectedChapterId, setSelectedChapterId] = useState<string | undefined>();
   const [activePanel, setActivePanel] = useState<'chapters' | 'editor' | 'preview'>('editor');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -37,34 +50,27 @@ export function AcademicReportEditor() {
     saveStatus,
     lastSavedAt,
     error,
+    currentReport,
     saveReport,
+    updateReport,
+    syncReport,
     autoSaveEnabled,
     autoSaveInterval,
     enableAutoSave,
     disableAutoSave,
-    importChapters,
-    batchDeleteChapters,
-    batchMoveChapters,
   } = useAcademicReportStore();
   const { addToast } = useToastStore();
 
   const autoSaveTimerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    if (autoSaveEnabled && autoSaveTimerRef.current) {
-      autoSaveTimerRef.current = setInterval(() => {
-        if (reportDoc) {
-          saveReport();
-        }
-      }, autoSaveInterval);
-    }
-
-    return () => {
-      if (autoSaveTimerRef.current) {
-        clearInterval(autoSaveTimerRef.current);
-      }
-    };
-  }, [autoSaveEnabled, autoSaveInterval, reportDoc, saveReport]);
+  /**
+   * 编辑内容同步写回 store：只有已绑定报告 id 时才更新（新建未保存文档走 syncReport 分支）。
+   * 这样 `saveReport()` 持久化的 `currentReport` 才是用户真正编辑的内容。
+   */
+  const syncToStore = useCallback((nextDoc: ReportDocument) => {
+    if (!boundReportId) return;
+    updateReport(boundReportId, reportDocumentToReportItemData(nextDoc, currentReport ?? undefined));
+  }, [boundReportId, currentReport, updateReport]);
 
   const getExportService = () => {
     if (!reportDoc) return null;
@@ -90,45 +96,55 @@ export function AcademicReportEditor() {
       });
     };
 
-    setReportDoc({
+    const nextDoc: ReportDocument = {
       ...reportDoc,
       chapters: updateChapterRecursively(reportDoc.chapters),
       updatedAt: new Date().toISOString(),
-    });
-  }, [reportDoc]);
+    };
+    setReportDoc(nextDoc);
+    syncToStore(nextDoc);
+  }, [reportDoc, syncToStore]);
 
   const handleUpdateChapters = useCallback((chapters: Chapter[]) => {
     if (!reportDoc) return;
-    setReportDoc({
+    const nextDoc: ReportDocument = {
       ...reportDoc,
       chapters,
       updatedAt: new Date().toISOString(),
-    });
-  }, [reportDoc]);
+    };
+    setReportDoc(nextDoc);
+    syncToStore(nextDoc);
+  }, [reportDoc, syncToStore]);
 
   const handleUpdateCitations = useCallback((citations: Citation[]) => {
     if (!reportDoc) return;
-    setReportDoc({
+    const nextDoc: ReportDocument = {
       ...reportDoc,
       citations,
       updatedAt: new Date().toISOString(),
-    });
-  }, [reportDoc]);
+    };
+    setReportDoc(nextDoc);
+    syncToStore(nextDoc);
+  }, [reportDoc, syncToStore]);
 
   const handleUpdateCitationStyle = useCallback((style: CitationStyle) => {
     if (!reportDoc) return;
-    setReportDoc({
+    const nextDoc: ReportDocument = {
       ...reportDoc,
       citationStyle: style,
       updatedAt: new Date().toISOString(),
-    });
-  }, [reportDoc]);
+    };
+    setReportDoc(nextDoc);
+    syncToStore(nextDoc);
+  }, [reportDoc, syncToStore]);
 
   const handleNewDocument = useCallback((type: ReportType) => {
     const newDoc = createNewDocument(type);
     setReportDoc(newDoc);
     setSelectedChapterId(undefined);
     setShowNewDocMenu(false);
+    // 新建文档与任何已绑定报告解绑，保存时走 syncReport 新建分支
+    setBoundReportId(undefined);
     addToast({
       type: 'success',
       title: '文档已创建',
@@ -155,18 +171,32 @@ export function AcademicReportEditor() {
         includeReferences: true,
       });
 
-      if (result.success && result.data) {
-        const extension = format === 'html' ? 'html' : format === 'docx' ? 'docx' : 'pdf';
-        const filename = `${reportDoc.title}.${extension}`;
-        AcademicExportService.downloadBlob(result.data, filename);
+      if (!result.success) {
+        throw new Error(result.error || '导出失败');
+      }
+
+      // PDF 走浏览器打印方案：服务内已打开打印窗口（另存为 PDF），无 Blob 可下载
+      if (format === 'pdf') {
         addToast({
           type: 'success',
           title: '导出成功',
-          message: `文档已导出为 ${extension.toUpperCase()} 格式`,
+          message: 'PDF 打印窗口已打开，请在打印对话框中选择“另存为 PDF”',
         });
-      } else {
-        throw new Error(result.error || '导出失败');
+        return;
       }
+
+      if (!result.data) {
+        throw new Error('导出失败');
+      }
+
+      const extension = format === 'html' ? 'html' : 'docx';
+      const filename = `${reportDoc.title}.${extension}`;
+      AcademicExportService.downloadBlob(result.data, filename);
+      addToast({
+        type: 'success',
+        title: '导出成功',
+        message: `文档已导出为 ${extension.toUpperCase()} 格式`,
+      });
     } catch (error) {
       logger.error('Export failed:', error);
       addToast({
@@ -189,25 +219,27 @@ export function AcademicReportEditor() {
       const newDoc = createNewDocument('research');
       newDoc.chapters = chapters;
       setReportDoc(newDoc);
+      syncToStore(newDoc);
     } else {
       const mergedChapters = [...reportDoc.chapters, ...chapters].map((ch, idx) => ({
         ...ch,
         order: idx + 1,
       }));
-      setReportDoc({
+      const nextDoc: ReportDocument = {
         ...reportDoc,
         chapters: mergedChapters,
         updatedAt: new Date().toISOString(),
-      });
+      };
+      setReportDoc(nextDoc);
+      syncToStore(nextDoc);
     }
-    importChapters(chapters);
     setShowImportDialog(false);
     addToast({
       type: 'success',
       title: '导入成功',
       message: `成功导入 ${chapters.length} 个章节`,
     });
-  }, [reportDoc, importChapters, addToast]);
+  }, [reportDoc, syncToStore, addToast]);
 
   const handleBatchDelete = useCallback((ids: string[]) => {
     if (!reportDoc) return;
@@ -222,16 +254,16 @@ export function AcademicReportEditor() {
         }));
     };
 
-    const updatedChapters = filterChapters(reportDoc.chapters);
-    setReportDoc({
+    const nextDoc: ReportDocument = {
       ...reportDoc,
-      chapters: updatedChapters,
+      chapters: filterChapters(reportDoc.chapters),
       updatedAt: new Date().toISOString(),
-    });
-    batchDeleteChapters(ids);
+    };
+    setReportDoc(nextDoc);
+    syncToStore(nextDoc);
     setSelectedIds(new Set());
     setBatchMode(false);
-  }, [reportDoc, batchDeleteChapters]);
+  }, [reportDoc, syncToStore]);
 
   const handleBatchMove = useCallback((ids: string[], targetId: string | null) => {
     if (!reportDoc) return;
@@ -281,14 +313,15 @@ export function AcademicReportEditor() {
       updatedChapters = addToTarget(filtered);
     }
 
-    setReportDoc({
+    const nextDoc: ReportDocument = {
       ...reportDoc,
       chapters: updatedChapters,
       updatedAt: new Date().toISOString(),
-    });
-    batchMoveChapters(ids, targetId);
+    };
+    setReportDoc(nextDoc);
+    syncToStore(nextDoc);
     setSelectedIds(new Set());
-  }, [reportDoc, batchMoveChapters]);
+  }, [reportDoc, syncToStore]);
 
   const handleBatchExport = useCallback((ids: string[]) => {
     if (!reportDoc) return;
@@ -330,13 +363,36 @@ export function AcademicReportEditor() {
     });
   }, [reportDoc, addToast]);
 
+  /**
+   * 保存当前编辑内容（无 toast）：已绑定报告走 update + saveReport 持久化；
+   * 新建未绑定文档走 syncReport 创建 ReportItem 并绑定 id。
+   * 手动保存与自动保存共用此逻辑。
+   */
+  const performSave = useCallback(async (): Promise<boolean> => {
+    if (!reportDoc) return false;
+
+    const data = reportDocumentToReportItemData(reportDoc, currentReport ?? undefined);
+
+    if (boundReportId) {
+      // 已绑定报告：更新 store 的 currentReport（saveReport 持久化的目标），再触发持久化
+      updateReport(boundReportId, data);
+      return await saveReport();
+    }
+
+    // 新建文档：syncReport 创建 ReportItem 并绑定 id，后续保存走 update 分支
+    const newId = await syncReport(data);
+    setBoundReportId(newId);
+    return true;
+  }, [reportDoc, boundReportId, currentReport, updateReport, saveReport, syncReport]);
+
   const handleManualSave = useCallback(async () => {
-    const success = await saveReport();
+    const wasBound = Boolean(boundReportId);
+    const success = await performSave();
     if (success) {
       addToast({
         type: 'success',
-        title: '保存成功',
-        message: '文档已保存到本地',
+        title: wasBound ? '保存成功' : '已创建并保存',
+        message: wasBound ? '文档已保存到本地' : '报告已创建并保存到本地',
       });
     } else {
       addToast({
@@ -345,7 +401,26 @@ export function AcademicReportEditor() {
         message: '请重试保存操作',
       });
     }
-  }, [saveReport, addToast]);
+  }, [performSave, boundReportId, addToast]);
+
+  // 自动保存：定时器仅在开启时创建一次；每次触发执行最新的保存逻辑（避免闭包捕获过期内容）
+  const autoSaveActionRef = React.useRef<() => void>(() => {});
+  autoSaveActionRef.current = () => { void performSave(); };
+
+  useEffect(() => {
+    if (!autoSaveEnabled) return;
+
+    autoSaveTimerRef.current = setInterval(() => {
+      autoSaveActionRef.current();
+    }, autoSaveInterval);
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearInterval(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
+    };
+  }, [autoSaveEnabled, autoSaveInterval]);
 
   const getReportTypeIcon = (type: ReportType) => {
     switch (type) {
@@ -359,12 +434,14 @@ export function AcademicReportEditor() {
 
   const updateMetadata = useCallback((field: string, value: unknown) => {
     if (!reportDoc) return;
-    setReportDoc({
+    const nextDoc: ReportDocument = {
       ...reportDoc,
       [field]: value,
       updatedAt: new Date().toISOString(),
-    });
-  }, [reportDoc]);
+    };
+    setReportDoc(nextDoc);
+    syncToStore(nextDoc);
+  }, [reportDoc, syncToStore]);
 
   if (!reportDoc) {
     return (<div className="h-screen flex items-center justify-center" style={{ height: '100dvh' }}>
@@ -405,7 +482,7 @@ export function AcademicReportEditor() {
           <span className="font-bold text-neutral-900 dark:text-neutral-100">学术报告系统</span>
         </div>
 
-<input aria-label="学术报告系统" type="text" value={reportDoc.title} onChange={(e) => setReportDoc({ ...reportDoc, title: e.target.value })} className="px-3 py-1.5 text-sm bg-neutral-100 dark:bg-neutral-700 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary max-w-xs"/>
+<input aria-label="学术报告系统" type="text" value={reportDoc.title} onChange={(e) => updateMetadata('title', e.target.value)} className="px-3 py-1.5 text-sm bg-neutral-100 dark:bg-neutral-700 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary max-w-xs"/>
         <SaveStatusIndicator
           status={saveStatus}
           lastSavedAt={lastSavedAt}

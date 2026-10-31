@@ -157,7 +157,7 @@ export default function MobileBottomNav() {
                 {/* 徽章 */}
                 {item.badge && !active && (
                   <div
-                    className="absolute top-1 right-1 w-4 h-4 flex items-center justify-center rounded-full text-[9px] font-bold text-white"
+                    className="absolute top-1 right-1 w-4 h-4 flex items-center justify-center rounded-full text-xs font-bold text-white"
                     style={{ background: 'var(--color-error, #ef4444)' }}
                   >
                     {item.badge}

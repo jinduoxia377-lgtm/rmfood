@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import type { AICandidate } from '@/api/ai'
 import { logger } from '@/utils/safeLogger'
-import { csvEscape, sanitizeCSVValue, addBOM } from '@/utils/encodingUtils'
+import { csvEscape, addBOM } from '@/utils/encodingUtils'
 
 export type ExportFormat = 'json' | 'csv'
 

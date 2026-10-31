@@ -14,7 +14,7 @@ import {
   Scale, ListChecks, Clock,
 } from 'lucide-react'
 import { useCreateExperiment, useFormulas } from '@/hooks/useQueries'
-import { Button, Input, Textarea, Card, CardContent, CardHeader, CardTitle, PageHeader, Badge } from '@/components/ui'
+import { Button, Input, Textarea, Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
 import type { ExperimentCreatePayload } from '@/api/experiment'
@@ -27,7 +27,7 @@ const EXPERIMENT_TYPES = [
   { value: 'composition', labelKey: 'pages.experimentForm.typeComposition', descKey: 'pages.experimentForm.typeCompositionDesc', icon: TestTube, color: 'bg-accent-surface' },
   { value: 'process', labelKey: 'pages.experimentForm.typeProcess', descKey: 'pages.experimentForm.typeProcessDesc', icon: Settings, color: 'bg-neutral-600' },
   { value: 'taste', labelKey: 'pages.experimentForm.typeTaste', descKey: 'pages.experimentForm.typeTasteDesc', icon: Utensils, color: 'bg-danger-surface' },
-  { value: 'other', labelKey: 'pages.experimentForm.typeOther', descKey: 'pages.experimentForm.typeOtherDesc', icon: FileText, color: 'bg-[var(--bg-tertiary)]0' },
+  { value: 'other', labelKey: 'pages.experimentForm.typeOther', descKey: 'pages.experimentForm.typeOtherDesc', icon: FileText, color: 'bg-[var(--bg-tertiary)]' },
 ]
 
 // ── 参数模板 ──
@@ -341,17 +341,17 @@ export default function ExperimentNewPage() {
 
         {/* ── 快速操作栏 ── */}
         <div className="flex flex-wrap items-center gap-2">
-          <Link to="/experiments" className="flex items-center gap-1.5 px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors">
+          <Link to="/experiments" className="flex items-center gap-1.5 min-h-[44px] px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors">
             <ArrowLeft size={14} /> {t('pages.experimentForm.backToList')}
           </Link>
-          <Link to="/experiments/calendar" className="flex items-center gap-1.5 px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors">
+          <Link to="/experiments/calendar" className="flex items-center gap-1.5 min-h-[44px] px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors">
             <CalendarDays size={14} /> {t('pages.experimentForm.calendar')}
           </Link>
-          <button type="button" onClick={() => setShowControls(!showControls)} className="flex items-center gap-1.5 px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors">
+          <button type="button" onClick={() => setShowControls(!showControls)} className="flex items-center gap-1.5 min-h-[44px] px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors">
             <ListChecks size={14} /> {showControls ? t('pages.experimentForm.collapseDesign') : t('pages.experimentForm.toggleDesign')}
           </button>
           {form.formula_id && (
-            <Link to={`/formulas/${form.formula_id}`} className="flex items-center gap-1.5 px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)] hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/20 transition-colors">
+            <Link to={`/formulas/${form.formula_id}`} className="flex items-center gap-1.5 min-h-[44px] px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)] hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/20 transition-colors">
               <FlaskConical size={14} /> {t('pages.experimentForm.viewLinkedFormula')}
             </Link>
           )}
@@ -368,12 +368,12 @@ export default function ExperimentNewPage() {
               <CardTitle as="h3" className="flex items-center gap-2">
                 <FlaskConical size={18} className="text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]" />
                 {t('pages.experimentForm.typeLabel')}
-                <span className="text-[var(--color-error-text)]0 text-sm">*</span>
+                <span className="text-[var(--color-error-text)] text-sm">*</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               {errors.type && (
-                <div className="flex items-center gap-2 text-sm text-[var(--color-error-text)]0 mb-[var(--space-apple-sm)]">
+                <div className="flex items-center gap-2 text-sm text-[var(--color-error-text)] mb-[var(--space-apple-sm)]">
                   <AlertCircle size={14} />{errors.type}
                 </div>
               )}
@@ -422,7 +422,7 @@ export default function ExperimentNewPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                    {t('pages.experimentForm.experimentTitle')} <span className="text-[var(--color-error-text)]0">*</span>
+                    {t('pages.experimentForm.experimentTitle')} <span className="text-[var(--color-error-text)]">*</span>
                   </label>
                   <Input
                     required
@@ -436,6 +436,7 @@ export default function ExperimentNewPage() {
                   <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
                     {t('pages.experimentForm.experimentCode')} <span className="text-xs text-[var(--text-muted)]">{t('pages.experimentForm.autoGenerated')}</span>
                   </label>
+                  {/* eslint-disable-next-line react-hooks/purity -- 实验编号一次性生成 */}
                   <Input value={`RMF-EXP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`} readOnly className="bg-[var(--bg-tertiary)]/50" />
                 </div>
               </div>
@@ -556,7 +557,7 @@ export default function ExperimentNewPage() {
                         <div key={i} className="flex items-center justify-between px-[var(--space-apple-sm)] py-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-sm">
                           <span className="font-medium text-neutral-800 dark:text-[var(--text-primary)]">{m.name}</span>
                           <span className="text-xs text-[var(--text-muted)]">{m.quantity}{m.unit && ` ${m.unit}`}</span>
-                          <button type="button" onClick={() => handleRemoveMaterial(i)} className="p-1 rounded hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/20 text-[var(--color-error-text)]0 transition-colors">
+                          <button type="button" onClick={() => handleRemoveMaterial(i)} className="p-1 rounded hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/20 text-[var(--color-error-text)] transition-colors">
                             <Trash2 size={12} />
                           </button>
                         </div>
@@ -589,7 +590,7 @@ export default function ExperimentNewPage() {
                         <div key={i} className="flex items-center justify-between px-[var(--space-apple-sm)] py-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-sm">
                           <span className="font-medium text-neutral-800 dark:text-[var(--text-primary)]">{e.name}</span>
                           <span className="text-xs text-[var(--text-muted)]">{e.quantity}{e.unit && ` ${e.unit}`}</span>
-                          <button type="button" onClick={() => handleRemoveEquipment(i)} className="p-1 rounded hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/20 text-[var(--color-error-text)]0 transition-colors">
+                          <button type="button" onClick={() => handleRemoveEquipment(i)} className="p-1 rounded hover:bg-[var(--color-error-container)] dark:hover:bg-[var(--color-error-container)]/20 text-[var(--color-error-text)] transition-colors">
                             <Trash2 size={12} />
                           </button>
                         </div>
@@ -665,7 +666,7 @@ export default function ExperimentNewPage() {
                   <button
                     type="button"
                     onClick={() => { setFormulaSearch(''); setShowAllFormulas(true) }}
-                    className="text-xs text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)] hover:underline font-medium"
+                    className="text-xs text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)] hover:underline font-medium min-h-[44px] inline-flex items-center px-1 -mx-1"
                   >
                     {t('pages.experimentForm.browseAll')}
                   </button>
@@ -705,7 +706,7 @@ export default function ExperimentNewPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => { setForm({ ...form, formula_id: undefined }); setSelectedFormulaDetail(null) }}
-                    className="text-[var(--color-error-text)]0 hover:text-[var(--color-error-text)]"
+                    className="text-[var(--color-error-text)] hover:text-[var(--color-error-text)] min-h-[44px]"
                   >
                     {t('pages.experimentForm.cancelLink')}
                   </Button>
@@ -743,7 +744,7 @@ export default function ExperimentNewPage() {
                       <button
                         type="button"
                         onClick={() => handleRemoveObjective(i)}
-                        className="ml-1 opacity-0 group-hover:opacity-100 hover:text-[var(--color-error-text)]0 transition-all"
+                        className="ml-1 opacity-0 group-hover:opacity-100 hover:text-[var(--color-error-text)] transition-all"
                       >
                         <X size={12} />
                       </button>
@@ -878,7 +879,7 @@ export default function ExperimentNewPage() {
           <div className="flex items-center justify-between pt-2">
             <Link
               to="/experiments"
-              className="px-[var(--space-apple-md)] py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-white transition-colors"
+              className="px-[var(--space-apple-md)] py-2 min-h-[44px] inline-flex items-center text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-white transition-colors"
             >
               {t('pages.experimentForm.cancelForm')}
             </Link>

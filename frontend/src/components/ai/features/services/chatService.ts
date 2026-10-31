@@ -9,7 +9,15 @@ import { ErrorType } from '../components/ErrorRecoveryDialog';
 import { contextManager } from './contextManager';
 import api from '@/api/client';
 import { useAuthStore } from '@/stores/auth';
-import { searchChunks } from '@/api/rag';
+
+// ── P0-3b: 场景模式前后端值域映射 ──
+// 前端 ScenarioMode: academician/safety_off/process_eng/concise_adv
+// 后端 prompt_service.py: formula_design/safety_check/general_qa
+// 此前前端值域与后端无一命中，全部 fallback 到 base prompt；
+// 且 chat.py:374 平台原料库检索仅在 scenario_mode=="formula_design" 触发，
+// 前端默认 academician 导致平台知识库永不注入。
+// 前端直接透传原始场景值，后端 YAML v1.1 已补齐所有别名映射
+// (academician/safety_off/process_eng/concise_adv 均已在 scenarios 中定义)
 
 // ── CSRF Token 管理（与 agent.ts 保持一致） ──
 // CsrfProtectMiddleware 只在 GET 请求时设置 csrf_token cookie，POST 需要读取并回传
@@ -21,7 +29,7 @@ function _getCookieValue(name: string): string | null {
 let _csrfToken: string | null = null;
 let _csrfLoading = false;
 
-async function ensureCsrfToken(): Promise<string | null> {
+export async function ensureCsrfToken(): Promise<string | null> {
   if (_csrfToken) return _csrfToken;
   const cookieToken = _getCookieValue('csrf_token');
   if (cookieToken) {
@@ -39,11 +47,16 @@ async function ensureCsrfToken(): Promise<string | null> {
     });
   }
   _csrfLoading = true;
+  // 发一个 GET 请求触发 CsrfProtectMiddleware 设置 csrf_token cookie
+  // P1 修复：加 5s 超时，防止 CSRF 预检 fetch 挂死
+  // 使用 AbortController 而非 AbortSignal.timeout（后者在部分浏览器/Vite 环境不可用）
+  const csrfController = new AbortController();
+  const csrfTimeoutId = setTimeout(() => csrfController.abort(), 5000);
   try {
-    // 发一个 GET 请求触发 CsrfProtectMiddleware 设置 csrf_token cookie
     await fetch(API_ENDPOINTS.AI.MODELS_STATUS, {
       method: 'GET',
       credentials: 'include',
+      signal: csrfController.signal,
     });
     _csrfToken = _getCookieValue('csrf_token');
     if (import.meta.env.DEV && _csrfToken) {
@@ -52,6 +65,7 @@ async function ensureCsrfToken(): Promise<string | null> {
   } catch {
     // 忽略错误，CSRF 初始化失败不阻断功能
   } finally {
+    clearTimeout(csrfTimeoutId);
     _csrfLoading = false;
   }
   return _csrfToken;
@@ -141,6 +155,12 @@ export interface StreamChunk {
     cautions?: string[];
     referral_message?: string;
   };
+  /** 实时进度（由后端 SSE `progress` 事件携带） */
+  progress?: {
+    stage: 'preparing' | 'rag_retrieving' | 'dialectics' | 'llm_start' | 'generating' | 'safety_check' | 'finalizing' | 'done';
+    percent: number;
+    chars?: number;
+  };
 }
 
 export interface RateLimitInfo {
@@ -168,6 +188,10 @@ export interface SendMessageOptions {
   maxTokens?: number;
   /** 场景模式（formula_design/academician/safety_off/process_eng/concursive_adv 等），透传到后端 system prompt 注入 */
   scenarioMode?: string;
+  /** RAG 知识库检索结果（chunks 内容列表），后端注入 system prompt 作为【用户知识库参考】 */
+  ragContext?: string[];
+  /** 前端本地会话 ID（session-<ts>-<rand>），后端按 (user_id, client_session_id) 隔离会话记录 */
+  clientSessionId?: string;
 }
 
 class TimeoutError extends Error {
@@ -289,18 +313,32 @@ export class ChatService implements IChatService {
     this.pendingRequest.set(requestId, controller);
     // 自动重试由 _allowRetry 控制（递归重试时传 false 防止无限循环）
 
+    // P2 修复：在 try 之前声明，使 finally 可访问
+    const streamTimeout = API.STREAM_TIMEOUT_MS ?? 180_000;
+    const timeoutId = setTimeout(() => controller.abort(), streamTimeout);
+    let idleTimerId: ReturnType<typeof setTimeout> | undefined;
+
     try {
-      // 流式请求使用 STREAM_TIMEOUT_MS（180s），普通请求更长以覆盖复杂分析
-      const streamTimeout = API.STREAM_TIMEOUT_MS ?? 180_000;
-      const timeoutId = setTimeout(() => controller.abort(), streamTimeout);
 
       const bodyData: Record<string, any> = { question };
       if (history && history.length > 0) {
         bodyData.history = history.slice(-10);
       }
-      // 场景模式透传：后端据此注入对应 system prompt
+      // 场景模式透传：直接传递前端原始场景值，后端 YAML v1.1 已补齐所有别名
       if (options?.scenarioMode) {
         bodyData.scenario_mode = options.scenarioMode;
+      }
+      // 模型覆盖透传：前端模型切换器指定 LLM 模型名称
+      if (options?.model) {
+        bodyData.model = options.model;
+      }
+      // RAG 知识库检索结果透传：后端注入 system prompt 作为【用户知识库参考】
+      if (options?.ragContext && options.ragContext.length > 0) {
+        bodyData.rag_context = options.ragContext;
+      }
+      // P2 统一会话 ID：透传前端本地会话标识，后端按 (user_id, client_session_id) 隔离会话记录
+      if (options?.clientSessionId) {
+        bodyData.client_session_id = options.clientSessionId;
       }
       // ── Task 3: 注入用户画像上下文（跨会话个性化）──
       try {
@@ -310,11 +348,8 @@ export class ChatService implements IChatService {
         //（真实用户画像较长时会触发「对话服务暂时不可用」误报），此处截断对齐。
         bodyData.user_profile_context = profileSummary ? profileSummary.slice(0, 2000) : '' // 与后端 schema 对齐
       } catch { /* 画像服务不可用时静默降级 */ }
-      // ── P0-1: 注入用户知识库（RAG）检索上下文，回答可引用用户上传的文档 ──
-      const ragContext = await this.buildRagContext(question)
-      if (ragContext.length > 0) {
-        bodyData.rag_context = ragContext
-      }
+      // RAG 注入统一由 useChatSendMessage 的 ragAugment 回调处理（受 TopBar 开关控制），
+      // 以及后端 retrieve_herb_knowledge（受 scenario_mode 控制）。避免三重注入导致双倍 embedding 调用。
       // 🔒 CSRF token 初始化：确保 cookie 已设置后再发 POST
       const csrfToken = await ensureCsrfToken()
       const response = await fetch(API_ENDPOINTS.AI.CHAT_STREAM, {
@@ -328,9 +363,8 @@ export class ChatService implements IChatService {
         signal: controller.signal,
       });
 
-      clearTimeout(timeoutId); // 收到响应后立即清除超时（避免正常完成后的误杀）
-
       if (!response.ok) {
+        clearTimeout(timeoutId);
         // HTTP 非 2xx：可恢复状态码（500/502/503/429/422）且允许重试 → 自动重试一次。
         // 422 通常是 user_profile_context 超长等可自愈的参数问题，重试时会以截断后的画像重发。
         if (_allowRetry && [500, 502, 503, 429, 422].includes(response.status)) {
@@ -349,16 +383,31 @@ export class ChatService implements IChatService {
 
       const reader = response.body?.getReader();
       if (!reader) {
+        clearTimeout(timeoutId);
         throw new Error('无法获取响应流');
       }
 
       const decoder = new TextDecoder();
       let buffer = '';
 
+      // ── P0 修复：SSE 流读取超时保护 ──
+      // 180s 总时限由 timeoutId 保持（不再提前 clearTimeout）。
+      // 额外增加 60s 空闲超时：每次 reader.read() 前重置，60s 无新数据则 abort。
+      // 防止后端 LLM 停顿 / 连接半开导致 reader.read() 永久阻塞。
+      const IDLE_TIMEOUT = 60_000;
+
       while (true) {
+        // 每次读取前重置空闲超时
+        if (idleTimerId) clearTimeout(idleTimerId);
+        idleTimerId = setTimeout(() => controller.abort(), IDLE_TIMEOUT);
+
         const { done, value } = await reader.read();
 
+        // 收到数据，清除空闲超时（下一次循环会重置）
+        if (idleTimerId) { clearTimeout(idleTimerId); idleTimerId = undefined; }
+
         if (done) {
+          clearTimeout(timeoutId); // 流正常结束，清除总时限
           yield { content: '', done: true };
           break;
         }
@@ -376,6 +425,7 @@ export class ChatService implements IChatService {
           if (line.startsWith('data:')) {
             const data = line.slice(5).trim();
             if (data === '[DONE]') {
+              this.stateMachine.transition(ChatState.Success); // P1 修复：确保状态机正确归零
               yield { content: '', done: true };
               return;
             }
@@ -388,7 +438,11 @@ export class ChatService implements IChatService {
 
               // type=error: 抛出错误让外层 catch 走标准错误处理流程
               if (eventType === 'error') {
-                const sseErr: any = new Error(`[SSE] ${parsed.content || '生成失败'}`);
+                // P0 修复：兼容后端两种错误字段 — 后端部分端点发 {"message": "..."},
+                // 部分发 {"content": "..."}。原实现只读 parsed.content，导致后端
+                // message 字段被丢弃、错误消息降级为无信息的"生成失败"。
+                const errMsg = parsed.message || parsed.content || '生成失败'
+                const sseErr: any = new Error(`[SSE] ${errMsg}`)
                 sseErr.retryable = parsed.retryable === true; // 后端标记可重试（如 503 服务繁忙）
                 throw sseErr;
               }
@@ -404,11 +458,13 @@ export class ChatService implements IChatService {
               }
 
               // type=step: 思考步骤，透传给 ChatSidebar
+              // P2 修复：后端 SSE 事件携带 status（如 "complete"），原实现硬编码
+              // 'thinking' 导致步骤完成后侧栏仍显示思考中。透传 parsed.status，缺省回退 'thinking'。
               if (eventType === 'step') {
                 yield {
                   content: parsed.content || '',
                   done: false,
-                  step: { step: parsed.step || '', content: parsed.content || '', status: 'thinking' },
+                  step: { step: parsed.step || '', content: parsed.content || '', status: parsed.status || 'thinking' },
                 };
                 continue;
               }
@@ -433,6 +489,20 @@ export class ChatService implements IChatService {
                      evidence: parsed.evidence,
                      cautions: parsed.cautions,
                      referral_message: parsed.referral_message,
+                   },
+                 };
+                 continue;
+               }
+
+               // type=progress: 实时进度事件（阶段 + 锚点百分比 + 已生成字符数）
+               if (eventType === 'progress') {
+                 yield {
+                   content: '',
+                   done: false,
+                   progress: {
+                     stage: parsed.stage,
+                     percent: Number(parsed.percent) || 0,
+                     chars: parsed.chars,
                    },
                  };
                  continue;
@@ -486,6 +556,9 @@ export class ChatService implements IChatService {
       this.handleError(error as Error, question);
       throw error;
     } finally {
+      // P2 修复：清除所有定时器，防止资源泄漏
+      clearTimeout(timeoutId);
+      if (idleTimerId) clearTimeout(idleTimerId);
       this.pendingRequest.delete(requestId);
     }
   }
@@ -536,34 +609,6 @@ export class ChatService implements IChatService {
     }
   }
 
-  /**
-   * 检索用户知识库（RAG）并构造注入上下文。
-   * 返回字符串数组（每条截断、总量预算内）；检索失败/无知识库时静默返回空数组，不阻塞对话。
-   */
-  private async buildRagContext(question: string): Promise<string[]> {
-    try {
-      const chunks = await searchChunks(question, 5)
-      if (!chunks || chunks.length === 0) return []
-      const MAX_CHARS = 3000
-      const PER_CHUNK = 600
-      const parts: string[] = []
-      let used = 0
-      for (const c of chunks) {
-        const text = (c.content || '').trim()
-        if (!text) continue
-        const src = c.doc_filename || '知识库'
-        const item = `[来源:${src}] ${text.slice(0, PER_CHUNK)}`
-        if (used + item.length > MAX_CHARS) break
-        parts.push(item)
-        used += item.length
-      }
-      return parts
-    } catch (e) {
-      logger.warn('[ChatService] RAG 检索失败，静默降级:', e)
-      return []
-    }
-  }
-
   async retryLastMessage(): Promise<AIResponse> {
     if (!this.lastQuestion) {
       throw new Error('没有可重试的消息');
@@ -609,23 +654,21 @@ export class ChatService implements IChatService {
     if (history && history.length > 0) {
       requestBody.history = history.slice(-10);
     }
-    // 调用方可临时覆盖模型与采样参数（如摘要压缩场景要求低温度）
-    if (options?.model) requestBody.model = options.model;
-    if (options?.temperature !== undefined) requestBody.temperature = options.temperature;
-    if (options?.maxTokens !== undefined) requestBody.max_tokens = options.maxTokens;
-    // 场景模式透传：后端据此注入对应 system prompt（formula_design/academician/safety_off 等）
+    // 场景模式透传：直接传递前端原始场景值，后端 YAML v1.1 已补齐所有别名
     if (options?.scenarioMode) requestBody.scenario_mode = options.scenarioMode;
+    // 模型覆盖透传：前端模型切换器指定 LLM 模型名称（后端 ChatRequest.model 已声明）
+    if (options?.model) requestBody.model = options.model;
+    // RAG 知识库检索结果透传：后端注入 system prompt 作为【用户知识库参考】
+    if (options?.ragContext && options.ragContext.length > 0) requestBody.rag_context = options.ragContext;
+    // P2 统一会话 ID：透传前端本地会话标识，后端按 (user_id, client_session_id) 隔离会话记录
+    if (options?.clientSessionId) requestBody.client_session_id = options.clientSessionId;
     // ── Task 3: 注入用户画像上下文 ──
     try {
       const { userProfileManager } = await import('./userProfileService')
       const profileSummary = userProfileManager.generatePromptSummary()
       requestBody.user_profile_context = profileSummary ? profileSummary.slice(0, 2000) : ''
     } catch { /* 画像服务不可用时静默降级 */ }
-    // ── P0-1: 注入用户知识库（RAG）检索上下文（非流式降级路径同样生效）──
-    const ragContext = await this.buildRagContext(question)
-    if (ragContext.length > 0) {
-      requestBody.rag_context = ragContext
-    }
+    // RAG 注入统一由 ragAugment 回调 + 后端 retrieve_herb_knowledge 处理
 
     try {
       // ── 使用 axios api 客户端（走认证拦截器，自动处理 401/Token 刷新）──

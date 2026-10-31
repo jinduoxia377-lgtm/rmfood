@@ -1,7 +1,6 @@
 /**
  * 帕累托前沿图 - 多目标优化结果可视化
  */
-import { useMemo } from 'react';
 
 interface ParetoSolution {
   objectives: {

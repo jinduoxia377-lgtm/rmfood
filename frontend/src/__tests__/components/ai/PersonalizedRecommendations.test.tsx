@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { PersonalizedRecommendations } from '@/components/ai/PersonalizedRecommendations'
 import { useUserPreferenceStore } from '@/stores/userPreferenceStore'
 import type { GenerationHistory } from '@/stores/userPreferenceStore'

@@ -24,6 +24,13 @@ i18n.use(initReactI18next).init({
   },
 })
 
+// 初始化后立即同步 <html lang>：i18next 在 init 时针对初始 lng 触发的
+// languageChanged 事件早于下方监听注册，若不显式同步一次，
+// 从 localStorage 恢复的非中文语言会导致 <html lang> 与实际语言不一致。
+if (typeof document !== 'undefined') {
+  document.documentElement.lang = i18n.language || savedLanguage || 'zh-CN'
+}
+
 // 语言变更时持久化到 localStorage 并同步 <html lang>，保证全站切换真实生效
 i18n.on('languageChanged', (lng) => {
   try {

@@ -121,6 +121,7 @@ export function ThemeProvider({
       }
     } catch (err) {
       logger.error('[ThemeProvider] Initialization error:', err);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(err instanceof Error ? err : new Error(String(err)));
     }
   }, []);

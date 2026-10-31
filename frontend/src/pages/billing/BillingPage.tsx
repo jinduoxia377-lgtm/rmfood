@@ -337,7 +337,7 @@ export default function BillingPage() {
                       ) : p === 'enterprise' ? (
                         <a
                           href="mailto:sales@rmfood.cn?subject=企业版定制咨询"
-                          className="mt-[var(--space-apple-sm)] inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-warning-text)] hover:text-[var(--color-warning-text)] transition-colors"
+                          className="mt-[var(--space-apple-sm)] inline-flex items-center gap-1.5 min-h-[44px] px-1 -mx-1 text-sm font-medium text-[var(--color-warning-text)] hover:text-[var(--color-warning-text)] transition-colors"
                         >
                           <Mail className="w-3.5 h-3.5" /> 联系定制
                         </a>

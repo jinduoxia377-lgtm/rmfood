@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Footer 组件 v3 — 企业官网级专业版
  *
  * 升级要点（v3）：
@@ -8,8 +8,9 @@
  *   - 底部细线分隔 + 页脚安全区
  */
 import { Link } from 'react-router-dom';
-import { Beaker, Mail, MapPin, Globe, Github, MessageCircle } from 'lucide-react';
+import { Beaker, Mail, MapPin, Globe, Github, MessageCircle, ShieldCheck, Award, FileCheck, UserCheck } from 'lucide-react';
 import { RHINE_BRAND_CONFIG } from '@/config';
+import { trustSignals, ICP_CONFIG } from '../data/trustSignals';
 
 const navSections = [
   {
@@ -45,7 +46,7 @@ const navSections = [
 
 export default function Footer() {
   return (
-    <footer className="lp-footer">
+    <footer aria-label="页脚 — 品牌信息与导航" className="lp-footer">
       {/* 主内容区 */}
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
@@ -53,10 +54,10 @@ export default function Footer() {
           {/* 品牌区 */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-[var(--space-apple-sm)]">
-              <div className="w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center" style={{ background: 'var(--color-primary-700, #047857)' }}>
+              <div className="w-7 h-7 rounded-[var(--radius-Apple-sm)] flex items-center justify-center surface-primary">
                 <Beaker size={13} color="white" strokeWidth={2.2} />
               </div>
-              <span className="font-bold text-sm tracking-tight" style={{ color: 'var(--color-neutral-100, #f1f5f9)' }}>莱茵分子</span>
+              <span className="font-bold text-sm tracking-tight text-neutral-100">莱茵分子</span>
             </div>
             <p className="lp-footer-desc mb-[var(--space-apple-md)] leading-relaxed">
               {RHINE_BRAND_CONFIG.description}
@@ -72,8 +73,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="w-11 h-11 flex items-center justify-center transition-colors"
-                  style={{ color: 'var(--color-neutral-400, #94a3b8)', border: '1px solid var(--color-neutral-800, #1e293b)' }}
+                  className="w-11 h-11 flex items-center justify-center transition-colors text-neutral-400 border border-neutral-800"
                 >
                   <Icon size={14} />
                 </a>
@@ -84,7 +84,7 @@ export default function Footer() {
           {/* 导航列 */}
           {navSections.map(col => (
             <div key={col.title}>
-              <h4 className="lp-footer-label mb-3.5">{col.title}</h4>
+              <h2 className="lp-footer-label mb-3.5">{col.title}</h2>
               <ul className="space-y-0.5">
                 {col.links.map(link => (
                   <li key={link.label}>
@@ -102,15 +102,15 @@ export default function Footer() {
 
           {/* 联系信息 */}
           <div>
-            <h4 className="lp-footer-label mb-3.5">联系我们</h4>
+            <h2 className="lp-footer-label mb-3.5">联系我们</h2>
             <ul className="space-y-0.5">
               {[
                 { icon: Mail, text: 'contact@rmfood.cn' },
                 { icon: Globe, text: 'www.rmfood.cn' },
                 { icon: MapPin, text: '厦门市思明区' },
               ].map(({ icon: Icon, text }, i) => (
-                <li key={i} className="flex items-center gap-2 text-[15px] min-h-[44px]" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>
-                  <Icon size={14} className="shrink-0 opacity-60" style={{ color: 'var(--color-neutral-500, #64748b)' }} />
+                <li key={i} className="flex items-center gap-2 text-[15px] min-h-[44px] text-neutral-400">
+                  <Icon size={14} className="shrink-0 opacity-60 text-neutral-500" />
                   <span>{text}</span>
                 </li>
               ))}
@@ -120,16 +120,41 @@ export default function Footer() {
       </div>
 
       {/* 底部分隔线 */}
+      {/* 安全合规认证标识 */}
+      <div className="border-t border-t-neutral-800" style={{ background: 'rgba(255,255,255,0.02)' }}>
+        <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-5">
+          <div className="flex items-center justify-center gap-8 flex-wrap">
+            {trustSignals.map(s => {
+              const IconMap: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+                ShieldCheck, Award, FileCheck, UserCheck,
+              };
+              const Icon = IconMap[s.icon] || ShieldCheck;
+              return (
+                <div key={s.name} className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius-Apple-sm)] transition-colors hover:bg-[rgba(255,255,255,0.04)]" style={{ border: '1px solid var(--color-neutral-800, #1e293b)' }}>
+                  <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] flex items-center justify-center shrink-0" style={{ background: `${s.color}15`, border: `1px solid ${s.color}30` }}>
+                    <Icon size={14} color={s.color} />
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-medium text-neutral-200">{s.name}</div>
+                    <div className="text-[11px] text-neutral-500">{s.desc}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       <div className="border-t lp-footer-bottom">
         <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-[12px]" style={{ color: 'var(--color-neutral-300, #cbd5e1)' }}>
+            <p className="text-[12px] text-neutral-300">
               &copy; {new Date().getFullYear()} {RHINE_BRAND_CONFIG.fullName}
             </p>
             <div className="flex items-center gap-4">
-              <span className="lp-mono text-[12px]" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>闽ICP备2025XXXXXX号-1</span>
-              <span className="text-[12px]" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>·</span>
-              <span className="lp-mono text-[12px]" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>网络经营备案</span>
+              <span className="lp-mono text-[12px] text-neutral-400">{ICP_CONFIG.icp}</span>
+              <span className="text-[12px] text-neutral-400">·</span>
+              <span className="lp-mono text-[12px] text-neutral-400">{ICP_CONFIG.businessLicense}</span>
             </div>
           </div>
         </div>

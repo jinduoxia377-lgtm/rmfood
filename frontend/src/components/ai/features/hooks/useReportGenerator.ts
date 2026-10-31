@@ -35,6 +35,7 @@ import {
   generateComprehensiveReport,
   generateContentHash,
 } from '../utils/reportEngine'
+import { parseDosageToGramsOrZero } from '../utils/dosage'
 
 // ===== 类型定义 =====
 
@@ -295,14 +296,11 @@ export interface ReportExportIngredient {
 type ReportExportFormat = 'pdf' | 'docx' | 'markdown'
 
 /**
- * 从 AI 识别配方的 dosage 字符串中解析克数（"10g" / "10-15g" / "约15克" → 15）。
- * 区间取上限，与 ChatTab 的 parseDosage 保持一致。
+ * 从 AI 识别配方的 dosage 字符串中解析克数（"10g" / "500mg" / "10-15g" / "约15克"）。
+ * 单位统一归一化为克（mg→g/1000，kg→g*1000，无单位默认 g）；非法单位返回 0。
  */
 export function parseDosageGrams(raw: string): number {
-  if (!raw) return 0
-  const range = /(\d+(?:\.\d+)?)\s*[-–~至]\s*(\d+(?:\.\d+)?)/.exec(raw)
-  const val = range ? Number(range[2]) : Number((/^[\s约]*([\d.]+)/.exec(raw) || [0, '0'])[1])
-  return Number.isFinite(val) ? val : 0
+  return parseDosageToGramsOrZero(raw)
 }
 
 /** 从单个文本行尽力解析成分（"- 枸杞 10g" / "枸杞：10g" / "| 枸杞 | 10 |"） */

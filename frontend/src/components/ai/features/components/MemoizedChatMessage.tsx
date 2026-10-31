@@ -1168,15 +1168,16 @@ const MemoizedChatMessage = memo(
                         </span>
 
                         <div className="flex items-center gap-1.5 ml-auto">
-                          {/* 继续生成按钮 */}
+                          {/* 重新发送按钮（语义为用最后问题重新生成，并非断点续传） */}
                           {onResumeStreaming && (
                             <button
                               onClick={handleResumeClick}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-secondary-50 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700 hover:bg-secondary-100 dark:hover:bg-secondary-900/50 transition-colors focus:outline-none focus:ring-2 focus:ring-secondary-500"
-                              aria-label="继续生成"
+                              aria-label="重新发送（将从开头重新生成）"
+                              title="将从开头重新生成当前回复"
                             >
                               <Play className="w-3.5 h-3.5" />
-                              <span>继续</span>
+                              <span>重新发送</span>
                             </button>
                           )}
 
