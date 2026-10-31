@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # RMFOOD 后端启动脚本
 # 1. 等待 PostgreSQL 就绪
 # 2. 运行 Alembic 迁移（确保 schema 最新）

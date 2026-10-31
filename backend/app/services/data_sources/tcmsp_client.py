@@ -814,13 +814,15 @@ class TCMSPSyncService:
         return [{"target": t} for t in sorted(targets_set)]
 
     async def check_food_homology(self, herb_name: str) -> dict[str, Any]:
-        """检查药材是否在药食同源目录中"""
+        """检查药材是否在药食同源目录中（数据库优先，内置目录回退）"""
+        catalog, catalog_source = await self._load_homology_catalog()
+
         # 规范化名称（去括号内容）
         normalized = herb_name.split("（")[0].split("(")[0].strip()
-        is_homology = normalized in FOOD_HOMOLOGY_CATALOG
+        is_homology = normalized in catalog
 
         # 查找匹配的目录条目
-        matched_entries = [e for e in FOOD_HOMOLOGY_CATALOG if normalized in e or e in normalized]
+        matched_entries = [e for e in catalog if normalized in e or e in normalized]
 
         return {
             "is_food_homology": is_homology,
@@ -828,8 +830,21 @@ class TCMSPSyncService:
             "normalized_name": normalized,
             "matched_catalog_entries": matched_entries[:5],
             "regulatory_basis": "既是食品又是中药材的物质目录" if is_homology else "不在已公布的药食同源目录中",
-            "catalog_count": len(FOOD_HOMOLOGY_CATALOG),
+            "catalog_count": len(catalog),
+            "catalog_source": catalog_source,
         }
+
+    async def _load_homology_catalog(self) -> tuple[set[str], str]:
+        """加载官方药食同源目录：优先 hf_enriched_herbs(106)，失败回退内置目录。"""
+        try:
+            from app.services.ai_models import safety_checker
+
+            catalog = await safety_checker.load_food_homology_catalog_from_db()
+            if catalog and getattr(safety_checker, "_FOOD_HOMOLOGY_CATALOG_FROM_DB", False):
+                return set(catalog), "hf_enriched_herbs(db)"
+        except Exception as e:
+            logger.warning("加载药食同源目录失败，回退内置目录: %s", e)
+        return set(FOOD_HOMOLOGY_CATALOG), "builtin_fallback"
 
     async def get_categories(self, db: AsyncSession | None = None) -> list[dict[str, Any]]:
         """获取所有药材分类及其数量（数据库优先，无数据时用内存知识库）"""
