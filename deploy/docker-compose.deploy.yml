@@ -81,6 +81,8 @@ services:
       target: backend-runtime
     image: rmfood-backend:${DEPLOY_TAG:-latest}
     container_name: rmfood_backend
+    # start.sh 通过 bash 运行（镜像内 start.sh 可能因打包方式丢失执行位，用解释器执行更健壮）
+    command: ["/bin/bash", "/usr/local/bin/start.sh"]
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-rmfood}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-rmfood}
       REDIS_URL: redis://redis:6379/0
