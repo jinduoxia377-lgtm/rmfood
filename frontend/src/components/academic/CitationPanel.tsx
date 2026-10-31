@@ -54,6 +54,7 @@ export function CitationPanel({
     const saved = localStorage.getItem(RECENT_STYLES_KEY);
     if (saved) {
       try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setRecentStyles(JSON.parse(saved));
       } catch {
         setRecentStyles([]);

@@ -81,6 +81,15 @@ export const validateIngredientCount = (
       suggestion: '请至少添加一种成分',
     };
   }
+  // P0：NSGA-II 多目标优化要求每个配方方案至少 3 种成分，
+  // 否则本地优化器初始化时会因可选集不足死循环。这里在前端表单层提前拦截。
+  if (ingredients.length < 3) {
+    return {
+      field: 'ingredient_count',
+      message: '至少需要 3 种成分才能进行优化',
+      suggestion: '请至少添加 3 种成分',
+    };
+  }
   if (ingredients.length > 50) {
     return {
       field: 'ingredient_count',

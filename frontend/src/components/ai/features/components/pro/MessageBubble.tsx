@@ -10,22 +10,25 @@
  * @lastUpdated 2026-08-23
  */
 
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import type { ChatMessage } from '../../hooks/useChatMessages'
 import { useAuthStore } from '@/stores/auth'
+import { RealAIAvatar } from '@/components/ai/shared/RealAIAvatar'
 import { detectMessageType, parseChartData } from './utils.tsx'
 import MarkdownRenderer from './MarkdownRenderer'
 import TypewriterText from './TypewriterText'
 import ReasoningRow, { type ReasoningStep } from './ReasoningRow'
 import StructuredMessageRenderer from '../structured/StructuredMessageRenderer'
-import { detectStructuredContent, extractStructuredFallback } from '../structured/utils'
+import { detectStructuredContent, extractStructuredFallback, repairTruncatedJson } from '../structured/utils'
 import EnhancedContentRenderer from './EnhancedContentRenderer'
 import {
 	Leaf, Copy, Check, RefreshCw,
 	Pencil, Undo2, X,
 	Link, Code, Image as ImageIcon, ExternalLink,
 	FileText, AlertTriangle, MoreHorizontal,
-	GitBranch, Share2, Cpu, Wand2,
+	GitBranch, Share2, Cpu, Wand2, BookOpen,
 } from 'lucide-react'
 
 type Reaction = 'like' | 'dislike' | null
@@ -42,6 +45,7 @@ type Reaction = 'like' | 'dislike' | null
  * 该徽标取代了此处原有的调试块（黄色内联样式显示 struct:Xblks）。
  */
 function ModelSourceBadge({ model }: { model: string }) {
+	const { t } = useTranslation()
 	// 三级降级均失败：固定文案兜底（最严重的诚实性问题）
 	if (model === 'ultimate-fallback') {
 		return (
@@ -50,7 +54,7 @@ function ModelSourceBadge({ model }: { model: string }) {
 				role="note"
 			>
 				<AlertTriangle className="h-3 w-3 shrink-0" />
-				<span>大模型三级降级均失败，以下为固定引导文案，非智能生成</span>
+				<span>{t('ai.chat.modelUltimateFallback')}</span>
 			</div>
 		)
 	}
@@ -62,7 +66,7 @@ function ModelSourceBadge({ model }: { model: string }) {
 				role="note"
 			>
 				<AlertTriangle className="h-3 w-3 shrink-0" />
-				<span>大模型不可用，以下由本地配方引擎生成，非大模型推理</span>
+				<span>{t('ai.chat.modelRuleEngineFallback')}</span>
 			</div>
 		)
 	}
@@ -74,7 +78,7 @@ function ModelSourceBadge({ model }: { model: string }) {
 				role="alert"
 			>
 				<AlertTriangle className="h-3 w-3 shrink-0" />
-				<span>回复生成失败</span>
+				<span>{t('ai.chat.modelErrorResponse')}</span>
 			</div>
 		)
 	}
@@ -83,6 +87,28 @@ function ModelSourceBadge({ model }: { model: string }) {
 		<div className="mb-2 inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-xs leading-tight text-neutral-600 dark:bg-neutral-700/60 dark:text-neutral-300">
 			<Cpu className="h-3 w-3 shrink-0" />
 			<span>{model}</span>
+		</div>
+	)
+}
+
+/**
+ * RAGDegradedHint — RAG 增强不可用提示（微妙、不阻断对话）
+ *
+ * 当 RAG 知识库增强因后端检索超时/失败而降级（见 useChatSendMessage 的
+ * metadata.ragDegraded 标记）时显示。刻意使用中性弱视觉样式：
+ * 与模型徽标同重量级、无边框、浅灰底，让用户「知道」但未「被打断」。
+ * 回复内容仍完整可用（基于通用知识回答），故不使用 warning/error 色。
+ */
+function RAGDegradedHint() {
+	const { t } = useTranslation()
+	return (
+		<div
+			className="mb-2 inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-xs leading-tight text-neutral-500 dark:bg-neutral-700/50 dark:text-neutral-400"
+			role="note"
+			title={t('ai.chat.ragDegradedTitle')}
+		>
+			<BookOpen className="h-3 w-3 shrink-0" />
+			<span>{t('ai.chat.ragDegradedText')}</span>
 		</div>
 	)
 }
@@ -123,19 +149,19 @@ export interface MessageBubbleProps {
 
 // ── 工具函数 ──────────────────────────────────────────────────────
 
-function formatTime(ts: number): string {
+function formatTime(ts: number, locale = 'zh-CN'): string {
 	const d = new Date(ts)
-	return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+	return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
 }
 
-function formatDate(ts: number): string {
+function formatDate(ts: number, t: TFunction, locale = 'zh-CN'): string {
 	const d = new Date(ts)
 	const today = new Date()
 	const yesterday = new Date(today)
 	yesterday.setDate(yesterday.getDate() - 1)
-	if (d.toDateString() === today.toDateString()) return '今天'
-	if (d.toDateString() === yesterday.toDateString()) return '昨天'
-	return d.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })
+	if (d.toDateString() === today.toDateString()) return t('ai.chat.today')
+	if (d.toDateString() === yesterday.toDateString()) return t('ai.chat.yesterday')
+	return d.toLocaleDateString(locale, { month: 'long', day: 'numeric' })
 }
 
 function isNewDay(ts1: number, ts2: number): boolean {
@@ -149,15 +175,15 @@ function tryExtractDomain(url: string): string | null {
 	} catch { return null }
 }
 
-function tryExtractTitle(url: string): string {
+function tryExtractTitle(url: string, t: TFunction): string {
 	try {
 		const { pathname } = new URL(url)
 		const segments = pathname.split('/').filter(Boolean)
 		if (segments.length > 0) {
-			return segments[segments.length - 1].replace(/\.[^.]+$/, '') || '链接预览'
+			return segments[segments.length - 1].replace(/\.[^.]+$/, '') || t('ai.chat.linkPreview')
 		}
 	} catch { /* ignore */ }
-	return '链接预览'
+	return t('ai.chat.linkPreview')
 }
 
 function extractExtension(filename: string): string {
@@ -183,6 +209,7 @@ export function isFormulaLikeContent(content: string): boolean {
 // ── 子组件 ────────────────────────────────────────────────────────
 
 function LinkMessageCard({ url }: { url: string }) {
+	const { t } = useTranslation()
 	const domain = tryExtractDomain(url)
 	const domainInitial = domain ? domain.charAt(0).toUpperCase() : '?'
 	return (
@@ -196,7 +223,7 @@ function LinkMessageCard({ url }: { url: string }) {
 					</div>
 					<div className="flex-1 min-w-0">
 						<div className="text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">
-							{tryExtractTitle(url)}
+							{tryExtractTitle(url, t)}
 						</div>
 						<div className="text-xs text-neutral-400 dark:text-neutral-400 truncate flex items-center gap-1">
 							{domain && (
@@ -215,7 +242,7 @@ function LinkMessageCard({ url }: { url: string }) {
 					className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 text-xs font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
 				>
 					<ExternalLink className="w-3 h-3" />
-					打开链接
+					{t('ai.chat.openLink')}
 				</a>
 			</div>
 		</div>
@@ -223,13 +250,14 @@ function LinkMessageCard({ url }: { url: string }) {
 }
 
 function CodeMessageBlock({ code }: { code: string }) {
+	const { t } = useTranslation()
 	const cleanCode = code.replace(/^```\w*\n?/, '').replace(/\n?```$/, '')
 	return (
 		<div className="rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-900 dark:bg-neutral-950 shadow-sm">
 			<div className="flex items-center justify-between px-4 py-2 bg-neutral-800 dark:bg-neutral-900 border-b border-neutral-700">
 				<div className="flex items-center gap-2">
 					<Code className="w-3.5 h-3.5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
-					<span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">代码</span>
+					<span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">{t('ai.chat.code')}</span>
 				</div>
 				<div className="flex gap-1.5">
 					<div className="w-2.5 h-2.5 rounded-full bg-neutral-600" />
@@ -245,6 +273,7 @@ function CodeMessageBlock({ code }: { code: string }) {
 }
 
 function ImageMessageCard({ src }: { src: string }) {
+	const { t } = useTranslation()
 	const [loaded, setLoaded] = useState(false)
 	const [error, setError] = useState(false)
 	return (
@@ -252,13 +281,13 @@ function ImageMessageCard({ src }: { src: string }) {
 			{!loaded && !error && (
 				<div className="chat-image-placeholder">
 					<ImageIcon className="w-8 h-8 animate-pulse" />
-					<span className="text-xs mt-1">加载中...</span>
+					<span className="text-xs mt-1">{t('ai.chat.loadingImage')}</span>
 				</div>
 			)}
 			{error && (
 				<div className="chat-image-error">
 					<ImageIcon className="w-8 h-8" />
-					<span className="text-xs">图片加载失败</span>
+					<span className="text-xs">{t('ai.chat.imageLoadFailed')}</span>
 				</div>
 			)}
 			<img
@@ -274,6 +303,7 @@ function ImageMessageCard({ src }: { src: string }) {
 }
 
 function FileMessageCard({ filename }: { filename: string }) {
+	const { t } = useTranslation()
 	const ext = extractExtension(filename)
 	const extColors: Record<string, string> = {
 		PDF: 'bg-error-100 text-error-600 dark:bg-error-300/25 dark:text-error-700',
@@ -297,7 +327,7 @@ function FileMessageCard({ filename }: { filename: string }) {
 					{filename}
 				</div>
 				<div className="text-xs text-neutral-400 dark:text-neutral-400 mt-0.5">
-					{ext} 格式文件
+					{t('ai.chat.fileFormat', { ext })}
 				</div>
 			</div>
 			<span className="text-xs font-mono px-2 py-1 rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400">
@@ -325,16 +355,45 @@ function isLikelyStructured(content: string): boolean {
 	return hasBlocks && (braceDiff >= 0 && braceDiff <= 3)
 }
 
+/**
+ * 判断是否为「残缺 JSON 代码块」历史消息：
+ * 以 ```json 开头（含未闭合代码块）且 detect/fallback 均解析失败，
+ * 这类数据通常由早期 max_tokens 截断产生，无法渲染为配方卡。
+ * 此时不再裸显示 JSON，改为友好提示 + 操作入口。
+ *
+ * 注意：后端可能在完整 JSON 代码块后追加安全/剂量警告文本，
+ * 此时正则锚定 $ 会失配，但 detectStructuredContent 应已成功。
+ * 本函数作为最后兜底：用非锚定正则提取第一个代码块并尝试解析，
+ * 只有解析失败时才判定为残缺。
+ */
+function isBrokenJsonContent(content: string): boolean {
+	const trimmed = content.trim()
+	if (!/^```json/.test(trimmed)) return false
+	// 非锚定匹配：提取第一个 ```json ... ``` 代码块（不要求以 ``` 结尾）
+	const match = trimmed.match(/```json\s*\n?([\s\S]*?)```/)
+	if (match) {
+		try {
+			JSON.parse(match[1].trim())
+			return false // 代码块内是合法 JSON → 交给结构化渲染
+		} catch {
+			// 闭合但解析失败：若能补全修复则不视为残缺
+			return !repairTruncatedJson(trimmed)
+		}
+	}
+	// 代码块未闭合（截断）：若能补全修复则不视为残缺
+	return !repairTruncatedJson(trimmed)
+}
+
 function renderMessageContent(
 	msg: ChatMessage,
 	index: number,
 	allMessages: ChatMessage[],
 	streaming: boolean,
+	t: TFunction,
 ) {
 	// ── 结构化内容优先检测 ──
 	if (msg.role === 'assistant') {
 		const structured = detectStructuredContent(msg.content)
-		console.log('[MessageBubble] detectStructured:', structured ? `OK (${structured.blocks.length} blocks)` : 'NULL', '| content preview:', msg.content.substring(0, 60))
 		if (structured) {
 			return <StructuredMessageRenderer content={structured} />
 		}
@@ -344,12 +403,37 @@ function renderMessageContent(
 		if (fallbackStructured) {
 			return <StructuredMessageRenderer content={fallbackStructured} />
 		}
-		// 流式中：内容像结构化 JSON 但未完成 → 显示加载占位，避免展示原始 JSON
+		// 流式中：内容像结构化 JSON 但未完成 → 显示进度指示，避免空白等待
 		if (streaming && isLikelyStructured(msg.content)) {
+			const blockCount = (msg.content.match(/"type"/g) || []).length
 			return (
 				<div className="flex items-center gap-2 py-3 text-xs text-neutral-400 dark:text-neutral-400">
 					<RefreshCw className="w-3 h-3 animate-spin" />
-					正在生成配方方案…
+					<span>{t('ai.chat.generatingFormula')}{blockCount > 0 ? t('ai.chat.generatingFormulaBlocks', { count: blockCount }) : ''}…</span>
+				</div>
+			)
+		}
+		// 历史截断 JSON 自动修复：补全未闭合代码块后渲染为配方卡，避免友好提示
+		const repairedContent = repairTruncatedJson(msg.content)
+		if (repairedContent) {
+			const repairedStructured =
+				extractStructuredFallback(repairedContent) ?? detectStructuredContent(repairedContent)
+			if (repairedStructured) {
+				return (
+					<div className="space-y-2">
+						<StructuredMessageRenderer content={repairedStructured} />
+						<div className="rounded-md border border-amber-200/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-700 dark:text-amber-300/90">
+							{t('ai.chat.replyInterrupted')}
+						</div>
+					</div>
+				)
+			}
+		}
+		// 历史残缺 JSON（早期输出限制导致 parse 失败）→ 友好提示，不裸显示 JSON
+		if (isBrokenJsonContent(msg.content)) {
+			return (
+				<div className="rounded-lg border border-amber-200/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-300/90 leading-relaxed">
+					{t('ai.chat.incompleteJson')}
 				</div>
 			)
 		}
@@ -377,7 +461,7 @@ function renderMessageContent(
 						chartEl = (
 							<div className="mt-4 p-4 bg-neutral-700/50 rounded-xl border border-neutral-100">
 								<h4 className="text-sm font-semibold text-neutral-700 mb-3">
-									{parsed.chartJson.title || '评分概览'}
+									{parsed.chartJson.title || t('ai.chat.scoreOverview')}
 								</h4>
 								<div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 gap-3">
 									{parsed.chartJson.items.map((item: any, i: number) => (
@@ -420,7 +504,11 @@ function renderMessageContent(
 // ── 主组件 ────────────────────────────────────────────────────────
 
 export function DialecticsCallout({ dialectics }: { dialectics: NonNullable<ChatMessage['dialectics']> }) {
+	const { t } = useTranslation()
 	if (!dialectics) return null
+
+	// P0 修复：知识查询场景跳过辨证引擎 → 不显示辨证卡片
+	if (dialectics.engine === 'knowledge_query_skip') return null
 
 	// 急症：红色警示卡片
 	if (dialectics.urgent) {
@@ -429,33 +517,47 @@ export function DialecticsCallout({ dialectics }: { dialectics: NonNullable<Chat
 				<div className="flex items-start gap-2">
 					<AlertTriangle className="w-4 h-4 mt-0.5 text-danger-600 flex-shrink-0" />
 					<div>
-						<p className="font-semibold text-danger-700 dark:text-danger-600">⚠️ 建议立即就医</p>
-						<p className="mt-1 text-danger-600 dark:text-danger-500">{dialectics.referral_message || '您的描述可能属于急重症表现，请立即就医，不要依赖食疗调理。'}</p>
+						<p className="font-semibold text-danger-700 dark:text-danger-600">{t('ai.chat.seeDoctorNow')}</p>
+						<p className="mt-1 text-danger-600 dark:text-danger-500">{dialectics.referral_message || t('ai.chat.urgentReferralFallback')}</p>
 					</div>
 				</div>
 			</div>
 		)
 	}
 
-	// 常规辨证：体质倾向 + 调理方向 + 证据参考
+	// P0 修复：当体质倾向为空或占位文本时不显示
+	const rawConstitution = dialectics.constitution_tendency?.trim() || ''
+	const PLACEHOLDER_PATTERNS = [/^(（未提供）|未提供)/, /^待用户提供.*$/, /^用户询问.*非特定.*/]
+	const constitution = PLACEHOLDER_PATTERNS.some(p => p.test(rawConstitution)) ? '' : rawConstitution
+	const syndrome = dialectics.syndrome_points?.trim() || ''
 	const goals = dialectics.regulation_goals || []
 	const evidence = dialectics.evidence || []
+	const cautions = dialectics.cautions || []
+
+	// 当所有核心字段都为空时不显示（避免空卡片）
+	if (!constitution && !syndrome && goals.length === 0 && evidence.length === 0) return null
+
 	return (
 		<div className="mb-2 p-3 rounded-xl border border-primary-100 dark:border-primary-800/30 bg-primary-50/60 dark:bg-primary-900/10 text-sm">
 			<p className="text-xs font-semibold text-primary-700 dark:text-primary-700 mb-1.5 flex items-center gap-1.5">
-				<Cpu className="w-3.5 h-3.5" /> 辨证分析
+				<Cpu className="w-3.5 h-3.5" /> {t('ai.chat.dialecticsAnalysis')}
 				{dialectics.engine === 'rule_engine_fallback' && (
-					<span className="text-xs font-normal px-1.5 py-0.5 rounded bg-warning-100 dark:bg-warning-900/30 text-warning-600">规则引擎降级</span>
+					<span className="text-xs font-normal px-1.5 py-0.5 rounded bg-warning-100 dark:bg-warning-900/30 text-warning-600">{t('ai.chat.ruleEngineFallback')}</span>
 				)}
 			</p>
-			{dialectics.constitution_tendency && (
+			{constitution && (
 				<p className="text-neutral-800 dark:text-neutral-200">
-					<span className="font-medium">体质倾向：</span>{dialectics.constitution_tendency}
+					<span className="font-medium">{t('ai.chat.constitutionTendency')}</span>{constitution}
+				</p>
+			)}
+			{syndrome && (
+				<p className="text-neutral-800 dark:text-neutral-200 mt-0.5">
+					<span className="font-medium">{t('ai.chat.syndromePoints')}</span>{syndrome}
 				</p>
 			)}
 			{goals.length > 0 && (
 				<div className="mt-1.5">
-					<p className="text-xs text-muted-foreground mb-1">调理方向：</p>
+					<p className="text-xs text-muted-foreground mb-1">{t('ai.chat.regulationGoals')}</p>
 					<ul className="space-y-0.5 text-xs text-neutral-700 dark:text-neutral-300">
 						{goals.map((g, i) => <li key={i}>· {g}</li>)}
 					</ul>
@@ -464,7 +566,17 @@ export function DialecticsCallout({ dialectics }: { dialectics: NonNullable<Chat
 			{evidence.length > 0 && (
 				<div className="mt-1.5 space-y-0.5 text-xs text-neutral-500 dark:text-neutral-400">
 					{evidence.slice(0, 3).map((e, i) => (
-						<p key={i}><span className="text-info-600 dark:text-info-500">[{e.level}]</span> {e.claim}{e.source ? `（来源：${e.source}）` : ''}</p>
+						<p key={i}><span className="text-info-600 dark:text-info-500">[{e.level}]</span> {e.claim}{e.source ? t('ai.chat.evidenceSource', { source: e.source }) : ''}</p>
+					))}
+				</div>
+			)}
+			{cautions.length > 0 && (
+				<div className="mt-1.5 space-y-0.5 text-xs text-warning-600 dark:text-warning-500">
+					{cautions.map((c, i) => (
+						<p key={i} className="flex items-start gap-1">
+							<span className="text-warning-400 flex-shrink-0">⚠</span>
+							<span>{c}</span>
+						</p>
 					))}
 				</div>
 			)}
@@ -496,6 +608,7 @@ export function MessageBubble({
 	isSelected,
 	delegationProgress,
 }: MessageBubbleProps) {
+	const { t, i18n } = useTranslation()
 	const startEdit = useCallback(() => onEdit?.(msg.id, msg.content), [msg.id, msg.content, onEdit])
 	const confirmEdit = useCallback(() => {
 		if (editingId === msg.id && editContent.trim()) onEdit?.(editingId, editContent.trim())
@@ -505,6 +618,24 @@ export function MessageBubble({
 	}, [editingId, onEdit, msg.content, msg.id])
 
 	const handleCopy = useCallback(() => onCopy(msg.id, msg.content), [msg.id, msg.content, onCopy])
+
+	// ── 更多菜单：React 受控状态，替代原始 DOM 操作 ──
+	const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+	const moreMenuRef = useRef<HTMLDivElement>(null)
+
+	// 点击外部关闭菜单
+	useEffect(() => {
+		const handleClick = (e: MouseEvent) => {
+			if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+				setMoreMenuOpen(false)
+			}
+		}
+		if (moreMenuOpen) {
+			document.addEventListener('mousedown', handleClick)
+			return () => document.removeEventListener('mousedown', handleClick)
+		}
+		return undefined
+	}, [moreMenuOpen])
 
 	// ── 用户头像实时同步：订阅 auth store 的当前用户（更新头像后自动刷新）──
 	const currentUser = useAuthStore((s) => s.user)
@@ -529,8 +660,8 @@ export function MessageBubble({
 		<React.Fragment>
 			{/* 日期分隔线 */}
 			{showDateSep && (
-				<div className="chat-date-separator" role="separator" aria-label="日期分隔">
-					<span>{formatDate(msg.timestamp)}</span>
+				<div className="chat-date-separator" role="separator" aria-label={t('ai.chat.dateSeparator')}>
+					<span>{formatDate(msg.timestamp, t, i18n.language)}</span>
 				</div>
 			)}
 
@@ -545,7 +676,7 @@ export function MessageBubble({
 							<img
 								key={currentUser?.avatarUrl}
 								src={userAvatarSrc}
-								alt={currentUser?.username || '用户'}
+								alt={currentUser?.username || t('ai.chat.userAvatarAlt')}
 								className="avatar-img"
 								referrerPolicy="no-referrer"
 								loading="lazy"
@@ -555,7 +686,7 @@ export function MessageBubble({
 						)
 					) : (
 						<>
-							<Leaf className="w-4 h-4" />
+							<RealAIAvatar size="sm" />
 							<span
 								className={`avatar-status-indicator ${isStreaming && index === allMessages.length - 1 ? 'avatar-status-thinking' : 'avatar-status-online'}`}
 							/>
@@ -568,15 +699,15 @@ export function MessageBubble({
 					{/* 气泡 */}
 					{msg.isRetracted ? (
 						<div className="chat-bubble-retracted">
-							<span>消息已撤回</span>
-							{msg.retractedAt && <span className="ml-2">{formatTime(msg.retractedAt)}</span>}
+							<span>{t('ai.chat.messageRetracted')}</span>
+							{msg.retractedAt && <span className="ml-2">{formatTime(msg.retractedAt, i18n.language)}</span>}
 						</div>
 					) : editingId === msg.id && msg.role === 'user' ? (
 						<div className="chat-edit-overlay">
 							<textarea
 								value={editContent}
 								onChange={(e) => setEditContent(e.target.value)}
-								aria-label="编辑消息"
+								aria-label={t('ai.chat.editMessageAria')}
 								className="w-full min-h-[60px] max-h-[200px] px-3 py-2 rounded-lg surface-card border border-neutral-300 dark:border-neutral-700 text-neutral-800 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
 								autoFocus
 								onKeyDown={(e) => {
@@ -585,8 +716,8 @@ export function MessageBubble({
 								}}
 							/>
 							<div className="chat-edit-actions">
-								<button onClick={cancelEdit} className="cancel"><X className="w-3 h-3" /> 取消</button>
-								<button onClick={confirmEdit} className="confirm"><Check className="w-3 h-3" /> 确认</button>
+								<button onClick={cancelEdit} className="cancel"><X className="w-3 h-3" /> {t('ai.chat.cancel')}</button>
+								<button onClick={confirmEdit} className="confirm"><Check className="w-3 h-3" /> {t('ai.chat.confirm')}</button>
 							</div>
 						</div>
 					) : (
@@ -603,9 +734,9 @@ export function MessageBubble({
 						>
 							{/* 发送状态 */}
 							{msg.sendStatus === 'sending' && msg.role === 'user' && !msg.error ? (
-								<div className="flex items-center gap-2.5">
-									<RefreshCw className="w-3 h-3 animate-spin text-primary-500" />
-									<span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">发送中...</span>
+								<div className="flex items-center gap-2.5 flex-shrink-0 whitespace-nowrap">
+									<RefreshCw className="w-3 h-3 animate-spin text-primary-500 flex-shrink-0" />
+									<span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] whitespace-nowrap">{t('ai.chat.sending')}</span>
 								</div>
 							) : msg.error ? (
 								<div className="flex items-center gap-2">
@@ -625,7 +756,7 @@ export function MessageBubble({
 										<div className="mb-2 p-2 bg-primary-50 dark:bg-primary-300/15 rounded-lg border border-primary-100 dark:border-primary-800/30">
 											<div className="flex items-center gap-1.5 mb-1.5">
 												<RefreshCw className={`w-3 h-3 text-primary-500 ${delegationProgress.subtasks.some(s => s.status === 'running') ? 'animate-spin' : ''}`} />
-												<span className="text-xs font-medium text-primary-700 dark:text-primary-700">子任务执行中</span>
+												<span className="text-xs font-medium text-primary-700 dark:text-primary-700">{t('ai.chat.subtasksRunning')}</span>
 											</div>
 											<div className="space-y-0.5">
 												{delegationProgress.subtasks.map(st => (
@@ -650,8 +781,9 @@ export function MessageBubble({
 										/>
 									)}
 									{msg.role === 'assistant' && msg.model && <ModelSourceBadge model={msg.model} />}
+									{msg.role === 'assistant' && msg.metadata?.ragDegraded === true && <RAGDegradedHint />}
 									{msg.role === 'assistant' && msg.dialectics && <DialecticsCallout dialectics={msg.dialectics} />}
-									{renderMessageContent(msg, index, allMessages, isStreaming)}
+									{renderMessageContent(msg, index, allMessages, isStreaming, t)}
 								</>
 							)}
 						</div>
@@ -661,91 +793,94 @@ export function MessageBubble({
 				{/* 操作栏 — DSH 极简风格：时间 + 核心操作，hover 显示 */}
 				{!msg.error && !msg.isLoading && msg.content && !msg.isRetracted && (
 					<div className="chat-action-bar">
-						<span className="chat-action-time">{formatTime(msg.timestamp)}</span>
-						<button onClick={handleCopy} className="chat-action-btn" title="复制">
+						<span className="chat-action-time">{formatTime(msg.timestamp, i18n.language)}</span>
+						<button onClick={handleCopy} className="chat-action-btn" title={t('ai.chat.copy')}>
 							{(msg.id === (copiedId ?? (globalThis as unknown as { __chatCopiedId?: string }).__chatCopiedId))
 								? <Check className="w-3 h-3 text-success-500" />
 								: <Copy className="w-3 h-3" />}
 						</button>
 						{msg.role === 'user' && (
-							<button onClick={startEdit} className="chat-action-btn" title="编辑">
+							<button onClick={startEdit} className="chat-action-btn" title={t('ai.chat.edit')}>
 								<Pencil className="w-3 h-3" />
 							</button>
 						)}
 						{msg.role === 'user' && onRetract && (
-							<button onClick={() => onRetract(msg.id)} className="chat-action-btn" title="撤回">
+							<button onClick={() => onRetract(msg.id)} className="chat-action-btn" title={t('ai.chat.retract')}>
 								<Undo2 className="w-3 h-3" />
 							</button>
 						)}
 						{msg.role === 'assistant' && onRegenerate && (
-							<button onClick={() => onRegenerate(msg.id)} className="chat-action-btn" title="重新生成">
+							<button onClick={() => onRegenerate(msg.id)} className="chat-action-btn" title={t('ai.chat.regenerate')}>
 								<RefreshCw className="w-3 h-3" />
 							</button>
 						)}
 						{onForkMessage && (
-							<button onClick={() => onForkMessage(msg.id)} className="chat-action-btn" title="从此处分支">
+							<button onClick={() => onForkMessage(msg.id)} className="chat-action-btn" title={t('ai.chat.forkHere')}>
 								<GitBranch className="w-3 h-3" />
 							</button>
 						)}
 						{msg.role === 'assistant' && onStructureSave && (
-							<button onClick={() => onStructureSave(msg.id, msg.content)} className="chat-action-btn" title="保存到配方库">
+							<button onClick={() => onStructureSave(msg.id, msg.content)} className="chat-action-btn" title={t('ai.chat.saveToFormulaLibrary')}>
 								<Leaf className="w-3 h-3" />
 							</button>
 						)}
 						{msg.role === 'assistant' && onStructureRepair && !detectStructuredContent(msg.content) && isFormulaLikeContent(msg.content) && (
-							<button onClick={() => onStructureRepair(msg.id, msg.content)} className="chat-action-btn inline-flex items-center gap-1" title="修复为结构化配方">
+							<button onClick={() => onStructureRepair(msg.id, msg.content)} className="chat-action-btn inline-flex items-center gap-1" title={t('ai.chat.repairToStructuredFormula')}>
 								<Wand2 className="w-3 h-3" />
-								<span className="text-[10px] leading-none">修复为结构化配方</span>
+								<span className="text-[10px] leading-none">{t('ai.chat.repairToStructuredFormula')}</span>
 							</button>
 						)}
 						{msg.role === 'assistant' && onStructureShare && (
-							<button onClick={() => onStructureShare(msg.id, msg.content)} className="chat-action-btn" title="分享配方">
+							<button onClick={() => onStructureShare(msg.id, msg.content)} className="chat-action-btn" title={t('ai.chat.shareFormula')}>
 								<Share2 className="w-3 h-3" />
 							</button>
 						)}
-						{
+						<div className="relative" ref={moreMenuRef}>
 							<button
-								onClick={() => {
-									const menu = (document.getElementById('msg-menu-' + msg.id) as HTMLElement | null)
-									if (menu) menu.remove(); else {
-										const el = document.createElement('div')
-										el.id = 'msg-menu-' + msg.id
-										el.className = 'chat-more-menu'
-										el.innerHTML = `
-											<div class="chat-more-menu-content">
-												<button class="chat-more-menu-item" data-action="edit">编辑</button>
-												<button class="chat-more-menu-item" data-action="regen">重新生成</button>
-												<button class="chat-more-menu-item" data-action="delete">删除</button>
-												${onDetails ? `<button class="chat-more-menu-item" data-action="details">详情</button>` : ''}
-											</div>`
-										document.body.appendChild(el)
-										setTimeout(() => {
-											const close = () => { el.remove(); document.removeEventListener('mousedown', close) }
-											document.addEventListener('mousedown', close)
-											el.addEventListener('click', (e) => {
-												const target = e.target as HTMLElement
-												if (target.classList.contains('chat-more-menu-item')) {
-													const action = target.dataset.action
-													if (action === 'edit') startEdit()
-													else if (action === 'regen') onRegenerate?.(msg.id)
-													else if (action === 'delete') onDelete?.(msg.id)
-													else if (action === 'details') onDetails?.({
-														id: msg.id, name: 'assistant_analysis',
-														args: { query: msg.content.slice(0, 100) },
-														status: 'completed',
-													})
-													close()
-												}
-											})
-										}, 10)
-									}
-								}}
+								onClick={() => setMoreMenuOpen(v => !v)}
 								className="chat-action-btn"
-								title="更多"
+								title={t('ai.chat.more')}
+								aria-haspopup="true"
+								aria-expanded={moreMenuOpen}
 							>
 								<MoreHorizontal className="w-3 h-3" />
 							</button>
-						}
+							{moreMenuOpen && (
+								<div className="absolute bottom-full right-0 mb-1 z-50 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 min-w-[120px]">
+									<button
+										onClick={() => { startEdit(); setMoreMenuOpen(false) }}
+										className="w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+									>
+										{t('ai.chat.edit')}
+									</button>
+									{msg.role === 'assistant' && onRegenerate && (
+										<button
+											onClick={() => { onRegenerate(msg.id); setMoreMenuOpen(false) }}
+											className="w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+										>
+											{t('ai.chat.regenerate')}
+										</button>
+									)}
+									<button
+										onClick={() => { onDelete(msg.id); setMoreMenuOpen(false) }}
+										className="w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-error-600 dark:text-error-400"
+									>
+										{t('ai.chat.delete')}
+									</button>
+									{onDetails && (
+										<button
+											onClick={() => {
+												onDetails({ id: msg.id, name: 'assistant_analysis', args: { query: msg.content.slice(0, 100) }, status: 'completed' })
+												setMoreMenuOpen(false)
+											}}
+											className="w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+										>
+											{t('ai.chat.details')}
+										</button>
+									)}
+								</div>
+							)}
+						</div>
 					</div>
 				)}
 			</div>

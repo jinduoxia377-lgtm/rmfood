@@ -21,16 +21,15 @@ import { useChatContext } from './ChatStateContext'
 import { logger } from '@/utils/safeLogger'
 
 // ===== Pro 组件 =====
-import { ChatMessages, ChatInputPro, ChatHistory } from './components/pro'
+import { ChatMessages, ChatInputPro, ChatHistory, ChatProgressBar } from './components/pro'
 import { TopBar, EmptyStateCard } from './components/pro'
 import ComposerStatusBar from './components/pro/ComposerStatusBar'
 import DetailsPanel from './components/pro/DetailsPanel'
 import FollowUpSuggestionsBar from './components/pro/FollowUpSuggestionsBar'
-import type { DraftAttachment } from './components/pro/ChatInput'
 import { RAGSourcesBanner } from '@/components/ai/rag/RAGSourcesBanner'
 
 // ===== 视觉设计系统 =====
-import { scenarioSwitcher } from './services/scenarioSwitcher'
+
 import { useScenarioStore } from '@/stores/scenarioStore'
 import { useModelStore } from '@/stores/modelStore'
 import { sessionCapability } from './capabilities/session/SessionCapability'
@@ -116,7 +115,7 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
     historySessions, activeSessionId, historyVisible,
     // UI
     highlightedMessageId,
-    attachments, detailsCall, detailsOpen,
+    detailsCall, detailsOpen,
     // 引擎
     llmAvailable, llmModel, scenarioMode,
     assistantCount, elapsedSeconds,
@@ -137,7 +136,7 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
     handleNewSession, handleSelectSession, handleDeleteSession,
     handleRenameSession, handleClearChat, handleRetry, handleSend, handleForkMessage,
     handleGenerateReport,
-    handleAddAttachment, handleRemoveAttachment, toggleHistory,
+    toggleHistory,
   } = ctx
 
   // ===== 本地 UI 状态 =====
@@ -199,13 +198,13 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
     const structured = detectStructuredContent(content)
     if (!structured) {
       logger.warn('[ChatTab] 消息内容不是结构化格式，无法保存:', messageId)
-      showNotice('warning', '该消息不是结构化配方，无法保存')
+      showNotice('warning', t('ai.chat.notStructuredFormula'))
       return
     }
     const extracted = formulaExtractorService.extractFormulaFromContent(structured)
     if (!extracted) {
       logger.warn('[ChatTab] 未能从结构化内容中提取配方:', messageId)
-      showNotice('warning', '未能从消息中提取到配方成分表')
+      showNotice('warning', t('ai.chat.extractFormulaFailed'))
       return
     }
 
@@ -299,13 +298,13 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
       const created = await createFormula(payload)
       if (validationSkipped) {
         // 诚实降级：保存成功但校验未执行，提示中明确说明
-        showNotice('warning', `配方「${created.name ?? extracted.name}」已保存（校验服务暂不可用，已跳过校验）`)
+        showNotice('warning', t('ai.chat.formulaSavedValidationSkipped', { name: created.name ?? extracted.name }))
       } else {
         // 保存成功通知：附带「提交效果反馈」入口，打开 FeedbackModal
         showNotice(
           'success',
-          `配方「${created.name ?? extracted.name}」已保存到配方库`,
-          '提交效果反馈',
+          t('ai.chat.formulaSaved', { name: created.name ?? extracted.name }),
+          t('ai.chat.submitFeedback'),
           () => setFeedbackTarget({ formulaId: created.id, formulaName: created.name ?? extracted.name }),
         )
       }
@@ -317,9 +316,9 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
       })
     } catch (e) {
       logger.error('[ChatTab] 配方保存失败:', e)
-      showNotice('error', '配方保存失败：' + (e instanceof Error ? e.message : '服务端未接受请求'))
+      showNotice('error', t('ai.chat.formulaSaveFailed', { error: e instanceof Error ? e.message : t('ai.chat.serverRejectedRequest') }))
     }
-  }, [showNotice])
+  }, [showNotice, t])
 
   // 用户在校验报告弹窗中点击「确认保存」后真正落库
   const handleValidationConfirm = React.useCallback(async () => {
@@ -332,8 +331,8 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
       // 保存成功通知：附带「提交效果反馈」入口，打开 FeedbackModal
       showNotice(
         'success',
-        `配方「${created.name ?? formulaName}」已保存到配方库`,
-        '提交效果反馈',
+        t('ai.chat.formulaSaved', { name: created.name ?? formulaName }),
+        t('ai.chat.submitFeedback'),
         () => setFeedbackTarget({ formulaId: created.id, formulaName: created.name ?? formulaName }),
       )
       logger.info('[ChatTab] 校验确认后配方已保存到配方库:', {
@@ -343,9 +342,9 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
       })
     } catch (e) {
       logger.error('[ChatTab] 配方保存失败:', e)
-      showNotice('error', '配方保存失败：' + (e instanceof Error ? e.message : '服务端未接受请求'))
+      showNotice('error', t('ai.chat.formulaSaveFailed', { error: e instanceof Error ? e.message : t('ai.chat.serverRejectedRequest') }))
     }
-  }, [validationModal, showNotice])
+  }, [validationModal, showNotice, t])
 
   const handleStructureShare = React.useCallback((messageId: string, content: string) => {
     setShareModalContent({ messageId, content })
@@ -355,7 +354,7 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
   // 调用后端 /ai/formula/repair-structured 修复为 blocks 结构化内容，
   // 成功后把修复结果转成结构化消息 JSON，复用 handleStructureSave 的提取+校验+保存流程。
   const handleStructureRepair = React.useCallback(async (messageId: string, content: string) => {
-    showNotice('warning', '正在调用 AI 修复为结构化配方…')
+    showNotice('warning', t('ai.chat.repairingFormula'))
     try {
       const result = await repairStructuredFormula(content)
       if (result.success && result.structured && Array.isArray(result.structured.blocks) && result.structured.blocks.length > 0) {
@@ -364,17 +363,17 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
           responseType: 'formula',
           blocks: result.structured.blocks,
         })
-        showNotice('success', '结构化修复成功，正在保存配方…')
+        showNotice('success', t('ai.chat.repairSuccessSaving'))
         await handleStructureSave(messageId, structuredJson)
       } else {
         // 后端返回 success=false（LLM 不可用 / 解析失败）
-        showNotice('error', result.message || '结构化修复失败，请稍后重试')
+        showNotice('error', result.message || t('ai.chat.repairFailedRetry'))
       }
     } catch (e) {
       logger.error('[ChatTab] 结构化修复调用失败:', e)
-      showNotice('error', '结构化修复失败：' + (e instanceof Error ? e.message : '服务端未接受请求'))
+      showNotice('error', t('ai.chat.repairFailed', { error: e instanceof Error ? e.message : t('ai.chat.serverRejectedRequest') }))
     }
-  }, [handleStructureSave, showNotice])
+  }, [handleStructureSave, showNotice, t])
 
   // ── RAG 知识库：接入真实后端 /rag/*（不再硬编码禁用）──
   const handleTriggerSeed = React.useCallback(async () => {
@@ -546,7 +545,7 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
               <FollowUpSuggestionsBar
                 onSendSuggestion={(question) => {
                   setInput(question)
-                  handleSend()
+                  handleSend(question)
                 }}
                 messages={messages}
                 isVisible={!isStreaming && messages.length > 0}
@@ -587,6 +586,8 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
               </button>
             </div>
           )}
+          {/* 实时进度条（输入框上方，由 SSE progress 事件驱动） */}
+          <ChatProgressBar />
           <ChatInputPro
             value={input}
             onChange={setInput}
@@ -597,12 +598,9 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
             placeholder={t('ai.chat.input.placeholder')}
             modelName={llmModel || 'deepseek-chat'}
             modelColor="text-success-500"
-            attachments={attachments as DraftAttachment[]}
-            onAddAttachment={handleAddAttachment}
-            onRemoveAttachment={handleRemoveAttachment}
             onSlashSelect={(cmd) => {
               setInput('/' + cmd + ' ')
-              handleSend()
+              handleSend('/' + cmd)
             }}
             onModelChange={(model) => {
               useModelStore.getState().setSelectedModel(model)
@@ -624,7 +622,7 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
             <DetailsPanel
               selectedCall={{ ...detailsCallLocal, arguments: detailsCallLocal.args } as unknown as ToolCall}
               onClose={() => setDetailsOpen(false)}
-              title="工具调用详情"
+              title={t('ai.chat.toolCallDetail')}
             />
           </div>
         )}

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Chapter } from '@/types/academicReport';
+import { createNewDocument } from '@/data/reportTemplates';
 import { logger } from '@/utils/safeLogger';
 
 
@@ -43,6 +44,7 @@ interface AcademicReportState {
   autoSaveInterval: number;
   loadReport: (id: string) => void;
   createReport: (templateId: string) => void;
+  duplicateReport: (id: string) => string | undefined;
   updateReport: (id: string, updates: Partial<ReportItem>) => void;
   deleteReport: (id: string) => void;
   saveReport: () => Promise<boolean>;
@@ -65,6 +67,18 @@ interface AcademicReportState {
 
 const DEFAULT_AUTO_SAVE_INTERVAL = 30000;
 const MAX_RETRY_COUNT = 3;
+
+/**
+ * 生成全局唯一的报告 id。优先使用 crypto.randomUUID()（浏览器/现代 Node 均支持），
+ * 避免同一毫秒内连续创建报告时 `report-${Date.now()}` 产生 id 冲突；
+ * 环境不支持时回退为时间戳 + 随机串（与 duplicateReport 的 id 模式一致）。
+ */
+function generateReportId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `report-${crypto.randomUUID()}`;
+  }
+  return `report-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 export const useAcademicReportStore = create<AcademicReportState>()(
   persist(
@@ -90,7 +104,7 @@ export const useAcademicReportStore = create<AcademicReportState>()(
 
       createReport: (templateId: string) => {
         const newReport: ReportItem = {
-          id: `report-${Date.now()}`,
+          id: generateReportId(),
           title: '新建报告',
           abstract: '',
           authors: [] as string[],
@@ -103,12 +117,62 @@ export const useAcademicReportStore = create<AcademicReportState>()(
           createdAt: new Date(),
           updatedAt: new Date(),
         };
+        // 新建报告直接套用模板章节，保证进入编辑器即可编辑（P0-3 新建流程闭环）
+        try {
+          const templateDoc = createNewDocument(templateId);
+          newReport.chapters = templateDoc.chapters;
+          newReport.title = templateDoc.title;
+        } catch {
+          // 未知模板类型时保留空章节，由编辑器默认模板兜底
+        }
         set((state) => ({
           reports: [...state.reports, newReport],
           currentReport: newReport,
           saveStatus: 'saved',
           lastSavedAt: new Date().toISOString(),
         }));
+      },
+
+      duplicateReport: (id: string) => {
+        const source = get().reports.find((r) => r.id === id);
+        if (!source) return undefined;
+
+        const now = Date.now();
+        // 深拷贝章节（含子章节/图表），并为副本生成全新章节 id，保证副本完全独立
+        const cloneChapters = (chapters: Chapter[], prefix: string): Chapter[] =>
+          chapters.map((ch, idx) => ({
+            ...ch,
+            id: `${prefix}-${idx}`,
+            children: ch.children ? cloneChapters(ch.children, `${prefix}-${idx}`) : [],
+            figures: ch.figures ? (JSON.parse(JSON.stringify(ch.figures)) as Chapter['figures']) : undefined,
+            tables: ch.tables ? (JSON.parse(JSON.stringify(ch.tables)) as Chapter['tables']) : undefined,
+          }));
+
+        const newReport: ReportItem = {
+          ...source,
+          id: `report-${now}-${Math.random().toString(36).slice(2, 8)}`,
+          title: `${source.title}（副本）`,
+          abstract: source.abstract,
+          authors: [...source.authors],
+          keywords: [...source.keywords],
+          chapters: cloneChapters(source.chapters, `ch-${now}`),
+          references: JSON.parse(JSON.stringify(source.references)) as unknown[],
+          templateId: source.templateId,
+          version: source.version,
+          status: 'draft',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          publishedAt: undefined,
+          formulaId: source.formulaId,
+          formulaName: source.formulaName,
+        };
+
+        set((state) => ({
+          reports: [...state.reports, newReport],
+          currentReport: newReport,
+        }));
+
+        return newReport.id;
       },
 
       updateReport: (id: string, updates) => {
@@ -245,25 +309,18 @@ export const useAcademicReportStore = create<AcademicReportState>()(
         set({ saveStatus: status });
       },
 
-      resolveConflict: (useLocal: boolean) => {
+      resolveConflict: (_useLocal: boolean) => {
         const { conflictData } = get();
         if (!conflictData) return;
 
-        if (useLocal) {
-          set({
-            currentReport: conflictData as AcademicReportState['currentReport'],
-            conflictData: null,
-            saveStatus: 'saved',
-            lastSavedAt: new Date().toISOString(),
-          });
-        } else {
-          set({
-            currentReport: conflictData as AcademicReportState['currentReport'],
-            conflictData: null,
-            saveStatus: 'saved',
-            lastSavedAt: new Date().toISOString(),
-          });
-        }
+        // 历史实现中 useLocal 的两个分支行为完全相同（均以 conflictData 覆盖当前报告），
+        // 因此合并为一个分支。保留 _useLocal 参数仅为兼容调用方契约，不再区分来源。
+        set({
+          currentReport: conflictData as AcademicReportState['currentReport'],
+          conflictData: null,
+          saveStatus: 'saved',
+          lastSavedAt: new Date().toISOString(),
+        });
       },
 
       enableAutoSave: (interval?: number) => {
@@ -400,27 +457,18 @@ export const useAcademicReportStore = create<AcademicReportState>()(
       syncReport: async (reportData) => {
         const newReport: ReportItem = {
           ...reportData,
-          id: `report-${Date.now()}`,
+          id: generateReportId(),
           createdAt: new Date(),
           updatedAt: new Date(),
         };
 
+        // zustand persist 中间件负责写入 localStorage（key: academic-report-storage），
+        // 此处只更新内存状态，避免手动 push 导致同一报告重复写入。
         set((state) => ({
           reports: [...state.reports, newReport],
           currentReport: newReport,
         }));
 
-        // Persist to localStorage
-        try {
-          const stored = localStorage.getItem('academic-report-storage');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            parsed.state.reports.push(newReport);
-            localStorage.setItem('academic-report-storage', JSON.stringify(parsed));
-          }
-        } catch {
-          // ignore persistence errors
-        }
         return newReport.id;
       },
     }),

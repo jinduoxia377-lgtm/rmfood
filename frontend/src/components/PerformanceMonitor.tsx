@@ -15,6 +15,7 @@ export const usePerformanceMonitor = () => {
     aiResponseTime: 0,
   });
 
+  // eslint-disable-next-line react-hooks/purity -- useRef 初始化读取当前时间戳属于合理场景
   const fpsRef = useRef({ frames: 0, lastTime: performance.now() });
 
   useEffect(() => {

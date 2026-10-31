@@ -22,7 +22,7 @@ const CHART_ICON_MAP: Record<string, React.ComponentType<any>> = {
   area: TrendingUp,
 }
 
-export const ChartWidget: React.FC<Props> = ({ chartKey, height = 280, title, charts }) => {
+export const ChartWidget: React.FC<Props> = ({ chartKey, height: _height = 280, title, charts }) => {
   const chart = charts?.[chartKey]
 
   const chartTitle = title || chart?.title || chartKey

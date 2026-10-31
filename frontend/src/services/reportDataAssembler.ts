@@ -565,7 +565,7 @@ function buildSafetyAssessment(ingredients: EnhancedIngredientForReport[]): Safe
  */
 function buildUsageGuidelines(
   ingredients: EnhancedIngredientForReport[],
-  formula: AIRecognizedFormula,
+  _formula: AIRecognizedFormula,
 ): UsageGuidelinesSection {
   const totalAmount = ingredients.reduce((sum, ing) => sum + (ing.amount || 0), 0)
   const avgSingleDose = totalAmount / Math.max(ingredients.length, 1)

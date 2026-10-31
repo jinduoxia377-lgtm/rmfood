@@ -41,14 +41,8 @@
   },
   {
     "route": "/formulas/cases/1",
-    "issues": [
-      {
-        "type": "tall-brand-banner",
-        "cls": "relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary-600 to-secondary-600 p-4 sm:p-[var(--space-apple-lg)",
-        "height": 286
-      }
-    ],
-    "issueCount": 1
+    "issues": [],
+    "issueCount": 0
   },
   {
     "route": "/experiments",
@@ -87,24 +81,19 @@
   },
   {
     "route": "/doe",
-    "issues": [],
-    "issueCount": 0
-  },
-  {
-    "route": "/stability",
     "issues": [
       {
         "type": "non-fullwidth-input",
-        "cls": "flex-1 h-9 px-2 text-sm rounded-[var(--radius-Apple-sm)] border border-input bg-transparent text-[va",
-        "ratio": 52
-      },
-      {
-        "type": "non-fullwidth-input",
-        "cls": "flex-1 accent-[var(--color-primary)]",
-        "ratio": 51
+        "cls": "flex rounded-md border border-input bg-transparent px-3 py-1 shadow-sm transition-colors file:border",
+        "ratio": 50
       }
     ],
-    "issueCount": 2
+    "issueCount": 1
+  },
+  {
+    "route": "/stability",
+    "issues": [],
+    "issueCount": 0
   },
   {
     "route": "/documents",
@@ -143,13 +132,8 @@
   },
   {
     "route": "/databases",
-    "issues": [
-      {
-        "type": "oversized-padding",
-        "cls": "p-10 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]"
-      }
-    ],
-    "issueCount": 1
+    "issues": [],
+    "issueCount": 0
   },
   {
     "route": "/peptide-structure",
@@ -183,13 +167,27 @@
   },
   {
     "route": "/organizations",
-    "issues": [],
-    "issueCount": 0
+    "issues": [
+      {
+        "type": "oversized-padding",
+        "cls": "space-y-8 max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)] animate-page-ente"
+      },
+      {
+        "type": "oversized-padding",
+        "cls": "p-12 text-center"
+      }
+    ],
+    "issueCount": 2
   },
   {
     "route": "/organizations/1",
-    "issues": [],
-    "issueCount": 0
+    "issues": [
+      {
+        "type": "oversized-padding",
+        "cls": "p-8 space-y-8"
+      }
+    ],
+    "issueCount": 1
   },
   {
     "route": "/integrations",
@@ -208,8 +206,14 @@
   },
   {
     "route": "/users",
-    "issues": [],
-    "issueCount": 0
+    "issues": [
+      {
+        "type": "tall-brand-banner",
+        "cls": "card xl:col-span-1 transition-all duration-300 hover:shadow-md shadow-md border-[var(--border-color)] bg-gradient-to-b f",
+        "height": 846
+      }
+    ],
+    "issueCount": 1
   },
   {
     "route": "/audit-logs",
@@ -228,8 +232,18 @@
   },
   {
     "route": "/radix-demo",
-    "issues": [],
-    "issueCount": 0
+    "issues": [
+      {
+        "type": "tall-brand-banner",
+        "cls": "min-h-screen bg-gradient-to-br from-surface to-surface-elevated p-6 space-y-8",
+        "height": 1830
+      },
+      {
+        "type": "oversized-padding",
+        "cls": "min-h-screen bg-gradient-to-br from-surface to-surface-elevated p-6 space-y-8"
+      }
+    ],
+    "issueCount": 2
   },
   {
     "route": "/404",

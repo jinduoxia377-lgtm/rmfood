@@ -1,4 +1,4 @@
-﻿/**
+/**
  * RMFOOD 交叉检索面板
  * ==================
  *
@@ -106,6 +106,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
   // 防抖搜索建议
   useEffect(() => {
     if (query.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -170,6 +171,7 @@ export default function CrossSearchPanel({ initialHerbName = "", onHerbSelect }:
   // 初始化时执行搜索
   useEffect(() => {
     if (initialHerbName) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       doSearch(initialHerbName);
     }
   }, [initialHerbName, doSearch]);

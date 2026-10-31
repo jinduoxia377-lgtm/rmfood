@@ -598,7 +598,7 @@ export default function DoePage() {
       <Card className="border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/60">
         <CardHeader className="px-5 pt-5 pb-3">
           <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-            <FolderInput size={14} className="text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)]" />
+            <FolderInput size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />
             <span className="text-[var(--color-primary-text)]">{t('pages.doe.importFromExperiment')}</span>
             <span className="text-xs font-normal text-[var(--text-muted)] ml-1">{t('pages.doe.importFromExperimentDesc')}</span>
           </CardTitle>
@@ -622,7 +622,7 @@ export default function DoePage() {
       <Card>
         <CardHeader className="px-5 pt-5 pb-3">
           <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-            <FlaskConical size={14} className="text-[var(--color-secondary-text)]0 dark:text-[var(--color-secondary-text)]" />
+            <FlaskConical size={14} className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]" />
             <span className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]">{t('pages.doe.seedFromFormula')}</span>
             <span className="text-xs font-normal text-[var(--text-muted)] ml-1">{t('pages.doe.seedFromFormulaDesc')}</span>
           </CardTitle>
@@ -692,7 +692,7 @@ export default function DoePage() {
               <CardHeader className="px-5 pt-5 pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                    <Plus size={14} className="text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)]" />{t('pages.doe.factorSettings')}
+                    <Plus size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />{t('pages.doe.factorSettings')}
                   </CardTitle>
                   <Button variant="outline" size="sm" onClick={addFactor} icon={<Plus size={12} />} className="text-xs">{t('pages.doe.addFactor')}</Button>
                 </div>
@@ -716,7 +716,7 @@ export default function DoePage() {
               <CardHeader className="px-5 pt-5 pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                    <PieChart size={14} className="text-[var(--color-secondary-text)]0 dark:text-[var(--color-secondary-text)]" />{t('pages.doe.mixtureDesign')}
+                    <PieChart size={14} className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]" />{t('pages.doe.mixtureDesign')}
                   </CardTitle>
                   <Button variant="outline" size="sm" onClick={addMixtureComponent} icon={<Plus size={12} />} className="text-xs">{t('pages.doe.addComponent')}</Button>
                 </div>
@@ -774,7 +774,7 @@ export default function DoePage() {
                 <CardHeader className="px-5 pt-5 pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                      <Sparkles size={14} className="text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)]" />
+                      <Sparkles size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />
                       {designResult.type.toUpperCase()} 设计矩阵
                     </CardTitle>
                     <div className="flex items-center gap-2">
@@ -830,14 +830,14 @@ export default function DoePage() {
                             ))}
                             <td className="pl-2">
                               {fittingRuns.some(r => r.run_id === run.run_id) ? (
-                                <span className="text-xs text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)]">已在队列</span>
+                                <span className="text-xs text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]">已在队列</span>
                               ) : (
                                 <button
                                   onClick={() => {
                                     setFittingRuns(prev => [...prev, run])
                                     addToast({ type: 'success', message: `已将 #${run.run_id} 加入拟合队列` })
                                   }}
-                                  className="text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] dark:hover:text-[var(--color-primary-text)] transition-colors">
+                                  className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] dark:hover:text-[var(--color-primary-text)] transition-colors">
                                   <ChevronRight size={14} />
                                 </button>
                               )}
@@ -860,7 +860,7 @@ export default function DoePage() {
               <CardHeader className="px-5 pt-5 pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                    <TrendingUp size={14} className="text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)]" />
+                    <TrendingUp size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />
                     {t('pages.doe.fitQueue', { count: fittingRuns.length })}
                   </CardTitle>
                   {/* 响应参数选选择*/}
@@ -930,7 +930,7 @@ export default function DoePage() {
               <Card className="border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/60">
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                    <Sparkles size={14} className="text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)]" />
+                    <Sparkles size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />
                     <span className="text-[var(--color-primary-text)]">拟合结果（响应：{displayRespName}）</span>
                   </CardTitle>
                 </CardHeader>
@@ -969,7 +969,7 @@ export default function DoePage() {
                                 <td className="px-2 text-right font-mono text-[var(--text-primary)] tabular-nums">{(coef as number).toFixed(6)}</td>
                                 <td className="px-2 text-center">
                                   {sig
-                                    ? <span className="inline-block w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)]0" title="显著" />
+                                    ? <span className="inline-block w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)]" title="显著" />
                                     : <span className="inline-block w-2 h-2 rounded-[var(--radius-pill)] bg-neutral-300 dark:bg-[var(--border-color)]" title="不显著" />
                                   }
                                 </td>
@@ -1004,7 +1004,7 @@ export default function DoePage() {
             <Card>
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <Target size={14} className="text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)]" />
+                  <Target size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />
                   反向参数搜索
                 </CardTitle>
               </CardHeader>
@@ -1049,7 +1049,7 @@ export default function DoePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   <div className={`rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-sm)] ${searchResult.converged ? 'bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/30' : 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/30'}`}>
                     <div className="text-xs text-[var(--text-muted)] mb-1">收敛状态</div>
-                    <div className={`text-lg font-bold ${searchResult.converged ? 'text-[var(--color-primary-text)]0 dark:text-[var(--color-primary-text)]' : 'text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]'}`}>
+                    <div className={`text-lg font-bold ${searchResult.converged ? 'text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]' : 'text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]'}`}>
                     {searchResult.converged ? '✓ 已收敛' : '✗ 未收敛'}
                     </div>
                   </div>
@@ -1092,7 +1092,7 @@ export default function DoePage() {
             <Card>
               <CardHeader className="px-5 pt-5 pb-3">
                 <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <Lightbulb size={14} className="text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]" />
+                  <Lightbulb size={14} className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
                   主动学习推荐
                 </CardTitle>
               </CardHeader>
@@ -1119,7 +1119,7 @@ export default function DoePage() {
               <Card className="border-[var(--color-warning-border)] dark:border-[var(--color-warning)]/60">
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                    <Sparkles size={14} className="text-[var(--color-warning-text)]0 dark:text-[var(--color-warning-text)]" />
+                    <Sparkles size={14} className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
                     <span className="text-[var(--color-warning-text)]">推荐实验点</span>
                   </CardTitle>
                 </CardHeader>

@@ -2,7 +2,6 @@
 // 所有硬编码的配置项、样式值、文本内容都迁移到这里
 
 import { CHART_TYPOGRAPHY } from '../utils/typography'
-import { envConfig } from './env'
 
 // ========== 品牌配置 ==========
 export const BRAND_CONFIG = {
@@ -460,11 +459,70 @@ export const RHINE_LOGIN_CONFIG = {
   },
 };
 
+// ========== 莱茵分子 (Rhine Molecular) 找回密码配置 ==========
+export const RHINE_FORGOT_CONFIG = {
+  messages: {
+    title: '找回密码',
+    subtitle: '请输入您的注册邮箱，我们将发送密码重置链接',
+    emailLabel: '邮箱地址',
+    emailPlaceholder: '请输入您的邮箱地址',
+    submitButton: '发送重置链接',
+    sending: '发送中...',
+    successTitle: '密码重置邮件已发送',
+    successBody: '请检查您的邮箱，点击邮件中的链接重置密码（24 小时内有效）',
+    resend: '重新发送',
+    resendIn: '请 {seconds}s 后重新发送',
+    errorEmpty: '请输入邮箱地址',
+    errorInvalid: '请输入有效的邮箱地址',
+    errorSend: '发送失败，请检查邮箱地址后重试',
+    backToLogin: '返回登录',
+    securityNote: '安全加密传输 · 数据隔离保护',
+    privacyPolicy: '隐私政策',
+    termsOfService: '服务条款',
+  },
+  resendCooldownSeconds: 60,
+};
+
+// ========== 莱茵分子 (Rhine Molecular) 重置密码配置 ==========
+export const RHINE_RESET_CONFIG = {
+  messages: {
+    title: '重置密码',
+    subtitle: '请设置您的新密码',
+    passwordLabel: '新密码',
+    passwordPlaceholder: '请输入新密码',
+    confirmLabel: '确认新密码',
+    confirmPlaceholder: '请再次输入新密码',
+    submitButton: '重置密码',
+    submitting: '提交中...',
+    successTitle: '密码重置成功',
+    successBody: '您的新密码已生效，请使用新密码登录',
+    goLogin: '去登录',
+    invalidTokenTitle: '重置链接无效或已过期',
+    invalidTokenBody: '该重置链接可能已被使用或已超过 24 小时有效期，请重新申请',
+    reapply: '重新申请',
+    backToLogin: '返回登录',
+    securityNote: '安全加密传输 · 数据隔离保护',
+    privacyPolicy: '隐私政策',
+    termsOfService: '服务条款',
+    errorEmptyPw: '请输入新密码',
+    errorShortPw: '密码至少需要 8 个字符',
+    errorComplexPw: '密码必须包含大小写字母和数字',
+    errorEmptyConfirm: '请再次输入新密码',
+    errorMismatch: '两次输入的密码不一致',
+    errorInvalidToken: '重置链接无效或已过期，请重新申请',
+    errorUserNotFound: '用户不存在，请重新申请',
+    errorConcurrent: '重置令牌正在被使用，请稍后再试',
+    errorNetwork: '网络连接异常，请检查网络',
+  },
+};
+
 export default {
   BRAND_CONFIG,
   LOGIN_PAGE_CONFIG,
   RHINE_BRAND_CONFIG,
   RHINE_LOGIN_CONFIG,
+  RHINE_FORGOT_CONFIG,
+  RHINE_RESET_CONFIG,
   DASHBOARD_PAGE_CONFIG,
   DASHBOARD_CONFIG,
   STATUS_CONFIG,

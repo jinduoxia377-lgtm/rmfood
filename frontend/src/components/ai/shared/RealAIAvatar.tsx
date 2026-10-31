@@ -1,13 +1,16 @@
 /**
- * RealAIAvatar — 真实 AI 头像组件
+ * RealAIAvatar — 真实 AI 头像组件（三级降级）
  *
- * 复用项目既有「AI 真实头像」能力（后端代理 thispersondoesnotexist.com 的
- * StyleGAN2 真实人脸生成接口），在客户端拉取一张真实 AI 人脸：
- * - 生成后转换为对象 URL 并在「模块级缓存」中保存，同一会话内头像保持稳定；
- * - 接口不可用/未登录时优雅回退到品牌渐变 + Sparkles 图标。
+ * 降级链路：
+ * 1. 后端 StyleGAN2 真实人脸（/auth/me/avatar/generate-real）
+ * 2. 本地 Canvas AI 头像（品牌渐变 + 药草叶 SVG，不依赖外部服务）
+ * 3. 品牌渐变 + Leaf 图标（最终兜底）
+ *
+ * 生成后转换为对象 URL 并在「模块级缓存」中保存，同一会话内头像保持稳定。
  */
 import { useEffect, useState } from 'react';
 import { Leaf } from 'lucide-react';
+import { AIAvatarFallback } from './AIAvatarFallback';
 import envConfig from '@/config/env';
 
 /** 会话级缓存：同一页面会话内 AI 头像保持不变 */
@@ -25,12 +28,14 @@ export interface RealAIAvatarProps {
 
 export function RealAIAvatar({ size = 'sm', className = '' }: RealAIAvatarProps) {
   const [url, setUrl] = useState<string | null>(cachedAIAvatarUrl);
-  const [failed, setFailed] = useState(false);
+  const [backendFailed, setBackendFailed] = useState(false);
 
-  // 若其他实例已生成缓存，render 期间同步使用（React 推荐模式，避免 effect 同步 setState）
-  if (cachedAIAvatarUrl && !url) {
-    setUrl(cachedAIAvatarUrl);
-  }
+  // 若其他实例已生成缓存，通过 effect 同步（避免 render 期间 setState 导致无限重渲染）
+  useEffect(() => {
+    if (cachedAIAvatarUrl && !url) {
+      setUrl(cachedAIAvatarUrl);
+    }
+  }, [cachedAIAvatarUrl, url]);
 
   useEffect(() => {
     if (cachedAIAvatarUrl) return;
@@ -49,7 +54,7 @@ export function RealAIAvatar({ size = 'sm', className = '' }: RealAIAvatarProps)
         cachedAIAvatarUrl = objectUrl;
         if (!cancelled) setUrl(objectUrl);
       } catch {
-        if (!cancelled) setFailed(true);
+        if (!cancelled) setBackendFailed(true);
       }
     })();
     return () => {
@@ -59,7 +64,8 @@ export function RealAIAvatar({ size = 'sm', className = '' }: RealAIAvatarProps)
 
   const sizeClass = size === 'md' ? 'h-10 w-10' : 'h-8 w-8';
 
-  if (url && !failed) {
+  // 1. 后端真实头像成功 → 渲染图片
+  if (url && !backendFailed) {
     return (
       <img
         src={url}
@@ -70,6 +76,12 @@ export function RealAIAvatar({ size = 'sm', className = '' }: RealAIAvatarProps)
     );
   }
 
+  // 2. 后端不可用 → 渲染本地 Canvas AI 头像（品牌渐变 + 药草叶）
+  if (backendFailed) {
+    return <AIAvatarFallback size={size} className={className} />;
+  }
+
+  // 3. 加载中 → 品牌渐变 + Leaf 图标（与用户头像同尺寸）
   return (
     <span
       className={`${sizeClass} flex-shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-emerald-600 to-[#10b981] text-white ${className}`}

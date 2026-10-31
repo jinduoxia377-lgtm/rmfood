@@ -476,17 +476,17 @@ export default function GraphTab() {
           {/* 边统计 + 分类标签 */}
           <div className="flex flex-wrap items-center gap-[var(--space-apple-sm)] text-xs text-[var(--text-muted,#9A9A9F)]">
             <span>
-              配伍关系: <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-white">{statsQuery.data.herb_interactions}</strong>
+              配伍关系: <strong className="text-[var(--text-primary,#1D1D1F)]">{statsQuery.data.herb_interactions}</strong>
             </span>
             <span>
               协同: <strong className="text-[var(--color-success-text)]">{statsQuery.data.synergy_count}</strong>
             </span>
             <span>
-              拮抗: <strong className="text-[var(--color-error-text)]0">{statsQuery.data.antagonism_count}</strong>
+              拮抗: <strong className="text-[var(--color-error-text)]">{statsQuery.data.antagonism_count}</strong>
             </span>
             <span>
               化合物-靶点路径:{' '}
-              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-white">{statsQuery.data.compound_target_paths}</strong>
+              <strong className="text-[var(--text-primary,#1D1D1F)]">{statsQuery.data.compound_target_paths}</strong>
             </span>
             {(statsQuery.data.herb_categories ?? []).length > 0 && (
               <div className="flex gap-1 ml-auto">
@@ -542,7 +542,7 @@ export default function GraphTab() {
             <button
               key={v}
               onClick={() => setActiveView(v)}
-              className={`flex items-center gap-1 px-[var(--space-apple-sm)] py-1.5 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-all ${activeView === v ? 'bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary,#1D1D1F)] dark:text-white' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
+              className={`flex items-center gap-1 px-[var(--space-apple-sm)] py-1.5 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-all ${activeView === v ? 'bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary,#1D1D1F)]' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
             >
               {v === 'graph' ? <Network className="w-3.5 h-3.5" /> : <BarChart3 className="w-3.5 h-3.5" />}
               {label}
@@ -562,7 +562,7 @@ export default function GraphTab() {
             <button
               key={v}
               onClick={() => setGraphLayout(v)}
-              className={`px-[var(--space-apple-sm)] py-1.5 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-all ${graphLayout === v ? 'bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary,#1D1D1F)] dark:text-white' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
+              className={`px-[var(--space-apple-sm)] py-1.5 rounded-[var(--radius-Apple-sm)] text-xs font-medium transition-all ${graphLayout === v ? 'bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary,#1D1D1F)]' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
             >
               {label}
             </button>
@@ -621,12 +621,12 @@ export default function GraphTab() {
 
       {/* ═══ v9.0: 智能分析面板 ═══ */}
       {showAnalytics && (
-        <div className="card p-[var(--space-apple-md)] border-2 border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/40 bg-gradient-to-r from-primary-50/50 via-white to-secondary-50/50 dark:from-primary-950/20 dark:via-neutral-900 dark:to-secondary-950/20">
+        <div className="card p-[var(--space-apple-md)] border-2 border-[var(--color-primary)]/30 dark:border-[var(--color-primary)]/40 bg-gradient-to-r from-primary-50/50 via-white to-secondary-50/50 dark:from-primary-950/20 dark:via-neutral-900 dark:to-secondary-950/20">
           {/* 数据状态概览 */}
           {statsQuery.data && (
             <div className="flex items-center gap-4 mb-[var(--space-apple-sm)] pb-3 border-b border-[var(--border-color)]/60 dark:border-neutral-700/60 text-xs text-[var(--text-secondary,#6E6E73)]">
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-success-container)]0 animate-pulse"></span>
+                <span className="w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-success-container)] animate-pulse"></span>
                 图谱已构建
               </span>
               <span>
@@ -654,7 +654,7 @@ export default function GraphTab() {
                 ['bridges', '桥梁节点', 'GitBranch'],
                 ['recommend', '智能推荐', 'TrendingUp'],
               ] as const
-            ).map(([key, label, icon]) => (
+            ).map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setAnalyticsTab(key)}
@@ -698,11 +698,11 @@ export default function GraphTab() {
               </div>
               {centralityQuery.isLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary-text)]0" />
+                  <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary-text)]" />
                   <span className="ml-2 text-xs">计算中...</span>
                 </div>
               ) : centralityQuery.isError ? (
-                <p className="text-center text-xs text-[var(--color-error-text)]0 py-[var(--space-apple-lg)]">分析请求失败，请重试</p>
+                <p className="text-center text-xs text-[var(--color-error-text)] py-[var(--space-apple-lg)]">分析请求失败，请重试</p>
               ) : centralityQuery.data?.results?.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
@@ -757,10 +757,10 @@ export default function GraphTab() {
             <div>
               {communitiesQuery.isLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary-text)]0" />
+                  <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary-text)]" />
                 </div>
               ) : communitiesQuery.isError ? (
-                <p className="text-center text-xs text-[var(--color-error-text)]0 py-[var(--space-apple-lg)]">社区检测请求失败，请重试</p>
+                <p className="text-center text-xs text-[var(--color-error-text)] py-[var(--space-apple-lg)]">社区检测请求失败，请重试</p>
               ) : communitiesQuery.data?.total_communities > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-apple-sm)]">
                   {((communitiesQuery.data?.communities ?? []) as GraphCommunity[]).slice(0, 12).map((c, i) => (
@@ -817,7 +817,7 @@ export default function GraphTab() {
               {kcoreQuery.isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin mx-auto my-4" />
               ) : kcoreQuery.isError ? (
-                <p className="text-center text-xs text-[var(--color-error-text)]0 py-[var(--space-apple-lg)]">K-Core分析请求失败，请重试</p>
+                <p className="text-center text-xs text-[var(--color-error-text)] py-[var(--space-apple-lg)]">K-Core分析请求失败，请重试</p>
               ) : ((kcoreQuery.data?.results ?? []) as unknown[])?.length > 0 ? (
                 <div className="max-h-60 overflow-y-auto space-y-1">
                   <p className="text-xs text-[var(--text-secondary,#6E6E73)] mb-2">
@@ -847,7 +847,7 @@ export default function GraphTab() {
               {bridgesQuery.isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin mx-auto my-4" />
               ) : bridgesQuery.isError ? (
-                <p className="text-center text-xs text-[var(--color-error-text)]0 py-[var(--space-apple-lg)]">桥梁分析请求失败，请重试</p>
+                <p className="text-center text-xs text-[var(--color-error-text)] py-[var(--space-apple-lg)]">桥梁分析请求失败，请重试</p>
               ) : ((bridgesQuery.data?.bridges ?? []) as unknown[])?.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
@@ -907,7 +907,7 @@ export default function GraphTab() {
               {recommendQuery.isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin mx-auto my-4" />
               ) : recommendQuery.isError ? (
-                <p className="text-center text-xs text-[var(--color-error-text)]0 py-[var(--space-apple-lg)]">推荐请求失败，请重试</p>
+                <p className="text-center text-xs text-[var(--color-error-text)] py-[var(--space-apple-lg)]">推荐请求失败，请重试</p>
               ) : recommendHerbName.length >= 1 && ((recommendQuery.data?.recommendations ?? []) as unknown[])?.length > 0 ? (
                 <div className="space-y-2">
                   <p className="text-xs text-[var(--text-secondary,#6E6E73)]">
@@ -917,7 +917,7 @@ export default function GraphTab() {
                   {((recommendQuery.data?.recommendations ?? []) as GraphRecommendNode[]).map((rec, i) => (
                     <div
                       key={i}
-                      className="flex items-center gap-[var(--space-apple-sm)] p-2 rounded-[var(--radius-Apple-sm)] bg-gradient-to-r from-success-50 to-success-50 dark:from-success-950/20 dark:to-success-950/20 border border-[var(--color-success-border)]/50"
+                      className="flex items-center gap-[var(--space-apple-sm)] p-2 rounded-[var(--radius-Apple-sm)] bg-gradient-to-r from-success-50 to-success-50 dark:from-success-950/20 dark:to-success-950/20 border border-[var(--color-success)]/30 dark:border-success-900/30"
                     >
                       <span className="w-6 h-6 rounded-[var(--radius-pill)] bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)] flex items-center justify-center text-xs font-bold text-[var(--color-success-text)]">
                         {i + 1}
@@ -940,7 +940,7 @@ export default function GraphTab() {
                             <span className="text-xs text-[var(--text-muted,#9A9A9F)]">共{rec.shared_compounds}化合物</span>
                           )}
                           {rec.shared_targets != null && (
-                            <span className="text-xs text-[var(--color-secondary-text)]0">共{rec.shared_targets}靶点</span>
+                            <span className="text-xs text-[var(--color-info-text)]">共{rec.shared_targets}靶点</span>
                           )}
                         </div>
                       </div>
@@ -978,7 +978,7 @@ export default function GraphTab() {
                 onClick={() => toggleTypeFilter(type)}
                 className={`flex items-center gap-1 px-2 py-1 min-h-[44px] rounded-[var(--radius-pill)] text-xs font-medium transition-all border ${
                   isActive
-                    ? 'border-[var(--color-primary-border)] bg-[var(--color-primary-container)] text-[var(--color-primary-text)] dark:border-[var(--color-primary)] dark:bg-[var(--color-primary-container)] dark:text-[var(--color-primary-text)]'
+                    ? 'border-[var(--color-primary)]/40 bg-[var(--color-primary-container)] text-[var(--color-primary-text)] dark:border-[var(--color-primary)] dark:bg-[var(--color-primary-container)] dark:text-[var(--color-primary-text)]'
                     : 'border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-muted,#9A9A9F)] hover:border-[var(--border-color)] dark:border-neutral-700 dark:bg-[var(--bg-tertiary)] dark:hover:border-neutral-600'
                 }`}
               >
@@ -1076,10 +1076,10 @@ export default function GraphTab() {
                 {graphData?.stats?.nodes && (
                   <>
                     <span>
-                      节点: <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-white">{graphData.stats.nodes}</strong>
+                      节点: <strong className="text-[var(--text-primary,#1D1D1F)]">{graphData.stats.nodes}</strong>
                     </span>
                     <span>
-                      边: <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-white">{graphData.stats.edges}</strong>
+                      边: <strong className="text-[var(--text-primary,#1D1D1F)]">{graphData.stats.edges}</strong>
                     </span>
                     {/* 类型分布 */}
                     {graphData.stats.type_breakdown &&
@@ -1097,7 +1097,7 @@ export default function GraphTab() {
           {/* 加载态 */}
           {isLoadingGlobal && !graphData ? (
             <div className="flex flex-col items-center justify-center h-80 text-[var(--text-muted,#9A9A9F)]">
-              <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary-text)]0 mb-[var(--space-apple-sm)]" />
+              <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary-text)] mb-[var(--space-apple-sm)]" />
               <p className="text-sm">正在构建知识图谱...</p>
               <p className="text-xs mt-1 opacity-60">首次加载可能需要几秒钟</p>
             </div>
@@ -1275,7 +1275,7 @@ export default function GraphTab() {
                 >
                   <button
                     onClick={() => handleRemoveCompare(idx)}
-                    className="absolute top-2 right-2 text-[var(--text-muted,#9A9A9F)] hover:text-[var(--color-error-text)]0 transition-colors"
+                    className="absolute top-2 right-2 text-[var(--text-muted,#9A9A9F)] hover:text-[var(--color-error-text)] transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -1464,10 +1464,10 @@ export default function GraphTab() {
               {herbPathQuery.data.compounds.map((comp: any, i: number) => (
                 <div
                   key={i}
-                  className="bg-[var(--color-secondary-container)]/60 dark:bg-[var(--color-secondary-container)]/20 rounded-[var(--radius-Apple-md)] p-[var(--space-apple-md)] text-sm border border-[var(--color-secondary-border)] dark:border-secondary-900/30 hover:shadow-md transition-shadow"
+                  className="bg-[var(--color-secondary-container)]/60 dark:bg-[var(--color-secondary-container)]/20 rounded-[var(--radius-Apple-md)] p-[var(--space-apple-md)] text-sm border border-[var(--color-secondary)]/30 dark:border-secondary-900/30 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start justify-between">
-                    <div className="font-medium text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] flex-1">{comp.name}</div>
+                    <div className="font-medium text-[var(--color-info-text)] dark:text-[var(--color-info-text)] flex-1">{comp.name}</div>
                     <div className="text-xs font-mono text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] whitespace-nowrap ml-2">
                       OB {comp.ob != null ? Number(comp.ob).toFixed(1) : '-'} | DL{' '}
                       {comp.dl != null ? Number(comp.dl).toFixed(2) : '-'}
@@ -1590,7 +1590,7 @@ export default function GraphTab() {
                 key={i}
                 className={`flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-md)] py-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)] text-sm transition-all ${
                   edge.type === 'synergy'
-                    ? 'bg-[var(--color-primary-container)]/60 dark:bg-[var(--color-primary-container)]/20 border border-[var(--color-primary-border)] dark:border-primary-900/30'
+                    ? 'bg-[var(--color-primary-container)]/60 dark:bg-[var(--color-primary-container)]/20 border border-[var(--color-primary)]/30 dark:border-primary-900/30'
                     : 'bg-danger-50/60 dark:bg-danger-950/20 border border-danger-100 dark:border-danger-900/30'
                 }`}
               >
@@ -1627,7 +1627,7 @@ export default function GraphTab() {
           <div className="mt-[var(--space-apple-sm)] pt-3 border-t border-[var(--border-color)] flex flex-wrap gap-[var(--space-apple-sm)] text-xs text-[var(--text-muted,#9A9A9F)]">
             <span>数据库共有 {statsQuery.data.herb_interactions} 条配伍记录</span>
             <span className="text-[var(--color-success-text)]">协同 {statsQuery.data.synergy_count} 条</span>
-            <span className="text-[var(--color-error-text)]0">拮抗 {statsQuery.data.antagonism_count} 条</span>
+            <span className="text-[var(--color-error-text)]">拮抗 {statsQuery.data.antagonism_count} 条</span>
           </div>
         )}
       </Card>

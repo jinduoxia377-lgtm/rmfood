@@ -60,7 +60,7 @@ export function LineChartComponent({
   height = 300,
   className = '',
 }: BaseChartProps) {
-  const handleClick = (data: any) => {
+  const handleClick = (_data: any) => {
     // Handle click if needed
   };
 

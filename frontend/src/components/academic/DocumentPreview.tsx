@@ -52,6 +52,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
       pages += Math.ceil(references.length / 15); // 每页约15条参考文献
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTotalPages(pages);
   }, [document, references]);
 

@@ -19,7 +19,7 @@ interface ScenarioState {
   refresh: () => void
 }
 
-export const useScenarioStore = create<ScenarioState>((set, get) => ({
+export const useScenarioStore = create<ScenarioState>((set, _get) => ({
   // 初始值从 scenarioSwitcher 读取
   mode: scenarioSwitcher.getCurrentMode(),
 

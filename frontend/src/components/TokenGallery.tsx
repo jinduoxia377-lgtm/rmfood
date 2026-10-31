@@ -18,7 +18,7 @@ const TokenGallery: React.FC = () => {
     sizes,
     lineHeights,
     weights,
-    letterSpacings,
+    letterSpacings: _letterSpacings,
     spacing,
     radius,
     shadows,

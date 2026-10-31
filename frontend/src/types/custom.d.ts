@@ -18,6 +18,7 @@ interface PerformanceExtensions {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- 全局声明合并，必须保留空 interface 形态
   interface Performance extends PerformanceExtensions {}
   interface Navigator {
     connection?: NetworkInformation;

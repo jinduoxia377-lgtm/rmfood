@@ -245,14 +245,14 @@ export function useLongPress(handlers: LongPressHandlers) {
   const { onLongPress, delay = 500, onTouchStart, onTouchEnd } = handlers
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+  const handleTouchStart = useCallback((_e: React.TouchEvent) => {
     onTouchStart?.()
     timeoutRef.current = setTimeout(() => {
       onLongPress()
     }, delay)
   }, [onLongPress, onTouchStart, delay])
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+  const handleTouchEnd = useCallback((_e: React.TouchEvent) => {
     onTouchEnd?.()
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)

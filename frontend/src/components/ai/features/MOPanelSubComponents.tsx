@@ -132,7 +132,7 @@ export function ParallelCoordinatesChart({
                     onSelectIdx(idx)
                   }
                 }}
-                aria-label={`候选方案 ${idx + 1}, Pareto Rank-${cand.pareto_rank}${isSelected ? ' (已选中)' : ''}`}
+                aria-label={`候选方案 ${idx + 1}, Pareto 排名-${cand.pareto_rank}${isSelected ? ' (已选中)' : ''}`}
               />
               {(isHovered || isSelected) &&
                 objectives.map((obj, i) => {
@@ -148,7 +148,7 @@ export function ParallelCoordinatesChart({
                       strokeWidth={1.2}
                     >
                       <title>
-                        {`${obj.name}: ${(cand.objective_scores[obj.key] ?? 0).toFixed(4)} · Rank-${cand.pareto_rank}`}
+                        {`${obj.name}: ${(cand.objective_scores[obj.key] ?? 0).toFixed(4)} · 排名-${cand.pareto_rank}`}
                       </title>
                     </circle>
                   )
@@ -162,7 +162,7 @@ export function ParallelCoordinatesChart({
           <foreignObject x={8} y={4} width={180} height={80}>
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-2 text-xs">
               <p className="font-semibold text-neutral-800 dark:text-neutral-200 mb-1">
-                方案 #{hoveredIdx + 1} · R{candidates[hoveredIdx].pareto_rank}
+                方案 #{hoveredIdx + 1} · 排名 {candidates[hoveredIdx].pareto_rank}
               </p>
               {objectives.slice(0, 4).map((obj) => (
                 <p key={obj.key} className="text-neutral-600 dark:text-neutral-400 flex justify-between gap-2">
@@ -185,7 +185,7 @@ export function ParallelCoordinatesChart({
               className="w-2.5 h-0.5 rounded-sm"
               style={{ backgroundColor: getParetoColor(rank), height: rank === 1 ? '3px' : '2px' }}
             />
-            R{rank}
+            排名 {rank}
           </div>
         ))}
         <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-1">· 点击折线选中查看雷达图</span>
@@ -287,7 +287,7 @@ export function MOCandidateCard({ candidate, rank, objectivesConfig }: MOCandida
   return (
     <article
       className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm hover:shadow-md hover:border-accent-200 dark:hover:border-accent-800 transition-all duration-200 overflow-hidden"
-      aria-label={`Pareto 方案第 ${rank} 名，Rank-${candidate.pareto_rank}，适应度 ${candidate.overall_fitness.toFixed(4)}`}
+      aria-label={`Pareto 方案第 ${rank} 名，排名-${candidate.pareto_rank}，适应度 ${candidate.overall_fitness.toFixed(4)}`}
     >
       <button
         onClick={() => setExpanded(!expanded)}

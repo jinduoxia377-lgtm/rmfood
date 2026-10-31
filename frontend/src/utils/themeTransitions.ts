@@ -31,7 +31,7 @@ export function applyTransition(element: Element | null, config: TransitionConfi
   (element as HTMLElement).style.transitionDuration = `${duration}ms`;
   (element as HTMLElement).style.transitionTimingFunction = easing;
   if (type !== 'none') {
-    const timer = setTimeout(() => {
+    setTimeout(() => {
       element?.classList.remove('theme-transition-fade', 'theme-transition-slide', 'theme-transition-scale');
     }, duration + 50);
     // return cleanup

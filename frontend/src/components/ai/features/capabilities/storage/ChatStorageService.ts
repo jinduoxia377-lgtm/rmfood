@@ -15,6 +15,7 @@ import { logger } from '@/utils/safeLogger'
 import type { ChatMessage } from '../../types'
 import { chatHistoryStorage } from '../../services/chatHistoryStorage'
 import { storageService } from '../../services/storageService'
+import { ensureCsrfToken } from '../../services/chatService'
 import { ChatTopic } from '../../types/chatHistory.types'
 
 export interface ChatStorageCapability {
@@ -243,8 +244,6 @@ export class ChatStorageService implements ChatStorageCapability {
 
       // 2026-10-12：后端已新增 POST /api/v1/chat/sync，将本地会话快照持久化到
       // SystemConfig（chat_sync_<user_id>，按 session id 去重，最多 200 个）。
-      // 注意：这是快照级备份；后端会话表主键仍是 int，与本地字符串 ID 是两套
-      // ID 空间，完整的跨设备恢复需 client_id 关联（结构性改造）。
       const sessionData = {
         id: sessionId,
         title: this.loadSessionList().find(s => s.id === sessionId)?.title || `会话 ${sessionId.slice(-8)}`,
@@ -260,12 +259,17 @@ export class ChatStorageService implements ChatStorageCapability {
         updatedAt: Date.now(),
       }
 
-      const token = localStorage.getItem('auth_token') || ''
+      // 修复：项目已改用 HttpOnly Cookie 认证，不再从 localStorage 读 token；
+      // 使用同源 Cookie（credentials include）+ CSRF 头。
+      // P2 修复：先 ensureCsrfToken()（GET 触发 CsrfProtectMiddleware 设置 cookie）
+      // 再 POST，避免首次加载时 cookie 未初始化导致 403 静默失败。
+      const csrf = await ensureCsrfToken()
       const response = await fetch('/api/v1/chat/sync', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          ...(csrf ? { 'X-CSRF-Token': csrf } : {}),
         },
         body: JSON.stringify({ sessions: [sessionData] }),
       })
@@ -279,22 +283,17 @@ export class ChatStorageService implements ChatStorageCapability {
 
   async fetchFromServer(sessionId: string): Promise<ChatMessage[]> {
     try {
-      const token = localStorage.getItem('auth_token') || ''
-      // 后端路由是 /chat/sessions/{id}（复数）。此前写的是 /chat/session/{id}，
-      // 必然 404，"从后端加载会话"永远拿不到数据。
-      //
-      // 注意：即使路由名修正后仍不会成功——后端 session_id 是 int（自增主键），
-      // 而前端的 sessionId 是 `session-${Date.now()}-xxxx` 字符串
-      // （见 SessionCapability.ts:97 / sessionManager.ts:32），会返回 422。
-      // 后端会话表与前端会话层目前是两套互不相通的 ID 空间，
-      // 本地 IndexedDB/localStorage 才是真正的主存储。这条路径要在
-      // ID 空间统一后才能真正生效，届时可改为按 title 匹配或加 client_id 列。
+      // 后端路由是 /chat/sessions/{id}（复数）。
+      // P2 统一会话 ID：后端 GET /chat/sessions/{session_id} 已兼容两种 ID——
+      // 纯数字按主键 int id 查询；非数字（session-<ts>-<rand>）按 client_session_id
+      // 精确匹配。因此这里直接传本地 sessionId 即可命中对应的服务器会话。
+      // 认证使用 HttpOnly Cookie（与 restoreFromServer 一致），不再依赖 localStorage token。
       const response = await fetch(`/api/v1/chat/sessions/${encodeURIComponent(sessionId)}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       })
 
       if (response.status === 422) {
-        logger.warn(`[ChatStorage] 后端会话 ID 为整数，无法用本地字符串 ID "${sessionId}" 查询（422）`)
+        logger.warn(`[ChatStorage] 后端会话 ID 无法识别 "${sessionId}"（422）`)
         return []
       }
       if (!response.ok) return []
@@ -320,9 +319,9 @@ export class ChatStorageService implements ChatStorageCapability {
   /** 从云端恢复全部会话快照（跨设备）：拉取 POST /sync 上传过的快照并写回本地 */
   async restoreFromServer(): Promise<number> {
     try {
-      const token = localStorage.getItem('auth_token') || ''
+      // 修复：使用 HttpOnly Cookie 认证（不再读 localStorage token）
       const response = await fetch('/api/v1/chat/sync/restore', {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       })
       if (!response.ok) {
         logger.warn(`[ChatStorage] 云端恢复失败: HTTP ${response.status}`)

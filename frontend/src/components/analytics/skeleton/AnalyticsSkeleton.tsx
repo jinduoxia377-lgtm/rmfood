@@ -47,7 +47,7 @@ export function KPICardSkeleton() {
   )
 }
 
-export function ChartSkeleton({ height = 300 }: { height?: number }) {
+export function ChartSkeleton({ height: _height = 300 }: { height?: number }) {
   return (
     <div className="card p-6 bg-white dark:bg-neutral-900 animate-pulse">
       <div className="flex items-center justify-between mb-4">

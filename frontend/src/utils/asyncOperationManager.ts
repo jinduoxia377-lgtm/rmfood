@@ -75,7 +75,6 @@ export class AsyncOperationManager<T = any> {
     let isPendingFlag = false
     let currentPromise: Promise<T> | null = null
     let latestArgs: TArgs | null = null
-    let operationId: string
     let metrics: PerformanceMetrics | null = null
     let resolveRejectPair: {
       resolve: (value: T) => void
@@ -83,7 +82,7 @@ export class AsyncOperationManager<T = any> {
     } | null = null
     let isCancelled = false
 
-    operationId = `debounced_${++this.operationCounter}_${Date.now()}`
+    const operationId = `debounced_${++this.operationCounter}_${Date.now()}`
 
     const executeImmediate = async (): Promise<void> => {
       if (!latestArgs || isCancelled) return

@@ -296,6 +296,7 @@ export function ChartSkeleton({ hasLegend = true, className }: ChartSkeletonProp
  <div
  key={i}
  className="flex-1 skeleton rounded-t-md"
+ // eslint-disable-next-line react-hooks/purity -- 骨架屏高度随机抖动是预期的视觉效果
  style={{ height: `${40 + Math.random() * 55}%` }}
  />
  ))}

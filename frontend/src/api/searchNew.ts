@@ -8,6 +8,27 @@ import api from './client';
 
 
 import { logger } from '@/utils/safeLogger';
+
+/**
+ * databaseApi 的 get/post 已在 database.ts 内通过 `.then((r) => r.data)` 解包 axios 响应体。
+ * 本文件部分历史函数仍按 axios 风格读取 `response.data`，导致返回值变成 undefined。
+ * 此辅助函数做兼容归一：
+ * - 若返回值是 axios 风格 `{ data: ... }`（测试 mock 或未来 databaseApi 变更），解包 data；
+ * - 若返回值本身就是业务响应体，原样返回。
+ */
+function unwrapResponse<T>(response: unknown): T {
+  if (
+    response !== null &&
+    typeof response === 'object' &&
+    'data' in response &&
+    (response as { data?: unknown }).data !== undefined &&
+    (response as { data?: unknown }).data !== null
+  ) {
+    return (response as { data: T }).data;
+  }
+  return response as T;
+}
+
 // ── 类型定义 ──
 
 export interface FoodMaterialFilter {
@@ -98,6 +119,8 @@ export interface RetailProductDetail {
   traces_tags?: string[];
   contaminants?: string[];
   source?: string;
+  /** 数据来源标识：internet_realtime / internet_cache / local_reference（后端 task-21） */
+  data_origin?: string;
   data_quality?: number;
   [key: string]: unknown;
 }
@@ -109,6 +132,14 @@ export interface RetailProductSearchResponse {
   per_page: number;
   results: RetailProductSearchResult[];
   search_time_ms: number;
+}
+
+/** 收藏（Pantry）中的零售产品条目（后端返回的最小字段集合） */
+export interface PantryRetailProduct {
+  id: number;
+  product_name?: string;
+  brand?: string;
+  [key: string]: unknown;
 }
 
 export interface SearchSuggestion {
@@ -133,8 +164,8 @@ export interface NormalizeResult {
 export async function searchFoodMaterials(
   request: FoodMaterialSearchRequest,
 ): Promise<FoodMaterialSearchResponse> {
-  const response = await databaseApi.post('/search/food-materials', request);
-  return response.data;
+  const response = await databaseApi.post('/databases/search/food-materials', request);
+  return unwrapResponse<FoodMaterialSearchResponse>(response);
 }
 
 /**
@@ -228,8 +259,8 @@ export async function getFoodMaterial(id: number): Promise<unknown> {
 export async function searchRetailProducts(
   request: RetailProductSearchRequest,
 ): Promise<RetailProductSearchResponse> {
-  const response = await databaseApi.post('/search/retail-products', request);
-  return response.data;
+  const response = await databaseApi.post('/databases/search/retail-products', request);
+  return unwrapResponse<RetailProductSearchResponse>(response);
 }
 
 /**
@@ -299,12 +330,12 @@ export async function getSearchSuggestions(
   limit: number = 10,
   searchTypes: string[] = ['herbs', 'peptides', 'food_materials', 'retail_products'],
 ): Promise<{ suggestions: SearchSuggestion[] }> {
-  const response = await databaseApi.post('/search/suggest', {
+  const response = await databaseApi.post('/databases/search/suggest', {
     query,
     limit,
     search_types: searchTypes,
   });
-  return response.data;
+  return unwrapResponse<{ suggestions: SearchSuggestion[] }>(response);
 }
 
 // ── OFF 实时数据查询 ──
@@ -318,6 +349,8 @@ export interface OFFSearchRequest {
   page?: number;
   page_size?: number;
   realtime?: boolean;
+  /** 数据来源过滤：all / internet / local（默认 all） */
+  origin?: 'all' | 'internet' | 'local';
   brand?: string;          // Phase 4: 品牌筛选（单品牌）
   brands?: string[];       // Phase 5: 多品牌筛选
   formulation_type?: string;  // Phase 4: 剂型筛选
@@ -335,6 +368,12 @@ export interface OFFSearchResponse {
   page_size: number;
   data_source: string;
   error?: string;
+  /** 后端回退路径附加字段：OFF 实时查询失败时的错误描述 */
+  off_error?: string;
+  /** OFF 实时命中的原始总数（截断前） */
+  off_total?: number;
+  /** 本地数据库命中数 */
+  db_total?: number;
 }
 
 // OFF 原始数据接口（API 返回的原始格式）
@@ -355,13 +394,27 @@ export interface OFFRawProduct {
   ecoscore_grade?: string | null;
   traces_tags?: string[];
   contaminants?: string[];
+  /** 数据来源：manual / openfoodfacts */
+  source?: string;
+  /** 数据来源标识：internet_realtime / internet_cache / local_reference */
+  data_origin?: string;
 }
 
 export async function searchOpenFoodFacts(
   request: OFFSearchRequest,
 ): Promise<OFFSearchResponse> {
-  const response = await databaseApi.post('/databases/openfoodfacts/search', request);
-  return response.data;
+  // OFF 实时搜索可能跨公网访问 OpenFoodFacts，默认 30s 超时不够，这里单独放宽到 60s。
+  const response = await databaseApi.post('/databases/openfoodfacts/search', request, { timeout: 60000 });
+  const body = unwrapResponse<OFFSearchResponse | null>(response);
+  // 客户端响应拦截器对 ERR_ABORTED / canceled 返回 { data: null, status: 0 }，
+  // databaseApi.post 解包后为 null；这里统一转成可读的网络错误，避免上层误报“搜索请求失败”。
+  if (
+    !body ||
+    (typeof body === 'object' && 'status' in body && (body as { status?: number }).status === 0)
+  ) {
+    throw new Error('网络请求失败（超时/连接中断），请重试');
+  }
+  return body;
 }
 
 /**
@@ -375,7 +428,7 @@ export async function getOpenFoodFactByBarcode(
   const response = await databaseApi.get(`/databases/openfoodfacts/product/barcode/${encodeURIComponent(barcode)}`, {
     params: { realtime },
   });
-  return response.data;
+  return unwrapResponse<RetailProductSearchResult | null>(response);
 }
 
 /**
@@ -386,7 +439,7 @@ export async function getOpenFoodFactById(
   productId: number,
 ): Promise<RetailProductSearchResult | null> {
   const response = await databaseApi.get(`/databases/openfoodfacts/product/${productId}`);
-  return response.data;
+  return unwrapResponse<RetailProductSearchResult | null>(response);
 }
 
 /**
@@ -408,7 +461,7 @@ export async function getProductsByCategory(
   params?: { page?: number; page_size?: number; realtime?: boolean },
 ): Promise<OFFCategoryResponse> {
   const response = await databaseApi.get(`/databases/openfoodfacts/category/${encodeURIComponent(categoryTag)}`, { params });
-  return response.data;
+  return unwrapResponse<OFFCategoryResponse>(response);
 }
 
 /**
@@ -423,7 +476,8 @@ export interface OFFCategoryInfo {
 
 export async function getOpenFoodFactsCategories(): Promise<OFFCategoryInfo[]> {
   const response = await databaseApi.get('/databases/openfoodfacts/categories');
-  return response.data;
+  const body = unwrapResponse<{ categories?: OFFCategoryInfo[] } | OFFCategoryInfo[]>(response);
+  return Array.isArray(body) ? body : (body?.categories ?? []);
 }
 
 /**
@@ -432,7 +486,7 @@ export async function getOpenFoodFactsCategories(): Promise<OFFCategoryInfo[]> {
  */
 export async function getOpenFoodFactsSyncStats(): Promise<Record<string, unknown>> {
   const response = await databaseApi.get('/databases/openfoodfacts/sync-status');
-  return response.data;
+  return unwrapResponse<Record<string, unknown>>(response);
 }
 
 /**
@@ -441,7 +495,7 @@ export async function getOpenFoodFactsSyncStats(): Promise<Record<string, unknow
  */
 export async function getOpenFoodFactsReport(): Promise<Record<string, unknown>> {
   const response = await databaseApi.get('/databases/openfoodfacts/report');
-  return response.data;
+  return unwrapResponse<Record<string, unknown>>(response);
 }
 
 // ── 收藏/书架 (Pantry) API ────────────────────────────────
@@ -450,25 +504,28 @@ export async function getOpenFoodFactsReport(): Promise<Record<string, unknown>>
  * 添加零售产品到收藏（用户书架）
  * POST /databases/pantry/retail-products/{product_id}
  */
-export async function addToPantryRetailProduct(product_id: number): Promise<any> {
-  return databaseApi.post(`/pantry/retail-products/${product_id}`).then((r) => r.data);
+export async function addToPantryRetailProduct(product_id: number): Promise<Record<string, unknown>> {
+  return databaseApi.post(`/databases/pantry/retail-products/${product_id}`).then((r) => unwrapResponse<Record<string, unknown>>(r));
 }
 
 /**
  * 从收藏中移除零售产品
  * DELETE /databases/pantry/retail-products/{product_id}
  */
-export async function removeFromPantryRetailProduct(product_id: number): Promise<any> {
-  return api.delete(`/pantry/retail-products/${product_id}`).then((r) => r.data);
+export async function removeFromPantryRetailProduct(product_id: number): Promise<Record<string, unknown>> {
+  return api
+    .delete<Record<string, unknown>>(`/databases/pantry/retail-products/${product_id}`)
+    .then((r) => r.data);
 }
 
 /**
  * 获取用户的收藏零售产品列表
  * GET /databases/pantry?item_type=retail_product
  */
-export async function getPantryRetailProducts(): Promise<any[]> {
-  const response = await databaseApi.get('/pantry', { params: { item_type: 'retail_product' } });
-  return response.data.items || [];
+export async function getPantryRetailProducts(): Promise<PantryRetailProduct[]> {
+  const response = await databaseApi.get('/databases/pantry', { params: { item_type: 'retail_product' } });
+  const body = unwrapResponse<{ items?: PantryRetailProduct[] }>(response);
+  return body?.items ?? [];
 }
 
 // ── 名称标准化 ──
@@ -481,11 +538,11 @@ export async function normalizeName(
   name: string,
   searchType: string = 'food_material',
 ): Promise<NormalizeResult> {
-  const response = await databaseApi.post('/search/normalize', {
+  const response = await databaseApi.post('/databases/search/normalize', {
     name,
     search_type: searchType,
   });
-  return response.data;
+  return unwrapResponse<NormalizeResult>(response);
 }
 
 // ── 合规检查 ──
@@ -495,10 +552,10 @@ export async function normalizeName(
  * GET /databases/search/compliance/check?material_id=:id
  */
 export async function checkMaterialCompliance(materialId: number): Promise<unknown> {
-  const response = await databaseApi.get('/search/compliance/check', {
+  const response = await databaseApi.get('/databases/search/compliance/check', {
     params: { material_id: materialId },
   });
-  return response.data;
+  return unwrapResponse<unknown>(response);
 }
 
 /**
@@ -508,8 +565,8 @@ export async function checkMaterialCompliance(materialId: number): Promise<unkno
 export async function checkFormulaCompliance(
   materialIds: number[],
 ): Promise<unknown> {
-  const response = await databaseApi.post('/search/compliance/formula', {
+  const response = await databaseApi.post('/databases/search/compliance/formula', {
     material_ids: materialIds,
   });
-  return response.data;
+  return unwrapResponse<unknown>(response);
 }

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Navbar 组件 v4 — 专业学术风格导航栏
  *
  * 升级要点（v4）：
@@ -7,7 +7,7 @@
  *   - CTA "免费试用" → "免费开始研发"（行动暗示更强）
  *   - 移动端菜单增加过渡动画
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Beaker, Menu, X } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/shadcn';
@@ -20,12 +20,37 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // 焦点管理：菜单关闭时将焦点归还给触发按钮
+  useEffect(() => {
+    if (!mobileOpen && wasOpenRef.current) {
+      wasOpenRef.current = false;
+      const timer = setTimeout(() => triggerRef.current?.focus(), 200);
+      return () => clearTimeout(timer);
+    }
+    if (mobileOpen) wasOpenRef.current = true;
+    return undefined;
+  }, [mobileOpen]);
+
+  // Escape 键关闭菜单
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [mobileOpen]);
 
   useEffect(() => {
     const sections = ['features', 'algorithms', 'use-cases', 'data-sources', 'social-proof', 'pricing', 'faq'];
@@ -75,9 +100,9 @@ export default function Navbar() {
                 <img
                   src={logoPath}
                   alt="莱茵分子 logo"
-                className="w-full h-full object-contain"
-                loading="lazy"
-              />
+                  className="w-full h-full object-contain"
+                  fetchPriority="high"
+                />
             </div>
           ) : (
             <div
@@ -126,7 +151,7 @@ export default function Navbar() {
                 登录
               </Link>
               <Link
-                to="/login"
+                to="/login?redirect=/landing"
                 className="inline-flex items-center gap-1.5 text-[15px] font-semibold px-[var(--space-apple-md)] min-h-[44px] rounded-[var(--radius-Apple-sm)] text-white transition-all hover:opacity-90"
                 style={{
                   background: 'var(--color-neutral-900, #0f172a)',
@@ -142,15 +167,20 @@ export default function Navbar() {
           <Collapsible open={mobileOpen} onOpenChange={setMobileOpen}>
             <CollapsibleTrigger asChild>
               <button
+                ref={triggerRef}
                 type="button"
                 className="md:hidden w-11 h-11 flex items-center justify-center rounded-[var(--radius-Apple-sm)] ml-1 transition-colors lp-nav-link"
                 aria-expanded={mobileOpen}
-                aria-label="菜单"
+                aria-controls="mobile-menu-content"
+                aria-label={mobileOpen ? "关闭菜单" : "打开菜单"}
+                onClick={() => {
+                  setMobileOpen(!mobileOpen);
+                }}
               >
-                {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+                {mobileOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
               </button>
             </CollapsibleTrigger>
-            <CollapsibleContent className="md:hidden overflow-hidden" style={{ animation: 'lp-mobile-menu 0.2s ease' }}>
+            <CollapsibleContent id="mobile-menu-content" className="md:hidden overflow-hidden" style={{ animation: 'lp-mobile-menu 0.2s ease' }}>
               <div style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: 'var(--shadow-md, 0 2px 8px rgba(0,0,0,0.06))' }}>
                 <div className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] space-y-0.5">
                   {navLinks.map((l) => (
@@ -168,7 +198,7 @@ export default function Navbar() {
                   ))}
                   <div className="pt-2 mt-2 border-t border-[var(--border-color)]">
                     <Link
-                      to="/login"
+                      to="/login?redirect=/landing"
                       className="w-full text-center text-[15px] font-semibold py-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] text-white block transition-opacity hover:opacity-90 min-h-[44px] flex items-center justify-center"
                       style={{ background: 'var(--color-neutral-900, #0f172a)' }}
                     >

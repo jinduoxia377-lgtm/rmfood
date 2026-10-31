@@ -8,7 +8,7 @@ import { useState, useCallback, useEffect } from 'react';
 
 import { logger } from '@/utils/safeLogger';
 import { useToast } from '@/components/ui';
-const { error: toastError, warning: toastWarning, success: toastSuccess } = useToast();
+const { error: toastError, warning: toastWarning, success: _toastSuccess } = useToast();
 
 import type {
   ColumnView,

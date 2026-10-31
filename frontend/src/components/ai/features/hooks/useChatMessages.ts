@@ -32,7 +32,7 @@ interface UseChatMessagesReturn {
   clearMessages: () => void
   /** 替换所有消息（用于会话切换恢复） */
   replaceMessages: (messages: ChatMessage[]) => void
-  sendMessage: (content: string, displayContent?: string, scenarioMode?: string) => Promise<void>
+  sendMessage: (content: string, displayContent?: string, scenarioMode?: string, ragContext?: string[], model?: string) => Promise<void>
   retryLastMessage: () => Promise<void>
   /** 对指定失败消息重新发送（最大重试3次） */
   retryMessage: (messageId: string) => Promise<void>
@@ -47,6 +47,18 @@ interface UseChatMessagesReturn {
   setActiveSessionId: (id: string | null) => void
   /** 检查并执行上下文压缩（当 token 超限时自动触发） */
   checkCompaction: () => Promise<void>
+  /** 实时进度：0-100（-1 表示 indeterminate） */
+  streamProgress: number
+  /** 实时进度阶段 i18n key（如 ai.chat.progress.generatingAnswer） */
+  streamStageKey: string
+  /** 已生成字符数 */
+  streamChars: number
+  /** 进度状态 */
+  streamStatus: 'idle' | 'active' | 'indeterminate' | 'done' | 'error'
+  /** 步骤指示器状态（检索/辨证/生成/校验） */
+  streamSteps: Array<{ key: string; status: 'done' | 'active' | 'pending' }>
+  /** 设置实时进度（本地阶段驱动，供发送链路调用） */
+  setStreamProgress: (p: number, stageKey?: string, chars?: number) => void
 }
 
 const STORAGE_KEY = 'chat_messages'
@@ -97,11 +109,73 @@ export function useChatMessages(): UseChatMessagesReturn {
 
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
+  // ── 实时进度条状态 ──
+  const [streamProgress, setStreamProgressState] = useState<number>(0)
+  const [streamStageKey, setStreamStageKey] = useState('')
+  const [streamChars, setStreamChars] = useState(0)
+  const [streamStatus, setStreamStatus] = useState<'idle' | 'active' | 'indeterminate' | 'done' | 'error'>('idle')
+  const [streamSteps, setStreamSteps] = useState<Array<{ key: string; status: 'done' | 'active' | 'pending' }>>([
+    { key: 'retrieval', status: 'pending' },
+    { key: 'dialectics', status: 'pending' },
+    { key: 'generating', status: 'pending' },
+    { key: 'safety', status: 'pending' },
+  ])
   const [chatError, setChatError] = useState<Error | null>(null)
   const [isPaused, setIsPaused] = useState(false)
+  // 用户是否【主动】暂停（区别于自然结束/错误）。主动暂停时 finally 不清除 isPaused。
+  const userPausedRef = useRef(false)
+  // 暂停时正在生成的 assistant 消息 id，恢复时精确移除半成品（避免重复回复）
+  const abortedAssistantIdRef = useRef<string | null>(null)
   const messagesRef = useRef(messages)
   const lastQuestionRef = useRef<string>('')
   const activeSessionIdRef = useRef<string | null>(null)
+
+  // ── 实时进度：stage 代码 → i18n key / 步骤指示器 key 映射 ──
+  const PROGRESS_STAGE_KEY_MAP: Record<string, string> = {
+    preparing: 'ai.chat.progress.preparing',
+    rag_retrieving: 'ai.chat.progress.ragRetrieving',
+    dialectics: 'ai.chat.progress.dialecticsThinking',
+    llm_start: 'ai.chat.progress.llmStarting',
+    generating: 'ai.chat.progress.generatingAnswer',
+    safety_check: 'ai.chat.progress.safetyChecking',
+    finalizing: 'ai.chat.progress.finalizing',
+    done: 'ai.chat.progress.completing',
+    failed: 'ai.chat.progress.failed',
+  }
+  const PROGRESS_STAGE_STEP_MAP: Record<string, string> = {
+    rag_retrieving: 'retrieval',
+    dialectics: 'dialectics',
+    llm_start: 'generating',
+    generating: 'generating',
+    safety_check: 'safety',
+    finalizing: 'safety',
+  }
+  const PROGRESS_STEP_ORDER = ['retrieval', 'dialectics', 'generating', 'safety']
+
+  const applyProgress = useCallback((p: number, stage?: string, chars?: number) => {
+    // 进度只进不退（max 合并）
+    setStreamProgressState(prev => Math.max(prev, Math.max(0, Math.min(100, p))))
+    if (stage) {
+      if (stage === 'done') {
+        // done 阶段：所有步骤一次性置为完成，避免 safety 停留在 active（脉冲）永不收尾
+        setStreamSteps(prev => prev.map(s => ({ ...s, status: 'done' })))
+      } else {
+        const i18nKey = PROGRESS_STAGE_KEY_MAP[stage]
+        if (i18nKey) setStreamStageKey(i18nKey)
+        const stepKey = PROGRESS_STAGE_STEP_MAP[stage]
+        if (stepKey) {
+          setStreamSteps(prev => {
+            const idx = PROGRESS_STEP_ORDER.indexOf(stepKey)
+            return prev.map((s, i) => ({
+              ...s,
+              status: i < idx ? 'done' : i === idx ? 'active' : 'pending',
+            }))
+          })
+        }
+      }
+    }
+    if (typeof chars === 'number' && chars >= 0) setStreamChars(chars)
+  }, [])
 
   // ── 监听认证失效事件，清除过期 Token ──
   useEffect(() => {
@@ -134,16 +208,54 @@ export function useChatMessages(): UseChatMessagesReturn {
     return off
   }, [])
 
+  // ── 实时进度：本地兜底平滑推进（后端不发 progress 事件时，按时间目标爬升）──
+  useEffect(() => {
+    if (!isStreaming) return
+    const start = Date.now()
+    const timer = setInterval(() => {
+      const elapsed = (Date.now() - start) / 1000
+      let target = 5
+      if (elapsed >= 30) target = 90
+      else if (elapsed >= 20) target = 85
+      else if (elapsed >= 10) target = 60
+      else if (elapsed >= 4) target = 45
+      else if (elapsed >= 1.5) target = 15
+      setStreamProgressState(prev => Math.max(prev, target))
+    }, 800)
+    return () => clearInterval(timer)
+  }, [isStreaming])
+
   // ADR-029 P1-3: 统一存储策略 - IndexedDB 作为主存储，localStorage 仅作降级兜底
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // 性能优化：内容未变时跳过重复保存。
+  // LLM 长时间无输出时 messages 数组引用可能频繁变化（如状态机/心跳重渲染），
+  // 每次引用变化都会触发 500ms 防抖保存 → IndexedDB 刷屏写入。内容签名不变则跳过。
+  const lastSavedContentRef = useRef('')
   const saveToStorage = useCallback((newMessages: ChatMessage[]) => {
     try {
       if (newMessages.length > MAX_MESSAGES) {
         newMessages = newMessages.slice(-MAX_MESSAGES)
       }
 
-      // 优先写入 IndexedDB（支持大容量会话）
+      // 内容签名：id + 内容长度 + 末尾 40 字符。内容未变（仅引用抖动）时跳过保存。
+      const contentSignature = newMessages
+        .map(m => `${m.id}:${(m.content || '').length}:${(m.content || '').slice(-40)}`)
+        .join('|')
+      if (contentSignature === lastSavedContentRef.current) return
+      lastSavedContentRef.current = contentSignature
+
+      // 优先写入 IndexedDB（支持大容量会话），并防抖同步到服务器（云端备份）
       if (activeSessionIdRef.current && newMessages.length > 0) {
-        chatStorageService.saveMessages(activeSessionIdRef.current, newMessages)
+        const sid = activeSessionIdRef.current
+        chatStorageService.saveMessages(sid, newMessages)
+          .then(() => {
+            // 治本：即使刷新/本地缓存失效，登录后也可从服务器恢复
+            if (syncTimerRef.current) clearTimeout(syncTimerRef.current)
+            syncTimerRef.current = setTimeout(() => {
+              chatStorageService.syncToServer(sid).catch(e =>
+                logger.warn('[useChatMessages] 云端同步失败（本地已保存，不影响使用）:', e))
+            }, 2000)
+          })
           .catch(e => logger.warn('[useChatMessages] IndexedDB save failed:', e))
       }
 
@@ -160,15 +272,29 @@ export function useChatMessages(): UseChatMessagesReturn {
   }, [])
 
   // ── ChatEventLog 集成：所有消息变更写入事件日志 ──
+  // P0 修复：添加防抖 — 原实现每次 EventLog 变更立即写入 IndexedDB，
+  // SSE 流式更新期间每个 chunk 触发一次写入，导致 100ms 内 3-4 次重复保存。
+  const eventLogSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // 性能优化：EventLog 可能因非消息事件（状态机/心跳）频繁触发 onChange，
+  // 但派生出的消息内容未变时无需重复写 IndexedDB。内容签名不变则跳过。
+  const lastEventLogSyncSigRef = useRef('')
   useEffect(() => {
     return chatEventLog.onChange(() => {
-      // EventLog 变更时同步到 IndexedDB
-      const currentMessages = chatEventLog.deriveMessages()
-      if (currentMessages.length > 0 && activeSessionIdRef.current) {
-        chatStorageService.saveMessages(activeSessionIdRef.current, currentMessages).catch(e =>
-          logger.warn('[useChatMessages] EventLog sync failed:', e)
-        )
-      }
+      // EventLog 变更时防抖同步到 IndexedDB（300ms 合并窗口）
+      if (eventLogSyncTimerRef.current) clearTimeout(eventLogSyncTimerRef.current)
+      eventLogSyncTimerRef.current = setTimeout(() => {
+        const currentMessages = chatEventLog.deriveMessages()
+        if (currentMessages.length > 0 && activeSessionIdRef.current) {
+          const sig = currentMessages
+            .map(m => `${m.id}:${(m.content || '').length}:${(m.content || '').slice(-40)}`)
+            .join('|')
+          if (sig === lastEventLogSyncSigRef.current) return
+          lastEventLogSyncSigRef.current = sig
+          chatStorageService.saveMessages(activeSessionIdRef.current, currentMessages).catch(e =>
+            logger.warn('[useChatMessages] EventLog sync failed:', e)
+          )
+        }
+      }, 300)
     })
   }, [])
 
@@ -176,10 +302,17 @@ export function useChatMessages(): UseChatMessagesReturn {
     setMessages(prev => {
       const newMessages = updater(prev)
       messagesRef.current = newMessages
-      saveToStorage(newMessages)
       return newMessages
     })
-  }, [saveToStorage])
+  }, [])
+
+  // P0 修复：防抖保存 — 避免每次 setMessages 都立即触发 IndexedDB 写入，
+  // 防止 FollowUpSuggestionBar → setSuggestions → re-render → setMessages → save → 循环
+  useEffect(() => {
+    if (messages.length === 0) return
+    const timer = setTimeout(() => saveToStorage(messages), 500)
+    return () => clearTimeout(timer)
+  }, [messages, saveToStorage])
 
   const addMessage = useCallback((message: ChatMessage) => {
     updateMessages(prev => [...prev, message])
@@ -219,15 +352,17 @@ export function useChatMessages(): UseChatMessagesReturn {
     setChatError(null)
   }, [])
 
-  const sendMessage = useCallback(async (content: string, displayContent?: string, scenarioMode?: string) => {
+  const sendMessage = useCallback(async (content: string, displayContent?: string, scenarioMode?: string, ragContext?: string[], model?: string) => {
     if (!content?.trim()) {
       logger.warn('[useChatMessages] ⚠️ Empty message content, ignoring send request')
       return
     }
 
     if (isPaused) {
-      logger.warn('[useChatMessages] ⚠️ Streaming is paused, ignoring send request')
-      return
+      // 用户主动发起新消息 = 取消暂停，继续对话（而不是拒绝发送导致卡死）
+      logger.info('[useChatMessages] 用户发送新消息，取消暂停状态')
+      userPausedRef.current = false
+      setIsPaused(false)
     }
 
     lastQuestionRef.current = content.trim()
@@ -240,7 +375,19 @@ export function useChatMessages(): UseChatMessagesReturn {
     })
 
     setChatError(null)
-    setIsStreaming(true)
+    // ── 实时进度：新发送开始，重置进度条状态 ──
+    setStreamProgressState(0)
+    setStreamChars(0)
+    setStreamStageKey('ai.chat.progress.preparing')
+    setStreamStatus('active')
+    setStreamSteps([
+      { key: 'retrieval', status: 'pending' },
+      { key: 'dialectics', status: 'pending' },
+      { key: 'generating', status: 'pending' },
+      { key: 'safety', status: 'pending' },
+    ])
+    // P0-2 修复：移除直接 setIsStreaming(true)，由状态机监听器（line 128-135）统一驱动
+    // chatService.sendMessageStream 内部会 transition(Streaming)，监听器自动设置 isStreaming=true
 
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
@@ -253,6 +400,22 @@ export function useChatMessages(): UseChatMessagesReturn {
 
     addMessage(userMessage)
     logger.info('[useChatMessages] ✅ User message added to UI (status=sending):', { messageId: userMessage.id })
+
+    // ── P1 修复：sendStatus 超时兜底 — 4 分钟仍未完成则强制标记失败 ──
+    const sendStatusTimerId = setTimeout(() => {
+      logger.warn('[useChatMessages] ⏰ sendStatus timeout fallback triggered (240s)')
+      const currentMsg = messagesRef.current.find(m => m.id === userMessage.id)
+      if (currentMsg && currentMsg.sendStatus === 'sending') {
+        updateMessage(userMessage.id, { sendStatus: 'failed' })
+        addMessage({
+          id: `error-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+          role: 'assistant',
+          content: '',
+          timestamp: Date.now(),
+          error: '消息发送超时，请重试',
+        })
+      }
+    }, 240_000)
 
     try {
       logger.info('[useChatMessages] 📡 Calling chatService (streaming mode)...')
@@ -274,23 +437,27 @@ export function useChatMessages(): UseChatMessagesReturn {
       let fullContent = ''
       let streamModel = ''  // 回复来源（后端 meta 事件），用于展示来源徽标
       let streamDialectics: ChatMessage['dialectics'] = undefined
-      const accumulatedFormulas: any[] = []
       let hasError = false
       let errorMessage = ''
 
       // ── 尝试 1: 流式 SSE ──
       try {
-        for await (const chunk of chatService.sendMessageStream(content.trim(), history, true, { scenarioMode })) {
-          if (chunk.done) break
+        for await (const chunk of chatService.sendMessageStream(content.trim(), history, true, {
+          scenarioMode, ragContext, model,
+          clientSessionId: activeSessionIdRef.current || undefined,
+        })) {
+          if (chunk.done) {
+            applyProgress(100, 'done')
+            setStreamStatus('done')
+            break
+          }
           // 思考步骤事件不追加到对话内容（仅转发到侧栏）
           if (!chunk.step) {
             fullContent += chunk.content
           }
 
-          // 累积配方数据（后端通过 type=formula 事件发送）
-          if (chunk.formula) {
-            accumulatedFormulas.push(chunk.formula)
-          }
+          // ⚠️ accumulatedFormulas 已移除：后端从不发送 type=formula SSE 事件，
+          // 配方数据统一通过 detectStructuredContent + extractFormulaFromContent 从最终内容解析。
 
           // 转发思考步骤到 ChatSidebar（通过 eventBus）
           if (chunk.step) {
@@ -307,9 +474,13 @@ export function useChatMessages(): UseChatMessagesReturn {
             streamDialectics = chunk.dialectics
           }
 
+          // 实时进度（后端通过 type=progress 事件发送）
+          if (chunk.progress) {
+            applyProgress(chunk.progress.percent, chunk.progress.stage, chunk.progress.chars)
+          }
+
           updateMessage(assistantMessageId, {
             content: fullContent,
-            formulas: accumulatedFormulas.length > 0 ? [...accumulatedFormulas] : undefined,
             model: streamModel || undefined,
             dialectics: streamDialectics || undefined,
           })
@@ -321,6 +492,7 @@ export function useChatMessages(): UseChatMessagesReturn {
         const isStreamAuthError = streamErrMsg.includes('401') || streamErrMsg.includes('认证') || streamErrMsg.includes('Token') || streamErrMsg.includes('未授权') || streamErrMsg.includes('未登录') || streamErrMsg.includes('请先登录')
         if (isStreamAuthError) {
           logger.warn('[useChatMessages] Stream failed with auth error, skipping fallback (would also fail)')
+          clearTimeout(sendStatusTimerId)
           updateMessage(userMessage.id, { sendStatus: 'failed' })
           removeMessage(assistantMessageId)
           return // auth:required 事件已在 ChatService 中触发
@@ -329,17 +501,25 @@ export function useChatMessages(): UseChatMessagesReturn {
         // ── 尝试 2: 非流式降级（非认证类错误才降级）──
         // 保留流式已收到的内容，追加而非替换
         logger.warn('[useChatMessages] Stream failed, falling back to non-streaming:', streamErrMsg)
+        // 实时进度：非流式降级 → 不确定进度（无真实百分比）
+        setStreamStatus('indeterminate')
         try {
-          const response = await chatService.sendMessage(content.trim(), history, { scenarioMode })
+          const response = await chatService.sendMessage(content.trim(), history, {
+            scenarioMode, ragContext, model,
+            clientSessionId: activeSessionIdRef.current || undefined,
+          })
           // 追加到已收到的流式内容后面
           fullContent = fullContent + (fullContent ? '\n\n' : '') + response.content
           updateMessage(assistantMessageId, {
             content: fullContent,
-            formulas: response.formulas || accumulatedFormulas.length > 0 ? [...accumulatedFormulas] : undefined,
+            formulas: response.formulas || undefined,
             isLoading: false,
             // 传递回复来源，供 MessageBubble 展示「大模型 / 规则引擎降级」徽标
             model: response.model,
           })
+          // 实时进度：非流式响应返回，视为完成
+          applyProgress(100, 'done')
+          setStreamStatus('done')
         } catch (fallbackError) {
           // 流式和非流式均失败
           const errMsg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
@@ -352,6 +532,7 @@ export function useChatMessages(): UseChatMessagesReturn {
             errorMessage = errMsg
           } else {
             // 认证失败：清理占位消息，标记用户消息为失败，但不设 chatError（避免显示多余错误提示）
+            clearTimeout(sendStatusTimerId)
             updateMessage(userMessage.id, { sendStatus: 'failed' })
             removeMessage(assistantMessageId)
             return // 由 auth:required 事件处理重新登录
@@ -361,9 +542,8 @@ export function useChatMessages(): UseChatMessagesReturn {
 
       // 统一处理结果
       if (!hasError) {
-        // P1-c: 流式结束后用「完整结构化解析」生成最终配方，与 handleStructureSave 保存链路一致，
-        // 避免用户看到轻量片段（{name,value}）与最终保存配方不一致。
-        let finalFormulas = accumulatedFormulas
+        // 流式结束后用「完整结构化解析」生成最终配方，与 handleStructureSave 保存链路一致
+        let finalFormulas: any[] = []
         try {
           const structured = detectStructuredContent(fullContent)
           if (structured) {
@@ -371,21 +551,28 @@ export function useChatMessages(): UseChatMessagesReturn {
             if (extracted) finalFormulas = [extracted]
           }
         } catch (parseError) {
-          logger.warn('[useChatMessages] 流式配方完整解析失败，保留轻量片段:', parseError)
+          logger.warn('[useChatMessages] 流式配方完整解析失败:', parseError)
         }
         updateMessage(assistantMessageId, {
           isLoading: false,
           formulas: finalFormulas.length > 0 ? finalFormulas : undefined,
         })
+        clearTimeout(sendStatusTimerId)
         updateMessage(userMessage.id, { sendStatus: 'sent' })
 
         // ── 写入 EventLog（append-only） ──
         chatEventLog.append('user/message', userMessage)
-        chatEventLog.append('assistant/message', { ...assistantMessage, id: assistantMessageId, content: fullContent, formulas: accumulatedFormulas.length > 0 ? accumulatedFormulas : undefined })
+        chatEventLog.append('assistant/message', { ...assistantMessage, id: assistantMessageId, content: fullContent })
 
         // ── 自动提取对话偏好并更新用户画像 ──
+        // P0 修复：使用用户输入（content）而非 AI 回复（fullContent）提取偏好，
+        // 避免 AI 回复中的关键词（如"花生过敏"）被误当作用户偏好写入画像
         try {
-          userPreferencesService.extractAndSavePreferencesFromContent(fullContent)
+          const extractionResult = userPreferencesService.extractAndSavePreferencesFromContent(content.trim())
+          if (extractionResult) {
+            // P1 修复：自动提取后通知用户
+            eventBus.emit('profile:auto-extracted', extractionResult)
+          }
         } catch (e) {
           logger.warn('[useChatMessages] 偏好提取失败:', e)
         }
@@ -408,6 +595,11 @@ export function useChatMessages(): UseChatMessagesReturn {
         }
       } else {
         // 双重失败：清理占位消息，标记用户消息为失败状态
+        // 实时进度：生成失败（进度条变红）
+        setStreamStatus('error')
+        setStreamStageKey('ai.chat.progress.failed')
+        removeMessage(assistantMessageId)
+        clearTimeout(sendStatusTimerId)
         updateMessage(userMessage.id, { sendStatus: 'failed' })
         const friendly = toFriendlyErrorMessage(errorMessage)
         const errorMsg: ChatMessage = {
@@ -429,6 +621,7 @@ export function useChatMessages(): UseChatMessagesReturn {
       })
 
       // 用户消息发送失败，更新状态
+      clearTimeout(sendStatusTimerId)
       updateMessage(userMessage.id, { sendStatus: 'failed' })
       logger.warn('[useChatMessages] ⚠️ User message status updated to failed:', { messageId: userMessage.id })
 
@@ -459,30 +652,49 @@ export function useChatMessages(): UseChatMessagesReturn {
         }
       } catch { /* 静默降级 */ }
     } finally {
-      setIsStreaming(false)
-      logger.debug('[useChatMessages] 🔄 Streaming state reset to false')
+      // P0-2 修复：移除直接 setIsStreaming(false)，由状态机监听器统一驱动
+      // chatService 在成功/失败时已 transition(Success/Error)，监听器自动设置 isStreaming=false
+      // P0-1 修复：用户【主动暂停】时保留 isPaused（等待 resume/新消息取消）；
+      //           自然结束/失败时清除 isPaused，避免「暂停后无法再发送」的阻断。
+      if (!userPausedRef.current) {
+        setIsPaused(false)
+      }
+      logger.debug('[useChatMessages] Streaming state reset to false (via state machine)')
     }
   }, [addMessage, isPaused])
 
   const pauseStreaming = useCallback(() => {
     // 真正中止 SSE 连接（不再只改标志位），停止消耗 LLM quota 与带宽
     chatService.abortCurrentStream()
+    // 记录被中止的半成品 assistant 消息，供 resume 精确移除（避免重复回复）
+    const lastAssistant = [...messagesRef.current].reverse().find(m => m.role === 'assistant')
+    abortedAssistantIdRef.current = lastAssistant?.id ?? null
+    // P0-1 修复：通过状态机过渡到 Idle（Streaming→Idle 已加入合法迁移），由监听器统一设置 isStreaming=false
+    const machine = chatService.getStateMachine()
+    machine.transition(ChatState.Idle)
+    userPausedRef.current = true
     setIsPaused(true)
-    setIsStreaming(false)
-    logger.info('[useChatMessages] ⏸️ Streaming paused (SSE aborted)')
+    logger.info('[useChatMessages] Streaming paused (SSE aborted, state machine → Idle)')
   }, [])
 
   const resumeStreaming = useCallback(() => {
     if (!isPaused) return
+    userPausedRef.current = false
     setIsPaused(false)
     const lastQuestion = lastQuestionRef.current
     if (lastQuestion) {
-      logger.info('[useChatMessages] ▶️ Resuming: re-generating with last question:', { lastQuestionPreview: lastQuestion.substring(0, 50) })
+      // P1-1 修复：精确移除被暂停中断的半成品 assistant 消息，再重新生成，避免重复回复
+      if (abortedAssistantIdRef.current) {
+        removeMessage(abortedAssistantIdRef.current)
+        abortedAssistantIdRef.current = null
+        logger.info('[useChatMessages] Removed aborted assistant message before regeneration')
+      }
+      logger.info('[useChatMessages] Regenerating with last question:', { lastQuestionPreview: lastQuestion.substring(0, 50) })
       sendMessage(lastQuestion)
     } else {
-      logger.warn('[useChatMessages] ⚠️ No last question to resume')
+      logger.warn('[useChatMessages] No last question to resume')
     }
-  }, [isPaused, sendMessage])
+  }, [isPaused, sendMessage, removeMessage])
 
   const retryLastMessage = useCallback(async () => {
     const lastUserMessage = [...messagesRef.current].reverse().find(m => m.role === 'user')
@@ -536,7 +748,9 @@ export function useChatMessages(): UseChatMessagesReturn {
     })
 
     try {
-      const response = await chatService.sendMessage(targetMsg.content)
+      const response = await chatService.sendMessage(targetMsg.content, undefined, {
+        clientSessionId: activeSessionIdRef.current || undefined,
+      })
       logger.info('[useChatMessages] ✅ 重试发送成功:', { messageId, retryCount: currentRetryCount + 1 })
 
       updateMessage(messageId, { sendStatus: 'sent' })
@@ -614,6 +828,13 @@ export function useChatMessages(): UseChatMessagesReturn {
     resumeStreaming,
     editMessage,
     retractMessage,
+    /** 实时进度条状态（由 ChatProgressBar 消费） */
+    streamProgress,
+    streamStageKey,
+    streamChars,
+    streamStatus,
+    streamSteps,
+    setStreamProgress: applyProgress,
     /** 设置当前会话 ID（用于持久化） */
     setActiveSessionId: (id: string | null) => { activeSessionIdRef.current = id },
     /** 检查并执行上下文压缩 */

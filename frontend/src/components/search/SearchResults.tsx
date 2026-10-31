@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { FileText, FlaskConical, Leaf, Dna, Lightbulb, Clock, Tag, ArrowRight, Check, Copy, ExternalLink } from 'lucide-react';
+import { FileText, FlaskConical, Leaf, Dna, Lightbulb, Clock, Tag, Check, Copy, ExternalLink } from 'lucide-react';
 import type { SearchResultItem, SearchResultType } from '@/types/search.types';
 import { clsx } from 'clsx';
 

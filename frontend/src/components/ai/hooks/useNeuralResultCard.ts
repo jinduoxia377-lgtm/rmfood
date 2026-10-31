@@ -4,13 +4,48 @@ import { validateAiFormula, type AiFormulaValidationResponse } from '@/api/ai';
 import { formulaApi } from '@/api/formula';
 import type { FormulaCreatePayload } from '@/types/formula';
 import { logger } from '@/utils/safeLogger';
+import { parseDosageToGramsOrZero } from '@/components/ai/features/utils/dosage';
 
-/** 从剂量字符串解析克数（"1.0-3.0g" / "10g" / "约15克"）。区间取上限。 */
+/** 从剂量字符串/数值解析克数（"1.0-3.0g" / "500mg" / "10g" / "约15克"），单位统一归一化为克。 */
 function parseDosageGrams(raw: string): number {
-  if (!raw) return 0
-  const range = /(\d+(?:\.\d+)?)\s*[-–~至]\s*(\d+(?:\.\d+)?)/.exec(raw)
-  const val = range ? Number(range[2]) : Number((/^[\s约]*([\d.]+)/.exec(raw) || [0, '0'])[1])
-  return Number.isFinite(val) ? val : 0
+  return parseDosageToGramsOrZero(raw)
+}
+
+/** 君臣佐使角色表（按剂量降序推导） */
+const HERB_ROLES = ['君药', '臣药', '佐药', '使药'] as const
+
+/** 将 herb_combination 映射为保存 payload 成分（真实 dosage/role，role 缺失时按剂量推导） */
+function mapHerbsToComposition(candidate: AICandidate): { name: string; role: string; dosage: string }[] {
+  const herbs = (candidate.herb_combination ?? []).filter(h => h.name)
+  if (herbs.length === 0) return []
+
+  const herbDosageInGrams = (h: { dosage?: string | number; dosage_g?: number; dosage_mg?: number }): number => {
+    if (typeof h.dosage_g === 'number' && Number.isFinite(h.dosage_g)) return h.dosage_g
+    if (typeof h.dosage_mg === 'number' && Number.isFinite(h.dosage_mg)) return h.dosage_mg
+    if (typeof h.dosage === 'number' && Number.isFinite(h.dosage)) return h.dosage
+    return parseDosageToGramsOrZero(typeof h.dosage === 'string' ? h.dosage : '')
+  }
+
+  const formatHerbDosage = (h: { dosage?: string | number; dosage_g?: number; dosage_mg?: number }): string => {
+    if (typeof h.dosage === 'string' && h.dosage) return h.dosage
+    if (typeof h.dosage_g === 'number' && h.dosage_g > 0) return `${h.dosage_g}g`
+    if (typeof h.dosage_mg === 'number' && h.dosage_mg > 0) return `${h.dosage_mg}g`
+    if (typeof h.dosage === 'number' && h.dosage > 0) return `${h.dosage}g`
+    return ''
+  }
+
+  const sorted = [...herbs].sort((a, b) => herbDosageInGrams(b) - herbDosageInGrams(a))
+  const roleByHerbName = new Map<string, string>()
+  sorted.forEach((h, rank) => {
+    const derivedRole = HERB_ROLES[Math.min(rank, HERB_ROLES.length - 1)] || '佐药'
+    roleByHerbName.set(String(h.name), h.role || derivedRole)
+  })
+
+  return herbs.map(h => ({
+    name: h.name ? String(h.name) : '',
+    role: roleByHerbName.get(String(h.name)) || h.role || '佐药',
+    dosage: formatHerbDosage(h),
+  }))
 }
 
 interface SavedFormulaState {
@@ -73,7 +108,7 @@ export function useNeuralResultCard({
   const lastSavedStateRef = useRef<{ name: string; description: string } | null>(null);
   const historySaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const candidateId = `candidate_${index}_${typeof candidate.formula_name === 'string' ? candidate.formula_name.replace(/\s+/g, '_').toLowerCase() : 'unknown'}_${Date.now()}`;
+  const candidateId = `candidate_${index}_${typeof candidate.formula_name === 'string' ? candidate.formula_name.replace(/\s+/g, '_').toLowerCase() : 'unknown'}`;
   const savedState = savedFormulas.get(candidateId);
   const isAlreadySaved = !!savedState;
 
@@ -200,11 +235,9 @@ export function useNeuralResultCard({
     try {
       setIsSaving(true);
       const composition = {
-        ingredients: (candidate.herb_combination ?? []).map((h) => ({
-          name: h.name,
-          role: h.role || ['君', '臣', '佐', '使'][index % 4],
-          dosage: '1.0-3.0g',
-        })),
+        // P1：使用 herb_combination 的真实 dosage/role（role 缺失时按剂量排序推导君臣佐使），
+        // 不再硬编码 '1.0-3.0g' / 按 index 循环角色。
+        ingredients: mapHerbsToComposition(candidate),
         peptides: candidate.peptide_candidates,
       };
       const payload: FormulaCreatePayload = {
@@ -219,7 +252,7 @@ export function useNeuralResultCard({
       // ── 保存前 AI 校验（科学级后验校验）──
       // CRITICAL 阻断并弹出成分级报告；warnings 放行并把建议追加到 notes；接口异常诚实降级。
       const validationIngredients: { name: string; dosage_g: number }[] = (candidate.herb_combination ?? [])
-        .map(h => ({ name: h.name ? String(h.name) : '', dosage_g: parseDosageGrams(h.dosage ?? '') }))
+        .map(h => ({ name: h.name ? String(h.name) : '', dosage_g: parseDosageGrams(typeof h.dosage === 'string' ? h.dosage : '') }))
         .filter(item => item.name.length > 0)
       try {
         const validation = await validateAiFormula({

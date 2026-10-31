@@ -33,6 +33,7 @@ export function TagMultiSelect({
 
   useEffect(() => {
     if (open && tags.length === 0) {
+      // eslint-disable-next-line react-hooks/immutability -- 回调中访问后续声明的加载函数
       loadTags()
     }
   }, [open, tags.length])

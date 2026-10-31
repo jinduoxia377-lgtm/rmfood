@@ -1,8 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-const PREFETCH_THRESHOLD = 0.8;
-
 interface PrefetchOptions {
   enabled?: boolean;
   staleTime?: number;

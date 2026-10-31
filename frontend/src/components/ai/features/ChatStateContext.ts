@@ -12,6 +12,16 @@ import React, { createContext, useContext } from 'react'
 import type { HistorySession } from './components/pro'
 import type { ChatMessage } from './types'
 import type { ScenarioMode } from './services/scenarioSwitcher'
+import type { RAGChunkResult } from '@/api/rag'
+import type { AIRecognizedFormula } from '@/types/ai.types'
+
+/** 与后端 ThinkingStep 对齐的简化类型，供 ReasoningRow 消费 */
+export interface ThinkingStepExport {
+  step: string
+  content: string
+  status: 'thinking' | 'complete' | 'pending'
+  detail?: string
+}
 
 export interface ChatState {
   // ===== 消息状态 =====
@@ -35,6 +45,13 @@ export interface ChatState {
   setActiveSessionId: (id: string | null) => void
   checkCompaction: () => Promise<void>
 
+  // ===== 实时进度条状态 =====
+  streamProgress: number
+  streamStageKey: string
+  streamChars: number
+  streamStatus: 'idle' | 'active' | 'indeterminate' | 'done' | 'error'
+  streamSteps: Array<{ key: string; status: 'done' | 'active' | 'pending' }>
+
   // ===== 会话状态 =====
   historySessions: HistorySession[]
   setHistorySessions: React.Dispatch<React.SetStateAction<HistorySession[]>>
@@ -47,9 +64,10 @@ export interface ChatState {
   isDetailModalOpen: boolean
   selectedForDetail: unknown
   showFormulaList: boolean
+  /** 显示/关闭配方列表面板 */
+  setShowFormulaList: (show: boolean) => void
   searchQuery: string
   highlightedMessageId: string | null
-  attachments: Array<{ id: string; file: File; previewUrl: string }>
   detailsCall: { id: string; name: string; args: Record<string, unknown>; result?: string; status: string; durationMs?: number } | null
   detailsOpen: boolean
   showKBPanel: boolean
@@ -67,12 +85,37 @@ export interface ChatState {
   ragIsSeeding: boolean
   onToggleRAG: () => void
   onTriggerSeed: () => Promise<boolean>
+  /** RAG 检索到的文档块（最近一次查询） */
+  ragChunks: RAGChunkResult[]
+  /** 最近一次检索的源文件列表（去重） */
+  ragLastSources: string[]
+  /** 是否有有效的 RAG 检索结果 */
+  ragHasActiveChunks: boolean
+  /** 最近一次 RAG 检索是否成功 */
+  ragLastQuerySuccess: boolean
+  /** 清除 RAG 检索缓存 */
+  ragClearChunks: () => void
 
   // ===== 配方状态 =====
   formulaCount: number
   expandedIds: Set<string>
   selectedIds: Set<string>
-  formulas: unknown[]
+  formulas: AIRecognizedFormula[]
+  /** 配方操作回调（展开/详情/报告/导出/导入/批量操作） */
+  formulaActions: {
+    handleToggleExpand: (id: string) => void
+    handleShowDetail: (id: string) => void
+    handleGenerateReportFromFormula: (id?: string) => void
+    handleExportData: (format: string) => Promise<void>
+    handleImportData: () => void
+    handleToggleSelect: (id: string) => void
+    handleBatchExport: (format: 'json' | 'csv' | 'excel' | 'pdf') => void
+    handleBatchDelete: () => void
+    handleBatchTag: (tags: string[]) => void
+    handleSelectAll: () => void
+  }
+  /** 清除配方存储 */
+  onClearStorage: () => void
 
   // ===== 报告状态 =====
   showReportModal: boolean
@@ -91,12 +134,14 @@ export interface ChatState {
   handleRetry: () => Promise<void>
   handleSend: (content?: string) => Promise<void>
   handleForkMessage: (messageId: string) => Promise<void>
-  handleAddAttachment: (file: File) => void
-  handleRemoveAttachment: (id: string) => void
   toggleHistory: () => void
   syncSessionsFromServer: () => Promise<void>
   /** 生成配方报告（客户端生成，见 useReportGenerator）。formulaId 为空则汇总全部配方。 */
   handleGenerateReport: (formulaId?: string) => Promise<void>
+
+  // ===== 思考过程 =====
+  /** 当前最新 assistant 消息的思考步骤，由 ChatStateProvider 从 thinkingProcessV3 同步而来 */
+  thinkingSteps: ThinkingStepExport[]
 }
 
 export const ChatStateContext = createContext<ChatState | null>(null)

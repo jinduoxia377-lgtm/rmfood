@@ -1,6 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
 import { useUserPreferenceStore } from '@/stores/userPreferenceStore'
-import type { GenerationHistory } from '@/stores/userPreferenceStore'
 
 describe('useUserPreferenceStore', () => {
   beforeEach(() => {

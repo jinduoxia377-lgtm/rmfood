@@ -1,14 +1,16 @@
 /**
  * PDF 高级导出工具
- * 提供书签、目录、页眉页脚等高级功能
+ * 提供书签、目录、页眉页脚等高级导出能力。
+ *
+ * 实现说明：jsPDF 内置字体不含 CJK 字形，直接 setFont('SimSun') 会抛
+ * "Unknown font" 异常。本服务统一采用「生成 HTML → 浏览器打印 → 另存为 PDF」
+ * 方案，由浏览器原生渲染中文（无乱码）。
  */
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import type { AcademicReport, AcademicReportSection } from './academicReportService';
+import type { AcademicReport } from './academicReportService';
+import { exportHtmlAsPdf, wrapPrintHtml } from '@/utils/pdfPrintExporter';
+import { feedbackService } from './feedbackService';
 
-
-import { logger } from '@/utils/safeLogger';
 export interface AdvancedPdfOptions {
   filename?: string;
   title?: string;
@@ -44,7 +46,13 @@ export interface AdvancedPdfOptions {
   footerText?: string;
 }
 
-const DEFAULT_ADVANCED_OPTIONS: Required<AdvancedPdfOptions> = {
+type ResolvedAdvancedPdfOptions = Required<AdvancedPdfOptions> & {
+  fontSize: Required<NonNullable<AdvancedPdfOptions['fontSize']>>;
+  colors: Required<NonNullable<AdvancedPdfOptions['colors']>>;
+  margins: Required<NonNullable<AdvancedPdfOptions['margins']>>;
+};
+
+const DEFAULT_ADVANCED_OPTIONS: ResolvedAdvancedPdfOptions = {
   filename: '配方学术报告',
   title: '配方研发学术报告',
   author: '莱茵分子生物科技有限公司',
@@ -79,461 +87,95 @@ const DEFAULT_ADVANCED_OPTIONS: Required<AdvancedPdfOptions> = {
   footerText: '© 莱茵分子生物科技有限公司',
 };
 
-interface BookmarkItem {
-  title: string;
-  page: number;
-  level: number;
-  y: number;
+/** 将 Markdown 正文转换为简单 HTML（打印用） */
+function markdownToHtml(content: string): string {
+  return content
+    .split('\n')
+    .map(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return '';
+      const h3 = trimmed.match(/^###\s+(.+)/);
+      if (h3) return `<h3>${h3[1]}</h3>`;
+      const h4 = trimmed.match(/^####\s+(.+)/);
+      if (h4) return `<h4>${h4[1]}</h4>`;
+      if (trimmed.startsWith('- ')) return `<p>• ${trimmed.slice(2)}</p>`;
+      if (/^\d+\./.test(trimmed)) return `<p>${trimmed}</p>`;
+      if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
+        return `<p><strong>${trimmed.replace(/\*\*/g, '')}</strong></p>`;
+      }
+      return `<p>${trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`;
+    })
+    .join('\n');
+}
+
+/** 将 AcademicReport 转换为完整可打印 HTML */
+function academicReportToHtml(report: AcademicReport, title: string): string {
+  const sections: string[] = [];
+
+  sections.push(`<h1>${title}</h1>`);
+  sections.push(`<p style="text-align:center;">作者：${report.authors.join('、')}｜单位：${report.institution}｜日期：${report.date}</p>`);
+  sections.push(`<h2>摘要</h2><p>${report.abstract}</p>`);
+
+  report.chapters.forEach((chapter, index) => {
+    sections.push(`<h2>${index + 1}. ${chapter.title}</h2>`);
+    sections.push(markdownToHtml(chapter.content));
+    if (chapter.tables) {
+      chapter.tables.forEach(table => {
+        sections.push(`<h3>${table.title}</h3>`);
+        sections.push('<table><thead><tr>');
+        table.headers.forEach(h => { sections.push(`<th>${h}</th>`); });
+        sections.push('</tr></thead><tbody>');
+        table.rows.forEach(row => {
+          sections.push('<tr>');
+          row.forEach(cell => { sections.push(`<td>${cell}</td>`); });
+          sections.push('</tr>');
+        });
+        sections.push('</tbody></table>');
+      });
+    }
+  });
+
+  if (report.references && report.references.length > 0) {
+    sections.push('<h2>参考文献</h2>');
+    report.references.forEach(ref => {
+      sections.push(`<p>[${ref.number}] ${ref.authors}. ${ref.title}[J]. ${ref.journal}, ${ref.year}${ref.volume ? `, ${ref.volume}` : ''}${ref.pages ? `(${ref.pages})` : ''}${ref.doi ? `. DOI: ${ref.doi}` : ''}</p>`);
+    });
+  }
+
+  return wrapPrintHtml(sections.join('\n'), title);
 }
 
 export class AdvancedPdfExportService {
-  private doc: jsPDF;
-  private options: Required<AdvancedPdfOptions>;
-  private currentY: number;
-  private pageNumber: number;
-  private totalPages: number;
-  private pageHeight: number;
-  private pageWidth: number;
-  private maxContentWidth: number;
-  private bookmarks: BookmarkItem[];
-  private tocItems: { title: string; page: number; level: number }[];
+  private options: ResolvedAdvancedPdfOptions;
 
   constructor(options: Partial<AdvancedPdfOptions> = {}) {
-    this.options = { ...DEFAULT_ADVANCED_OPTIONS, ...options } as Required<AdvancedPdfOptions>;
-
-    this.doc = new jsPDF({
-      orientation: this.options.orientation,
-      unit: 'mm',
-      format: 'a4',
-    });
-
-    this.doc.setFont(this.options.fontName, 'normal');
-
-    this.currentY = this.options.margins.top!;
-    this.pageNumber = 1;
-    this.totalPages = 1;
-    this.pageHeight = this.doc.internal.pageSize.getHeight();
-    this.pageWidth = this.doc.internal.pageSize.getWidth();
-    this.maxContentWidth = this.pageWidth - this.options.margins.left! - this.options.margins.right!;
-    this.bookmarks = [];
-    this.tocItems = [];
-
-    this.setupDocument();
-  }
-
-  private setupDocument(): void {
-    this.doc.setProperties({
-      title: this.options.title,
-      subject: this.options.subject,
-      author: this.options.author,
-      creator: 'RMFOOD 配方平台',
-      keywords: this.options.keywords?.join(', '),
-    });
-  }
-
-  private checkPageBreak(requiredSpace: number): boolean {
-    return this.currentY + requiredSpace > this.pageHeight - this.options.margins.bottom!;
-  }
-
-  private addNewPage(): void {
-    this.addFooter();
-    this.doc.addPage();
-    this.pageNumber++;
-    this.totalPages = this.pageNumber;
-    this.currentY = this.options.margins.top!;
-
-    if (this.options.showHeader) {
-      this.addHeader();
-    }
-
-    return;
-  }
-
-  private addHeader(): void {
-    this.doc.setFontSize(this.options.fontSize.small!);
-    this.doc.setTextColor(...this.options.colors.secondary!);
-    this.doc.text(this.options.headerText, this.pageWidth / 2, 15, { align: 'center' });
-
-    this.doc.setDrawColor(200, 200, 200);
-    this.doc.setLineWidth(0.2);
-    this.doc.line(this.options.margins.left!, 18, this.pageWidth - this.options.margins.right!, 18);
-
-    this.currentY = 22;
-  }
-
-  private addFooter(): void {
-    if (!this.options.showFooter) return;
-
-    this.doc.setDrawColor(200, 200, 200);
-    this.doc.setLineWidth(0.2);
-    this.doc.line(
-      this.options.margins.left!,
-      this.pageHeight - this.options.margins.bottom! + 10,
-      this.pageWidth - this.options.margins.right!,
-      this.pageHeight - this.options.margins.bottom! + 10,
-    );
-
-    this.doc.setFontSize(this.options.fontSize.small!);
-    this.doc.setTextColor(...this.options.colors.secondary!);
-    this.doc.text(
-      this.options.footerText,
-      this.options.margins.left!,
-      this.pageHeight - this.options.margins.bottom! + 15,
-    );
-
-    this.doc.text(
-      `第 ${this.pageNumber} 页 / 共 ${this.totalPages} 页`,
-      this.pageWidth - this.options.margins.right!,
-      this.pageHeight - this.options.margins.bottom! + 15,
-      { align: 'right' },
-    );
-  }
-
-  private addBookmark(title: string, level = 0): void {
-    this.bookmarks.push({
-      title,
-      page: this.pageNumber,
-      level,
-      y: this.currentY,
-    });
-  }
-
-  private renderCover(report: AcademicReport): void {
-    this.doc.setFillColor(...this.options.colors.primary!);
-    this.doc.rect(0, 0, this.pageWidth, this.pageHeight, 'F');
-
-    this.doc.setTextColor(255, 255, 255);
-    this.doc.setFontSize(this.options.fontSize.cover!);
-    this.doc.setFont(this.options.fontName, 'bold');
-
-    const titleLines = this.doc.splitTextToSize(report.title, this.maxContentWidth);
-    this.doc.text(titleLines, this.pageWidth / 2, this.pageHeight / 3, { align: 'center' });
-
-    this.currentY = this.pageHeight / 3 + titleLines.length * 12;
-
-    this.doc.setFontSize(this.options.fontSize.heading!);
-    this.doc.setFont(this.options.fontName, 'normal');
-    this.doc.text(report.formulaName, this.pageWidth / 2, this.currentY + 20, { align: 'center' });
-
-    this.currentY += 40;
-
-    this.doc.setFontSize(this.options.fontSize.body!);
-    this.doc.text(`作者：${report.authors?.join('、') || '配方研发项目组'}`, this.pageWidth / 2, this.currentY, {
-      align: 'center',
-    });
-
-    this.currentY += 8;
-    this.doc.text(report.institution || '莱茵分子生物科技有限公司', this.pageWidth / 2, this.currentY, {
-      align: 'center',
-    });
-
-    this.currentY += 8;
-    this.doc.text(report.date, this.pageWidth / 2, this.currentY, { align: 'center' });
-
-    this.addNewPage();
-  }
-
-  private renderToc(report: AcademicReport): void {
-    this.doc.setFontSize(this.options.fontSize.title!);
-    this.doc.setTextColor(...this.options.colors.primary!);
-    this.doc.setFont(this.options.fontName, 'bold');
-    this.doc.text('目 录', this.pageWidth / 2, this.currentY, { align: 'center' });
-    this.currentY += 15;
-
-    this.doc.setDrawColor(...this.options.colors.primary!);
-    this.doc.setLineWidth(0.5);
-    this.doc.line(
-      this.options.margins.left!,
-      this.currentY,
-      this.pageWidth - this.options.margins.right!,
-      this.currentY,
-    );
-    this.currentY += 10;
-
-    report.chapters.forEach((chapter, index) => {
-      if (this.checkPageBreak(12)) {
-        this.addNewPage();
-      }
-
-      const tocText = `${index + 1}. ${chapter.title}`;
-      const pageNum = this.pageNumber + Math.floor((index + 1) / 20);
-
-      this.doc.setFontSize(this.options.fontSize.body!);
-      this.doc.setTextColor(...this.options.colors.text!);
-      this.doc.setFont(this.options.fontName, 'normal');
-
-      this.doc.text(tocText, this.options.margins.left!, this.currentY);
-
-      this.doc.setTextColor(...this.options.colors.secondary!);
-      const dots = '.'.repeat(50);
-      const dotsWidth = this.doc.getTextWidth(dots);
-      const textWidth = this.doc.getTextWidth(tocText);
-      const pageNumWidth = this.doc.getTextWidth(` ${pageNum}`);
-
-      if (textWidth + dotsWidth + pageNumWidth < this.maxContentWidth) {
-        this.doc.text(
-          dots.substring(0, Math.floor((this.maxContentWidth - textWidth - pageNumWidth) / this.doc.getTextWidth('.'))),
-          this.options.margins.left! + textWidth,
-          this.currentY,
-        );
-      }
-
-      this.doc.text(` ${pageNum}`, this.pageWidth - this.options.margins.right! - pageNumWidth, this.currentY);
-
-      this.tocItems.push({
-        title: chapter.title,
-        page: this.pageNumber,
-        level: 0,
-      });
-
-      this.currentY += 10;
-    });
-
-    this.addNewPage();
-  }
-
-  private renderSection(section: AcademicReportSection, index: number): void {
-    if (this.checkPageBreak(30)) {
-      this.addNewPage();
-    }
-
-    this.addBookmark(section.title, 0);
-
-    this.doc.setFontSize(this.options.fontSize.heading!);
-    this.doc.setTextColor(...this.options.colors.primary!);
-    this.doc.setFont(this.options.fontName, 'bold');
-
-    this.doc.text(`${index + 1}. ${section.title}`, this.options.margins.left!, this.currentY);
-
-    this.currentY += 10;
-
-    this.doc.setDrawColor(...this.options.colors.primary!);
-    this.doc.setLineWidth(0.3);
-    this.doc.line(
-      this.options.margins.left!,
-      this.currentY,
-      this.pageWidth - this.options.margins.right!,
-      this.currentY,
-    );
-    this.currentY += 8;
-
-    this.doc.setFont(this.options.fontName, 'normal');
-    this.doc.setFontSize(this.options.fontSize.body!);
-    this.doc.setTextColor(...this.options.colors.text!);
-
-    const paragraphs = section.content.split('\n');
-    paragraphs.forEach((para) => {
-      const trimmed = para.trim();
-      if (!trimmed) return;
-
-      if (trimmed.startsWith('### ')) {
-        if (this.checkPageBreak(15)) this.addNewPage();
-
-        this.addBookmark(trimmed.replace('### ', ''), 1);
-
-        this.doc.setFontSize(this.options.fontSize.body! + 1);
-        this.doc.setTextColor(...this.options.colors.text!);
-        this.doc.setFont(this.options.fontName, 'bold');
-        this.doc.text(trimmed.replace('### ', ''), this.options.margins.left! + 5, this.currentY);
-        this.currentY += 8;
-        this.doc.setFont(this.options.fontName, 'normal');
-      } else if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
-        if (this.checkPageBreak(10)) this.addNewPage();
-
-        this.doc.setFont(this.options.fontName, 'bold');
-        const boldText = trimmed.replace(/\*\*/g, '');
-        const boldLines = this.doc.splitTextToSize(boldText, this.maxContentWidth);
-        this.doc.text(boldLines, this.options.margins.left!, this.currentY);
-        this.currentY += boldLines.length * 6;
-        this.doc.setFont(this.options.fontName, 'normal');
-      } else if (trimmed.startsWith('- ')) {
-        if (this.checkPageBreak(10)) this.addNewPage();
-
-        this.doc.setTextColor(...this.options.colors.text!);
-        this.doc.text('•', this.options.margins.left! + 5, this.currentY);
-
-        const bulletLines = this.doc.splitTextToSize(trimmed.substring(2), this.maxContentWidth - 10);
-        this.doc.text(bulletLines, this.options.margins.left! + 10, this.currentY);
-        this.currentY += bulletLines.length * 6;
-      } else if (/^\d+\./.exec(trimmed)) {
-        if (this.checkPageBreak(10)) this.addNewPage();
-
-        this.doc.text(trimmed, this.options.margins.left!, this.currentY);
-        this.currentY += 6;
-      } else {
-        if (this.checkPageBreak(10)) this.addNewPage();
-
-        const contentLines = this.doc.splitTextToSize(trimmed, this.maxContentWidth - 10);
-        this.doc.text(contentLines, this.options.margins.left! + 10, this.currentY);
-        this.currentY += contentLines.length * 6;
-      }
-    });
-
-    if (section.tables && section.tables.length > 0) {
-      this.currentY += 5;
-      section.tables.forEach((table) => {
-        if (this.checkPageBreak(25)) this.addNewPage();
-
-        this.doc.setFontSize(this.options.fontSize.body!);
-        this.doc.setTextColor(...this.options.colors.secondary!);
-        this.doc.setFont(this.options.fontName, 'bold');
-        this.doc.text(table.title, this.options.margins.left!, this.currentY);
-        this.currentY += 5;
-
-        autoTable(this.doc, {
-          head: [table.headers],
-          body: table.rows,
-          startY: this.currentY,
-          margin: {
-            left: this.options.margins.left!,
-            right: this.options.margins.right!,
-          },
-          styles: {
-            font: this.options.fontName,
-            fontSize: this.options.fontSize.small!,
-            cellPadding: 2,
-            lineColor: [180, 180, 180],
-            lineWidth: 0.1,
-          },
-          headStyles: {
-            fillColor: this.options.colors.primary,
-            textColor: [255, 255, 255],
-            fontStyle: 'bold',
-            halign: 'center',
-          },
-          bodyStyles: {
-            textColor: this.options.colors.text,
-            halign: 'left',
-          },
-          alternateRowStyles: {
-            fillColor: [248, 248, 248],
-          },
-        });
-
-        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
-        this.doc.setFont(this.options.fontName, 'normal');
-      });
-    }
-
-    this.currentY += 10;
-  }
-
-  private renderReferences(references: AcademicReport['references']): void {
-    if (this.checkPageBreak(25)) {
-      this.addNewPage();
-    }
-
-    this.addBookmark('参考文献', 0);
-
-    this.doc.setFontSize(this.options.fontSize.heading!);
-    this.doc.setTextColor(...this.options.colors.primary!);
-    this.doc.setFont(this.options.fontName, 'bold');
-    this.doc.text('参考文献', this.options.margins.left!, this.currentY);
-    this.currentY += 10;
-
-    this.doc.setFont(this.options.fontName, 'normal');
-    this.doc.setFontSize(this.options.fontSize.small!);
-    this.doc.setTextColor(...this.options.colors.secondary!);
-
-    references.forEach((ref) => {
-      if (this.checkPageBreak(15)) this.addNewPage();
-
-      const refText = [
-        `[${ref.number}] `,
-        ref.authors,
-        ref.title ? `. ${ref.title}` : '',
-        ref.journal ? `[J]. ${ref.journal}` : '',
-        ref.year ? `, ${ref.year}` : '',
-        ref.volume ? `, ${ref.volume}` : '',
-        ref.pages ? `(${ref.pages})` : '',
-        ref.doi ? `. DOI: ${ref.doi}` : '',
-      ].join('');
-
-      const refLines = this.doc.splitTextToSize(refText, this.maxContentWidth);
-
-      this.doc.text(refLines, this.options.margins.left! + 5, this.currentY);
-      this.currentY += refLines.length * 5;
-    });
-
-    this.currentY += 10;
-  }
-
-  private addBookmarksToPdf(): void {
-    try {
-      const outline = this.doc.outline;
-
-      if (outline && this.bookmarks.length > 0) {
-        let currentLevel0: any = null;
-        let currentLevel1: any = null;
-
-        this.bookmarks.forEach((bookmark) => {
-          if (bookmark.level === 0) {
-            currentLevel0 = {
-              title: bookmark.title,
-              pageNumber: bookmark.page,
-            };
-            (outline as unknown as { addPage: (p: any) => void }).addPage(currentLevel0);
-            currentLevel1 = null;
-          } else if (bookmark.level === 1 && currentLevel0) {
-            currentLevel1 = {
-              title: bookmark.title,
-              pageNumber: bookmark.page,
-            };
-            currentLevel0.children = currentLevel0.children || [];
-            currentLevel0.children.push(currentLevel1);
-          }
-        });
-      }
-    } catch (error) {
-      logger.warn('[AdvancedPdfExport] Failed to add bookmarks:', error);
-    }
+    this.options = { ...DEFAULT_ADVANCED_OPTIONS, ...options } as ResolvedAdvancedPdfOptions;
   }
 
   public async export(report: AcademicReport): Promise<Blob> {
     try {
-      if (this.options.showBookmarks) {
-        this.renderCover(report);
-      }
+      const title = this.options.title || report.title;
+      const html = academicReportToHtml(report, title);
 
-      if (this.options.showToc) {
-        this.renderToc(report);
-      }
+      exportHtmlAsPdf(html, {
+        title,
+        onError: (message) => {
+          feedbackService.showError('导出失败', message);
+        },
+      });
 
-      if (report.chapters) {
-        report.chapters.forEach((chapter, index) => {
-          this.renderSection(chapter, index);
-        });
-      }
-
-      if (report.references && report.references.length > 0) {
-        this.renderReferences(report.references);
-      }
-
-      for (let i = 1; i <= this.totalPages; i++) {
-        this.doc.setPage(i);
-        this.addFooter();
-      }
-
-      this.addBookmarksToPdf();
-
-      const blob = this.doc.output('blob');
-      return blob;
+      // 为兼容调用方，返回 HTML Blob（打印窗口已打开，不再用于下载）
+      return new Blob([html], { type: 'text/html;charset=utf-8' });
     } catch (error) {
-      logger.error('[AdvancedPdfExport] Export failed:', error);
-      throw new Error(`PDF导出失败: ${error instanceof Error ? error.message : '未知错误'}`);
+      const message = error instanceof Error ? error.message : '未知错误';
+      feedbackService.showError('导出失败', `PDF导出失败: ${message}`);
+      throw new Error(`PDF导出失败: ${message}`);
     }
   }
 
   public async exportAndDownload(report: AcademicReport): Promise<void> {
-    const blob = await this.export(report);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${this.options.filename}_${this.formatDate()}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // 浏览器打印方案：打开打印窗口后由用户选择「另存为 PDF」，无需下载 Blob
+    await this.export(report);
   }
 
   private formatDate(): string {

@@ -164,7 +164,6 @@ export const aiInsightsApi = {
 
   getPredictions: async (): Promise<TrendPrediction[]> => {
     const stats = await apiClient.get('/dashboard/statistics').then(r => r.data)
-    const now = new Date()
 
     const formulasTotal = stats?.formulas?.total ?? 0
     const expByStatus = stats?.experiments?.by_status ?? {}

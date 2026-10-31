@@ -53,6 +53,9 @@ export function useAnalyticsWebSocket(options: UseWebSocketOptions) {
   const reconnectAttemptsRef = useRef(0)
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const mountedRef = useRef(true)
+  // 标记「本次 WebSocket 关闭是主动行为」（组件卸载、用户退出、切换 URL 等）。
+  // 主动关闭不应产生 error 级别的日志噪音。
+  const intentionalCloseRef = useRef(false)
 
   const connect = useCallback(() => {
     if (!mountedRef.current) return
@@ -62,6 +65,9 @@ export function useAnalyticsWebSocket(options: UseWebSocketOptions) {
     try {
       const ws = new WebSocket(url)
       wsRef.current = ws
+      // 新建连接代表新的生命周期：重置主动关闭标记，
+      // 确保后续真实断线/网络异常仍会正常记录 error 并触发重连。
+      intentionalCloseRef.current = false
 
       ws.onopen = () => {
         logger.info('[AnalyticsWS] 连接成功')
@@ -104,7 +110,20 @@ export function useAnalyticsWebSocket(options: UseWebSocketOptions) {
       }
 
       ws.onerror = (event) => {
-        logger.error('[AnalyticsWS] 连接错误:', event)
+        // React StrictMode 开发模式会「挂载→卸载→再挂载」：首次 connect() 创建的 ws 在握手阶段
+        // 被 cleanup 主动 close() 后，浏览器仍会触发 error（code=1006）。此时 intentionalCloseRef
+        // 可能已被第二次 connect() 重置为 false，因此还需判断触发事件的 ws 是否仍是当前活跃连接
+        // （wsRef.current === ws）。若已被主动关闭/替换（陈旧连接），属于预期行为，仅记 debug 而不记
+        // error；真实网络异常（当前活跃连接报错）仍会正常记录 error 并走原有重连逻辑。
+        const isIntentionalClose =
+          intentionalCloseRef.current || wsRef.current !== ws
+
+        if (isIntentionalClose) {
+          logger.debug('[AnalyticsWS] 连接已主动关闭，跳过错误日志:', event)
+        } else {
+          logger.error('[AnalyticsWS] 连接错误:', event)
+        }
+
         onError?.(event)
       }
 
@@ -151,6 +170,10 @@ export function useAnalyticsWebSocket(options: UseWebSocketOptions) {
   }, [url, reconnect, reconnectInterval, maxReconnectAttempts, onMessage, onConnectionChange, onError])
 
   const disconnect = useCallback(() => {
+    // 主动断开（组件卸载、用户退出、切换 URL 等）：先标记主动关闭，
+    // 再 close()，避免浏览器对握手中的连接触发 error（code=1006）时记录错误日志。
+    intentionalCloseRef.current = true
+
     reconnectAttemptsRef.current = maxReconnectAttempts // Stop reconnection attempts
 
     if (reconnectTimeoutRef.current) {

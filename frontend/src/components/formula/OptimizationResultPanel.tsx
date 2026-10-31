@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import { CheckCircle2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { cn } from '@/lib/utils';
 
 interface OptimizationResultPanelProps {
   result?: {

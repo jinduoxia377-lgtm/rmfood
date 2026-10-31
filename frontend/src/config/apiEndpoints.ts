@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
     BASE: `${API_BASE_URL}/ai`,
     CHAT: `${API_BASE_URL}/ai/chat`,
     CHAT_STREAM: `${API_BASE_URL}/ai/chat/stream`,
+    FOLLOW_UP_SUGGESTIONS: `${API_BASE_URL}/ai/chat/follow-up-suggestions`,
     GENERATE: `${API_BASE_URL}/ai/generate`,
     GENERATE_ADVANCED: `${API_BASE_URL}/ai/generate/advanced`,
     SAFETY_CHECK: `${API_BASE_URL}/ai/safety-check`,

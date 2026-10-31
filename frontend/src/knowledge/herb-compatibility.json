@@ -1,4 +1,5 @@
 {
+  "_note": "数据资源（暂未接入代码）。用途：药食同源成分配伍禁忌/协同知识库。建议接入点：backend/app/services/ai/rag/seeder.py（注入 RAG 种子）或前端 CompatibilityChecker。详见 src/knowledge/README.md",
   "metadata": {
     "version": "1.0.0",
     "lastUpdated": "2026-05-17",

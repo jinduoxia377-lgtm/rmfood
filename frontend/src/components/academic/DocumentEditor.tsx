@@ -32,6 +32,7 @@ export function DocumentEditor({ chapter, onUpdate }: DocumentEditorProps) {
 
   useEffect(() => {
     if (chapter) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setContent(chapter.content);
       // 计算当前章节的图表编号
       const figCount = chapter.figures?.length || 0;
@@ -95,12 +96,13 @@ export function DocumentEditor({ chapter, onUpdate }: DocumentEditorProps) {
       case 'code':
         newContent = content.substring(0, start) + `\`${selectedText || '代码'}\`` + content.substring(end);
         break;
-      case 'link':
+      case 'link': {
         const url = prompt('请输入链接地址:', 'https://');
         if (url) {
           newContent = content.substring(0, start) + `[${selectedText || '链接文本'}](${url})` + content.substring(end);
         }
         break;
+      }
       case 'table':
         newContent =
           content.substring(0, start) +

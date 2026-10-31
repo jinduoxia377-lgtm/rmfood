@@ -32,7 +32,6 @@ class ReportExportService {
     const { candidate, effects } = data
     const herbs = candidate.herb_combination || []
     const warnings = candidate.safety_details?.warnings || []
-    const safetyScore = ((candidate as { safety_score?: number }).safety_score || (candidate.safety_passed ? 0.85 : 0.6)) * 100
     const tasteScore = ((candidate as { taste_score?: number }).taste_score || 0.6) * 100
     const stabilityScore = ((candidate as { stability_score?: number }).stability_score || 0.7) * 100
     const synergyScore = (candidate.synergy_score || 0) * 100
@@ -300,7 +299,7 @@ class ReportExportService {
     options: ReportExportOptions = {},
     onProgress?: (progress: ExportProgress) => void,
   ): Promise<Blob> {
-    const { filename = '配方学术报告.pdf' } = options
+    const { filename: _filename = '配方学术报告.pdf' } = options
 
     try {
       onProgress?.({

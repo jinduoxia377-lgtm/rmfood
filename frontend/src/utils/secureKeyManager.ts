@@ -25,7 +25,7 @@ const VALIDATION_RULES = {
   minLength: 40,
   maxLength: 200,
   validPrefixes: ['sk-', 'Bearer '],
-  pattern: /^[a-zA-Z0-9\-_\.]+$/,
+  pattern: /^[a-zA-Z0-9-_.]+$/,
 }
 
 // ══════════════════════════════════════

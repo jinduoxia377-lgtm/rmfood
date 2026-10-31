@@ -1,11 +1,10 @@
-﻿/**
+/**
  * 评论项组件 — 配方详情页评论系统的子组件
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Heart, Reply, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui';
 import { commentApi, type Comment } from '@/api/comment';
 
 const ROLE_LABELS: Record<string, string> = {

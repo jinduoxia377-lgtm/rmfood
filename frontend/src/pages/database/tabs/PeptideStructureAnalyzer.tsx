@@ -15,11 +15,36 @@ import {
   Layers, Zap, Target, Bot, ZoomIn, Expand, Leaf,
 } from 'lucide-react';
 
-// 使用全局echarts对象（从CDN加载）
+// 使用全局echarts对象（按需注入，见下方 loadEcharts）
 declare global {
   interface Window {
     echarts?: any;
   }
+}
+
+/**
+ * ⚡ P3 性能优化：按需加载 ECharts（2026-10-27）。
+ * 此前 echarts.min.js（~1MB）在 index.html 的 <head> 全局加载，导致 *每个* 页面
+ * （含 AI 助手页）都要下载它，与关键路径 JS bundle 争抢带宽，直接拉高 FCP/LCP/页面加载。
+ * 它是本文件「肽结构视图」的唯一消费者，故改为组件挂载且确实要渲染图表时才注入同源脚本，
+ * 单例 Promise 避免重复注入，加载失败时优雅降级（不影响其他功能）。
+ */
+let echartsLoadPromise: Promise<any> | null = null;
+function loadEcharts(): Promise<any> {
+  if (window.echarts) return Promise.resolve(window.echarts);
+  if (echartsLoadPromise) return echartsLoadPromise;
+  echartsLoadPromise = new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = '/echarts/echarts.min.js';
+    s.async = true;
+    s.onload = () => resolve(window.echarts);
+    s.onerror = () => {
+      echartsLoadPromise = null; // 允许后续重试
+      resolve(undefined);
+    };
+    document.head.appendChild(s);
+  });
+  return echartsLoadPromise;
 }
 
 const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
@@ -28,36 +53,50 @@ const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
   const optionRef = useRef<any>(option);
   // eslint-disable-next-line react-hooks/refs
   optionRef.current = option;
-  const [echartsReady, setEchartsReady] = useState(true);
+  // null = 加载中，false = 加载失败，true = 就绪
+  const [echartsReady, setEchartsReady] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const echarts = window.echarts;
-    if (!echarts) {
+    let disposed = false;
+    loadEcharts().then((echarts) => {
+      if (disposed) return;
+      if (!echarts) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setEchartsReady(false);
+        return;
+      }
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setEchartsReady(false);
-      return;
-    }
-    if (!chartRef.current) return;
+      setEchartsReady(true);
+      if (!chartRef.current) return;
 
-    if (!chartInstance.current) {
-      chartInstance.current = echarts.init(chartRef.current, null, { renderer: 'svg' });
-    }
+      if (!chartInstance.current) {
+        chartInstance.current = echarts.init(chartRef.current, null, { renderer: 'svg' });
+      }
 
-    chartInstance.current.setOption(optionRef.current, true);
+      chartInstance.current.setOption(optionRef.current, true);
+    });
 
     return () => {
+      disposed = true;
       if (chartInstance.current) {
         chartInstance.current.dispose();
         chartInstance.current = null;
       }
     };
-   
   }, []);
 
-  if (!echartsReady) {
+  if (echartsReady === false) {
     return (
-      <div style={style} className="w-full h-full flex items-center justify-center bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)]">
+      <div style={{ ...style, width: '100%' }} className="w-full h-full flex items-center justify-center bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)]">
         <span className="text-xs text-[var(--text-muted,#9A9A9F)]">图表加载失败，请检查网络连接</span>
+      </div>
+    );
+  }
+  if (echartsReady === null) {
+    // 加载占位：与最终图表保持相同尺寸（width:100%），避免加载完成瞬间发生布局偏移（CLS）
+    return (
+      <div style={{ ...style, width: '100%' }} className="w-full h-full flex items-center justify-center bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)]">
+        <span className="text-xs text-[var(--text-muted,#9A9A9F)]">图表加载中…</span>
       </div>
     );
   }
@@ -1542,7 +1581,7 @@ function SynergyView() {
         <div className="flex flex-wrap gap-1.5">
           {['黄芪', '人参', '枸杞子', '山楂', '菊花', '葛根', '酸枣仁', '灵芝'].map(h => (
             <button key={h} onClick={() => setHerbInput(prev => prev.includes(h) ? prev.replace(h, '').replace(/,,?/, '').replace(/,$/, '') : (prev ? prev + ',' + h : h))}
-              className="px-2 py-0.5 text-xs bg-[var(--bg-tertiary)] rounded hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)] transition-colors">
+              className="px-2 py-1 min-h-[32px] inline-flex items-center text-xs bg-[var(--bg-tertiary)] rounded hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)] transition-colors">
               {h}
             </button>
           ))}
@@ -1664,7 +1703,12 @@ function SynergyView() {
 }
 
 // ─── 高级工具组件（水解模拟 / 序列比对 / 定量预测 / 溶解度预测 / 变体生成 / 自定义优化）──────────────
-function AdvancedToolsView() {
+interface AdvancedToolsViewProps {
+  /** 当前已分析肽序列，用于联动「真实数据源」面板的实时检索输入 */
+  initialSequence?: string;
+}
+
+function AdvancedToolsView({ initialSequence = '' }: AdvancedToolsViewProps) {
   const [tool, setTool] = useState<'hydrolysis' | 'align' | 'quantitative' | 'solubility' | 'variants' | 'customOpt' | 'external' | 'realSource'>('hydrolysis');
 
   const tools = [
@@ -1700,7 +1744,7 @@ function AdvancedToolsView() {
       {tool === 'variants' && <VariantGeneratorView />}
       {tool === 'customOpt' && <CustomOptimizerView />}
       {tool === 'external' && <ExternalSourceView />}
-      {tool === 'realSource' && <RealSourceStatusPanel />}
+      {tool === 'realSource' && <RealSourceStatusPanel key={initialSequence} initialSequence={initialSequence} />}
     </div>
   );
 }
@@ -2213,11 +2257,17 @@ function QuantitativePredictorView() {
 
 // ── 外部数据源检索 ──
 // ── 真实在线数据源状态面板（可达性实测 + 诚实降级标注）──
-function RealSourceStatusPanel() {
+interface RealSourceStatusPanelProps {
+  /** 初始肽序列（来自父级已分析结果，可被用户修改） */
+  initialSequence?: string;
+}
+
+function RealSourceStatusPanel({ initialSequence = '' }: RealSourceStatusPanelProps) {
   const [status, setStatus] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [refs, setRefs] = useState<any>(null);
   const [refLoading, setRefLoading] = useState(false);
+  const [sequence, setSequence] = useState(initialSequence || '');
 
   const loadStatus = useCallback(async () => {
     setLoading(true);
@@ -2233,8 +2283,9 @@ function RealSourceStatusPanel() {
 
   const loadLiterature = useCallback(async () => {
     setRefLoading(true); setRefs(null);
+    const seq = sequence.trim() || undefined;
     try {
-      const r = await peptideStructureService.getOnlineLiterature('ACE inhibitory peptide', 5);
+      const r = await peptideStructureService.getOnlineLiterature('ACE inhibitory peptide', 5, seq);
       setRefs(r);
     } catch (e: any) {
       console.error('文献检索失败:', e);
@@ -2242,7 +2293,7 @@ function RealSourceStatusPanel() {
     } finally {
       setRefLoading(false);
     }
-  }, []);
+  }, [sequence]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -2286,8 +2337,17 @@ function RealSourceStatusPanel() {
             <Zap className="w-4 h-4 text-primary" />
             真实在线文献（NCBI PubMed）
           </h3>
-          <Button size="sm" variant="ghost" className="text-xs h-6" onClick={loadLiterature} disabled={refLoading}>
-            {refLoading ? '检索中...' : '检索 ACE 抑制肽文献'}
+        </div>
+        <div className="flex gap-2">
+          <Input
+            value={sequence}
+            onChange={e => setSequence(e.target.value)}
+            placeholder="输入肽序列（可选），如 VPP"
+            className="font-mono text-sm flex-1"
+            maxLength={100}
+          />
+          <Button size="sm" className="flex-shrink-0" onClick={loadLiterature} disabled={refLoading}>
+            {refLoading ? '检索中...' : '实时检索 PubMed 文献'}
           </Button>
         </div>
         {refs && (
@@ -2295,17 +2355,26 @@ function RealSourceStatusPanel() {
             {!refs.reachable ? (
               <p className="text-xs text-[var(--text-muted,#9A9A9F)]">{refs.note}</p>
             ) : refs.references.length === 0 ? (
-              <p className="text-xs text-[var(--text-muted,#9A9A9F)]">在线可达但无匹配文献。</p>
+              <div>
+                <p className="text-xs text-[var(--text-muted,#9A9A9F)]">在线可达但无匹配文献。</p>
+                {refs.note && <p className="text-xs text-[var(--text-muted,#9A9A9F)] mt-0.5">{refs.note}</p>}
+              </div>
             ) : (
-              refs.references.map((r: any, i: number) => (
-                <div key={i} className="text-xs p-2 bg-[var(--bg-tertiary)]/50 rounded">
-                  <div className="font-medium">{r.title || '(无标题)'}</div>
-                  <div className="text-[var(--text-muted,#9A9A9F)] mt-0.5">
-                    PMID {r.pmid} · {r.journal || '-'} · {r.pubdate || ''} · 作者: {(r.authors || []).join(', ') || '-'}
-                    {r.doi ? ` · DOI: ${r.doi}` : ''}
+              <>
+                <p className="text-xs text-[var(--text-secondary,#6B7280)]">
+                  检索式：{sequence.trim() ? `${sequence.trim()} AND ACE inhibitory peptide` : 'ACE inhibitory peptide'}
+                </p>
+                {refs.references.map((r: any, i: number) => (
+                  <div key={i} className="text-xs p-2 bg-[var(--bg-tertiary)]/50 rounded">
+                    <div className="font-medium">{r.title || '(无标题)'}</div>
+                    <div className="text-[var(--text-muted,#9A9A9F)] mt-0.5">
+                      PMID {r.pmid} · {r.journal || '-'} · {r.pubdate || ''} · 作者: {(r.authors || []).join(', ') || '-'}
+                      {r.doi ? ` · DOI: ${r.doi}` : ''}
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+                {refs.note && <p className="text-xs text-[var(--text-muted,#9A9A9F)] pt-1">{refs.note}</p>}
+              </>
             )}
           </div>
         )}
@@ -2605,6 +2674,24 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
     setActiveTab('database');
   }, []);
 
+  // 来源与证据卡片：实时检索该肽的 PubMed 文献
+  const [liveRefs, setLiveRefs] = useState<any>(null);
+  const [liveRefLoading, setLiveRefLoading] = useState(false);
+  const handleLiveLiterature = useCallback(async () => {
+    if (!result?.sequence) return;
+    setLiveRefLoading(true);
+    setLiveRefs(null);
+    try {
+      const r = await peptideStructureService.getOnlineLiterature('ACE inhibitory peptide', 5, result.sequence);
+      setLiveRefs(r);
+    } catch (e: any) {
+      console.error('实时文献检索失败:', e);
+      setLiveRefs({ reachable: false, references: [], note: e?.message || '检索失败' });
+    } finally {
+      setLiveRefLoading(false);
+    }
+  }, [result?.sequence]);
+
   // 导出研发报告（Markdown）
   const handleExportReport = useCallback(() => {
     if (!result) return;
@@ -2868,7 +2955,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => navigator.clipboard.writeText(result.smiles!)}
-                          className="flex items-center gap-1 px-2 py-0.5 text-xs bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)] rounded transition-colors"
+                          className="flex items-center gap-1 px-2 py-1 min-h-[32px] text-xs bg-[var(--bg-tertiary)] hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)] rounded transition-colors"
                           title="复制SMILES"
                         >
                           <Copy className="w-3 h-3" />
@@ -3284,14 +3371,52 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                       </div>
                     )}
                   </div>
-                  <div className="mt-[var(--space-apple-sm)] pt-3 border-t border-[var(--border-color)] flex items-center justify-between">
+                  <div className="mt-[var(--space-apple-sm)] pt-3 border-t border-[var(--border-color)] flex items-center justify-between gap-2 flex-wrap">
                     <span className="text-xs text-[var(--text-muted,#9A9A9F)]">
                       数据来源：{result.source?.database || 'DFBP'} · 序列 {result.sequence}
                     </span>
-                    <Button size="sm" variant="ghost" className="text-xs text-primary" onClick={() => handleGoDatabase(result.sequence)}>
-                      <Database className="w-3 h-3 mr-1" />在数据库中查看
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="ghost" className="text-xs text-primary" onClick={handleLiveLiterature} disabled={liveRefLoading}>
+                        <Zap className="w-3 h-3 mr-1" />{liveRefLoading ? '检索中...' : '实时检索该肽 PubMed 文献'}
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-xs text-primary" onClick={() => handleGoDatabase(result.sequence)}>
+                        <Database className="w-3 h-3 mr-1" />在数据库中查看
+                      </Button>
+                    </div>
                   </div>
+                  {liveRefs && (
+                    <div className="mt-2 pt-2 border-t border-[var(--border-color)] space-y-1">
+                      <div className="text-xs text-[var(--text-muted,#9A9A9F)] mb-1 flex items-center gap-1">
+                        <Zap className="w-3 h-3" />实时 PubMed 检索式：{result.sequence} AND ACE inhibitory peptide
+                      </div>
+                      {!liveRefs.reachable ? (
+                        <p className="text-xs text-[var(--text-muted,#9A9A9F)]">{liveRefs.note}</p>
+                      ) : liveRefs.references.length === 0 ? (
+                        <p className="text-xs text-[var(--text-muted,#9A9A9F)]">
+                          在线可达但无匹配文献。{liveRefs.note ? ` ${liveRefs.note}` : ''}
+                        </p>
+                      ) : (
+                        <>
+                          <ul className="list-disc list-inside space-y-0.5">
+                            {liveRefs.references.map((r: any, i: number) => (
+                              <li key={i} className="text-xs text-[var(--color-success-text)] dark:text-[var(--color-success-text)]0">
+                                <a
+                                  href={`https://www.ncbi.nlm.nih.gov/pubmed/${r.pmid}/`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="underline decoration-dotted"
+                                >
+                                  {r.title || '(无标题)'} — PMID {r.pmid}
+                                </a>
+                                <span className="text-[var(--text-muted,#9A9A9F)]"> · {r.journal || '-'} · {r.pubdate || ''}{r.doi ? ` · DOI: ${r.doi}` : ''}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          {liveRefs.note && <p className="text-xs text-[var(--text-muted,#9A9A9F)] pt-1">{liveRefs.note}</p>}
+                        </>
+                      )}
+                    </div>
+                  )}
                 </Card>
               )}
 
@@ -3437,7 +3562,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
       {activeTab === 'history' && <HistoryView />}
 
       {/* 高级工具 */}
-      {activeTab === 'advanced' && <AdvancedToolsView />}
+      {activeTab === 'advanced' && <AdvancedToolsView initialSequence={result?.sequence || ''} />}
     </div>
   );
 }

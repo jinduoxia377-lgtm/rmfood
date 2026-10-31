@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
-import { SectionType, DetailLevel } from '../types/report.types';
+import { useState, useCallback } from 'react';
+import { DetailLevel } from '../types/report.types';
 import type { ReportSection } from '../types/report.types';
 
 export interface UseReportStructureReturn {

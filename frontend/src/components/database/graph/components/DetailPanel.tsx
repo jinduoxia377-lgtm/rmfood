@@ -45,7 +45,7 @@ export default function DetailPanel({
                 '--tw-ring-color': TYPE_CONFIG[selectedNode.type]?.color,
               } as React.CSSProperties}
             >
-              <span className="text-xs text-white font-bold">{TYPE_CONFIG[selectedNode.type]?.label?.[0]}</span>
+              <span className="text-xs text-white dark:text-neutral-900 font-bold">{TYPE_CONFIG[selectedNode.type]?.label?.[0]}</span>
             </div>
             <div className="min-w-0 flex-1">
               <span className="font-semibold text-neutral-800 dark:text-neutral-100 text-sm leading-tight block truncate" title={selectedNode.label}>
@@ -55,12 +55,12 @@ export default function DetailPanel({
                 <Badge
                   variant={selectedNode.type === 'herb' ? 'primary' : selectedNode.type === 'compound' ? 'info' : selectedNode.type === 'target' ? 'warning' : selectedNode.type === 'disease' ? 'danger' : selectedNode.type === 'peptide' ? 'success' : 'neutral'}
                   size="sm"
-                  className="text-[9px] px-1.5 py-0"
+                  className="text-[11px] px-1.5 py-0"
                 >
                   {TYPE_CONFIG[selectedNode.type]?.label || selectedNode.type}
                 </Badge>
                 {selectedNode.degree != null && selectedNode.degree > 0 && (
-                  <span className="text-[9px] font-mono tabular-nums text-neutral-400 dark:text-neutral-400">
+                  <span className="text-[11px] font-mono tabular-nums text-neutral-400 dark:text-neutral-400">
                     度数 {selectedNode.degree}
                   </span>
                 )}
@@ -80,15 +80,15 @@ export default function DetailPanel({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 mt-3">
           <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
             <div className="text-xs font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{nodeConnections.totalConnections}</div>
-            <div className="text-[8px] text-neutral-400 dark:text-neutral-400">关联数</div>
+            <div className="text-[11px] text-neutral-400 dark:text-neutral-400">关联数</div>
           </div>
           <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
             <div className="text-xs font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{nodeConnections.neighbors.length}</div>
-            <div className="text-[8px] text-neutral-400 dark:text-neutral-400">邻居</div>
+            <div className="text-[11px] text-neutral-400 dark:text-neutral-400">邻居</div>
           </div>
           <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
             <div className="text-xs font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{Object.keys(nodeConnections.neighborTypeCount).length}</div>
-            <div className="text-[8px] text-neutral-400 dark:text-neutral-400">类型</div>
+            <div className="text-[11px] text-neutral-400 dark:text-neutral-400">类型</div>
           </div>
         </div>
 
@@ -98,7 +98,7 @@ export default function DetailPanel({
             {Object.entries(nodeConnections.neighborTypeCount).slice(0, 5).map(([type, count]) => {
               const tconf = TYPE_CONFIG[type as keyof typeof TYPE_CONFIG]
               return (
-                <span key={type} className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: `${tconf?.color || 'var(--color-knowledge-default, #9CA3AF)'}15`, color: tconf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
+                <span key={type} className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: `color-mix(in srgb, ${tconf?.color || 'var(--color-knowledge-default, #9CA3AF)'} 10%, transparent)`, color: tconf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
                   <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tconf?.color }} />
                   {tconf?.label || type} ×{count}
                 </span>
@@ -201,7 +201,7 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
             <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-          <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-primary-700 transition-colors">详情</span>
+          <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-primary-700 transition-colors">详情</span>
         </button>
         <button
           onClick={() => onSetDetailTab('connections')}
@@ -211,7 +211,7 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
           <svg className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-secondary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
           </svg>
-          <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-secondary-600 transition-colors">连接</span>
+          <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-secondary-600 transition-colors">连接</span>
         </button>
         <button
           onClick={() => {
@@ -223,7 +223,7 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
           <svg className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-warning-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
           </svg>
-          <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-warning-600 transition-colors">高亮</span>
+          <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-warning-600 transition-colors">高亮</span>
         </button>
         <button
           onClick={() => onSetSelectedNode(null)}
@@ -233,14 +233,14 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
           <svg className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-error-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-error-600 transition-colors">关闭</span>
+          <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-hover:text-error-600 transition-colors">关闭</span>
         </button>
       </div>
 
       {/* 邻居预览列表（最多显示8个） */}
       {nodeConnections.neighbors.length > 0 && (
         <div className="space-y-1">
-          <div className="text-[9px] uppercase tracking-wider text-neutral-400 dark:text-neutral-400 font-semibold px-1">
+          <div className="text-[11px] uppercase tracking-wider text-neutral-400 dark:text-neutral-400 font-semibold px-1">
             直接邻居 ({nodeConnections.neighbors.length})
           </div>
           <div className="space-y-0.5 max-h-[160px] overflow-y-auto custom-scrollbar pr-1">
@@ -254,7 +254,7 @@ function DetailInfoTab({ selectedNode, nodeConnections, onSetSelectedNode, onNod
                 >
                   <span className="w-2 h-2 rounded-full shrink-0 transition-transform group-hover/item:scale-150" style={{ backgroundColor: nconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
                   <span className="text-xs text-neutral-600 dark:text-neutral-300 truncate flex-1 font-medium group-hover/item:text-neutral-900 dark:group-hover/item:text-neutral-100">{neighbor.label}</span>
-                  <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">{nconf?.label}</span>
+                  <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] shrink-0">{nconf?.label}</span>
                 </button>
               )
             })}
@@ -289,7 +289,7 @@ function DetailConnectionsTab({ nodeConnections, onSetSelectedNode }: {
         <>
           {nodeConnections.incoming.length > 0 && (
             <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-[9px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-1">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-1">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 13l-7 7-7-7m14-8l-7 7-7-7" />
                 </svg>
@@ -304,9 +304,9 @@ function DetailConnectionsTab({ nodeConnections, onSetSelectedNode }: {
                       <button onClick={() => onSetSelectedNode(node)} className="min-w-0 flex-1 flex items-center gap-1.5 text-left">
                         <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: nconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
                         <span className="text-xs text-neutral-700 dark:text-neutral-300 truncate font-medium">{node.label}</span>
-                        <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{nconf?.label}</span>
+                        <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{nconf?.label}</span>
                       </button>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${econf?.color || 'var(--color-knowledge-default, #9CA3AF)'}15`, color: econf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `color-mix(in srgb, ${econf?.color || 'var(--color-knowledge-default, #9CA3AF)'} 10%, transparent)`, color: econf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
                         {EDGE_TYPE_LABELS[edge.type] || edge.type}
                       </span>
                     </div>
@@ -318,7 +318,7 @@ function DetailConnectionsTab({ nodeConnections, onSetSelectedNode }: {
 
           {nodeConnections.outgoing.length > 0 && (
             <div className="space-y-1">
-              <div className="flex items-center gap-1.5 text-[9px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-1">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-1">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 11l7-7 7 7M5 19l7-7 7 7" />
                 </svg>
@@ -332,10 +332,10 @@ function DetailConnectionsTab({ nodeConnections, onSetSelectedNode }: {
                     <div key={`out-${idx}`} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-neutral-50/80 dark:bg-neutral-800/40 group hover:bg-neutral-100 dark:hover:bg-neutral-800/70 transition-colors">
                       <button onClick={() => onSetSelectedNode(node)} className="min-w-0 flex-1 flex items-center gap-1.5 text-left">
                         <span className="text-xs text-neutral-700 dark:text-neutral-300 truncate font-medium">{node.label}</span>
-                        <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{nconf?.label}</span>
+                        <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{nconf?.label}</span>
                         <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: nconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
                       </button>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${econf?.color || 'var(--color-knowledge-default, #9CA3AF)'}15`, color: econf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `color-mix(in srgb, ${econf?.color || 'var(--color-knowledge-default, #9CA3AF)'} 10%, transparent)`, color: econf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
                         {EDGE_TYPE_LABELS[edge.type] || edge.type}
                       </span>
                     </div>

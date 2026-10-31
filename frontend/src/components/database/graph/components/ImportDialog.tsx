@@ -66,7 +66,7 @@ export default function ImportDialog({
             <div>
               <span className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">数据预览 (前{Math.min(importState.previewRows.length, 5)}行)</span>
               <div className="mt-1 max-h-[120px] overflow-auto custom-scrollbar rounded-lg border border-neutral-200 dark:border-neutral-700">
-                <table className="w-full text-[9px]">
+                <table className="w-full text-[11px]">
                   <thead className="bg-neutral-50 dark:bg-neutral-700/50 sticky top-0">
                     <tr>{Object.keys(importState.previewRows[0]).slice(0, 6).map(k => <th key={k} className="px-2 py-1 text-left text-neutral-500 font-medium border-b border-neutral-200 dark:border-neutral-600">{k}</th>)}</tr>
                   </thead>
@@ -96,10 +96,10 @@ export default function ImportDialog({
               <input type="file" accept=".csv,.json,.sdf" className="hidden" onChange={e => e.target.files?.[0] && onFileSelect(e.target.files[0])} aria-hidden="true" tabIndex={-1} />
             </label>
             <div className="flex flex-col gap-1">
-              <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">支持格式</span>
+              <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">支持格式</span>
               <div className="flex gap-1">
                 {['CSV', 'JSON', 'SDF'].map(fmt => (
-                  <span key={fmt} className="px-1.5 py-0.5 rounded text-[8px] font-mono bg-neutral-100 dark:bg-neutral-700 text-neutral-500">{fmt}</span>
+                  <span key={fmt} className="px-1.5 py-0.5 rounded text-[11px] font-mono bg-neutral-100 dark:bg-neutral-700 text-neutral-500">{fmt}</span>
                 ))}
               </div>
             </div>

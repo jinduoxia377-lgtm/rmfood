@@ -6,22 +6,33 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Search, FlaskConical, TestTubes, Leaf, Dna, ArrowRight, Command, Plus, Sparkles } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { searchApi, type SearchResult, type SearchSuggestion } from '@/api/search'
 import { cn } from '@/lib/utils'
 
-const TYPE_CONFIG: Record<string, { icon: typeof FlaskConical; label: string; color: string }> = {
-  formula: { icon: FlaskConical, label: '配方', color: 'text-primary-700 dark:text-primary-700' },
-  experiment: { icon: TestTubes, label: '实验', color: 'text-secondary-600 dark:text-secondary-700' },
-  herb: { icon: Leaf, label: '药材', color: 'text-primary-700 dark:text-primary-700' },
-  peptide: { icon: Dna, label: '肽', color: 'text-accent-600 dark:text-accent-700' },
+const TYPE_CONFIG: Record<string, { icon: typeof FlaskConical; color: string }> = {
+  formula: { icon: FlaskConical, color: 'text-primary-700 dark:text-primary-700' },
+  experiment: { icon: TestTubes, color: 'text-secondary-600 dark:text-secondary-700' },
+  herb: { icon: Leaf, color: 'text-primary-700 dark:text-primary-700' },
+  peptide: { icon: Dna, color: 'text-accent-600 dark:text-accent-700' },
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  draft: '草稿', pending_review: '待审核', approved: '已通过', rejected: '已驳回', archived: '已归档',
-  planned: '计划中', in_progress: '进行中', completed: '已完成', failed: '已失败', cancelled: '已取消',
-  food_homology: '药食同源', tcm: '中药材',
+/** 状态 → i18n 键（通用状态复用 common.statusLabels，命令面板特有状态挂在 commandPalette 下） */
+const STATUS_I18N_KEYS: Record<string, string> = {
+  draft: 'common.statusLabels.draft',
+  pending_review: 'common.statusLabels.pending_review',
+  approved: 'common.statusLabels.approved',
+  rejected: 'common.statusLabels.rejected',
+  archived: 'common.statusLabels.archived',
+  planned: 'common.statusLabels.planned',
+  in_progress: 'common.statusLabels.in_progress',
+  completed: 'common.statusLabels.completed',
+  failed: 'common.statusLabels.failed',
+  cancelled: 'common.statusLabels.cancelled',
+  food_homology: 'common.commandPalette.statusFoodHomology',
+  tcm: 'common.commandPalette.statusTcm',
 }
 
 /** 可选择项的通用接口 */
@@ -36,6 +47,7 @@ function ResultItem({
   isSelected: boolean
   itemRef: (el: HTMLButtonElement | null) => void
 }) {
+  const { t } = useTranslation()
   const config = TYPE_CONFIG[item.type] || TYPE_CONFIG.formula
   const Icon = config.icon
 
@@ -68,12 +80,12 @@ function ResultItem({
       <div className="flex items-center gap-2 shrink-0">
         {item.status && (
           <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
-            {STATUS_LABELS[item.status] || item.status}
+            {STATUS_I18N_KEYS[item.status] ? t(STATUS_I18N_KEYS[item.status]) : item.status}
           </span>
         )}
         {isSelected ? (
           <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-primary-100 dark:bg-primary-300/30 text-primary-700 dark:text-primary-700">
-            跳转
+            {t('common.commandPalette.navigate')}
           </span>
         ) : (
           <ArrowRight size={14} className="text-neutral-600 dark:text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -96,6 +108,7 @@ export default function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null)
   const itemRefs = useRef<Map<number, HTMLButtonElement>>(new Map())
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   // ── 快捷键 Ctrl+K / Cmd+K ──
   useEffect(() => {
@@ -282,7 +295,7 @@ export default function CommandPalette() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="搜索配方、实验、药材、活性肽..."
+            placeholder={t('common.commandPalette.searchPlaceholder')}
             className="flex-1 bg-transparent text-sm text-neutral-900 dark:text-white placeholder:text-neutral-600 focus:outline-none"
             autoComplete="off"
           />
@@ -291,7 +304,7 @@ export default function CommandPalette() {
               onClick={() => setQuery('')}
               className="text-xs text-neutral-600 hover:text-neutral-600 dark:hover:text-neutral-600 transition-colors"
             >
-              清除
+              {t('common.commandPalette.clear')}
             </button>
           )}
           <kbd className="shrink-0 px-1.5 py-0.5 rounded text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
@@ -307,8 +320,8 @@ export default function CommandPalette() {
               <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
                 <Command size={20} className="text-neutral-600 dark:text-neutral-400" />
               </div>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">输入关键词开始搜索</p>
-              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">支持搜索配方、实验、中药材、活性肽</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('common.commandPalette.emptyTitle')}</p>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">{t('common.commandPalette.emptySubtitle')}</p>
 
               {/* 快捷入口 */}
               <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-xs mx-auto">
@@ -319,39 +332,39 @@ export default function CommandPalette() {
                   onClick={() => { navigate('/formulas/new'); setOpen(false) }}
                   className="flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors text-sm font-medium"
                 >
-                  <Plus size={14} /> 新建配方
+                  <Plus size={14} /> {t('common.commandPalette.quickNewFormula')}
                 </button>
                 <button
                   onClick={() => { navigate('/experiments/new'); setOpen(false) }}
                   className="flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-50 dark:bg-accent-300/20 text-accent-700 dark:text-accent-700 hover:bg-accent-100 dark:hover:bg-accent-900/30 transition-colors text-sm font-medium"
                 >
-                  <Plus size={14} /> 新建实验
+                  <Plus size={14} /> {t('common.commandPalette.quickNewExperiment')}
                 </button>
                 <button
                   onClick={() => { navigate('/ai'); setOpen(false) }}
                   className="flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-300/20 text-warning-700 dark:text-warning-700 hover:bg-warning-100 dark:hover:bg-warning-900/30 transition-colors text-sm font-medium"
                 >
-                  <Sparkles size={14} /> AI 助手
+                  <Sparkles size={14} /> {t('common.commandPalette.quickAiAssistant')}
                 </button>
                 <button
                   onClick={() => { navigate('/databases'); setOpen(false) }}
                   className="flex min-h-[44px] items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary-50 dark:bg-secondary-300/20 text-secondary-700 dark:text-secondary-700 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors text-sm font-medium"
                 >
-                  <Dna size={14} /> 数据库
+                  <Dna size={14} /> {t('common.commandPalette.quickDatabase')}
                 </button>
               </div>
 
               <div className="mt-4 flex items-center justify-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
-                <span className="flex items-center gap-1"><Leaf size={12} /> 药材</span>
-                <span className="flex items-center gap-1"><FlaskConical size={12} /> 配方</span>
-                <span className="flex items-center gap-1"><TestTubes size={12} /> 实验</span>
-                <span className="flex items-center gap-1"><Dna size={12} /> 肽</span>
+                <span className="flex items-center gap-1"><Leaf size={12} /> {t('common.commandPalette.typeHerb')}</span>
+                <span className="flex items-center gap-1"><FlaskConical size={12} /> {t('common.commandPalette.typeFormula')}</span>
+                <span className="flex items-center gap-1"><TestTubes size={12} /> {t('common.commandPalette.typeExperiment')}</span>
+                <span className="flex items-center gap-1"><Dna size={12} /> {t('common.commandPalette.typePeptide')}</span>
               </div>
             </div>
           ) : searching ? (
             <div className="px-4 py-6 text-center">
               <div className="inline-block w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2">搜索中...</p>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2">{t('common.commandPalette.searching')}</p>
             </div>
           ) : allResults.length > 0 ? (
             <div className="space-y-0.5 px-2">
@@ -397,8 +410,8 @@ export default function CommandPalette() {
             </div>
           ) : (
             <div className="px-4 py-8 text-center">
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">未找到相关结果</p>
-              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">尝试不同的关键词</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('common.commandPalette.noResults')}</p>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">{t('common.commandPalette.noResultsHint')}</p>
             </div>
           )}
         </div>
@@ -407,20 +420,20 @@ export default function CommandPalette() {
         {(searchData || query.length > 0) && (
           <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
             <span className="text-xs text-neutral-600">
-              {searchData ? `共 ${searchData.total} 个结果` : '输入关键词搜索'}
+              {searchData ? t('common.commandPalette.resultCount', { count: searchData.total }) : t('common.commandPalette.footerSearchHint')}
             </span>
             <div className="flex items-center gap-3 text-xs text-neutral-600">
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[9px]">↑↓</kbd>
-                导航
+                <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs">↑↓</kbd>
+                {t('common.commandPalette.footerNavigate')}
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[9px]">↵</kbd>
-                选择
+                <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs">↵</kbd>
+                {t('common.commandPalette.footerSelect')}
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[9px]">esc</kbd>
-                关闭
+                <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs">esc</kbd>
+                {t('common.commandPalette.footerClose')}
               </span>
             </div>
           </div>

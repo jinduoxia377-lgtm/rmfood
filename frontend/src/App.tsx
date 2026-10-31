@@ -41,6 +41,7 @@ import { lazyWithPreload } from '@/components/LazyLoad.tsx';
 // 这些文件体积小，同步加载无影响首屏性能
 import LoginPage from '@/pages/auth/LoginPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import RadixDemoPage from '@/pages/radix-demo/RadixDemoPage';
 
@@ -280,6 +281,15 @@ const router = createBrowserRouter([
     element: (
       <GuestGuard>
         <ForgotPasswordPage />
+      </GuestGuard>
+    ),
+  },
+  // 公开路由 — 重置密码 (邮件链接指向 /auth/reset-password?token=...)
+  {
+    path: '/auth/reset-password',
+    element: (
+      <GuestGuard>
+        <ResetPasswordPage />
       </GuestGuard>
     ),
   },
@@ -766,7 +776,12 @@ const router = createBrowserRouter([
 
 export default function App() {
   // 🔒 P0: 注册 Service Worker（离线缓存 + 快速重载）
+  // 审计修复：开发环境不注册 SW，避免 SW/浏览器缓存干扰 Vite 热更新与最新代码加载
+  //（此前用户浏览器长期加载旧版 chatService 模块，导致 422 提示一直是旧格式）。
   useEffect(() => {
+    if (import.meta.env.DEV) {
+      return;
+    }
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')

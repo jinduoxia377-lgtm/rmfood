@@ -614,19 +614,19 @@ export default function DocumentExtractPage() {
                             <tr key={idx}>
                               <td className="py-2 pr-2 text-[var(--text-primary)] align-top">
                                 {it.item || '—'}
-                                {it.item_en && <div className="text-xs sm:text-[10px] text-[var(--text-muted)]/70 mt-0.5">{it.item_en}</div>}
+                                {it.item_en && <div className="text-xs sm:text-xs text-[var(--text-muted)]/70 mt-0.5">{it.item_en}</div>}
                               </td>
                               <td className="py-2 pr-2 text-[var(--text-muted)] align-top">
                                 {it.standard || '—'}
-                                {it.standard_en && <div className="text-xs sm:text-[10px] text-[var(--text-muted)]/70 mt-0.5">{it.standard_en}</div>}
+                                {it.standard_en && <div className="text-xs sm:text-xs text-[var(--text-muted)]/70 mt-0.5">{it.standard_en}</div>}
                               </td>
                               <td className="py-2 pr-2 text-[var(--text-muted)] align-top">
                                 {it.result || '—'}
-                                {it.result_en && <div className="text-xs sm:text-[10px] text-[var(--text-muted)]/70 mt-0.5">{it.result_en}</div>}
+                                {it.result_en && <div className="text-xs sm:text-xs text-[var(--text-muted)]/70 mt-0.5">{it.result_en}</div>}
                               </td>
                               <td className="py-2 text-[var(--text-muted)] align-top">
                                 {it.judgment || '—'}
-                                {it.judgment_en && <div className="text-xs sm:text-[10px] text-[var(--text-muted)]/70 mt-0.5">{it.judgment_en}</div>}
+                                {it.judgment_en && <div className="text-xs sm:text-xs text-[var(--text-muted)]/70 mt-0.5">{it.judgment_en}</div>}
                               </td>
                             </tr>
                           ))}
@@ -704,7 +704,7 @@ export default function DocumentExtractPage() {
                 }`}>
                   <div className="w-28 shrink-0">
                     <div className="text-xs font-medium text-[var(--text-primary)]">{field.label ?? key}</div>
-                    <div className="text-xs sm:text-[10px] font-mono text-[var(--text-muted)]">{key}</div>
+                    <div className="text-xs sm:text-xs font-mono text-[var(--text-muted)]">{key}</div>
                   </div>
                   <input
                     value={reviewDraft[key] ?? ''}

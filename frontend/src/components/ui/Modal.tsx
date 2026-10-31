@@ -117,7 +117,10 @@ export function Modal({ open, onClose, title, description, children, className, 
   const previousActiveElement = useRef<HTMLElement | null>(null)
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => { setMounted(true) }, [])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+  }, [])
   useEffect(() => {
     if (!open) return
     previousActiveElement.current = document.activeElement as HTMLElement

@@ -106,6 +106,16 @@ describe('FormulaIngredientInput Utils', () => {
       expect(result?.message).toContain('未添加任何成分');
     });
 
+    it('should return error when fewer than 3 ingredients (NSGA-II 死循环防御)', () => {
+      const ingredients = [
+        { id: '1', name: 'a', nameCn: 'a', ratio: 50, unit: 'percentage', dosage: 50, parameters: [] },
+        { id: '2', name: 'b', nameCn: 'b', ratio: 50, unit: 'percentage', dosage: 50, parameters: [] },
+      ];
+      const result = validateIngredientCount(ingredients);
+      expect(result).not.toBeNull();
+      expect(result?.message).toContain('至少需要 3 种成分');
+    });
+
     it('should return error when too many ingredients', () => {
       const ingredients = Array(51).fill({ id: '1', name: 'a', nameCn: 'a', ratio: 1, unit: 'percentage', dosage: 1, parameters: [] });
       const result = validateIngredientCount(ingredients);
@@ -113,10 +123,11 @@ describe('FormulaIngredientInput Utils', () => {
       expect(result?.message).toContain('超过限制');
     });
 
-    it('should return null for valid count', () => {
+    it('should return null for valid count (>=3 且 <=50)', () => {
       const ingredients = [
-        { id: '1', name: 'a', nameCn: 'a', ratio: 50, unit: 'percentage', dosage: 50, parameters: [] },
-        { id: '2', name: 'b', nameCn: 'b', ratio: 50, unit: 'percentage', dosage: 50, parameters: [] },
+        { id: '1', name: 'a', nameCn: 'a', ratio: 40, unit: 'percentage', dosage: 40, parameters: [] },
+        { id: '2', name: 'b', nameCn: 'b', ratio: 30, unit: 'percentage', dosage: 30, parameters: [] },
+        { id: '3', name: 'c', nameCn: 'c', ratio: 30, unit: 'percentage', dosage: 30, parameters: [] },
       ];
       expect(validateIngredientCount(ingredients)).toBeNull();
     });

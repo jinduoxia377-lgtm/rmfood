@@ -38,7 +38,7 @@ export default function AIInsightsPanel({
           <span className="text-base">🤖</span>
           <span className="text-sm font-bold text-accent-700 dark:text-accent-700">AI 智能洞察</span>
           {aiInsights.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-accent-100 dark:bg-accent-300/30 text-accent-600 dark:text-accent-700">{aiInsights.length} 条发现</span>
+            <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-accent-100 dark:bg-accent-300/30 text-accent-600 dark:text-accent-700">{aiInsights.length} 条发现</span>
           )}
         </div>
         <div className="flex items-center gap-1">
@@ -71,7 +71,7 @@ export default function AIInsightsPanel({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate">{insight.title}</h4>
-                      <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[8px] font-mono font-bold bg-white/70 dark:bg-neutral-700/50 text-neutral-500">
+                      <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-white/70 dark:bg-neutral-700/50 text-neutral-500">
                         {(insight.confidence * 100).toFixed(0)}%
                       </span>
                     </div>

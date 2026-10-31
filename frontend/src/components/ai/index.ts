@@ -54,4 +54,3 @@ export { ScoreCards } from './charts/ScoreCards'
 
 // 学术报告
 export { AcademicReportEnhanced } from './AcademicReportEnhanced'
-export { FormulaAcademicReport } from './FormulaAcademicReport'

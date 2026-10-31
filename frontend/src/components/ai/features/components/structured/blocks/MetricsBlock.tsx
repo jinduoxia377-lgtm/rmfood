@@ -8,6 +8,7 @@
  */
 import React, { useState } from 'react'
 import { TrendingUp, TrendingDown, Minus, BarChart3, CircleDot } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { MetricsData } from '../types'
 
 interface MetricsBlockProps {
@@ -44,6 +45,7 @@ function formatDisplayValue(value: string | number): string {
 }
 
 function RadarChartView({ items }: { items: MetricsData['items'] }) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   if (items.length < 3) return null
   const maxVal = Math.max(...items.map(i => typeof i.value === 'number' ? i.value : parseFloat(String(i.value)) || 0))
   const normalizedItems = items.map(i => {
@@ -52,7 +54,7 @@ function RadarChartView({ items }: { items: MetricsData['items'] }) {
   })
   const n = normalizedItems.length
   const angleStep = (2 * Math.PI) / n
-  const radius = 80
+  const radius = 76
   const center = { x: 100, y: 100 }
 
   const getPoint = (index: number, value: number) => {
@@ -68,6 +70,14 @@ function RadarChartView({ items }: { items: MetricsData['items'] }) {
     const p = getPoint(i, item.displayValue)
     return `${p.x},${p.y}`
   }).join(' ')
+
+  // P0 修复：标签半径从 115 调整到 105，确保标签不超出 200×200 viewBox 边界
+  const labelRadius = 105
+  // 格式化数值显示
+  const formatVal = (v: string | number) => {
+    const num = typeof v === 'number' ? v : parseFloat(String(v)) || 0
+    return num < 1 && num > 0 ? (num * 100).toFixed(0) : String(v)
+  }
 
   return (
     <div className="mt-3">
@@ -100,29 +110,44 @@ function RadarChartView({ items }: { items: MetricsData['items'] }) {
             />
           )
         })}
-        {/* 数据区域 */}
+        {/* 数据区域 — 使用主题 CSS 变量而非硬编码 */}
         <polygon
           points={polygonPoints}
-          fill="rgba(16, 185, 129, 0.2)"
-          stroke="rgba(16, 185, 129, 0.8)"
+          fill="var(--color-primary-500, rgba(16, 185, 129, 0.2))"
+          fillOpacity={0.25}
+          stroke="var(--color-primary-500, rgba(16, 185, 129, 0.8))"
           strokeWidth={2}
+          style={{ transition: 'all 0.3s ease' }}
         />
-        {/* 数据点 */}
+        {/* 数据点 — 添加 hover 交互 */}
         {normalizedItems.map((item, i) => {
           const p = getPoint(i, item.displayValue)
+          const isHovered = hoveredIndex === i
           return (
-            <circle
-              key={i}
-              cx={p.x}
-              cy={p.y}
-              r={4}
-              fill="rgba(16, 185, 129, 0.9)"
-            />
+            <g key={i} className="cursor-pointer" onMouseEnter={() => setHoveredIndex(i)} onMouseLeave={() => setHoveredIndex(null)}>
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={isHovered ? 8 : 4}
+                fill={isHovered ? 'var(--color-primary-600, rgba(16, 185, 129, 1))' : 'var(--color-primary-500, rgba(16, 185, 129, 0.9))'}
+                style={{ transition: 'r 0.2s ease, fill 0.2s ease' }}
+              />
+              {/* 数值标签 — P1 修复：显示实际值 */}
+              <text
+                x={p.x}
+                y={p.y - (isHovered ? 14 : 10)}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-[9px] font-semibold fill-neutral-800 dark:fill-neutral-200"
+              >
+                {formatVal(item.value)}
+              </text>
+            </g>
           )
         })}
-        {/* 标签 */}
+        {/* 维度标签 — P0 修复：半径调整防裁剪 */}
         {normalizedItems.map((item, i) => {
-          const p = getPoint(i, 115)
+          const p = getPoint(i, labelRadius)
           return (
             <text
               key={i}
@@ -130,7 +155,7 @@ function RadarChartView({ items }: { items: MetricsData['items'] }) {
               y={p.y}
               textAnchor="middle"
               dominantBaseline="middle"
-              className="text-[8px] fill-neutral-600 dark:fill-neutral-400"
+              className="text-[10px] fill-neutral-600 dark:fill-neutral-400"
             >
               {item.label.length > 6 ? item.label.slice(0, 6) + '…' : item.label}
             </text>
@@ -142,6 +167,7 @@ function RadarChartView({ items }: { items: MetricsData['items'] }) {
 }
 
 function MetricsBlock({ data }: MetricsBlockProps) {
+  const { t } = useTranslation()
   const { title, items = [] } = data
   const [showRadar, setShowRadar] = useState(false)
 
@@ -149,7 +175,7 @@ function MetricsBlock({ data }: MetricsBlockProps) {
     return (
       <div className="flex flex-col items-center justify-center py-6 text-neutral-300 dark:text-neutral-400">
         <BarChart3 className="w-8 h-8 mb-2 opacity-50" />
-        <p className="text-xs">暂无指标数据</p>
+        <p className="text-xs">{t('ai.structured.metrics.empty')}</p>
       </div>
     )
   }
@@ -173,17 +199,24 @@ function MetricsBlock({ data }: MetricsBlockProps) {
         {canShowRadar && (
           <button
             onClick={() => setShowRadar(!showRadar)}
-            className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 hover:text-primary-500 dark:hover:text-primary-600 transition-colors"
+            aria-pressed={showRadar}
+            className={`flex items-center gap-1 text-xs transition-colors rounded-md px-2 py-1
+              ${showRadar
+                ? 'text-primary-600 dark:text-primary-700 bg-primary-50 dark:bg-primary-900/20'
+                : 'text-neutral-500 dark:text-neutral-400 hover:text-primary-500 dark:hover:text-primary-600 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+              }`}
           >
             <CircleDot className="w-3 h-3" />
-            <span>{showRadar ? '切换卡片' : '雷达图'}</span>
+            <span>{showRadar ? t('ai.structured.metrics.switchToCards') : t('ai.structured.metrics.showRadar')}</span>
           </button>
         )}
       </div>
 
-      {/* 雷达图视图 */}
+      {/* 雷达图视图 — P1 修复：添加淡入过渡动画 */}
       {showRadar && canShowRadar && (
-        <RadarChartView items={items} />
+        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+          <RadarChartView items={items} />
+        </div>
       )}
 
       {/* 指标卡片网格 */}

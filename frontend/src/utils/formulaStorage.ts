@@ -166,7 +166,7 @@ export function getStorageInfo(): StorageInfo {
       lastUpdated: storageData?.timestamp ? new Date(storageData.timestamp) : null,
       isAvailable: true,
     }
-  } catch (e) {
+  } catch {
     return { size: 0, count: 0, lastUpdated: null, isAvailable: false }
   }
 }

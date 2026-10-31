@@ -22,6 +22,7 @@ export function ConditionalRender({
  }, delay);
  return () => clearTimeout(timer);
  } else {
+ // eslint-disable-next-line react-hooks/set-state-in-effect
  setIsRendered(false);
  }
  return

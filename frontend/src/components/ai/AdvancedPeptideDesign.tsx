@@ -7,6 +7,15 @@ import { logger } from '@/utils/safeLogger'
 import { useToast } from '@/components/ui'
 import { generateSimulatedPeptides } from '@/components/ai/features/services/simulatedPeptideGenerator'
 
+/** 颜色名 → Tailwind 静态类名映射（JIT 无法解析动态类名） */
+const COLOR_CLASSES: Record<string, { border: string; bg50: string; bgDark: string }> = {
+  blue: { border: 'border-blue-500', bg50: 'bg-blue-50', bgDark: 'dark:bg-blue-900/20' },
+  green: { border: 'border-green-500', bg50: 'bg-green-50', bgDark: 'dark:bg-green-900/20' },
+  purple: { border: 'border-purple-500', bg50: 'bg-purple-50', bgDark: 'dark:bg-purple-900/20' },
+  orange: { border: 'border-orange-500', bg50: 'bg-orange-50', bgDark: 'dark:bg-orange-900/20' },
+  red: { border: 'border-red-500', bg50: 'bg-red-50', bgDark: 'dark:bg-red-900/20' },
+}
+
 
 interface AdvancedPeptideDesignProps {
   onPeptidesGenerated?: (peptides: PeptideResult[]) => void
@@ -686,7 +695,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                     onClick={() => toggleEffect(effect.id)}
                     className={`p-3 rounded-lg border-2 transition-all ${
                       selectedEffects.includes(effect.id)
-                        ? `border-${effect.color}-500 bg-${effect.color}-50 dark:bg-${effect.color}-900/20`
+                        ? `${COLOR_CLASSES[effect.color]?.border || ''} ${COLOR_CLASSES[effect.color]?.bg50 || ''} ${COLOR_CLASSES[effect.color]?.bgDark || ''}`
                         : 'border-neutral-200 dark:border-neutral-600 hover:border-neutral-300'
                     }`}
                   >

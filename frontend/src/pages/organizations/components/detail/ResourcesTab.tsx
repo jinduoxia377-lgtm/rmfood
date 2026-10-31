@@ -1,19 +1,16 @@
-import { useState, useMemo, memo, useCallback } from 'react'
+import { useMemo, memo } from 'react'
 import {
   HardDrive,
   Zap,
   Users,
   ArrowUpRight,
-  Copy,
-  CheckCircle,
   TrendingUp,
   FileText,
-  Image,
-  FileArchive,
-  Server,
+  Inbox,
+  BarChart3,
+  UserPlus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useToast } from '@/components/ui/Toast'
 import type { Member, Team, Role } from '@/hooks/useOrganizationDetail'
 
 interface ResourcesTabProps {
@@ -25,7 +22,9 @@ interface ResourcesTabProps {
   organization?: {
     storageUsed: number
     storageLimit: number
+    apiUsage?: number
     apiCalls?: number
+    apiLimit?: number
     plan: string
     id?: number
   }
@@ -36,53 +35,7 @@ interface ResourcesTabProps {
   onUpdateTeam?: (teamId: number, data: Partial<Team>) => Promise<void>
   onDeleteTeam?: (teamId: number) => Promise<void>
   onRefresh?: () => void
-}
-
-interface StorageFileItem {
-  name: string
-  size: string
-  type: 'document' | 'image' | 'archive' | 'other'
-  updatedAt: string
-}
-
-interface ApiEndpointStat {
-  endpoint: string
-  calls: number
-  avgLatency: string
-  trend: 'up' | 'down' | 'stable'
-}
-
-const MOCK_STORAGE_FILES: StorageFileItem[] = [
-  { name: 'Q4季度报告.pdf', size: '12.5 MB', type: 'document', updatedAt: '2天前' },
-  { name: '产品配方库.xlsx', size: '8.3 MB', type: 'document', updatedAt: '5天前' },
-  { name: '实验数据_2026.csv', size: '45.2 MB', type: 'document', updatedAt: '1周前' },
-  { name: '团队合照.jpg', size: '3.8 MB', type: 'image', updatedAt: '2周前' },
-  { name: '产品渲染图.png', size: '18.7 MB', type: 'image', updatedAt: '3周前' },
-  { name: '备份档案.zip', size: '156.0 MB', type: 'archive', updatedAt: '1个月前' },
-  { name: '研发文档合集.pdf', size: '23.1 MB', type: 'document', updatedAt: '1个月前' },
-  { name: 'logo设计稿.svg', size: '0.5 MB', type: 'other', updatedAt: '2个月前' },
-  { name: '市场分析报告.pptx', size: '15.6 MB', type: 'document', updatedAt: '2个月前' },
-  { name: '原料数据库.json', size: '67.4 MB', type: 'other', updatedAt: '3个月前' },
-]
-
-const MOCK_API_ENDPOINTS: ApiEndpointStat[] = [
-  { endpoint: '/api/v1/formulas/search', calls: 45230, avgLatency: '120ms', trend: 'up' },
-  { endpoint: '/api/v1/formulas/generate', calls: 28760, avgLatency: '2.3s', trend: 'up' },
-  { endpoint: '/api/v1/experiments/run', calls: 15420, avgLatency: '8.5s', trend: 'stable' },
-  { endpoint: '/api/v1/ai/chat', calls: 12890, avgLatency: '1.8s', trend: 'up' },
-  { endpoint: '/api/v1/formulas/detail', calls: 9870, avgLatency: '45ms', trend: 'down' },
-  { endpoint: '/api/v1/database/query', calls: 7650, avgLatency: '200ms', trend: 'stable' },
-  { endpoint: '/api/v1/files/upload', calls: 5430, avgLatency: '1.2s', trend: 'stable' },
-  { endpoint: '/api/v1/organizations/*', calls: 3210, avgLatency: '35ms', trend: 'down' },
-  { endpoint: '/api/v1/analytics/report', calls: 2180, avgLatency: '500ms', trend: 'up' },
-  { endpoint: '/api/v1/auth/*', calls: 1890, avgLatency: '20ms', trend: 'stable' },
-]
-
-const FILE_TYPE_CONFIG: Record<StorageFileItem['type'], { icon: typeof FileText; color: string; label: string }> = {
-  document: { icon: FileText, color: 'text-[var(--color-secondary-text)]0 bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/25', label: '文档' },
-  image: { icon: Image, color: 'text-[var(--color-primary-text)]0 bg-[var(--color-primary-container)]', label: '图片' },
-  archive: { icon: FileArchive, color: 'text-[var(--color-warning-text)]0 bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/25', label: '压缩包' },
-  other: { icon: Server, color: 'text-[var(--text-muted)] bg-[var(--bg-tertiary)]', label: '其他' },
+  onNavigateTab?: (tab: string) => void
 }
 
 function formatBytes(bytes: number): string {
@@ -104,20 +57,25 @@ function ProgressBar({
   max,
   showLabel = true,
   height = 8,
+  format = 'bytes',
 }: {
   value: number
   max: number
   showLabel?: boolean
   height?: number
+  format?: 'bytes' | 'number'
 }) {
   const percentage = max > 0 ? Math.min((value / max) * 100, 100) : 0
   const colors = getStorageColor(percentage)
+
+  const formattedValue = format === 'bytes' ? formatBytes(value) : value.toLocaleString()
+  const formattedMax = format === 'bytes' ? formatBytes(max) : max.toLocaleString()
 
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <span className={cn('text-sm font-medium', colors.text)}>
-          {formatBytes(value)} / {formatBytes(max)}
+          {formattedValue} / {formattedMax}
         </span>
         {showLabel && (
           <span className={cn('text-xs font-medium px-1.5 py-0.5 rounded-[var(--radius-pill)]', colors.bar.replace('bg-', 'bg-opacity-20 bg-').replace('500', '100') + ` ${colors.text}`)}>
@@ -139,39 +97,49 @@ function ProgressBar({
   )
 }
 
-const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTabProps) => {
-  const toast = useToast()
-  const [copiedInviteLink, setCopiedInviteLink] = useState(false)
+/** 通用「暂无数据」空态（功能待后端支持） */
+function NotSupportedEmptyState({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: typeof FileText
+  title: string
+  description: string
+}) {
+  return (
+    <div className="border border-dashed border-[var(--border-color)] dark:border-neutral-700 rounded-[var(--radius-Apple-sm)] px-[var(--space-apple-md)] py-8 text-center">
+      <Icon className="w-8 h-8 mx-auto text-[var(--text-muted)] dark:text-[var(--text-muted)] mb-2" />
+      <p className="text-sm font-medium text-[var(--text-primary)]">{title}</p>
+      <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">{description}</p>
+    </div>
+  )
+}
 
+const ResourcesTab = memo(({ organization, memberCount, onRefresh, onNavigateTab }: ResourcesTabProps) => {
   const storageUsed = useMemo(() => organization?.storageUsed || 0, [organization])
   const storageLimit = useMemo(() => organization?.storageLimit || 10 * 1024 * 1024 * 1024, [organization])
-  const storagePercent = useMemo(() => storageLimit > 0 ? (storageUsed / storageLimit) * 100 : 0, [storageUsed, storageLimit])
 
-  // Plan-based limits
-  const planLimits: Record<string, { members: number; storageGB: number; apiCalls: number }> = {
-    free: { members: 5, storageGB: 0.5, apiCalls: 1000 },
-    pro: { members: 50, storageGB: 5, apiCalls: 10000 },
-    enterprise: { members: -1, storageGB: -1, apiCalls: -1 },
+  // Plan-based limits（与后端 PLAN_LIMITS 对齐：free=5/pro=20/enterprise=无限制）
+  const planLimits: Record<string, { members: number; apiCalls: number }> = {
+    free: { members: 5, apiCalls: 1000 },
+    pro: { members: 20, apiCalls: 10000 },
+    enterprise: { members: -1, apiCalls: -1 },
   }
   const planConfig = planLimits[organization?.plan || 'free'] || planLimits.free
-  const apiCallsUsed = useMemo(() => organization?.apiCalls || 0, [organization])
-  const apiCallsLimit = useMemo(() => planConfig.apiCalls, [planConfig])
+  const apiCallsUsed = useMemo(
+    () => organization?.apiUsage ?? organization?.apiCalls ?? 0,
+    [organization],
+  )
+  // 优先使用后端返回的 apiLimit，缺失时回退到计划配置
+  const apiCallsLimit = useMemo(
+    () => organization?.apiLimit ?? planConfig.apiCalls,
+    [organization, planConfig],
+  )
   const memberLimit = useMemo(() => planConfig.members, [planConfig])
 
-  const handleCopyInviteLink = useCallback(async () => {
-    const link = `${window.location.origin}/invite?org=${organization?.id}`
-    try {
-      await navigator.clipboard.writeText(link)
-      setCopiedInviteLink(true)
-      toast.success('邀请链接已复制到剪贴板')
-      setTimeout(() => setCopiedInviteLink(false), 2000)
-    } catch {
-      toast.error('复制失败，请手动复制')
-    }
-  }, [organization, toast])
-
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-8 space-y-4 sm:space-y-8">
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">资源配额</h2>
@@ -192,66 +160,24 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
 
         <ProgressBar value={storageUsed} max={storageLimit} />
 
-        {/* File Type Distribution */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-[var(--space-apple-sm)] pt-2">
-          {[
-            { type: 'document' as const, percent: 55, size: formatBytes(storageUsed * 0.55), count: 24 },
-            { type: 'image' as const, percent: 25, size: formatBytes(storageUsed * 0.25), count: 12 },
-            { type: 'archive' as const, percent: 15, size: formatBytes(storageUsed * 0.15), count: 3 },
-            { type: 'other' as const, percent: 5, size: formatBytes(storageUsed * 0.05), count: 8 },
-          ].map((item) => {
-            const config = FILE_TYPE_CONFIG[item.type]
-            const Icon = config.icon
-            return (
-              <div key={item.type} className="rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] dark:border-neutral-700 p-[var(--space-apple-sm)]">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={cn('w-8 h-8 rounded-[var(--radius-Apple-sm)] flex items-center justify-center', config.color)}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <span className="text-sm font-medium text-[var(--text-primary)]">{config.label}</span>
-                </div>
-                <p className="text-lg font-bold text-[var(--text-primary)]">{item.size}</p>
-                <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{item.percent}% · {item.count} 个文件</p>
-              </div>
-            )
-          })}
-        </div>
+        {/* 文件类型分布（后端暂无接口，不展示假数据） */}
+        <NotSupportedEmptyState
+          icon={FileText}
+          title="暂无文件类型分布数据"
+          description="文件类型分布接口尚未提供，功能待后端支持"
+        />
 
-        {/* Large Files TOP 10 */}
+        {/* 大文件 TOP 10（后端暂无文件级明细接口，不展示假数据） */}
         <div>
           <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-[var(--space-apple-sm)] flex items-center gap-1.5">
             <TrendingUp className="w-4 h-4" />
             大文件 TOP 10
           </h4>
-          <div className="border border-[var(--border-color)] dark:border-neutral-700 rounded-[var(--radius-Apple-sm)] overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-[var(--bg-tertiary)]/50">
-                  <th className="px-[var(--space-apple-md)] py-2.5 text-left text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">文件名</th>
-                  <th className="px-[var(--space-apple-md)] py-2.5 text-right text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">大小</th>
-                  <th className="hidden sm:table-cell px-[var(--space-apple-md)] py-2.5 text-right text-xs font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">更新时间</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
-                {MOCK_STORAGE_FILES.map((file, index) => {
-                  const config = FILE_TYPE_CONFIG[file.type]
-                  const Icon = config.icon
-                  return (
-                    <tr key={index} className="hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]/20 transition-colors">
-                      <td className="px-[var(--space-apple-md)] py-2.5">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Icon className={cn('w-4 h-4 shrink-0', config.color.split(' ')[0])} />
-                          <span className="truncate text-[var(--text-primary)]">{file.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-[var(--space-apple-md)] py-2.5 text-right font-mono text-[var(--text-secondary)]">{file.size}</td>
-                      <td className="hidden sm:table-cell px-[var(--space-apple-md)] py-2.5 text-right text-[var(--text-muted)]">{file.updatedAt}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+          <NotSupportedEmptyState
+            icon={Inbox}
+            title="暂无大文件数据"
+            description="文件级明细接口尚未提供，功能待后端支持"
+          />
         </div>
       </section>
 
@@ -267,38 +193,19 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
           </div>
         </div>
 
-        <ProgressBar value={apiCallsUsed} max={apiCallsLimit} />
+        <ProgressBar value={apiCallsUsed} max={apiCallsLimit} format="number" />
 
-        {/* API Endpoint Ranking */}
+        {/* API 端点排行（后端暂无端点级统计接口，不展示假数据） */}
         <div>
           <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-[var(--space-apple-sm)] flex items-center gap-1.5">
             <TrendingUp className="w-4 h-4" />
             端点使用排行 TOP 10
           </h4>
-          <div className="space-y-2">
-            {MOCK_API_ENDPOINTS.map((ep, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-2.5 rounded-[var(--radius-Apple-sm)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-secondary)]/20 transition-colors"
-              >
-                <span className={cn(
-                  'w-6 h-6 rounded-[var(--radius-Apple-sm)] flex items-center justify-center text-xs font-bold shrink-0',
-                  index < 3 ? 'bg-[var(--color-secondary-container)] text-[var(--color-secondary-text)] dark:bg-[var(--color-secondary-container)]/25 dark:text-[var(--color-secondary-text)]' : 'bg-[var(--bg-tertiary)] text-[var(--text-muted)] dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-muted)]',
-                )}>
-                  {index + 1}
-                </span>
-                <code className="flex-1 text-xs font-mono text-[var(--text-secondary)] truncate">{ep.endpoint}</code>
-                <span className="text-sm font-semibold text-[var(--text-primary)] shrink-0">
-                  {ep.calls.toLocaleString()}
-                </span>
-                <span className="hidden md:block text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] w-14 text-right">{ep.avgLatency}</span>
-                <span className={cn(
-                  'w-1.5 h-1.5 rounded-[var(--radius-pill)] shrink-0',
-                  ep.trend === 'up' ? 'bg-[var(--color-error-container)]0' : ep.trend === 'down' ? 'bg-[var(--color-success-container)]0' : 'bg-neutral-400',
-                )} title={ep.trend === 'up' ? '上升' : ep.trend === 'down' ? '下降' : '稳定'} />
-              </div>
-            ))}
-          </div>
+          <NotSupportedEmptyState
+            icon={BarChart3}
+            title="暂无 API 端点排行数据"
+            description="端点级统计接口尚未提供，功能待后端支持"
+          />
         </div>
       </section>
 
@@ -318,6 +225,7 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
           value={memberCount}
           max={memberLimit > 0 ? memberLimit : memberCount + 10}
           showLabel={memberLimit > 0}
+          format="number"
         />
 
         {memberLimit <= 0 && (
@@ -329,19 +237,22 @@ const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTa
         {/* Invite Link & Upgrade */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           <div className="rounded-[var(--radius-Apple-sm)] border border-dashed border-[var(--border-color)] p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
-            <p className="text-sm font-medium text-[var(--text-primary)]">邀请成员链接</p>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 text-xs bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)] px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] truncate text-[var(--text-muted)]">
-                {window.location.origin}/invite?org={organization?.id}
+            <p className="text-sm font-medium text-[var(--text-primary)]">邀请成员</p>
+            <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-relaxed">
+              组织邀请采用「邮箱 + 一次性令牌」闭环：在成员页输入邮箱发送邀请后，系统会生成带 token 的邀请链接并通过邮件发送。
+              受邀人打开
+              <code className="mx-1 px-1 py-0.5 rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)] text-[var(--text-secondary)]">
+                {window.location.origin}/invitations/accept?token=...
               </code>
-              <button
-                onClick={handleCopyInviteLink}
-                className="shrink-0 p-2 rounded-[var(--radius-Apple-sm)] text-[var(--text-muted)] hover:text-[var(--color-secondary-text)] hover:bg-[var(--color-secondary-container)] dark:hover:bg-[var(--color-secondary-container)]/20 transition-colors"
-                title="复制邀请链接"
-              >
-                {copiedInviteLink ? <CheckCircle className="w-4.5 h-4.5 text-[var(--color-success-text)]0" /> : <Copy className="w-4.5 h-4.5" />}
-              </button>
-            </div>
+              即可接受邀请并加入组织。
+            </p>
+            <button
+              onClick={() => onNavigateTab?.('members')}
+              className="inline-flex items-center gap-1.5 px-[var(--space-apple-sm)] py-1.5 text-xs font-medium bg-secondary-container text-secondary-main rounded-[var(--radius-Apple-sm)] hover:bg-secondary-container transition-colors"
+            >
+              <UserPlus className="w-4 h-4" />
+              前往成员页发送邀请
+            </button>
           </div>
 
           <div className="rounded-[var(--radius-Apple-sm)] bg-gradient-to-br from-secondary-50 to-accent-50 dark:from-secondary-900/20 dark:to-accent-900/20 border border-[var(--color-secondary-border)] dark:border-[var(--color-secondary)] p-[var(--space-apple-md)] space-y-2">

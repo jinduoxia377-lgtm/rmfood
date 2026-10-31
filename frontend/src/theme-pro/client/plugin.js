@@ -246,7 +246,7 @@ function apply(ctx) {
           React.createElement('div', { style: { flex: 1 } },
             React.createElement('div', { className: 'tp-pr' },
               React.createElement('div', { className: 'tp-pf', style: { width: '100%', background: 'var(--color-primary-main,#10b981)' } })),
-            React.createElement('div', { style: { fontSize: '10px', color: 'var(--text-muted,#64748b)', marginTop: '2px' } }, '100% \u2705 Achieved'))),
+            React.createElement('div', { style: { fontSize: '10px', color: 'var(--text-muted,#64748b)', marginTop: '2px' } }, '100% \u2705 Achieved')))),
       React.createElement('div', { className: 'tp-cd' },
         React.createElement('div', { className: 'tp-st' }, 'Added Tokens (16 new)'),
         React.createElement('div', { className: 'tp-li', style: { fontSize: '11px' } }, '\u2705 --color-primary-main/light/dark (brand semantic)'),

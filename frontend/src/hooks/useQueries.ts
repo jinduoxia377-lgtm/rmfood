@@ -13,7 +13,7 @@ import { dashboardApi } from '@/api/dashboard';
 export function useCurrentUser() {
   return useQuery({
     queryKey: ['auth', 'me'],
-    queryFn: authApi.getMe,
+    queryFn: () => authApi.getMe(),
     retry: false,
     staleTime: 5 * 60_000,
   });

@@ -19,8 +19,9 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
 } from 'recharts';
-import { aiApi } from '@/api/ai';
+import { aiApi, normalizeMultiObjectiveResponse } from '@/api/ai';
 import type { MultiObjectiveResponse, MOObjective, GAHistoryRecord } from '@/api/ai';
+import { useGenerationStore } from '@/stores/generationStore';
 import { EFFECT_OPTIONS } from '@/config/ai/effects';
 import { cn } from '@/lib/utils';
 import { getAuthToken } from '@/hooks/useSSEAuth';
@@ -192,12 +193,19 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
 
   // ── 流式模式 ──
   const [isStreamingMode, setIsStreamingMode] = useState(true);
-  const [liveHistory, setLiveHistory] = useState<GenerationRecord[]>([]);
-  const [isStreaming, setIsStreaming] = useState(false);
+  // 生成结果/进化曲线/运行状态提升到全局 store，切换 tab 后保留
+  const liveHistory = useGenerationStore((s) => s.moLiveHistory);
+  const appendLiveHistory = useGenerationStore((s) => s.appendMoLiveHistory);
+  const isStreaming = useGenerationStore((s) => s.moIsRunning);
+  const setIsStreaming = useGenerationStore((s) => s.setMoIsRunning);
 
   // ── 运行状态 ──
   const [logs, setLogs] = useState<Array<{ time: string; message: string; level: 'info' | 'warn' | 'error' }>>([]);
-  const [result, setResult] = useState<MultiObjectiveResponse | null>(null);
+  const result = useGenerationStore((s) => s.moResult);
+  const setResult = useGenerationStore((s) => s.setMoResult);
+  const resetMoResult = useGenerationStore((s) => s.resetMoResult);
+  const setMoError = useGenerationStore((s) => s.setMoError);
+  const moError = useGenerationStore((s) => s.moError);
   const abortRef = useRef<AbortController | null>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
@@ -300,7 +308,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
   const radarData = useMemo(() => {
     if (!selectedCandidate || !result?.objectives_config) return [];
     return Object.entries(selectedCandidate.objective_scores).map(([key, value]) => ({
-      subject: result.objectives_config.find((o) => o.key === key)?.name || key,
+      subject: result.objectives_config?.find((o) => o.key === key)?.name || key,
       score: value,
       maxScore: 1.0,
     }));
@@ -491,7 +499,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
     },
     onSuccess: (data) => {
       addLog(
-        `✅ 多目标优化完成！共 ${data.total_generations} 代，${data.candidates.length} 个候选方案，Pareto 前沿 ${data.pareto_front.length} 个解`,
+        `✅ 多目标优化完成！共 ${data.total_generations} 代，${data.candidates.length} 个候选方案，Pareto 前沿 ${(data.pareto_front ?? []).length} 个解`,
         'info',
       );
       setResult(data);
@@ -501,6 +509,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
         addLog('⏹️ 用户终止了优化过程', 'warn');
       } else {
         const msg = (error as Error)?.message || '未知错误';
+        setMoError(msg);
         addLog(`❌ 优化失败：${msg}`, 'error');
       }
     },
@@ -555,9 +564,8 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
 
     const controller = new AbortController();
     abortRef.current = controller;
+    resetMoResult();
     setIsStreaming(true);
-    setLiveHistory([]);
-    setResult(null);
     setLogs([]);
 
     addLog('🧬 初始化 NSGA-II 多目标优化引擎（流式模式）...', 'info');
@@ -625,13 +633,14 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
         addLog('⏹️ 用户终止了优化过程', 'warn');
       } else {
         const msg = (err as Error)?.message || '未知错误';
+        setMoError(msg);
         addLog(`❌ 流式优化失败：${msg}`, 'error');
       }
     } finally {
       setIsStreaming(false);
       abortRef.current = null;
     }
-  }, [buildRequestBody, params, mode, addLog]);
+  }, [buildRequestBody, params, mode, addLog, resetMoResult, setIsStreaming, setMoError]);
 
   // ── SSE 事件处理 ──
   const handleSSEEvent = useCallback(
@@ -642,14 +651,16 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           break;
         case 'progress': {
           const record = data as GenerationRecord;
-          setLiveHistory((prev) => [...prev, record]);
+          appendLiveHistory(record);
           if (record.generation % Math.max(1, Math.floor(params.generations / 10)) === 0 || record.generation <= 3) {
             addLog(`📈 第 ${record.generation} 代：最佳适应度 ${record.best_fitness.toFixed(4)}`, 'info');
           }
           break;
         }
         case 'complete': {
-          const finalData = data as MultiObjectiveResponse;
+          // P0 契约适配：SSE complete 事件为后端原始结构（herb_combination + scores + fitness），
+          // 归一化后再交给前端类型与渲染。
+          const finalData = normalizeMultiObjectiveResponse(data);
           addLog(
             `✅ 多目标优化完成！共 ${finalData.total_generations} 代，${finalData.candidates.length} 个候选方案`,
             'info',
@@ -658,7 +669,9 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           break;
         }
         case 'error': {
-          const errMsg = (data as Record<string, unknown>)?.message || String(data);
+          const rawMsg = (data as Record<string, unknown>)?.message;
+          const errMsg = typeof rawMsg === 'string' ? rawMsg : String(data);
+          setMoError(errMsg);
           addLog(`❌ 服务端错误：${errMsg}`, 'error');
           break;
         }
@@ -669,7 +682,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           break;
       }
     },
-    [addLog, params.generations],
+    [addLog, params.generations, appendLiveHistory, setResult, setMoError],
   );
 
   // ── 效果切换 ──
@@ -789,8 +802,8 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
     const objKeys = result.objectives_config?.map((o) => o.key) ?? [];
     const headers = [
       '#',
-      'Rank',
-      'Fitness',
+      '排名',
+      '适应度',
       ...objKeys.map((k) => {
         const obj = result.objectives_config?.find((o) => o.key === k);
         return obj?.name ?? k;
@@ -800,9 +813,11 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
     const rows = result.candidates.map((c, i) => [
       i + 1,
       c.pareto_rank,
-      c.overall_fitness.toFixed(6),
+      (Number.isFinite(c.overall_fitness) ? c.overall_fitness : 0).toFixed(6),
       ...objKeys.map((k) => c.objective_scores[k]?.toFixed(4) ?? ''),
-      c.ingredients.map((ing) => `${ing.name_cn}(${ing.dosage}g)`).join('; '),
+      c.ingredients.length > 0
+        ? c.ingredients.map((ing) => `${ing.name_cn}(${ing.dosage}g)`).join('; ')
+        : '暂无成分数据',
     ]);
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const bom = '\uFEFF';
@@ -818,8 +833,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
   // ── 开始 / 停止 / 重置 ──
   const handleStart = () => {
     if (!validateParams()) return;
-    setResult(null);
-    setLiveHistory([]);
+    resetMoResult();
     setLogs([]);
     if (isStreamingMode) {
       executeStreaming();
@@ -836,7 +850,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
 
   const handleReset = () => {
     handleStop();
-    setResult(null);
+    resetMoResult();
     setSelectedEffects([]);
     setSelectedPreset('balanced');
     setMode('pareto');
@@ -1377,7 +1391,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 优化完成 · {result.candidates.length} 方案
               </Badge>
             )}
-            {mutation.isError && (
+            {(mutation.isError || moError) && (
               <Badge variant="danger" className="flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" aria-hidden="true" />
                 运行失败
@@ -1387,12 +1401,12 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
         </div>
 
         {/* 错误提示 */}
-        {mutation.isError && !isRunning && (
+        {(mutation.isError || moError) && !isRunning && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangle className="w-4 h-4" aria-hidden="true" />
             <AlertTitle>{t('ai.genetic.runFailed')}</AlertTitle>
             <AlertDescription>
-              {(mutation.error as Error)?.message || '多目标优化执行过程中发生错误，请检查参数后重试。'}
+              {(mutation.error as Error)?.message || moError || '多目标优化执行过程中发生错误，请检查参数后重试。'}
             </AlertDescription>
           </Alert>
         )}
@@ -1477,7 +1491,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                   result
                     ? (isStreamingMode && liveHistory.length > 0
                         ? liveHistory[liveHistory.length - 1].diversity.toFixed(4)
-                        : result.history.length > 0
+                        : result.history && result.history.length > 0
                           ? result.history[result.history.length - 1].diversity.toFixed(4)
                           : '--')
                     : '--'
@@ -1723,7 +1737,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 {[1, 2, 3, 4, 5].map((rank) => (
                   <div key={rank} className="flex items-center gap-1.5 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span className="w-3 h-3 rounded-full" style={{ backgroundColor: getParetoColor(rank) }} />
-                    Rank {rank}
+                    排名 {rank}
                   </div>
                 ))}
                 <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-2">· 大小 = 拥挤距离</span>
@@ -1940,11 +1954,15 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       </Badge>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      {best.ingredients.map((ing) => (
-                        <Badge key={ing.id} variant="neutral" className="text-xs">
-                          {ing.name_cn}({ing.dosage}g)
-                        </Badge>
-                      ))}
+                      {best.ingredients.length > 0 ? (
+                        best.ingredients.map((ing) => (
+                          <Badge key={ing.id} variant="neutral" className="text-xs">
+                            {ing.name_cn}({ing.dosage}g)
+                          </Badge>
+                        ))
+                      ) : (
+                        <span className="text-xs text-neutral-400 dark:text-neutral-500">暂无成分数据</span>
+                      )}
                     </div>
                     {best.explanation && <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-2 line-clamp-2">{best.explanation}</p>}
                   </div>
@@ -2013,7 +2031,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                           #
                         </th>
                         <th className="px-3 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 w-16">
-                          Rank
+                          排名
                         </th>
                         {(result.objectives_config ?? []).map((obj) => (
                           <th
@@ -2032,7 +2050,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                           onClick={() => handleSort('overall_fitness')}
                         >
                           <span className="inline-flex items-center gap-1">
-                            Fitness
+                            适应度
                             {sortKey === 'overall_fitness' && (sortDir === 'asc' ? '↑' : '↓')}
                           </span>
                         </th>
@@ -2068,14 +2086,20 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                               </td>
                             );
                           })}
-                          <td className="px-3 py-3 font-mono text-xs">{cand.overall_fitness.toFixed(6)}</td>
+                          <td className="px-3 py-3 font-mono text-xs">
+                            {(Number.isFinite(cand.overall_fitness) ? cand.overall_fitness : 0).toFixed(6)}
+                          </td>
                           <td className="px-3 py-3">
                             <div className="flex flex-wrap gap-1">
-                              {cand.ingredients.map((ing) => (
-                                <Badge key={ing.id} variant="neutral" className="text-xs">
-                                  {ing.name_cn}({ing.dosage}g)
-                                </Badge>
-                              ))}
+                              {cand.ingredients.length > 0 ? (
+                                cand.ingredients.map((ing) => (
+                                  <Badge key={ing.id} variant="neutral" className="text-xs">
+                                    {ing.name_cn}({ing.dosage}g)
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-xs text-neutral-400 dark:text-neutral-500">暂无成分数据</span>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -2138,7 +2162,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                           </span>
                         </div>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground flex-shrink-0">
-                          <span>Fitness: {record.best_fitness.toFixed(4)}</span>
+                          <span>适应度: {record.best_fitness.toFixed(4)}</span>
                           <span>{record.execution_time_ms?.toFixed(0)}ms</span>
                           <span>{new Date(record.created_at).toLocaleDateString('zh-CN')}</span>
                         </div>

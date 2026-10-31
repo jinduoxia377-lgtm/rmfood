@@ -1,7 +1,6 @@
 /**
  * 稳定性趋势图 - 展示货架期预测和降解曲线
  */
-import { useMemo } from 'react';
 
 interface StabilityTrendChartProps {
   data?: {

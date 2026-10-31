@@ -8,7 +8,6 @@ import type {
   Precaution,
   PrecautionCategory,
   PrecautionSeverity,
-  TriggerCondition,
 } from '@/types/ai.types'
 
 // ==================== 预置注意事项列表 ====================

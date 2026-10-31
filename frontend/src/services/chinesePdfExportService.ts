@@ -1,14 +1,16 @@
 /**
  * PDF 中文导出服务
- * 提供完整的中文 PDF 支持，包括中文字体、分页、书签等功能
+ * 提供中文 PDF 导出支持。
+ *
+ * 实现说明：jsPDF 内置字体不含 CJK 字形，直接 setFont('SimSun') 会抛
+ * "Unknown font" 异常。本服务统一采用「生成 HTML → 浏览器打印 → 另存为 PDF」
+ * 方案，由浏览器原生渲染中文（无乱码）。
  */
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import type { AcademicReport } from './academicReportService';
+import { exportHtmlAsPdf, wrapPrintHtml } from '@/utils/pdfPrintExporter';
+import { feedbackService } from './feedbackService';
 
-
-import { logger } from '@/utils/safeLogger';
 export interface ChinesePdfOptions {
   filename?: string;
   title?: string;
@@ -66,401 +68,95 @@ const DEFAULT_OPTIONS: ResolvedPdfOptions = {
   footerText: '© 莱茵分子生物科技有限公司',
 };
 
-const CHINESE_FONT = {
-  name: 'SimSun',
-  style: 'normal',
-};
+/** 将 Markdown 正文转换为简单 HTML（打印用） */
+function markdownToHtml(content: string): string {
+  return content
+    .split('\n')
+    .map(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return '';
+      const h3 = trimmed.match(/^###\s+(.+)/);
+      if (h3) return `<h3>${h3[1]}</h3>`;
+      const h4 = trimmed.match(/^####\s+(.+)/);
+      if (h4) return `<h4>${h4[1]}</h4>`;
+      if (trimmed.startsWith('- ')) return `<p>• ${trimmed.slice(2)}</p>`;
+      if (/^\d+\./.test(trimmed)) return `<p>${trimmed}</p>`;
+      if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
+        return `<p><strong>${trimmed.replace(/\*\*/g, '')}</strong></p>`;
+      }
+      return `<p>${trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`;
+    })
+    .join('\n');
+}
 
-interface PageState {
-  currentY: number;
-  currentPage: number;
-  totalPages: number;
-  pageHeight: number;
-  margins: { top: number; right: number; bottom: number; left: number };
-  maxContentWidth: number;
+/** 将 AcademicReport 转换为完整可打印 HTML */
+function academicReportToHtml(report: AcademicReport, title: string): string {
+  const sections: string[] = [];
+
+  sections.push(`<h1>${title}</h1>`);
+  sections.push(`<p style="text-align:center;">作者：${report.authors.join('、')}｜单位：${report.institution}｜日期：${report.date}</p>`);
+  sections.push(`<h2>摘要</h2><p>${report.abstract}</p>`);
+
+  report.chapters.forEach((chapter, index) => {
+    sections.push(`<h2>${index + 1}. ${chapter.title}</h2>`);
+    sections.push(markdownToHtml(chapter.content));
+    if (chapter.tables) {
+      chapter.tables.forEach(table => {
+        sections.push(`<h3>${table.title}</h3>`);
+        sections.push('<table><thead><tr>');
+        table.headers.forEach(h => { sections.push(`<th>${h}</th>`); });
+        sections.push('</tr></thead><tbody>');
+        table.rows.forEach(row => {
+          sections.push('<tr>');
+          row.forEach(cell => { sections.push(`<td>${cell}</td>`); });
+          sections.push('</tr>');
+        });
+        sections.push('</tbody></table>');
+      });
+    }
+  });
+
+  if (report.references && report.references.length > 0) {
+    sections.push('<h2>参考文献</h2>');
+    report.references.forEach(ref => {
+      sections.push(`<p>[${ref.number}] ${ref.authors}. ${ref.title}[J]. ${ref.journal}, ${ref.year}${ref.volume ? `, ${ref.volume}` : ''}${ref.pages ? `(${ref.pages})` : ''}${ref.doi ? `. DOI: ${ref.doi}` : ''}</p>`);
+    });
+  }
+
+  return wrapPrintHtml(sections.join('\n'), title);
 }
 
 export class ChinesePdfExportService {
-  private doc: jsPDF;
   private options: ResolvedPdfOptions;
-  private pageState: PageState;
 
   constructor(options: Partial<ChinesePdfOptions> = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options } as ResolvedPdfOptions;
-
-    this.doc = new jsPDF({
-      orientation: this.options.orientation,
-      unit: 'mm',
-      format: 'a4',
-    });
-
-    this.doc.setFont(CHINESE_FONT.name, CHINESE_FONT.style);
-
-    this.pageState = {
-      currentY: this.options.margins.top,
-      currentPage: 1,
-      totalPages: 1,
-      pageHeight: this.doc.internal.pageSize.getHeight(),
-      margins: this.options.margins,
-      maxContentWidth: this.doc.internal.pageSize.getWidth() - this.options.margins.left - this.options.margins.right,
-    };
-
-    this.setupDocumentProperties();
-  }
-
-  private setupDocumentProperties(): void {
-    this.doc.setProperties({
-      title: this.options.title,
-      subject: this.options.subject,
-      author: this.options.author,
-      creator: 'RMFOOD 配方平台',
-      keywords: this.options.keywords?.join(', '),
-    });
-  }
-
-  private checkPageBreak(requiredSpace: number): void {
-    const availableSpace = this.pageState.pageHeight - this.options.margins.bottom - this.pageState.currentY;
-
-    if (availableSpace < requiredSpace) {
-      this.addNewPage();
-    }
-  }
-
-  private addNewPage(): void {
-    this.addFooter(this.pageState.currentPage);
-    this.doc.addPage();
-    this.pageState.currentPage++;
-    this.pageState.totalPages = this.pageState.currentPage;
-    this.pageState.currentY = this.options.margins.top;
-
-    if (this.options.showHeader) {
-      this.addHeader();
-    }
-  }
-
-  private addHeader(): void {
-    const pageWidth = this.doc.internal.pageSize.getWidth();
-
-    this.doc.setFontSize(this.options.fontSize.small);
-    this.doc.setTextColor(150, 150, 150);
-    this.doc.text(this.options.headerText, pageWidth / 2, 15, { align: 'center' });
-
-    this.doc.setDrawColor(200, 200, 200);
-    this.doc.setLineWidth(0.2);
-    this.doc.line(this.options.margins.left, 18, pageWidth - this.options.margins.right, 18);
-
-    this.pageState.currentY = 22;
-  }
-
-  private addFooter(pageNum: number): void {
-    if (!this.options.showFooter) return;
-
-    const pageWidth = this.doc.internal.pageSize.getWidth();
-    const pageHeight = this.doc.internal.pageSize.getHeight();
-
-    this.doc.setDrawColor(200, 200, 200);
-    this.doc.setLineWidth(0.2);
-    this.doc.line(
-      this.options.margins.left,
-      pageHeight - this.options.margins.bottom + 8,
-      pageWidth - this.options.margins.right,
-      pageHeight - this.options.margins.bottom + 8,
-    );
-
-    this.doc.setFontSize(this.options.fontSize.small);
-    this.doc.setTextColor(150, 150, 150);
-    this.doc.text(this.options.footerText, this.options.margins.left, pageHeight - this.options.margins.bottom + 13);
-
-    if (this.options.showPageNumbers) {
-      this.doc.text(
-        `第 ${pageNum} 页 / 共 ${this.pageState.totalPages} 页`,
-        pageWidth - this.options.margins.right,
-        pageHeight - this.options.margins.bottom + 13,
-        { align: 'right' },
-      );
-    }
-  }
-
-  private addTitle(title: string): void {
-    this.checkPageBreak(30);
-
-    const pageWidth = this.doc.internal.pageSize.getWidth();
-
-    this.doc.setFontSize(this.options.fontSize.title);
-    this.doc.setTextColor(30, 64, 175);
-    this.doc.setFont(CHINESE_FONT.name, 'bold');
-
-    const titleLines = this.doc.splitTextToSize(
-      title,
-      pageWidth - this.options.margins.left - this.options.margins.right,
-    );
-
-    this.doc.text(titleLines, pageWidth / 2, this.pageState.currentY + 10, { align: 'center' });
-
-    this.pageState.currentY += 10 + titleLines.length * 8;
-
-    this.doc.setDrawColor(30, 64, 175);
-    this.doc.setLineWidth(0.5);
-    this.doc.line(
-      this.options.margins.left,
-      this.pageState.currentY,
-      pageWidth - this.options.margins.right,
-      this.pageState.currentY,
-    );
-
-    this.pageState.currentY += 10;
-    this.doc.setFont(CHINESE_FONT.name, CHINESE_FONT.style);
-  }
-
-  private addInfoItem(label: string, value: string): void {
-    this.checkPageBreak(8);
-
-    this.doc.setFontSize(this.options.fontSize.body);
-    this.doc.setTextColor(60, 60, 60);
-    this.doc.setFont(CHINESE_FONT.name, 'bold');
-    this.doc.text(`${label}：`, this.options.margins.left, this.pageState.currentY);
-
-    this.doc.setFont(CHINESE_FONT.name, CHINESE_FONT.style);
-    const labelWidth = this.doc.getTextWidth(`${label}：`);
-    this.doc.text(value, this.options.margins.left + labelWidth, this.pageState.currentY);
-
-    this.pageState.currentY += 8;
-  }
-
-  private addSectionTitle(title: string, level = 1): void {
-    const spacing = level === 1 ? 15 : 12;
-    this.checkPageBreak(spacing + 10);
-
-    const pageWidth = this.doc.internal.pageSize.getWidth();
-
-    if (level === 1) {
-      this.doc.setFontSize(this.options.fontSize.heading);
-      this.doc.setTextColor(30, 64, 175);
-      this.doc.setFont(CHINESE_FONT.name, 'bold');
-
-      this.doc.text(title, this.options.margins.left, this.pageState.currentY);
-
-      this.doc.setDrawColor(30, 64, 175);
-      this.doc.setLineWidth(0.3);
-      this.doc.line(
-        this.options.margins.left,
-        this.pageState.currentY + 3,
-        pageWidth - this.options.margins.right,
-        this.pageState.currentY + 3,
-      );
-    } else {
-      this.doc.setFontSize(this.options.fontSize.body + 1);
-      this.doc.setTextColor(60, 60, 60);
-      this.doc.setFont(CHINESE_FONT.name, 'bold');
-      this.doc.text(title, this.options.margins.left + 5, this.pageState.currentY);
-    }
-
-    this.pageState.currentY += spacing;
-    this.doc.setFont(CHINESE_FONT.name, CHINESE_FONT.style);
-  }
-
-  private addParagraph(text: string, indent = true): void {
-    const lines = this.doc.splitTextToSize(text, this.pageState.maxContentWidth - (indent ? 10 : 0));
-
-    lines.forEach((line: string) => {
-      this.checkPageBreak(8);
-
-      this.doc.setFontSize(this.options.fontSize.body);
-      this.doc.setTextColor(40, 40, 40);
-
-      const xPos = indent ? this.options.margins.left + 10 : this.options.margins.left;
-      this.doc.text(line, xPos, this.pageState.currentY);
-
-      this.pageState.currentY += 7;
-    });
-
-    this.pageState.currentY += 5;
-  }
-
-  private addBulletPoint(text: string): void {
-    this.checkPageBreak(8);
-
-    this.doc.setFontSize(this.options.fontSize.body);
-    this.doc.setTextColor(40, 40, 40);
-
-    this.doc.text('•', this.options.margins.left + 10, this.pageState.currentY);
-
-    const bulletWidth = this.doc.getTextWidth('• ');
-    const lines = this.doc.splitTextToSize(text, this.pageState.maxContentWidth - bulletWidth - 10);
-
-    this.doc.text(lines, this.options.margins.left + 10 + bulletWidth, this.pageState.currentY);
-
-    this.pageState.currentY += 7 * lines.length;
-  }
-
-  private addTable(headers: string[], rows: string[][], title?: string): void {
-    if (title) {
-      this.checkPageBreak(15);
-      this.doc.setFontSize(this.options.fontSize.body);
-      this.doc.setTextColor(80, 80, 80);
-      this.doc.setFont(CHINESE_FONT.name, 'bold');
-      this.doc.text(title, this.options.margins.left, this.pageState.currentY);
-      this.pageState.currentY += 8;
-      this.doc.setFont(CHINESE_FONT.name, CHINESE_FONT.style);
-    }
-
-    const startY = this.pageState.currentY;
-
-    autoTable(this.doc, {
-      head: [headers],
-      body: rows,
-      startY,
-      margin: {
-        top: 5,
-        right: this.options.margins.right,
-        bottom: this.options.margins.bottom,
-        left: this.options.margins.left,
-      },
-      styles: {
-        font: CHINESE_FONT.name,
-        fontSize: this.options.fontSize.small,
-        cellPadding: 3,
-        lineColor: [180, 180, 180],
-        lineWidth: 0.1,
-      },
-      headStyles: {
-        fillColor: [30, 64, 175],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        halign: 'center',
-        fontSize: this.options.fontSize.small,
-      },
-      bodyStyles: {
-        textColor: [40, 40, 40],
-        halign: 'left',
-      },
-      alternateRowStyles: {
-        fillColor: [248, 248, 248],
-      },
-      columnStyles: {
-        0: { cellWidth: 'auto' },
-      },
-      didDrawPage: () => {
-        this.pageState.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
-      },
-    });
-
-    this.pageState.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
-  }
-
-  private addReferences(references: AcademicReport['references']): void {
-    this.addSectionTitle('参考文献');
-
-    references.forEach((ref) => {
-      this.checkPageBreak(10);
-
-      const refText = [
-        `[${ref.number}] `,
-        ref.authors,
-        ref.title ? `. ${ref.title}` : '',
-        ref.journal ? `[J]. ${ref.journal}` : '',
-        ref.year ? `, ${ref.year}` : '',
-        ref.volume ? `, ${ref.volume}` : '',
-        ref.pages ? `(${ref.pages})` : '',
-        ref.doi ? `. DOI: ${ref.doi}` : '',
-      ].join('');
-
-      this.doc.setFontSize(this.options.fontSize.small);
-      this.doc.setTextColor(80, 80, 80);
-
-      const lines = this.doc.splitTextToSize(refText, this.pageState.maxContentWidth);
-
-      this.doc.text(lines, this.options.margins.left + 5, this.pageState.currentY);
-      this.pageState.currentY += 6 * lines.length;
-    });
-
-    this.pageState.currentY += 10;
   }
 
   public async exportReport(report: AcademicReport): Promise<Blob> {
     try {
-      this.addTitle(report.title);
+      const title = this.options.title || report.title;
+      const html = academicReportToHtml(report, title);
 
-      this.doc.setFontSize(this.options.fontSize.body);
-      this.doc.setTextColor(100, 100, 100);
-
-      this.addInfoItem('配方名称', report.formulaName);
-      this.addInfoItem('配方类型', report.formulaType);
-      this.addInfoItem('目标人群', report.targetPopulation);
-      this.addInfoItem('功效声称', report.efficacyClaims.join('、'));
-      this.addInfoItem('作者', report.authors.join('、'));
-      this.addInfoItem('单位', report.institution);
-      this.addInfoItem('日期', report.date);
-
-      this.pageState.currentY += 10;
-
-      this.addSectionTitle('摘要', 1);
-      this.addParagraph(report.abstract);
-
-      this.addInfoItem('关键词', report.keywords.join('、'));
-
-      this.pageState.currentY += 10;
-
-      report.chapters.forEach((chapter) => {
-        this.addSectionTitle(chapter.title, 1);
-
-        const paragraphs = chapter.content.split('\n');
-        paragraphs.forEach((para) => {
-          const trimmed = para.trim();
-          if (!trimmed) return;
-
-          if (trimmed.startsWith('### ')) {
-            this.addSectionTitle(trimmed.replace('### ', ''), 2);
-          } else if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
-            this.doc.setFont(CHINESE_FONT.name, 'bold');
-            this.addParagraph(trimmed.replace(/\*\*/g, ''), false);
-            this.doc.setFont(CHINESE_FONT.name, CHINESE_FONT.style);
-          } else if (trimmed.startsWith('- ')) {
-            this.addBulletPoint(trimmed.substring(2));
-          } else if (/^\d+\./.exec(trimmed)) {
-            this.addParagraph(trimmed, false);
-          } else if (trimmed) {
-            this.addParagraph(trimmed);
-          }
-        });
-
-        if (chapter.tables && chapter.tables.length > 0) {
-          this.pageState.currentY += 5;
-          chapter.tables.forEach((table) => {
-            this.addTable(table.headers, table.rows, table.title);
-          });
-        }
-
-        this.pageState.currentY += 10;
+      exportHtmlAsPdf(html, {
+        title,
+        onError: (message) => {
+          feedbackService.showError('导出失败', message);
+        },
       });
 
-      if (report.references && report.references.length > 0) {
-        this.addReferences(report.references);
-      }
-
-      for (let i = 1; i <= this.pageState.totalPages; i++) {
-        this.doc.setPage(i);
-        this.addFooter(i);
-      }
-
-      const blob = this.doc.output('blob');
-      return blob;
+      // 为兼容调用方，返回 HTML Blob（打印窗口已打开，不再用于下载）
+      return new Blob([html], { type: 'text/html;charset=utf-8' });
     } catch (error) {
-      logger.error('[ChinesePdfExportService] Export failed:', error);
-      throw new Error(`PDF导出失败: ${error instanceof Error ? error.message : '未知错误'}`);
+      const message = error instanceof Error ? error.message : '未知错误';
+      feedbackService.showError('导出失败', `PDF导出失败: ${message}`);
+      throw new Error(`PDF导出失败: ${message}`);
     }
   }
 
   public async exportAndDownload(report: AcademicReport): Promise<void> {
-    const blob = await this.exportReport(report);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${this.options.filename}_${this.formatDate()}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // 浏览器打印方案：打开打印窗口后由用户选择「另存为 PDF」，无需下载 Blob
+    await this.exportReport(report);
   }
 
   private formatDate(): string {

@@ -1,8 +1,9 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from '@tanstack/react-query'
-import { aiApi } from '@/api/ai'
+import { aiApi, normalizeGeneticResponse } from '@/api/ai'
 import type { GeneticGenerateResponse } from '@/api/ai'
+import { useGenerationStore } from '@/stores/generationStore'
 import { ParamSlider, StatCard, CandidateCard } from './GeneticAlgorithmPanelSubComponents'
 import { GAFitnessChart, GADiversityChart } from './GAPanelCharts'
 import { EFFECT_OPTIONS } from '@/config/ai/effects'
@@ -153,7 +154,6 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
 
   // ── 混合模式 ──
   const [hybridMode, setHybridMode] = useState(true)
-  const [warmStartEnabled, setWarmStartEnabled] = useState(true)
   const [totalDosage, setTotalDosage] = useState(100)
   const [nutritionConstraints, setNutritionConstraints] = useState<Array<{
     nutrient: string
@@ -167,8 +167,6 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
 
   // ── 流式模式 ──
   const [isStreamingMode, setIsStreamingMode] = useState(true)
-  const [liveHistory, setLiveHistory] = useState<GenerationRecord[]>([])
-  const [isStreaming, setIsStreaming] = useState(false)
 
   // ── 参数警告 ──
   const [paramWarning, setParamWarning] = useState<string | null>(null)
@@ -176,7 +174,15 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
 
   // ── 运行状态 ──
   const [logs, setLogs] = useState<Array<{ time: string; message: string; level: 'info' | 'warn' | 'error' }>>([])
-  const [result, setResult] = useState<GeneticGenerateResponse | null>(null)
+  // P3：结果/运行中状态提升到全局 store，切换 tab 后结果仍在
+  const result = useGenerationStore((s) => s.geneticResult)
+  const setResult = useGenerationStore((s) => s.setGeneticResult)
+  const liveHistory = useGenerationStore((s) => s.geneticLiveHistory)
+  const setLiveHistory = useGenerationStore((s) => s.setGeneticLiveHistory)
+  const appendLiveHistory = useGenerationStore((s) => s.appendGeneticLiveHistory)
+  const isStreaming = useGenerationStore((s) => s.geneticIsRunning)
+  const setIsStreaming = useGenerationStore((s) => s.setGeneticIsRunning)
+  const resetGeneticResult = useGenerationStore((s) => s.resetGeneticResult)
   const [expandedCard, setExpandedCard] = useState<number | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const logContainerRef = useRef<HTMLDivElement>(null)
@@ -213,7 +219,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         constraints.max_cost = maxCost
       }
 
-      addLog(`📊 种群大小=${params.populationSize}, 代数=${params.generations}, 模式=${hybridMode ? 'BinaryGA+MILP' : '标准GA'}`, 'info')
+      addLog(`📊 种群大小=${params.populationSize}, 代数=${params.generations}, 模式=${hybridMode ? 'GA+NSGA-II 混合' : '标准 GA'}`, 'info')
 
       // 目标权重：滑块没动过就不传（后端用内置默认）；动过则把改动值与默认值
       // 合并成完整 6 维向量 —— 后端会把未列出的目标权重置 0。
@@ -228,7 +234,6 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             ...params,
             constraints: Object.keys(constraints).length > 0 ? constraints : undefined,
             totalDosage,
-            warmStartEnabled,
             objectiveWeights,
           },
           controller.signal,
@@ -246,7 +251,8 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
       }
     },
     onSuccess: (data) => {
-      addLog(`进化完成！共 ${data.total_generations} 代，最佳得分 ${data.best_score.toFixed(4)}`, 'info')
+      const bestScore = Number.isFinite(data.best_score) ? data.best_score : 0
+      addLog(`进化完成！共 ${data.total_generations} 代，最佳得分 ${bestScore.toFixed(4)}`, 'info')
       setResult(data as GeneticGenerateResponse)
       abortRef.current = null
     },
@@ -260,6 +266,11 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
       abortRef.current = null
     },
   })
+
+  // P3：将非流式 mutation 的 pending 状态同步到 store，切 tab 重挂载后运行中状态可恢复
+  useEffect(() => {
+    setIsStreaming(mutation.isPending)
+  }, [mutation.isPending, setIsStreaming])
 
   // ── 构建请求体 ──
   const buildRequestBody = useCallback(() => {
@@ -294,15 +305,14 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
       count: params.count,
       constraints: Object.keys(constraints).length > 0 ? constraints : undefined,
       include_herbs: includeHerbs.length > 0 ? includeHerbs : undefined,
-      // 注意：hybrid_mode / total_dosage / nutrition_constraints / warm_start_enabled
+      // 注意：hybrid_mode / total_dosage / nutrition_constraints
       // 后端 GeneticRequest 目前尚无对应字段，会被忽略；混合与否由前端选 URL 决定。
       hybrid_mode: hybridMode,
       total_dosage: hybridMode ? totalDosage : undefined,
       nutrition_constraints: hybridMode ? nutritionConstraints : undefined,
-      warm_start_enabled: warmStartEnabled,
       objective_weights,
     }
-  }, [selectedEffects, params, excludeHerbs, includeHerbs, maxCost, hybridMode, totalDosage, nutritionConstraints, warmStartEnabled, adjustedWeights])
+  }, [selectedEffects, params, excludeHerbs, includeHerbs, maxCost, hybridMode, totalDosage, nutritionConstraints, adjustedWeights])
 
   // ── SSE 流式执行 ──
   const executeStreaming = useCallback(async () => {
@@ -391,14 +401,16 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         break
       case 'progress': {
         const record = data as GenerationRecord
-        setLiveHistory(prev => [...prev, record])
+        appendLiveHistory(record)
         if (record.generation % Math.max(1, Math.floor(params.generations / 10)) === 0 || record.generation <= 3) {
           addLog(`📈 第 ${record.generation} 代：最佳适应度 ${record.best_fitness.toFixed(4)}`, 'info')
         }
         break
       }
       case 'complete': {
-        const finalData = data as GeneticGenerateResponse
+        // P0 契约适配：SSE complete 事件为后端原始结构（herb_combination + fitness），
+        // 归一化后再交给前端类型与渲染。
+        const finalData = normalizeGeneticResponse(data)
         addLog(`✅ 进化完成！共 ${finalData.total_generations} 代，最佳得分 ${finalData.best_score.toFixed(4)}`, 'info')
         setResult(finalData)
         break
@@ -513,13 +525,15 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
     const headers = ['排名', '综合评分', '功效评分', '安全评分', '口感评分', '成本评分', '置信度', '药材组成']
     const rows = result.candidates.map((c, i) => [
       i + 1,
-      c.overall_score.toFixed(4),
-      c.efficacy_score.toFixed(4),
-      c.safety_score.toFixed(4),
-      c.taste_score.toFixed(4),
-      c.cost_score.toFixed(4),
-      c.confidence.toFixed(4),
-      c.ingredients.map(ing => `${ing.name_cn}(${ing.dosage}g)`).join('; '),
+      (Number.isFinite(c.overall_score) ? c.overall_score : 0).toFixed(4),
+      (Number.isFinite(c.efficacy_score) ? c.efficacy_score : 0).toFixed(4),
+      (Number.isFinite(c.safety_score) ? c.safety_score : 0).toFixed(4),
+      (Number.isFinite(c.taste_score) ? c.taste_score : 0).toFixed(4),
+      (Number.isFinite(c.cost_score) ? c.cost_score : 0).toFixed(4),
+      (Number.isFinite(c.confidence) ? c.confidence : 0).toFixed(4),
+      c.ingredients.length > 0
+        ? c.ingredients.map(ing => `${ing.name_cn}(${ing.dosage}g)`).join('; ')
+        : '暂无成分数据',
     ])
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
     const bom = '\uFEFF'
@@ -535,8 +549,8 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
   // ── 开始 / 停止 ──
   const handleStart = () => {
     if (!validateParams()) return
-    setResult(null)
-    setLiveHistory([])
+    // P3：新生成开始时清空旧结果（仅清空遗传算法面板自身，不影响其他面板/GenerateTab）
+    resetGeneticResult()
     setLogs([])
     if (isStreamingMode) {
       executeStreaming()
@@ -553,7 +567,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
 
   const handleReset = () => {
     handleStop()
-    setResult(null)
+    resetGeneticResult()
     setSelectedEffects([])
     setParams({ ...DEFAULT_PARAMS })
     setExcludeHerbs([])
@@ -561,11 +575,8 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
     setMaxCost(null)
     setLogs([])
     setExpandedCard(null)
-    setLiveHistory([])
-    setIsStreaming(false)
     setParamWarning(null)
     setParamError(null)
-    setWarmStartEnabled(true)
   }
 
   // ── 计算属性 ──
@@ -746,7 +757,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             <Dna className="w-4 h-4 text-accent-500" />
             {t('ai.genetic.mixedMode')}
             <Badge variant={hybridMode ? "success" : "neutral"} size="sm">
-              {hybridMode ? 'BinaryGA+MILP' : '标准GA'}
+              {hybridMode ? 'GA+NSGA-II 混合' : '标准 GA'}
             </Badge>
           </h3>
           <div className="flex items-center gap-3 mb-3">
@@ -780,20 +791,6 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                   max={500}
                   aria-label="总剂量"
                 />
-              </div>
-
-              {/* Warm Start */}
-              <div className="flex items-end">
-                <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-                  <input
-                    type="checkbox"
-                    checked={warmStartEnabled}
-                    onChange={(e) => setWarmStartEnabled(e.target.checked)}
-                    disabled={isRunning}
-                    className="rounded border-neutral-300 dark:border-neutral-700"
-                  />
-                  {t('ai.genetic.warmStart')}
-                </label>
               </div>
             </div>
           )}
@@ -1145,7 +1142,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             <StatCard
               icon={<TrendingUp className="w-5 h-5" />}
               label="最佳适应度"
-              value={result ? result.best_score.toFixed(4) : (liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].best_fitness.toFixed(4) : '--')}
+              value={result ? (Number.isFinite(result.best_score) ? result.best_score : 0).toFixed(4) : (liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].best_fitness.toFixed(4) : '--')}
               color="green"
             />
             <StatCard

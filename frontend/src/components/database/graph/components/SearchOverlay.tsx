@@ -41,18 +41,18 @@ export default function SearchOverlay({
             <span className={`flex-1 min-w-0 text-xs font-medium truncate ${isFocused ? 'text-primary-700 dark:text-primary-700' : 'text-neutral-700 dark:text-neutral-300'}`}>
               {node.label}
             </span>
-            <span className="text-[8px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${tconf?.color || '#9CA3AF'}15`, color: tconf?.color || '#6B7280' }}>
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `color-mix(in srgb, ${tconf?.color || '#9CA3AF'} 10%, transparent)`, color: tconf?.color || '#6B7280' }}>
               {tconf?.label || node.type}
             </span>
             {score >= 80 && (
-              <span className="text-[8px] font-bold text-warning-500 shrink-0">{score}</span>
+              <span className="text-[11px] font-bold text-warning-500 shrink-0">{score}</span>
             )}
           </button>
         )
       })}
       <div className="px-3 py-1.5 border-t border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between">
-        <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">找到 {totalMatches} 个匹配</span>
-        <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">↑↓ 导航 · Enter 选择</span>
+        <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">找到 {totalMatches} 个匹配</span>
+        <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">↑↓ 导航 · Enter 选择</span>
       </div>
     </div>
   )

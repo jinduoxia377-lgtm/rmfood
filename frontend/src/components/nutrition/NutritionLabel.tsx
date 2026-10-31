@@ -174,7 +174,7 @@ interface NutritionRowProps {
   compact: boolean
 }
 
-function NutritionRow({ item, showServing, compact }: NutritionRowProps) {
+function NutritionRow({ item, showServing, compact: _compact }: NutritionRowProps) {
   const cnName = NUTRIENT_NAMES_CN[item.nutrient] || item.nutrient
   const nrvColor =
     item.nrv_percent != null

@@ -18,7 +18,14 @@ export const authApi = {
   refresh: (refreshToken: string) =>
     api.post<Token>('/auth/refresh', { refresh_token: refreshToken }).then((r) => r.data),
 
-  getMe: () => api.get<User>('/auth/me', { params: { _t: Date.now() } }).then((r) => r.data),
+  getMe: (opts?: { silent?: boolean }) =>
+    api.get<User>('/auth/me', {
+      params: {
+        _t: Date.now(),
+        // 🔇 静默请求：401 时由拦截器完全静默降级（不触发 token 刷新/重定向）
+        ...(opts?.silent ? { _silent: true } : {}),
+      },
+    }).then((r) => r.data),
 
   // 🔒 P0 安全修复: 登出 API
   logout: () => api.post('/auth/logout'),

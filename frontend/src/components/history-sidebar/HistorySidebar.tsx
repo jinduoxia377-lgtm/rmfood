@@ -46,7 +46,7 @@ export function HistorySidebar({
   selectedConversationId,
 }: HistorySidebarProps) {
   const config = { ...defaultConfig, ...customConfig }
-  const { isMobile, isTablet, isDesktop } = useBreakpoint()
+  const { isMobile, isTablet: _isTablet, isDesktop } = useBreakpoint()
 
   // 折叠状态
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -206,6 +206,7 @@ export function HistorySidebar({
   // 响应式：移动端自动切换
   useEffect(() => {
     if (isMobile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsCollapsed(true)
     } else {
       setIsCollapsed(false)

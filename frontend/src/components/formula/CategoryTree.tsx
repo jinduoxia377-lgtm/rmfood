@@ -87,6 +87,7 @@ export function CategoryTree({
 
   useEffect(() => {
     if (open && categories.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(true)
       categoryApi.getTree().then((data) => {
         setCategories(data)

@@ -6,13 +6,21 @@
  *   - 采用学术出版物般的克制与秩序
  *   - 强调排版节奏与信息密度
  *   - 统一圆角系统（rounded-md = 4px）与阴影层级，与 Dashboard 对齐
+ *
+ * 性能审计（v7.0）：
+ *   ① 字体加载：无 @font-face 声明，全部使用系统字体回退（Inter/Noto Sans SC/JetBrains Mono），
+ *      无网络请求阻塞，无需 font-display。
+ *   ② will-change：仅施加于动画类（.animate-*），静态元素不预分配合成层。
+ *   ③ filter: blur(24px) 仅用于 .lp-preview-glow（静态装饰，浏览器缓存结果，不重复计算）。
+ *   ④ backdrop-filter 仅用于固定导航栏（单元素，blur(12px) 可接受）。
+ *   ⑤ box-shadow 最大模糊半径 48px 仅用于 .lp-preview-window 单元素，可接受。
  */
 
-/* ── 滚动触发动画（极简，无弹跳） ── */
+/* ── 滚动触发动画（极简，无弹跳） — 使用 --duration-emphasis + --ease-standard ── */
 .lp-reveal {
   opacity: 0;
   transform: translateY(12px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: opacity var(--duration-emphasis) var(--ease-standard), transform var(--duration-emphasis) var(--ease-standard);
 }
 .lp-reveal.lp-visible {
   opacity: 1;
@@ -24,25 +32,35 @@
 
 /* ── 导航滚动效果 ── */
 .lp-nav-scrolled {
+  background: rgba(255, 255, 255, 0.97) !important;
   background: color-mix(in srgb, #ffffff 97%, transparent) !important;
   backdrop-filter: blur(12px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
-  border-bottom: 1px solid var(--color-neutral-200, #e2e8f0) !important;
+  border-bottom: 1px solid var(--color-neutral-200) !important;
   box-shadow: 0 1px 0 var(--hover-bg, rgba(0,0,0,0.04)), 0 2px 8px var(--hover-bg, rgba(0,0,0,0.04)) !important;
 }
 .navbar-scrolled {
+  background: rgba(255, 255, 255, 0.97) !important;
   background: color-mix(in srgb, #ffffff 97%, transparent) !important;
   backdrop-filter: blur(12px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
-  border-bottom: 1px solid var(--color-neutral-200, #e2e8f0) !important;
+  border-bottom: 1px solid var(--color-neutral-200) !important;
   box-shadow: 0 1px 0 var(--hover-bg, rgba(0,0,0,0.04)), 0 2px 8px var(--hover-bg, rgba(0,0,0,0.04)) !important;
 }
 
 /* ── 平滑锚点滚动 ── */
 html { scroll-behavior: smooth; }
 
-/* ── 减少动效适配 ── */
+/* ── 减少动效适配（覆盖所有动画与过渡） ── */
 @media (prefers-reduced-motion: reduce) {
+  /* 全局：禁用所有动画与过渡 */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* 滚动触发元素直接可见 */
   .lp-reveal { opacity: 1; transform: none; transition: none; }
   html { scroll-behavior: auto; }
 }
@@ -50,7 +68,7 @@ html { scroll-behavior: smooth; }
 /* ── Section 分隔线（学术风格） ── */
 .lp-section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--color-neutral-200, #e2e8f0) 20%, var(--color-neutral-200, #e2e8f0) 80%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--color-neutral-200) 20%, var(--color-neutral-200) 80%, transparent 100%);
   margin: 0 auto;
   max-width: 400px;
 }
@@ -59,9 +77,9 @@ html { scroll-behavior: smooth; }
 .lp-quote {
   position: relative;
   padding-left: 1.5rem;
-  border-left: 2px solid var(--color-primary-600, #059669);
+  border-left: 2px solid var(--color-primary-600);
   font-style: italic;
-  color: var(--color-neutral-600, #475569);
+  color: var(--color-neutral-600);
 }
 
 /* ── 编号列表样式（学术编号） ── */
@@ -84,14 +102,14 @@ html { scroll-behavior: smooth; }
   width: 1.4rem;
   height: 1.4rem;
   border-radius: 50%;
-  background: var(--color-neutral-100, #f1f5f9);
-  color: var(--color-neutral-600, #475569);
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
   font-size: 0.7rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--color-neutral-200, #e2e8f0);
+  border: 1px solid var(--color-neutral-200);
 }
 
 /* ── 数据表格风格（学术表格） ── */
@@ -103,73 +121,73 @@ html { scroll-behavior: smooth; }
 .lp-data-table th {
   text-align: left;
   padding: 0.5rem 0.75rem;
-  border-bottom: 2px solid var(--color-neutral-900, #0f172a);
+  border-bottom: 2px solid var(--color-neutral-900);
   font-weight: 600;
-  color: var(--color-neutral-900, #0f172a);
+  color: var(--color-neutral-900);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 0.7rem;
 }
 .lp-data-table td {
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--color-neutral-200, #e2e8f0);
-  color: var(--color-neutral-600, #475569);
+  border-bottom: 1px solid var(--color-neutral-200);
+  color: var(--color-neutral-600);
 }
 .lp-data-table tr:hover td {
-  background: var(--color-neutral-50, #f8fafc);
+  background: var(--color-neutral-50);
 }
 
-/* ── Focus 可见性（无障碍） ── */
+/* ── Focus 可见性（无障碍） — 使用设计系统 token ── */
 *:focus-visible {
-  outline: 2px solid var(--color-primary-600, #059669);
+  outline: 2px solid var(--color-primary-600);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 input:focus-visible, button:focus-visible, a:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--color-primary-600, #059669);
-  border-color: var(--color-primary-600, #059669);
+  box-shadow: inset 0 0 0 2px var(--color-primary-600);
+  border-color: var(--color-primary-600);
 }
 
 /* ═══════════════════════════════════════════════════════════════
    统一卡片系统（对齐 Dashboard 设计语言）
    ═══════════════════════════════════════════════════════════════ */
 
-/* 基础卡片 */
+/* 基础卡片 — 对齐设计系统 --radius-Apple-sm + --shadow-* 令牌 */
 .lp-card {
-  border-radius: 4px;
-  border: 1px solid var(--color-neutral-200, #e2e8f0);
-  background: var(--color-neutral-50, #fafafa);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: var(--radius-Apple-sm);
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-50);
+  transition: border-color var(--duration-normal) var(--ease-standard), box-shadow var(--duration-normal) var(--ease-standard);
 }
 .lp-card:hover {
-  border-color: var(--color-neutral-300, #cbd5e1);
-  box-shadow: 0 2px 8px color-mix(in srgb, #000000 6%, transparent);
+  border-color: var(--color-neutral-300);
+  box-shadow: var(--shadow-md);
 }
 
 /* 主卡片（白色背景，用于 section 内的内容卡片） */
 .lp-card-white {
-  border-radius: 4px;
-  border: 1px solid var(--color-neutral-200, #e2e8f0);
-  background: #fff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: var(--radius-Apple-sm);
+  border: 1px solid var(--color-neutral-200);
+  background: var(--bg-surface-container);
+  transition: border-color var(--duration-normal) var(--ease-standard), box-shadow var(--duration-normal) var(--ease-standard);
 }
 .lp-card-white:hover {
-  border-color: var(--color-neutral-300, #cbd5e1);
-  box-shadow: 0 4px 12px color-mix(in srgb, #000000 7%, transparent);
+  border-color: var(--color-neutral-300);
+  box-shadow: var(--shadow-md);
 }
 
 /* 指标卡片（SocialProof 核心数字） */
 .lp-metric-card {
-  border-radius: 4px;
-  border: 1px solid var(--color-neutral-200, #e2e8f0);
-  background: #fff;
-  padding: 1rem 1.25rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: var(--radius-Apple-sm);
+  border: 1px solid var(--color-neutral-200);
+  background: var(--bg-surface-container);
+  padding: var(--space-4) var(--space-5);
+  transition: border-color var(--duration-normal) var(--ease-standard), box-shadow var(--duration-normal) var(--ease-standard);
 }
 .lp-metric-card:hover {
-  border-color: var(--color-neutral-300, #cbd5e1);
-  box-shadow: 0 2px 8px color-mix(in srgb, #000000 6%, transparent);
+  border-color: var(--color-neutral-300);
+  box-shadow: var(--shadow-md);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -184,17 +202,17 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
   font-weight: 500;
-  color: var(--color-neutral-600, #475569);
+  color: var(--color-neutral-600);
   padding: 0.25rem 0.625rem;
-  border-radius: 4px;
-  background: var(--color-neutral-100, #f1f5f9);
-  border: 1px solid var(--color-neutral-200, #e2e8f0);
+  border-radius: var(--radius-xs);
+  background: var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-200);
   font-variant-numeric: tabular-nums;
 }
 .lp-hero-metric strong {
-  color: var(--color-neutral-900, #0f172a);
+  color: var(--color-neutral-900);
   font-weight: 600;
 }
 
@@ -202,7 +220,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
    倒计时翻转动画
    ═══════════════════════════════════════════════════════════════ */
 .lp-countdown-flip {
-  animation: lp-countdown-flip-anim 0.2s ease;
+  animation: lp-countdown-flip-anim var(--duration-normal) var(--ease-standard);
 }
 @keyframes lp-countdown-flip-anim {
   0% { opacity: 1; transform: scaleY(1); }
@@ -217,7 +235,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   opacity: 0;
   pointer-events: none;
   transform: translateY(4px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 250ms var(--ease-standard), transform 250ms var(--ease-standard);
 }
 .lp-scroll-top.lp-scroll-top-visible {
   opacity: 1;
@@ -237,7 +255,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   to   { opacity: 1; transform: translateY(0); }
 }
 .lp-chat-bubble-in {
-  animation: lp-chat-bubble-in 0.25s ease both;
+  animation: lp-chat-bubble-in 250ms var(--ease-standard) both;
 }
 
 @keyframes lp-dots-pulse {
@@ -249,8 +267,10 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 .lp-dot-3 { animation: lp-dots-pulse 1.4s infinite ease-in-out 0.4s; }
 
 @keyframes lp-welcome-glow {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary-500, #10b981) 12%, transparent); }
-  50%       { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary-500, #10b981) 0%, transparent);  }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.12); }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary-500) 12%, transparent); }
+  50%       { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+  50%       { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary-500) 0%, transparent);  }
 }
 .lp-welcome-icon { animation: lp-welcome-glow 2.5s infinite ease-in-out; }
 
@@ -260,30 +280,41 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 .lp-step-fill {
   height: 2px;
-  border-radius: 1px;
-  background: var(--color-primary-600, #059669);
+  border-radius: var(--radius-xs);
+  background: var(--color-primary-600);
   animation: lp-step-progress 0.8s ease-out forwards;
 }
 
 /* ── 产品预览窗口边框系统（v12：三层深度） ── */
 .lp-preview-window {
   position: relative;
-  border-radius: 10px;
+  border-radius: var(--radius-Apple-md);
   overflow: hidden;
-  border: 1px solid var(--color-neutral-400, #b8c4d0);
+  border: 1px solid var(--color-neutral-400);
+  border-top-color: rgba(255,255,255,0.6);
   border-top-color: color-mix(in srgb, #ffffff 60%, transparent);
-  border-bottom-color: color-mix(in srgb, var(--color-primary-500, #10b981) 25%, transparent);
-  background: #fff;
+  border-bottom-color: rgba(16,185,129,0.25);
+  border-bottom-color: color-mix(in srgb, var(--color-primary-500) 25%, transparent);
+  background: var(--bg-surface-container);
+  box-shadow:
+    0 1px 3px var(--hairline-light, rgba(0,0,0,0.08)),
+    0 4px 16px rgba(0,0,0,0.06),
+    0 16px 48px rgba(16,185,129,0.1);
   box-shadow:
     0 1px 3px var(--hairline-light, rgba(0,0,0,0.08)),
     0 4px 16px color-mix(in srgb, #000000 6%, transparent),
-    0 16px 48px color-mix(in srgb, var(--color-primary-500, #10b981) 10%, transparent);
+    0 16px 48px color-mix(in srgb, var(--color-primary-500) 10%, transparent);
 }
 .lp-preview-window::before {
   content: '';
   position: absolute;
   inset: -1px;
-  border-radius: 11px;
+  border-radius: var(--radius-Apple-md);
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.7) 0%,
+    transparent 40%
+  );
   background: linear-gradient(
     180deg,
     color-mix(in srgb, #ffffff 70%, transparent) 0%,
@@ -293,24 +324,27 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   z-index: 2;
 }
 .lp-preview-glow {
+  /* 静态装饰元素：blur(24px) 结果由浏览器一次性计算并缓存，不参与重排/重绘 */
   position: absolute;
   inset: 12px -16px -12px -16px;
-  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--color-primary-500, #10b981) 10%, transparent) 0%, transparent 65%);
+  background: radial-gradient(ellipse at center, rgba(16,185,129,0.1) 0%, transparent 65%);
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--color-primary-500) 10%, transparent) 0%, transparent 65%);
   filter: blur(24px);
   z-index: 0;
   pointer-events: none;
 }
 .lp-titlebar {
-  background: var(--color-neutral-900, #0f172a);
-  border-bottom: 1px solid var(--color-neutral-800, #1e293b);
+  background: var(--color-neutral-900);
+  border-bottom: 1px solid var(--color-neutral-800);
 }
 .lp-sidebar {
-  background: var(--color-neutral-100, #f1f5f9);
-  border-right: 1px solid var(--color-neutral-300, #cbd5e1);
+  background: var(--color-neutral-100);
+  border-right: 1px solid var(--color-neutral-300);
 }
 .lp-input-border:focus-within {
-  border-color: var(--color-primary-600, #059669) !important;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-500, #10b981) 10%, transparent) !important;
+  border-color: var(--color-primary-600) !important;
+  box-shadow: 0 0 0 2px rgba(16,185,129,0.1) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-500) 10%, transparent) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -325,7 +359,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, var(--color-neutral-200, #e2e8f0) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--color-neutral-200) 1px, transparent 1px);
   background-size: 32px 32px;
   background-position: center top;
   pointer-events: none;
@@ -344,114 +378,105 @@ input:focus-visible, button:focus-visible, a:focus-visible {
    中文优先，英文/数字用 Inter，确保整体字形协调
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── 根字体设置 ── */
+/* ── 根字体设置 — 使用设计系统 --font-sans 令牌 ── */
+/* 字体加载策略：Inter / Noto Sans SC / JetBrains Mono 均无 @font-face 声明，
+   使用系统字体回退。字体栈通过 --font-sans 令牌统一管理。 */
 .lp-page {
-  font-family: 'Inter', 'Noto Sans SC', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* ── H1 主标题 — 36–52px，学术海报级别 ── */
+/* ── H1 主标题 — 使用 --text-h1 令牌（36px, weight 600） ── */
 .lp-h1 {
-  font-size: clamp(2.25rem, 5vw, 3.25rem);
-  font-weight: 700;
-  line-height: 1.12;
-  letter-spacing: -0.025em;
-  color: var(--color-neutral-900, #0f172a);
+  font-size: var(--text-h1);
+  font-weight: var(--text-h1-font-weight);
+  line-height: var(--text-h1-line-height);
+  letter-spacing: var(--text-h1-tracking);
+  color: var(--color-neutral-900);
 }
 
-/* ── H2 区块标题 — 24px，克制有力 ── */
+/* ── H2 区块标题 — 使用 --text-h3 令牌（24px, weight 600） ── */
 .lp-h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.015em;
-  color: var(--color-neutral-900, #0f172a);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-font-weight);
+  line-height: var(--text-h3-line-height);
+  letter-spacing: var(--text-h3-tracking);
+  color: var(--color-neutral-900);
 }
 
-/* ── H3 小标题 — 20px ── */
+/* ── H3 小标题 — 使用 --text-h4 令牌（22px, weight 600） ── */
 .lp-h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-  color: var(--color-neutral-900, #0f172a);
+  font-size: var(--text-h4);
+  font-weight: var(--text-h4-font-weight);
+  line-height: var(--text-h4-line-height);
+  letter-spacing: var(--text-h4-tracking);
+  color: var(--color-neutral-900);
 }
 
-/* ── 正文段落 — 15px，学术阅读舒适 ── */
+/* ── 正文段落 — 使用 --text-body 令牌（15px） ── */
 .lp-body {
-  font-size: 15px;
+  font-size: var(--text-body);
   font-weight: 400;
-  line-height: 1.7;
-  color: var(--color-neutral-700, #334155);
+  line-height: var(--text-body-line-height);
+  color: var(--color-neutral-700);
 }
 
-/* ── 次要文案 — 13px ── */
+/* ── 次要文案 — 使用 --text-body-sm 令牌（14px） ── */
 .lp-body-sm {
-  font-size: 15px;
+  font-size: var(--text-body-sm);
   font-weight: 400;
-  line-height: 1.6;
-  /* P0 对比度修复：本类不再携带任何 color —— 项目主题系统会把 Tailwind
-     灰阶工具类重映射（text-neutral-300 在深底渲染为 var(--color-neutral-700, #334155) 等），任何硬编码
-     默认色都会与调用处的显式颜色产生不可预测的覆盖冲突。
-     颜色一律由调用处内联 style 指定（内联样式优先级最高，深底/浅底各取所需）。 */
+  line-height: var(--text-body-sm-line-height);
 }
 
-/* ── 标签/按钮 — 12px，500 字重 ── */
+/* ── 标签/按钮 — 使用 --text-overline 令牌（12px, 500） ── */
 .lp-label {
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.5;
-  /* 同上：无默认色，由调用处内联 style 指定。 */
+  font-size: var(--text-overline);
+  font-weight: var(--text-overline-font-weight);
+  line-height: var(--text-overline-line-height);
 }
 
-/* ── 辅助说明 — 12px（P0 对比度/可读性修复：原 11px） ── */
+/* ── 辅助说明 — 使用 --text-caption 令牌（12px） ── */
 .lp-caption {
-  font-size: 12px;
+  font-size: var(--text-caption);
   font-weight: 400;
-  line-height: 1.55;
-  /* P0 对比度修复：本类不再携带任何 color —— 颜色一律由调用处内联 style
-     指定（内联样式优先级最高，深底/浅底各取所需，彻底消除类级覆盖冲突）。 */
+  line-height: var(--text-caption-line-height);
 }
 
-/* ── 微标注 — 11px（P0 对比度/可读性修复：原 10px） ── */
+/* ── 微标注 — 使用 --text-caption 令牌 ── */
 .lp-tiny {
-  font-size: 12px;
+  font-size: var(--text-caption);
   font-weight: 400;
-  line-height: 1.4;
+  line-height: var(--text-caption-line-height);
 }
 
-/* ── 超微注 / mono — 11px（P0 可读性修复：原 9px） ── */
+/* ── 超微注 / mono — 使用 --text-caption + --font-mono 令牌 ── */
 .lp-micro {
-  font-size: 12px;
+  font-size: var(--text-caption);
   font-weight: 400;
-  line-height: 1.3;
+  line-height: var(--text-caption-line-height);
   letter-spacing: 0.02em;
-  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 
-/* ── 品牌标识 — 等宽 + 大写间距 ── */
+/* ── 品牌标识 — 使用 --font-mono 令牌 ── */
 .lp-brand {
   font-size: 12px;
   font-weight: 500;
-  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  /* P0 对比度修复：原硬编码 var(--color-neutral-500, #64748b) 在深色标题栏（var(--color-neutral-900, #0f172a)）上仅 3.75:1，
-     且会覆盖调用处的浅色工具类。改为不设定颜色，由调用处决定：
-     深底用 text-neutral-300/text-white，浅底用 text-neutral-600。 */
 }
 
-/* ── 学术分类标签 ── */
-/* ── 学术分类标签 — 11px（P0 可读性修复：原 10px < 功能文本地板） ── */
+/* ── 学术分类标签 — 使用 --font-mono 令牌 ── */
 .lp-section-tag {
   font-size: 12px;
   font-weight: 500;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-neutral-600, #475569);
+  color: var(--color-neutral-600);
 }
 
 /* ── 专业导航链接（桌面） ──
@@ -460,23 +485,24 @@ input:focus-visible, button:focus-visible, a:focus-visible {
    合并自 L178 的重复定义（原 P1「.lp-nav-link 重复定义」项）。 */
 .lp-nav-link {
   position: relative;
-  font-size: 15px;
+  font-size: var(--text-body);
   font-weight: 500;
-  color: var(--color-neutral-600, #475569);
-  padding: 0.75rem 0.75rem;
-  border-radius: 6px;
+  color: var(--color-neutral-600);
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-sm);
   border-bottom: 2px solid transparent;
-  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+  transition: color var(--duration-fast), background-color var(--duration-fast), border-color var(--duration-fast);
   text-decoration: none;
 }
 .lp-nav-link:hover {
-  color: var(--color-neutral-900, #0f172a);
+  color: var(--color-neutral-900);
   background-color: var(--hover-bg, rgba(0,0,0,0.04));
 }
 .lp-nav-active {
-  color: var(--color-neutral-900, #0f172a) !important;
-  background-color: color-mix(in srgb, var(--color-primary-500, #10b981) 8%, transparent) !important;
-  border-bottom-color: var(--color-neutral-900, #0f172a);
+  color: var(--color-neutral-900) !important;
+  background-color: rgba(16,185,129,0.08) !important;
+  background-color: color-mix(in srgb, var(--color-primary-500) 8%, transparent) !important;
+  border-bottom-color: var(--color-neutral-900);
 }
 
 /* ── Section 锚点防遮挡（固定导航栏 64px + 额外空间） ── */
@@ -495,16 +521,18 @@ section[id] {
   font-size: 15px;
   font-weight: 600;
   color: #fff;
-  background: var(--color-neutral-900, #0f172a);
+  background: var(--color-neutral-900);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.15s, opacity 0.15s;
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--color-neutral-900, #0f172a) 12%, transparent), 0 1px 2px color-mix(in srgb, var(--color-neutral-900, #0f172a) 8%, transparent);
+  transition: box-shadow var(--duration-normal), transform var(--duration-fast), opacity var(--duration-fast);
+  box-shadow: 0 1px 3px rgba(15,23,42,0.12), 0 1px 2px rgba(15,23,42,0.08);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--color-neutral-900) 12%, transparent), 0 1px 2px color-mix(in srgb, var(--color-neutral-900) 8%, transparent);
   text-decoration: none;
 }
 .lp-cta-primary:hover {
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-neutral-900, #0f172a) 15%, transparent), 0 2px 4px color-mix(in srgb, var(--color-neutral-900, #0f172a) 10%, transparent);
+  box-shadow: 0 4px 12px rgba(15,23,42,0.15), 0 2px 4px rgba(15,23,42,0.1);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-neutral-900) 15%, transparent), 0 2px 4px color-mix(in srgb, var(--color-neutral-900) 10%, transparent);
   transform: translateY(-1px);
   opacity: 0.92;
 }
@@ -522,41 +550,41 @@ section[id] {
   padding: 0.625rem 1.25rem;
   font-size: 15px;
   font-weight: 500;
-  color: var(--color-neutral-600, #475569);
+  color: var(--color-neutral-600);
   background: transparent;
-  border: 1px solid var(--color-neutral-200, #e2e8f0);
-  border-radius: 6px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+  transition: color var(--duration-fast), border-color var(--duration-fast), background-color var(--duration-fast);
   text-decoration: none;
 }
 .lp-cta-secondary:hover {
-  color: var(--color-neutral-900, #0f172a);
-  border-color: var(--color-neutral-300, #cbd5e1);
-  background-color: var(--color-neutral-50, #f8fafc);
+  color: var(--color-neutral-900);
+  border-color: var(--color-neutral-300);
+  background-color: var(--color-neutral-50);
 }
 
 /* ── 产品预览窗口底部装饰线 ── */
 .lp-preview-accent {
   height: 2px;
-  background: linear-gradient(90deg, var(--color-primary-600, #059669) 0%, var(--color-success-500, #34d399) 50%, var(--color-primary-600, #059669) 100%);
+  background: linear-gradient(90deg, var(--color-primary-600) 0%, var(--color-success-500) 50%, var(--color-primary-600) 100%);
   opacity: 0.6;
 }
 
 /* ── 推荐方案标签（深色背景上） ── */
 .lp-popular-badge {
   display: inline-block;
-  font-size: 12px;
+  font-size: var(--text-caption);
   font-weight: 500;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  /* P0 对比度修复：var(--color-success-200, #a7f3d0) on var(--color-neutral-900, #0f172a) ≈ 12.9:1
-   注：「推荐方案」徽章位于深底（var(--color-neutral-900, #0f172a)）卡片，背景取色对 var(--color-neutral-900, #0f172a) 透明。 */
-  color: var(--color-success-100, #d1fae5);
-  background: color-mix(in srgb, var(--color-primary-700, #047857) 25%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-primary-700, #047857) 55%, transparent);
-  border-radius: 4px;
+  color: var(--color-success-100);
+  background: rgba(4,120,87,0.25);
+  background: color-mix(in srgb, var(--color-primary-700) 25%, transparent);
+  border: 1px solid rgba(4,120,87,0.55);
+  border: 1px solid color-mix(in srgb, var(--color-primary-700) 55%, transparent);
+  border-radius: var(--radius-xs);
   padding: 0.125rem 0.5rem;
 }
 
@@ -564,73 +592,72 @@ section[id] {
 .lp-faq-accent {
   width: 32px;
   height: 2px;
-  background: linear-gradient(90deg, var(--color-primary-600, #059669), var(--color-success-500, #34d399));
-  border-radius: 1px;
-  margin: 0 auto 1rem;
+  background: linear-gradient(90deg, var(--color-primary-600), var(--color-success-500));
+  border-radius: var(--radius-xs);
+  margin: 0 auto var(--space-4);
 }
 
 /* ── Hero 区域背景网格 ── */
 .lp-grid-bg {
   background-image:
-    linear-gradient(color-mix(in srgb, var(--color-neutral-400, #94a3b8) 4%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--color-neutral-400, #94a3b8) 4%, transparent) 1px, transparent 1px);
+    linear-gradient(rgba(148,163,184,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148,163,184,0.04) 1px, transparent 1px);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-neutral-400) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-neutral-400) 4%, transparent) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
-/* ── Footer 样式 ── */
+/* ── Footer 样式 — 使用设计系统 token ── */
 .lp-footer {
-  background: var(--color-neutral-900, #0f172a);
-  color: var(--color-neutral-400, #94a3b8);
+  background: var(--color-neutral-900);
+  color: var(--color-neutral-400);
 }
 .lp-footer a {
-  color: var(--color-neutral-400, #94a3b8);
+  color: var(--color-neutral-400);
   text-decoration: none;
-  transition: color 0.15s;
+  transition: color var(--duration-fast);
 }
 .lp-footer a:hover {
-  color: var(--color-neutral-200, #e2e8f0);
+  color: var(--color-neutral-200);
 }
 .lp-footer-label {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--text-overline);
+  font-weight: var(--text-overline-font-weight);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  /* P0 对比度修复：var(--color-neutral-600, #475569) on var(--color-neutral-900, #0f172a) = 2.36:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
-  color: var(--color-neutral-400, #94a3b8);
+  color: var(--color-neutral-400);
 }
 .lp-footer-desc {
-  font-size: 12px;
+  font-size: var(--text-caption);
   line-height: 1.65;
-  /* P0 对比度修复：var(--color-neutral-500, #64748b) on var(--color-neutral-900, #0f172a) = 3.75:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
-  color: var(--color-neutral-400, #94a3b8);
+  color: var(--color-neutral-400);
 }
 .lp-footer-link {
-  font-size: 15px;
-  color: var(--color-neutral-400, #94a3b8);
-  transition: color 0.15s;
+  font-size: var(--text-body);
+  color: var(--color-neutral-400);
+  transition: color var(--duration-fast);
   text-decoration: none;
-  /* P0 触控热区修复：页脚链接原 248x21 / 156x21（<44px）
-     改为块级 flex + 44px 最小高度，纵向点击区达标而不改变视觉排版。 */
   display: flex;
   align-items: center;
   min-height: 44px;
 }
 .lp-footer-link:hover {
-  color: var(--color-neutral-200, #e2e8f0);
+  color: var(--color-neutral-200);
 }
 .lp-footer-bottom {
-  border-color: var(--color-neutral-800, #1e293b);
+  border-color: var(--color-neutral-800);
 }
 
-/* ── 数据底座 — 聚合统计横幅 ── */
+/* ── 数据底座 — 聚合统计横幅 — 使用设计系统 token ── */
 .lp-data-panel {
-  background: var(--color-neutral-900, #0f172a);
-  border-radius: 6px;
-  padding: 14px 20px;
+  background: var(--color-neutral-900);
+  border-radius: var(--radius-sm);
+  padding: var(--space-apple-sm) var(--space-5);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 .lp-data-panel-stat {
@@ -643,23 +670,22 @@ section[id] {
 .lp-data-panel-value {
   font-size: 18px;
   font-weight: 700;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   letter-spacing: -0.02em;
   line-height: 1;
 }
 .lp-data-panel-label {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--text-overline);
+  font-weight: var(--text-overline-font-weight);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  /* P0 对比度修复：var(--color-neutral-600, #475569) on var(--color-neutral-900, #0f172a) = 2.36:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
-  color: var(--color-neutral-400, #94a3b8);
+  color: var(--color-neutral-400);
   margin-top: 2px;
 }
 .lp-data-panel-divider {
   width: 1px;
   height: 32px;
-  background: var(--color-neutral-800, #1e293b);
+  background: var(--color-neutral-800);
   flex-shrink: 0;
 }
 
@@ -667,13 +693,13 @@ section[id] {
 .lp-data-primary-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2_5);
 }
 .lp-data-secondary-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: var(--space-2_5);
 }
 @media (max-width: 1023px) {
   .lp-data-primary-row,
@@ -688,26 +714,26 @@ section[id] {
   }
 }
 
-/* ── 数据底座 — 单卡片 ── */
+/* ── 数据底座 — 单卡片 — 使用设计系统 token ── */
 .lp-data-card {
   position: relative;
-  background: #fff;
-  border: 1px solid var(--color-neutral-200, #e2e8f0);
-  border-radius: 6px;
+  background: var(--bg-surface-container);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
 .lp-data-card:hover {
-  border-color: var(--card-hover-border, var(--color-neutral-300, #cbd5e1));
-  box-shadow: 0 2px 8px color-mix(in srgb, #000000 6%, transparent);
+  border-color: var(--card-hover-border, var(--color-neutral-300));
+  box-shadow: var(--shadow-md);
 }
 .lp-data-card-accent {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 3px;
-  background: var(--card-accent-color, var(--color-neutral-400, #94a3b8));
+  background: var(--card-accent-color, var(--color-neutral-400));
   opacity: 0.7;
-  transition: opacity 0.15s;
+  transition: opacity var(--duration-fast);
 }
 .lp-data-card:hover .lp-data-card-accent {
   opacity: 1;
@@ -716,13 +742,13 @@ section[id] {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 12px 14px 8px;
-  gap: 8px;
+  padding: var(--space-3) var(--space-apple-sm) var(--space-2);
+  gap: var(--space-2);
 }
 .lp-data-card-icon {
   width: 30px;
   height: 30px;
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -737,9 +763,9 @@ section[id] {
   min-width: 0;
 }
 .lp-data-card-name {
-  font-size: 12px;
+  font-size: var(--text-caption);
   font-weight: 700;
-  color: var(--color-neutral-900, #0f172a);
+  color: var(--color-neutral-900);
   letter-spacing: 0.01em;
   line-height: 1.2;
   white-space: nowrap;
@@ -747,20 +773,20 @@ section[id] {
   text-overflow: ellipsis;
 }
 .lp-data-card-subtitle {
-  font-size: 12px;
+  font-size: var(--text-caption);
   font-weight: 500;
   letter-spacing: 0.03em;
   margin-top: 1px;
   line-height: 1.3;
 }
 .lp-data-card-body {
-  padding: 0 14px;
+  padding: 0 var(--space-apple-sm);
 }
 .lp-data-card-desc {
-  font-size: 12px;
+  font-size: var(--text-caption);
   line-height: 1.6;
-  color: var(--color-neutral-600, #475569);
-  margin-bottom: 8px;
+  color: var(--color-neutral-600);
+  margin-bottom: var(--space-2);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -770,14 +796,13 @@ section[id] {
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  margin-bottom: 10px;
+  margin-bottom: var(--space-2_5);
 }
 .lp-data-card-feature {
-  /* P0 可读性修复：9px → 11px；P1 字号收敛 11px → 12px（7 级阶梯地板） */
-  font-size: 12px;
+  font-size: var(--text-caption);
   font-weight: 500;
   padding: 1.5px 5px;
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   letter-spacing: 0.02em;
   line-height: 1.4;
 }
@@ -785,8 +810,8 @@ section[id] {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 8px 14px 10px;
-  border-top: 1px solid var(--color-neutral-100, #f1f5f9);
+  padding: var(--space-2) var(--space-apple-sm) var(--space-2_5);
+  border-top: 1px solid var(--color-neutral-100);
   margin-top: 2px;
 }
 .lp-data-card-stat {
@@ -795,19 +820,18 @@ section[id] {
   gap: 1px;
 }
 .lp-data-card-stat-value {
-  font-size: 15px;
+  font-size: var(--text-body);
   font-weight: 700;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   letter-spacing: -0.02em;
   line-height: 1;
 }
 .lp-data-card-stat-label {
-  font-size: 12px;
+  font-size: var(--text-caption);
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  /* P0 对比度修复：var(--color-neutral-400, #94a3b8) on #fff = 2.56:1 → var(--color-neutral-600, #475569) = 7.4:1 */
-  color: var(--color-neutral-600, #475569);
+  color: var(--color-neutral-600);
   margin-top: 2px;
 }
 .lp-data-card-status-dot {
@@ -815,14 +839,14 @@ section[id] {
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 .lp-data-card-connect {
-  font-size: 12px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: var(--text-caption);
+  font-family: var(--font-mono);
   letter-spacing: 0.04em;
   padding: 2px 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   display: none;
   align-items: center;
   gap: 3px;
@@ -836,24 +860,22 @@ section[id] {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 0 14px 6px;
-  border-top: 1px solid var(--color-neutral-100, #f1f5f9);
-  margin-top: 6px;
+  padding: 0 var(--space-apple-sm) var(--space-1_5);
+  border-top: 1px solid var(--color-neutral-100);
+  margin-top: var(--space-1_5);
 }
 .lp-data-card-link {
   display: flex;
   align-items: center;
   gap: 4px;
-  /* P0 对比度/可读性修复：9px → 12px（≥正文 14px 次级文案下限） */
-  font-size: 12px;
+  font-size: var(--text-caption);
   font-weight: 500;
   letter-spacing: 0.02em;
   text-decoration: none;
-  /* P0 触控热区修复：法规链接原 18px 高 → 44px 最小热区（移动端防误触） */
   min-height: 44px;
-  padding: 4px 0;
+  padding: var(--space-1) 0;
   opacity: 0.85;
-  transition: opacity 0.15s;
+  transition: opacity var(--duration-fast);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -880,10 +902,10 @@ section[id] {
   min-width: 0;
 }
 .lp-data-section-desc {
-  font-size: 15px;
+  font-size: var(--text-body);
   line-height: 1.65;
-  color: var(--color-neutral-600, #475569);
-  margin-top: 4px;
+  color: var(--color-neutral-600);
+  margin-top: var(--space-1);
   max-width: 480px;
 }
 
@@ -910,27 +932,210 @@ section[id] {
 /* ① 深底块统一文字：深底容器设浅色，未显式设色的子文本/图标继承 */
 .lp-data-panel,
 .lp-titlebar {
-  color: var(--color-neutral-100, #f1f5f9);
+  color: var(--color-neutral-100);
 }
 
 /* ② color-mix() 状态色：卡片 hover 边框混入 primary（浅色下品牌绿、暗色下自动跟随） */
 .lp-card:hover,
 .lp-card-white:hover,
 .lp-metric-card:hover {
-  border-color: color-mix(in srgb, var(--color-primary-500, #10b981) 35%, transparent);
+  border-color: rgba(16,185,129,0.35);
+  border-color: color-mix(in srgb, var(--color-primary-500) 35%, transparent);
 }
 
 /* ③ elevation hover 分级：卡片 hover 从 e1 静态升级为 e2（去边框靠阴影表达层级） */
 .lp-card,
 .lp-card-white,
 .lp-metric-card {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   box-shadow: 0 1px 2px color-mix(in srgb, #000000 5%, transparent);
 }
 .lp-card:hover,
 .lp-card-white:hover,
 .lp-metric-card:hover,
 .lp-data-card:hover {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 2px 6px 2px rgba(0,0,0,0.06);
   box-shadow: 0 1px 2px color-mix(in srgb, #000000 10%, transparent), 0 2px 6px 2px color-mix(in srgb, #000000 6%, transparent);
 }
 
+/* ── Suspense 骨架屏加载器（React.lazy fallback） ── */
+@keyframes lp-spin { to { transform: rotate(360deg); } }
+.lp-suspense-spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid var(--color-neutral-200);
+  border-top-color: var(--color-primary-500);
+  animation: lp-spin 0.8s linear infinite; /* spinner 保持固定速度 */
+}
 
+/* ═══════════════════════════════════════════════════════════════
+   暗色模式覆盖 — .dark 类作用域
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 卡片背景暗色（base 使用 --color-neutral-50，暗色下不变，需覆盖） ── */
+.dark .lp-card {
+  background: var(--bg-surface-container);
+}
+
+/* ── 标题文字暗色（--color-neutral-900 在暗色下仍为深色，需提亮） ── */
+.dark .lp-h1,
+.dark .lp-h2,
+.dark .lp-h3 {
+  color: var(--color-neutral-50);
+}
+
+/* ── 正文文字暗色（--color-neutral-700 在暗色下仍为深灰，需提亮） ── */
+.dark .lp-body {
+  color: var(--color-neutral-300);
+}
+
+/* ── 侧边栏暗色 ── */
+.dark .lp-sidebar {
+  background: var(--color-neutral-900);
+  border-right-color: var(--color-neutral-700);
+}
+
+/* ── 编号列表圆点暗色 ── */
+.dark .lp-numbered > li::before {
+  background: var(--color-neutral-800);
+  color: var(--color-neutral-300);
+  border-color: var(--color-neutral-700);
+}
+
+/* ── Hero 指标浮标暗色 ── */
+.dark .lp-hero-metric {
+  background: var(--color-neutral-800);
+  border-color: var(--color-neutral-700);
+  color: var(--color-neutral-300);
+}
+.dark .lp-hero-metric strong {
+  color: var(--color-neutral-50);
+}
+
+/* ── Section 分隔线暗色（--color-neutral-200 在暗色下仍为亮色，需压暗） ── */
+.dark .lp-section-divider {
+  background: linear-gradient(90deg, transparent 0%, var(--color-neutral-700) 20%, var(--color-neutral-700) 80%, transparent 100%);
+}
+
+/* ── 引用块文字暗色 ── */
+.dark .lp-quote {
+  color: var(--color-neutral-400);
+  border-left-color: var(--color-primary-500);
+}
+
+/* ── 数据表格暗色 ── */
+.dark .lp-data-table th {
+  color: var(--color-neutral-50);
+  border-bottom-color: var(--color-neutral-500);
+}
+.dark .lp-data-table td {
+  color: var(--color-neutral-400);
+  border-bottom-color: var(--color-neutral-700);
+}
+.dark .lp-data-table tr:hover td {
+  background: var(--color-neutral-800);
+}
+
+/* ── 导航栏暗色 ── */
+.dark .lp-nav-scrolled,
+.dark .navbar-scrolled {
+  background: color-mix(in srgb, #0f172a 97%, transparent) !important;
+  border-bottom-color: var(--color-neutral-800) !important;
+  box-shadow: 0 1px 0 var(--color-neutral-800), 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+
+/* ── 导航链接暗色 ── */
+.dark .lp-nav-link {
+  color: var(--color-neutral-400);
+}
+.dark .lp-nav-link:hover {
+  color: var(--color-neutral-100);
+  background-color: rgba(255,255,255,0.04);
+}
+.dark .lp-nav-active {
+  color: var(--color-neutral-100) !important;
+  background-color: color-mix(in srgb, var(--color-primary-500) 15%, transparent) !important;
+  border-bottom-color: var(--color-neutral-100);
+}
+
+/* ── 预览窗口暗色 ── */
+.dark .lp-preview-window {
+  border-top-color: color-mix(in srgb, #475569 60%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--color-primary-500) 30%, transparent);
+}
+.dark .lp-preview-window::before {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, #1e293b 70%, transparent) 0%,
+    transparent 40%
+  );
+}
+
+/* ── 主 CTA 按钮暗色 — 使用品牌色替代深色 ── */
+.dark .lp-cta-primary {
+  background: var(--color-primary-surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+}
+.dark .lp-cta-primary:hover {
+  background: var(--color-primary-surface-hover);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.35);
+}
+
+/* ── 次要 CTA 按钮暗色 ── */
+.dark .lp-cta-secondary {
+  color: var(--color-neutral-300);
+  border-color: var(--color-neutral-700);
+}
+.dark .lp-cta-secondary:hover {
+  color: var(--color-neutral-100);
+  border-color: var(--color-neutral-600);
+  background-color: var(--color-neutral-800);
+}
+
+/* ── 推荐方案徽章暗色（--color-success-100 在暗色下为深绿，需提亮） ── */
+.dark .lp-popular-badge {
+  color: var(--color-success-600);
+  background: color-mix(in srgb, var(--color-primary-500) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary-500) 40%, transparent);
+}
+
+/* ── 数据卡片文字暗色 ── */
+.dark .lp-data-card-name {
+  color: var(--color-neutral-50);
+}
+.dark .lp-data-card-desc {
+  color: var(--color-neutral-400);
+}
+.dark .lp-data-section-desc {
+  color: var(--color-neutral-400);
+}
+.dark .lp-data-card-stat-label {
+  color: var(--color-neutral-400);
+}
+.dark .lp-data-card-footer {
+  border-top-color: var(--color-neutral-800);
+}
+.dark .lp-data-card-links {
+  border-top-color: var(--color-neutral-800);
+}
+.dark .lp-data-card-link {
+  color: var(--color-neutral-400);
+}
+
+/* ── 分类标签暗色 ── */
+.dark .lp-section-tag {
+  color: var(--color-neutral-400);
+}
+
+/* ── 卡片 hover 阴影暗色（rgba(0,0,0) 在暗色下几乎不可见，增强） ── */
+.dark .lp-card:hover,
+.dark .lp-card-white:hover,
+.dark .lp-metric-card:hover,
+.dark .lp-data-card:hover {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.2);
+}
+
+/* ── Footer 暗色（进一步压暗，与画布产生层次） ── */
+.dark .lp-footer {
+  background: #000000;
+}

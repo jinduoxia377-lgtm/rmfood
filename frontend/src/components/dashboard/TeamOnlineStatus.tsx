@@ -4,7 +4,7 @@
  * - R-06：WS 启用时通过真实 user_status 事件更新；未启用时显示「实时连接未启用」占位，
  *   不再伪造模拟用户列表
  */
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Users, User, Activity, WifiOff } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui'
 import { wsService, isWebSocketEnabled } from '@/services/websocket'

@@ -8,7 +8,7 @@
 import React, { useMemo, useState } from 'react';
 import { Download, Printer, CheckCircle, XCircle, Clock } from 'lucide-react';
 import type { PeptideBatchCOA, COATestItem } from '@/services/professional/coaService';
-import { getCategoryLabel, isCOAQualified, formatDate, groupTestItemsByCategory } from '@/services/professional/coaService';
+import { getCategoryLabel, formatDate, groupTestItemsByCategory } from '@/services/professional/coaService';
 import { useToast } from '@/components/ui';
 
 // ─── 组件 Props ─────────────────────────────────────────────
@@ -230,7 +230,7 @@ export const COAView: React.FC<COAViewProps> = ({
   compact = false,
   showExport = true,
 }) => {
-  const { success: toastSuccess, error: toastError, warning: toastWarning } = useToast();
+  const { success: toastSuccess, error: toastError, warning: _toastWarning } = useToast();
   const [downloading, setDownloading] = useState<'word' | 'pdf' | null>(null);
   const [showAllItems, setShowAllItems] = useState(false);
 

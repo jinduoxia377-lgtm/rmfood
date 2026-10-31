@@ -1,4 +1,3 @@
-import { logger } from '@/utils/safeLogger'
 /**
  * 统一环境配置管理
  * 集中管理所有环境变量，支持多环境配置（dev/staging/prod）

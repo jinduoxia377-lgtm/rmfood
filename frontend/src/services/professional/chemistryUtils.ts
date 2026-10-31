@@ -223,12 +223,10 @@ export class ChemistryUtils {
     const { atoms, bonds } = this.parseSMILES(smiles);
 
     let molecularWeight = 0;
-    let totalElectronegativity = 0;
     const charge = 0;
 
     atoms.forEach((atom) => {
       molecularWeight += atom.mass;
-      totalElectronegativity += atom.electronegativity;
     });
 
     const uniqueSymbols = new Set(atoms.map((a) => a.symbol));

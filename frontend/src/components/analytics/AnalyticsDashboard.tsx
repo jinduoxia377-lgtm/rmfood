@@ -25,7 +25,6 @@ import {
 // 同名 hook 返回结构不兼容）。改用 @/theme 的现代 hook，并把原先由
 // getCurrentColors() 派生的字段**逐字**内联，保持渲染行为完全不变。
 import { useTheme } from '@/theme'
-import { fetchMockDashboardData } from '@/services/mockAnalyticsData'
 
 /** Chart component ThemeColors - stricter than store ThemeColors */
 interface ChartThemeColors {
@@ -258,26 +257,11 @@ export function AnalyticsDashboard() {
         return
       }
 
-      logger.warn('⚠️ API不可用，使用Mock演示数据:', err instanceof Error ? err.message : '未知错误')
-
-      try {
-        logger.info('📊 正在加载Mock数据分析...')
-        const mockData = await fetchMockDashboardData(800) // 减少延迟到800ms以提高响应速度
-
-        setData(mockData as unknown as DashboardData)
-        setLastRefresh(new Date())
-
-        if (!customLayoutMode) {
-          generateDefaultWidgets(mockData as unknown as DashboardData)
-        }
-
-        // eslint-disable-next-line react-hooks/immutability
-        showNotification('info', '当前显示为演示数据（后端API未连接）')
-      } catch (mockError) {
-        logger.error('Mock数据加载失败:', mockError)
-        setError('无法加载数据，请检查网络连接')
-        showNotification('error', '数据加载完全失败，请刷新页面重试')
-      }
+      // 去 mock 化：不再回退演示数据，如实展示错误态，由用户点击「重试」恢复
+      logger.error('⚠️ Analytics API 不可用:', err instanceof Error ? err.message : '未知错误')
+      setError('无法加载数据，请检查网络连接')
+      setNotification({ type: 'error', message: '数据加载失败，请检查网络后重试' })
+      setTimeout(() => setNotification(null), 5000)
     } finally {
       setLoading(false)
     }

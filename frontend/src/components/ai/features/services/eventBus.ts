@@ -26,6 +26,7 @@ export type EventType =
   | 'shortcut:registered' // 快捷键注册
   | 'shortcut:unregistered' // 快捷键注销
   | 'shortcut:unregisterAll' // 全部注销
+  | 'profile:auto-extracted' // 健康画像自动提取完成
 
 export interface EventPayloadMap {
   'message:sending': { content: string; timestamp: number };
@@ -53,6 +54,7 @@ export interface EventPayloadMap {
   'shortcut:registered': { shortcutId: string };
   'shortcut:unregistered': { shortcutId: string };
   'shortcut:unregisterAll': Record<string, never>;
+  'profile:auto-extracted': { goals: string[]; allergens: string[] };
 }
 
 export type EventHandler<T = unknown> = (payload: T) => void | Promise<void>;

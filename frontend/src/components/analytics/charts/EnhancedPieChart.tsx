@@ -212,6 +212,7 @@ export function EnhancedPieChart({
             ))}
           </Pie>
 
+          {/* eslint-disable-next-line react-hooks/static-components -- 图表局部 Tooltip 组件 */}
           <Tooltip content={<CustomTooltip />} animationDuration={200} />
 
           {/* Center Label for Donut Mode */}

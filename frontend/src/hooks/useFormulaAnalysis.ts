@@ -4,7 +4,7 @@
  */
 import { useState, useCallback, useRef } from 'react'
 import { aiApi } from '@/api/ai'
-import { parseFormulaTable, type FormulaTableData } from '@/utils/formulaParser'
+import { parseFormulaTable } from '@/utils/formulaParser'
 import type { AICandidate, SafetyCheckResult, SynergyResult } from '@/types'
 import type { StabilityPredictionResponse } from '@/types/ai.api'
 import { logger } from '@/utils/safeLogger';
@@ -73,97 +73,71 @@ export function useFormulaAnalysis() {
         throw new Error('未能解析到配方成分，请确保包含有效的成分和用量信息')
       }
 
-      await new Promise(resolve => setTimeout(resolve, 300))
+      // P1-5：任一分析接口失败时置 degraded=true，相关评分保持缺失（不伪造默认分），
+      // 由 UI 明示「部分评估暂不可用」。移除历史 setTimeout(300) 人为延时。
+      let degraded = false
 
       // 2. 安全检查
       updateProgress('safety', '正在进行安全性检查...', 25)
       const ingredientNames = parsedFormula.ingredients.map(i => i.name)
-      let safetyResult: SafetyCheckResult
+      let safetyResult: SafetyCheckResult | null = null
       try {
         safetyResult = await aiApi.safetyCheck(ingredientNames)
       } catch (error) {
-        logger.warn('安全检查API调用失败，使用默认评分:', error)
-        safetyResult = {
-          passed: true,
-          checks: {},
-          warnings: [],
-          errors: [],
-          summary: '安全检查完成',
-        }
+        degraded = true
+        logger.warn('安全检查API调用失败，安全评估暂不可用:', error)
       }
-
-      await new Promise(resolve => setTimeout(resolve, 300))
 
       // 3. 协同作用分析
       updateProgress('synergy', '正在分析成分协同作用...', 45)
-      let synergyResult: SynergyResult
+      let synergyResult: SynergyResult | null = null
       try {
         synergyResult = await aiApi.synergyAnalysis(ingredientNames)
       } catch (error) {
-        logger.warn('协同分析API调用失败，使用默认评分:', error)
-        synergyResult = {
-          score: 0.75,
-          synergy_pairs: [],
-          antagonism_warnings: [],
-          shared_pathways: [],
-          heat_map: {},
-          summary: '协同分析完成',
-        }
+        degraded = true
+        logger.warn('协同分析API调用失败，协同评分暂不可用:', error)
       }
-
-      await new Promise(resolve => setTimeout(resolve, 300))
 
       // 4. 口感预测
       updateProgress('taste', '正在评估口感风味...', 65)
-      let tasteResult: { sweetness: number; bitterness: number; astringency: number; overall_score: number; flavor_notes: string[] }
+      let tasteResult: { sweetness: number; bitterness: number; astringency: number; overall_score: number; flavor_notes: string[] } | null = null
       try {
         tasteResult = await aiApi.tastePredict(
           parsedFormula.ingredients.map(i => ({ name: i.name })),
         )
       } catch (error) {
-        logger.warn('口感预测API调用失败，使用默认评分:', error)
-        tasteResult = {
-          sweetness: 0.6,
-          bitterness: 0.3,
-          astringency: 0.2,
-          overall_score: 0.7,
-          flavor_notes: ['口感适中'],
-        }
+        degraded = true
+        logger.warn('口感预测API调用失败，口感评分暂不可用:', error)
       }
-
-      await new Promise(resolve => setTimeout(resolve, 300))
 
       // 5. 稳定性预测
       updateProgress('stability', '正在评估稳定性...', 85)
-      let stabilityResult: StabilityPredictionResponse
+      let stabilityResult: StabilityPredictionResponse | null = null
       try {
         stabilityResult = await aiApi.stabilityPredict(
           parsedFormula.ingredients.map(i => ({ name: i.name })),
         )
       } catch (error) {
-        logger.warn('稳定性预测API调用失败，使用默认评分:', error)
-        stabilityResult = {
-          stability_score: 0.75,
-          estimated_shelf_life_months: 18,
-          risk_factors: [],
-          monthly_curve: [],
-          // 后端返回 string[]，不是单个 string
-          storage_advice: ['常温保存'],
-        }
+        degraded = true
+        logger.warn('稳定性预测API调用失败，稳定性评分暂不可用:', error)
       }
 
-      // 6. 计算综合评分
+      // 6. 计算综合评分（仅基于真实返回的评分；全部缺失时保持 undefined）
       updateProgress('complete', '分析完成！', 100)
 
       const overallScore = calculateOverallScore({
-        synergy: synergyResult.score ?? synergyResult.synergyScore ?? 0.75,
-        taste: tasteResult.overall_score,
-        stability: stabilityResult.stability_score,
-        safety: safetyResult.passed ? 0.85 : 0.6,
+        synergy: synergyResult?.score ?? synergyResult?.synergyScore,
+        taste: tasteResult?.overall_score,
+        stability: stabilityResult?.stability_score,
+        // 安全检查失败时 safety 保持 undefined（不伪造 0.6/0.85 默认分）
+        safety: safetyResult == null ? undefined : (safetyResult.passed ? 0.85 : 0.6),
       })
 
       // 构建AICandidate结果
       const candidate: AICandidate = {
+        id: `manual_formula_${Date.now()}`,
+        name: parsedFormula.name || '手动输入配方',
+        effects: [],
         formula_name: parsedFormula.name || '手动输入配方',
         herb_combination: parsedFormula.ingredients.map(i => ({
           name: i.name,
@@ -171,18 +145,21 @@ export function useFormulaAnalysis() {
           dosage: `${i.amount}${i.unit}`,
         })),
         peptide_candidates: [],
-        synergy_score: synergyResult.score ?? synergyResult.synergyScore ?? 0.75,
-        safety_passed: safetyResult.passed,
-        safety_details: {
-          warnings: (safetyResult.warnings || []).map(w => w.message || String(w)),
-          contraindications: parsedFormula.ingredients
-            .flatMap(i => i.precautions?.map(p => p.content) || [])
-            .filter(Boolean),
-          summary: safetyResult.summary || '安全检查完成',
-        },
-        taste_score: tasteResult.overall_score,
-        stability_score: stabilityResult.stability_score,
+        synergy_score: synergyResult?.score ?? synergyResult?.synergyScore,
+        safety_passed: safetyResult?.passed,
+        safety_details: safetyResult
+          ? {
+              warnings: (safetyResult.warnings || []).map(w => w.message || String(w)),
+              contraindications: parsedFormula.ingredients
+                .flatMap(i => i.precautions?.map(p => p.content) || [])
+                .filter(Boolean),
+              summary: safetyResult.summary || '安全检查完成',
+            }
+          : undefined,
+        taste_score: tasteResult?.overall_score,
+        stability_score: stabilityResult?.stability_score,
         overall_score: overallScore,
+        degraded,
         description: `基于${parsedFormula.ingredients.length}种成分配制的配方`,
         target_population: '一般人群',
         contraindications: parsedFormula.ingredients
@@ -253,14 +230,15 @@ export function useFormulaAnalysis() {
 }
 
 /**
- * 计算综合评分
+ * 计算综合评分（仅基于真实可用评分；任一维度缺失时按剩余维度加权平均，
+ * 全部缺失时返回 undefined —— 不伪造分数）。
  */
 function calculateOverallScore(scores: {
-  synergy: number
-  taste: number
-  stability: number
-  safety: number
-}): number {
+  synergy?: number
+  taste?: number
+  stability?: number
+  safety?: number
+}): number | undefined {
   const weights = {
     synergy: 0.35,
     taste: 0.25,
@@ -268,10 +246,27 @@ function calculateOverallScore(scores: {
     safety: 0.15,
   }
 
-  return Math.round(
-    (scores.synergy * weights.synergy +
-     scores.taste * weights.taste +
-     scores.stability * weights.stability +
-     scores.safety * weights.safety) * 100,
-  ) / 100
+  let total = 0
+  let weightSum = 0
+
+  if (scores.synergy != null && Number.isFinite(scores.synergy)) {
+    total += scores.synergy * weights.synergy
+    weightSum += weights.synergy
+  }
+  if (scores.taste != null && Number.isFinite(scores.taste)) {
+    total += scores.taste * weights.taste
+    weightSum += weights.taste
+  }
+  if (scores.stability != null && Number.isFinite(scores.stability)) {
+    total += scores.stability * weights.stability
+    weightSum += weights.stability
+  }
+  if (scores.safety != null && Number.isFinite(scores.safety)) {
+    total += scores.safety * weights.safety
+    weightSum += weights.safety
+  }
+
+  if (weightSum === 0) return undefined
+
+  return Math.round((total / weightSum) * 100) / 100
 }

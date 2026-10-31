@@ -126,6 +126,7 @@ label {
   main .card,
   main [class*='CardContent'],
   main [class*='card p-'] { padding: 16px !important; }
-  /* 12px 辅助文本在移动端提升至 13px（审计建议，仅 UI 文本；桌面不变） */
-  main .text-xs { font-size: 13px !important; }
+  /* 12px 辅助文本在移动端提升至 13px（审计建议，全站生效：含侧边栏/页脚/表格，避免手机上小字难读；桌面不变） */
+  .text-xs,
+  .text-\[12px\] { font-size: 13px !important; }
 }

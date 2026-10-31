@@ -136,21 +136,9 @@ export default function ComplianceCheckPage() {
     finally { setLoading(false) }
   }
 
-  // 供带参数的二次调用（如后续扩展）
-  const runDbSearch = async (term?: string) => {
-    const search = (term ?? searchTerm).trim()
-    const homRes: any = await complianceApi.getFoodHomology(search || undefined)
-    if (homRes.success && homRes.data?.materials?.length > 0) {
-      setDbItems(homRes.data.materials)
-      setDbTotal(homRes.data.count ?? homRes.data.materials.length)
-      return
-    }
-    const res: any = await ingredientApi.getIngredients({ page: 1, page_size: 20, search: search })
-    if (res.data) { setDbItems(res.data.items ?? []); setDbTotal(res.data.total ?? 0) }
-  }
-
   useEffect(() => {
     // 切换到 db tab 时若列表为空则自动加载
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (activeTab === 'db' && dbItems.length === 0) handleDbSearch()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])

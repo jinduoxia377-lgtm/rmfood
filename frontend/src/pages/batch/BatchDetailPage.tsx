@@ -23,7 +23,7 @@ export default function BatchDetailPage() {
   const { addToast } = useToast()
   const queryClient = useQueryClient()
   const batchId = Number(id)
-  const [showStatusAction, setShowStatusAction] = useState(false)
+  const [_showStatusAction, setShowStatusAction] = useState(false)
 
   // 使用 null 安全获取；503/404 → null
   const { data: batch, isLoading: batchLoading, error: batchError } = useQuery({

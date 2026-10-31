@@ -142,7 +142,6 @@ export const usePersonalInfo = (): UsePersonalInfoReturn => {
   // 避免「静默认证失败导致 isAuthenticated 卡在 false、资料永不回读」的问题
   useEffect(() => {
     fetchProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 认证从无到有时，若挂载拉取未成功则补拉一次

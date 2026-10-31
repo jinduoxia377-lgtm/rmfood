@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ModelClient } from '@/api/modelClient'
 import { logger } from '@/utils/safeLogger'
 import { useScenarioStore } from '@/stores/scenarioStore'
+import { useModelStore } from '@/stores/modelStore'
 
 // ===== Hooks =====
 import { useChatTabOrchestrator } from './hooks/useChatTabOrchestrator'
@@ -32,6 +33,7 @@ import { sessionCapability } from './capabilities/session/SessionCapability'
 import { chatStorageService } from './capabilities/storage/ChatStorageService'
 import type { HistorySession } from './components/pro'
 import type { BackendThinkingStep } from './hooks/useThinkingProcessV3'
+import type { ThinkingStepExport } from './ChatStateContext'
 
 // ===== Context =====
 import { ChatStateContext } from './ChatStateContext'
@@ -54,11 +56,27 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     chatError, setChatError, clearMessages, addMessage, updateMessage,
     retryLastMessage, clearError, isPaused, pauseStreaming, resumeStreaming,
     setActiveSessionId, checkCompaction,
+    streamProgress, streamStageKey, streamChars, streamStatus, streamSteps,
   } = chatMessages
 
   // ===== 3. 引擎编排 =====
   const orchestrator = useChatTabOrchestrator()
   orchestrator.scenarioSwitcher.setAutoSwitch(false)
+
+  // 将 thinkingProcessV3.state.steps 转为简化格式，供 ChatMessages 消费
+  // 使用 useMemo 派生，避免 useEffect+setState 带来的重渲染闪烁
+  const thinkingSteps = useMemo<ThinkingStepExport[]>(() => {
+    const steps = orchestrator.thinkingProcessV3.state.steps
+    if (steps.length > 0) {
+      return steps.map(s => ({
+        step: s.title,
+        content: s.description,
+        status: s.status === 'completed' ? 'complete' : s.status === 'processing' ? 'thinking' : 'pending',
+        detail: s.details,
+      }))
+    }
+    return []
+  }, [orchestrator.thinkingProcessV3.state.steps])
 
   // 后端 thinking_steps → 前端思维可视化同步
   const lastProcessedMsgCountRef = useRef(0)
@@ -83,7 +101,14 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     refetchOnMount: true, gcTime: 0, staleTime: 0, retry: 1,
   })
   const llmAvailable = modelStatus?.llm?.status === 'active'
-  const llmModel = modelStatus?.llm?.model ?? ''
+  // 模型选择：优先使用 store 中用户选择的模型，回退到后端默认模型
+  const { selectedModel, fetchModels } = useModelStore()
+  const llmModel = selectedModel || (modelStatus?.llm?.model ?? '')
+
+  // 首次加载时拉取可用模型列表
+  useEffect(() => {
+    fetchModels()
+  }, [fetchModels])
 
   // ===== 5. 会话统计 =====
   const assistantCount = messages.filter(m => m.role === 'assistant').length
@@ -145,7 +170,25 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
           setActiveSessionIdState(mapped[0].id)
           return
         }
-        // 无历史会话：自动创建一个新会话，确保首次对话也能持久化恢复（修复「刷新后历史消失」）
+        // 无历史会话：先尝试从服务器云端恢复（治本：即使本地 IndexedDB 被清/缓存失效，登录后仍可恢复）
+        try {
+          const restored = await chatStorageService.restoreFromServer()
+          if (restored > 0) {
+            const refreshed = await sessionCapability.listSessions()
+            const remapped: HistorySession[] = refreshed.map(s => ({
+              id: s.id, title: s.title, messageCount: s.messageCount, lastMessage: '', timestamp: s.updatedAt,
+            }))
+            setHistorySessions(remapped)
+            if (remapped.length > 0) {
+              setActiveSessionIdState(remapped[0].id)
+              logger.info(`[ChatStateProvider] 已从云端恢复 ${restored} 个会话`)
+              return
+            }
+          }
+        } catch (restoreErr) {
+          logger.warn('[ChatStateProvider] 云端恢复失败（不影响本地会话）:', restoreErr)
+        }
+        // 云端也无会话：自动创建一个新会话，确保首次对话也能持久化恢复（修复「刷新后历史消失」）
         try {
           const newId = await sessionCapability.createSession('新对话')
           setActiveSessionIdState(newId)
@@ -198,17 +241,6 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
       logger.error('[ChatStateProvider] 分支失败:', e)
     }
   }, [activeSessionId])
-
-  // ===== 15. 附件管理 =====
-  const [attachments, setAttachments] = useState<Array<{ id: string; file: File; previewUrl: string }>>([])
-  const handleAddAttachment = useCallback((file: File) => {
-    const id = `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
-    const previewUrl = URL.createObjectURL(file)
-    setAttachments(prev => [...prev, { id, file, previewUrl }])
-  }, [])
-  const handleRemoveAttachment = useCallback((id: string) => {
-    setAttachments(prev => prev.filter(a => a.id !== id))
-  }, [])
 
   // ===== 16. Details 面板 =====
   const [detailsCall] = useState<{ id: string; name: string; args: Record<string, unknown>; result?: string; status: 'running' | 'completed' | 'error'; durationMs?: number } | null>(null)
@@ -282,6 +314,9 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     retractMessage: messageEditing.handleRetractMessage,
     setActiveSessionId, checkCompaction,
 
+    // 实时进度条
+    streamProgress, streamStageKey, streamChars, streamStatus, streamSteps,
+
     // 会话
     historySessions, setHistorySessions,
     activeSessionId, setActiveSessionIdCtx: setActiveSessionIdState,
@@ -289,8 +324,8 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
 
     // UI
     isDetailModalOpen, selectedForDetail,
-    showFormulaList, searchQuery, highlightedMessageId,
-    attachments, detailsCall, detailsOpen, showKBPanel,
+    showFormulaList, setShowFormulaList, searchQuery, highlightedMessageId,
+    detailsCall, detailsOpen, showKBPanel,
 
     // 引擎
     llmAvailable, llmModel, scenarioMode,
@@ -302,9 +337,15 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     ragIsSeeding: rag.isSeeding,
     onToggleRAG: rag.toggleRAG,
     onTriggerSeed: rag.triggerSeed,
+    ragChunks: rag.chunks,
+    ragLastSources: rag.lastSources,
+    ragHasActiveChunks: rag.hasActiveChunks,
+    ragLastQuerySuccess: rag.lastQuerySuccess,
+    ragClearChunks: rag.clearChunks,
 
     // 配方
     formulaCount, expandedIds, selectedIds, formulas,
+    formulaActions, onClearStorage: clearAllFormulas,
 
     // 报告
     showReportModal, setShowReportModal, reportData, isGeneratingReport,
@@ -319,22 +360,25 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     handleRetry: chatHandlers.handleRetry,
     handleSend: chatHandlers.handleSend,
     handleForkMessage,
-    handleAddAttachment, handleRemoveAttachment,
     toggleHistory: callbacks.toggleHistory,
     syncSessionsFromServer: callbacks.syncSessionsFromServer,
     handleGenerateReport,
+
+    // 思考过程
+    thinkingSteps,
   }), [
     messages, input, isStreaming, chatError, assistantCount, elapsedSeconds,
+    streamProgress, streamStageKey, streamChars, streamStatus, streamSteps,
     historySessions, activeSessionId, historyVisible,
     llmAvailable, llmModel, scenarioMode, rag,
-    formulaCount, expandedIds, selectedIds, formulas,
+    formulaCount, expandedIds, selectedIds, formulas, formulaActions, clearAllFormulas,
     showReportModal, setShowReportModal, reportData, isGeneratingReport,
     handleGenerateReport,
-    showFormulaList, searchQuery, highlightedMessageId,
-    attachments, detailsCall, detailsOpen, showKBPanel, isDetailModalOpen, selectedForDetail,
+    showFormulaList, setShowFormulaList, searchQuery, highlightedMessageId,
+    detailsCall, detailsOpen, showKBPanel, isDetailModalOpen, selectedForDetail,
     chatHook, callbacks, chatHandlers, messageEditing, formulaActions,
-    handleForkMessage, handleAddAttachment, handleRemoveAttachment,
-    props,
+    handleForkMessage,
+    props, orchestrator.thinkingProcessV3.state.steps,
   ])
 
   return (

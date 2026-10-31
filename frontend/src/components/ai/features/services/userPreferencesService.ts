@@ -316,6 +316,19 @@ export class UserPreferencesService {
   }
 
   /**
+   * 重置用户健康画像（清空健康目标、过敏原、饮食限制、体质倾向、健康备注、年龄范围与最近提取记录）
+   * 仅清空健康画像，不影响快捷键/输入行为/主题等其它偏好设置。
+   */
+  resetUserProfile(): void {
+    if (!this.preferences) {
+      this.preferences = { ...DEFAULT_PREFERENCES }
+    }
+    this.preferences.userProfile = {} as UserProfileContext
+    this.savePreferences()
+    logger.info('[UserPreferencesService] 用户健康画像已重置')
+  }
+
+  /**
    * 设置健康目标
    */
   setHealthGoals(goals: HealthGoal[]): void {
@@ -375,9 +388,25 @@ export class UserPreferencesService {
   }
 
   /**
-   * 从对话内容中自动提取偏好并更新画像
+   * 设置年龄范围
    */
-  extractAndSavePreferencesFromContent(content: string): void {
+  setAgeRange(ageRange: 'under_18' | '18_30' | '31_50' | '51_70' | 'over_70'): void {
+    if (!this.preferences) {
+      this.preferences = { ...DEFAULT_PREFERENCES }
+    }
+    if (!this.preferences.userProfile) {
+      this.preferences.userProfile = {} as UserProfileContext
+    }
+    this.preferences.userProfile.ageRange = ageRange
+    this.savePreferences()
+  }
+
+  /**
+   * 从对话内容中自动提取偏好并更新画像
+   * @returns 提取结果（仅当有新数据时返回），供调用方发送通知
+   */
+  extractAndSavePreferencesFromContent(content: string): { goals: string[], allergens: string[] } | null {
+    if (!content || content.trim().length < 4) return null
     if (!this.preferences) {
       this.preferences = { ...DEFAULT_PREFERENCES }
     }
@@ -386,60 +415,68 @@ export class UserPreferencesService {
     }
 
     // 提取健康目标
-    const goalMappings: Array<{ pattern: RegExp; goal: HealthGoal }> = [
-      { pattern: /血糖|高血糖|糖尿病/i, goal: 'blood_sugar_control' },
-      { pattern: /血压|高血压/i, goal: 'blood_pressure_control' },
-      { pattern: /减肥|体重|瘦身/i, goal: 'weight_management' },
-      { pattern: /睡眠|失眠|助眠/i, goal: 'sleep_improvement' },
-      { pattern: /免疫|增强免疫/i, goal: 'immune_boost' },
-      { pattern: /抗氧化|抗衰老/i, goal: 'antioxidant' },
-      { pattern: /护肝|肝脏/i, goal: 'liver_protection' },
-      { pattern: /消化|肠胃/i, goal: 'digestive_health' },
-      { pattern: /疲劳|精力/i, goal: 'anti_fatigue' },
+    const goalMappings: Array<{ pattern: RegExp; goal: HealthGoal; label: string }> = [
+      { pattern: /血糖|高血糖|糖尿病/i, goal: 'blood_sugar_control', label: '血糖管理' },
+      { pattern: /血压|高血压/i, goal: 'blood_pressure_control', label: '血压管理' },
+      { pattern: /减肥|体重|瘦身/i, goal: 'weight_management', label: '体重管理' },
+      { pattern: /睡眠|失眠|助眠/i, goal: 'sleep_improvement', label: '改善睡眠' },
+      { pattern: /免疫|增强免疫/i, goal: 'immune_boost', label: '增强免疫' },
+      { pattern: /抗氧化|抗衰老/i, goal: 'antioxidant', label: '抗氧化' },
+      { pattern: /护肝|肝脏/i, goal: 'liver_protection', label: '肝脏养护' },
+      { pattern: /消化|肠胃/i, goal: 'digestive_health', label: '消化健康' },
+      { pattern: /疲劳|精力/i, goal: 'anti_fatigue', label: '抗疲劳' },
     ]
 
-    const detectedGoals: HealthGoal[] = []
-    for (const { pattern, goal } of goalMappings) {
+    const newGoals: string[] = []
+    for (const { pattern, goal, label } of goalMappings) {
       if (pattern.test(content)) {
-        detectedGoals.push(goal)
+        const existing = this.preferences.userProfile.healthGoals ?? []
+        if (!existing.includes(goal)) {
+          existing.push(goal)
+          this.preferences.userProfile.healthGoals = existing
+          newGoals.push(label)
+        }
       }
-    }
-    if (detectedGoals.length > 0) {
-      this.preferences.userProfile.healthGoals = [...new Set([...(this.preferences.userProfile.healthGoals ?? []), ...detectedGoals])]
     }
 
     // 提取过敏相关信息
-    const allergenMappings: Array<{ pattern: RegExp; allergen: AllergenType }> = [
-      { pattern: /菊科|苦瓜|桑叶过敏/i, allergen: 'mugwort' },
-      { pattern: /花生过敏/i, allergen: 'peanuts' },
-      { pattern: /海鲜|虾蟹/i, allergen: 'shellfish' },
-      { pattern: /乳糖|牛奶/i, allergen: 'dairy' },
+    const allergenMappings: Array<{ pattern: RegExp; allergen: AllergenType; label: string }> = [
+      { pattern: /菊科|苦瓜|桑叶过敏/i, allergen: 'mugwort', label: '菊科植物' },
+      { pattern: /花生过敏/i, allergen: 'peanuts', label: '花生' },
+      { pattern: /海鲜|虾蟹过敏/i, allergen: 'shellfish', label: '海鲜' },
+      { pattern: /乳糖不耐|牛奶过敏/i, allergen: 'dairy', label: '乳制品' },
     ]
 
-    const detectedAllergens: AllergenType[] = []
-    for (const { pattern, allergen } of allergenMappings) {
+    const newAllergens: string[] = []
+    for (const { pattern, allergen, label } of allergenMappings) {
       if (pattern.test(content)) {
-        detectedAllergens.push(allergen)
+        const existing = this.preferences.userProfile.allergens ?? []
+        if (!existing.includes(allergen)) {
+          existing.push(allergen)
+          this.preferences.userProfile.allergens = existing
+          newAllergens.push(label)
+        }
       }
     }
-    if (detectedAllergens.length > 0) {
-      this.preferences.userProfile.allergens = [...new Set([...(this.preferences.userProfile.allergens ?? []), ...detectedAllergens])]
-    }
+
+    if (newGoals.length === 0 && newAllergens.length === 0) return null
 
     // 记录最近偏好摘要
     this.preferences.userProfile.recentPreferences = {
-      targetedCondition: detectedGoals[0] ?? 'other',
-      preferredIngredients: [],
-      avoidedIngredients: detectedAllergens,
+      targetedCondition: newGoals[0] ?? (this.preferences.userProfile.recentPreferences?.targetedCondition ?? 'other'),
+      preferredIngredients: this.preferences.userProfile.recentPreferences?.preferredIngredients ?? [],
+      avoidedIngredients: newAllergens,
       dosagePreference: 'standard',
       extractedAt: Date.now(),
     }
 
     this.savePreferences()
     logger.info('[UserPreferencesService] 从对话内容提取并保存偏好:', {
-      goals: detectedGoals,
-      allergens: detectedAllergens,
+      goals: newGoals,
+      allergens: newAllergens,
     })
+
+    return { goals: newGoals, allergens: newAllergens }
   }
 
   /**

@@ -30,7 +30,7 @@ async function fetchSharedExperiment(shareId: string) {
 }
 
 export default function ExperimentSharePage() {
-  const { t, i18n } = useTranslation()
+  const { t, i18n: _i18n } = useTranslation()
   const { shareId } = useParams<{ shareId: string }>()
   const [dataView, setDataView] = useState<'table' | 'chart'>('table')
 
@@ -101,7 +101,7 @@ export default function ExperimentSharePage() {
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
-                      <Target size={16} className="text-[var(--color-primary-text)]0" />
+                      <Target size={16} className="text-[var(--color-primary-text)]" />
                     </div>
                     <CardTitle as="h2">{t('pages.experimentShare.objectives')}</CardTitle>
                   </div>
@@ -110,7 +110,7 @@ export default function ExperimentSharePage() {
                   <ul className="space-y-2">
                     {exp.objectives.map((obj: string, i: number) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
-                        <span className="mt-1.5 w-1.5 h-1.5 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)]0 shrink-0" />
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)] shrink-0" />
                         {obj}
                       </li>
                     ))}
@@ -123,7 +123,7 @@ export default function ExperimentSharePage() {
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
-                      <FileText size={16} className="text-[var(--color-primary-text)]0" />
+                      <FileText size={16} className="text-[var(--color-primary-text)]" />
                     </div>
                     <CardTitle as="h2">{t('pages.experimentShare.methodology')}</CardTitle>
                   </div>
@@ -143,7 +143,7 @@ export default function ExperimentSharePage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-[var(--space-apple-sm)]">
                   <div className="w-8 h-8 rounded-[var(--radius-Apple-sm)] bg-[var(--color-primary-container)] flex items-center justify-center">
-                    <BarChart3 size={16} className="text-[var(--color-primary-text)]0" />
+                    <BarChart3 size={16} className="text-[var(--color-primary-text)]" />
                   </div>
                   <div>
                     <CardTitle as="h2">{t('pages.experimentShare.data')}</CardTitle>

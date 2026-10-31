@@ -13,7 +13,7 @@ const Checkbox = React.forwardRef<
     id?: string
     indeterminate?: boolean
   }
->(({ className, checked, onCheckedChange, label, id, indeterminate, ...props }, ref) => {
+>(({ className, checked, onCheckedChange, label, id, indeterminate: _indeterminate, ...props }, ref) => {
   const handleChange = (nextChecked: boolean) => {
     onCheckedChange?.(nextChecked)
   }

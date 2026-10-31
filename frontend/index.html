@@ -2,6 +2,9 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#059669" />
@@ -12,18 +15,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>莱茵分子 - 药食同源配方研发平台</title>
     <!-- 字体使用系统字体回退，避免外部 Google Fonts 网络依赖导致国内加载超时 -->
-    <script>
-      /* ECharts CDN（可选，仅数据库页的 3D 肽结构视图使用，带优雅降级）：
-         加载失败不会阻塞应用，PeptideStructureAnalyzer 已有 window.echarts 缺失守卫 */
-      (function () {
-        var s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js';
-        s.async = true;
-        s.onload = function () { console.info('[ECharts] CDN ready'); };
-        s.onerror = function () { console.warn('[ECharts] CDN 加载失败，肽结构 3D 视图将不可用（不影响其他功能）'); };
-        document.head.appendChild(s);
-      })();
-    </script>
+    <!--
+      ⚡ P3 性能优化：ECharts 已从此处移除（2026-10-27）。
+      此前 ~1MB 的 echarts.min.js 在 *每一个* 页面加载（含 AI 助手页），与关键路径 JS bundle
+      争抢带宽，直接拉高 FCP / LCP / 页面加载耗时，而它的唯一消费者是数据库页的
+      PeptideStructureAnalyzer。现改为由该组件按需注入（同源 /echarts/echarts.min.js，
+      仅挂载时才加载，且不再依赖外网 CDN）。
+    -->
     <script>
       // D-11 修复：原脚本读取 'rmfood-theme-settings-v2'（全项目无写入方，实测恒为 null），
       // 且 mode 取值用 'auto' 而 store 用 'system'，导致预置暗色主题时首屏必然亮色闪烁。

@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Badge, Button } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { AvatarUpload } from './AvatarUpload';
@@ -60,6 +60,7 @@ export const PersonalInfoSection: React.FC = () => {
     }
   }, [isDirty, avatarChanged, resetForm, resetAvatar]);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleGenerate = useCallback(async (style?: AvatarStyle) => {
     // 使用指定风格（或当前选中风格）+ 随机种子，保证「换一个」得到全新头像
     const targetStyle = style ?? avatarStyle;

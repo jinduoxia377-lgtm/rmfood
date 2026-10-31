@@ -29,7 +29,7 @@ export default function PinnedNodesPanel({
           <span>📌</span> 固定节点 ({pinnedNodes.size})
         </span>
         <div className="flex items-center gap-1">
-          <button onClick={onClearAllPins} className="text-[8px] px-1.5 py-0.5 bg-error-100 dark:bg-error-300/25 text-error-600 dark:text-error-600 rounded hover:bg-error-200 transition-colors">
+          <button onClick={onClearAllPins} className="text-[11px] px-1.5 py-0.5 bg-error-100 dark:bg-error-300/25 text-error-600 dark:text-error-600 rounded hover:bg-error-200 transition-colors">
             全部释放
           </button>
           <button onClick={onClose} className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 p-0.5">
@@ -47,7 +47,7 @@ export default function PinnedNodesPanel({
                role="button" tabIndex={0} onClick={() => onNodeClick?.(node)}>
               <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: conf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
               <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate flex-1">{node.label}</span>
-              <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{conf?.label || node.type}</span>
+              <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{conf?.label || node.type}</span>
               <button onClick={(e) => { e.stopPropagation(); onTogglePin(nodeId) }}
                 className="opacity-0 group-hover:opacity-100 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-error-500 p-0.5 transition-opacity">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>

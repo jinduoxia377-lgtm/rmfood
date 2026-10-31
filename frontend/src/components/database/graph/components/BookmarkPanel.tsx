@@ -57,14 +57,14 @@ export default function BookmarkPanel({
           <button
             onClick={handleSave}
             disabled={atLimit || !name.trim()}
-            className="px-2.5 py-1.5 rounded-lg bg-warning-500 text-white text-xs font-medium hover:bg-warning-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-2.5 py-1.5 rounded-lg bg-[var(--color-warning-surface)] text-white text-xs font-medium hover:bg-[var(--color-warning-surface-deep)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title={atLimit ? `已达上限 ${maxBookmarks} 个` : '保存当前视图'}
           >
             保存
           </button>
         </div>
         {atLimit && (
-          <p className="text-[10px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">
+          <p className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center">
             已达上限，删除旧书签后可继续保存
           </p>
         )}
@@ -73,7 +73,7 @@ export default function BookmarkPanel({
             <span className="text-base shrink-0">{bm.icon}</span>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">{bm.name}</p>
-              <p className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{bm.createdAt.toLocaleDateString('zh-CN')}</p>
+              <p className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{bm.createdAt.toLocaleDateString('zh-CN')}</p>
             </div>
             <button onClick={(e) => { e.stopPropagation(); onRemoveBookmark(bm.id); }} className="w-5 h-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-error-100 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-xs transition-all" aria-label={`删除书签 ${bm.name}`}>✕</button>
           </div>

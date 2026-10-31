@@ -34,19 +34,27 @@ export interface WorkflowExecution {
 }
 
 export interface WorkflowTemplate {
-  id: string; // AI 智能体模块将其作为逻辑模板 ID（如 'formula_design'），与 workflowType 比较；勿改为 number
+  /**
+   * 逻辑模板 ID（如 'formula_design'），与 workflowType 比较；勿改为 number。
+   * Agent 工作流模板（GET /api/v1/agent/workflows/templates）仅返回 template_id，
+   * 故此处可缺省，消费方应使用 `id ?? template_id` 取逻辑 ID。
+   */
+  id?: string;
   template_id: string;
   name: string;
   label?: string;
   description?: string | null;
   desc?: string;
-  category: string;
+  category?: string;
   icon?: string | null;
   node_count?: number | null;
   estimated_duration?: string | null;
   nodes?: Record<string, unknown>[];
   edges?: Record<string, unknown>[];
   preset_config?: Record<string, unknown>;
+  /** Agent 工作流模板（/agent/workflows/templates）新增字段 */
+  stage_count?: number;
+  stages?: string[];
 }
 
 export interface WorkflowExecuteResponse {
@@ -213,13 +221,19 @@ export const workflowApi = {
   ): () => void {
     const controller = new AbortController();
 
-    fetch(`${API_BASE}/agent/workflow/${workflowType}/execute/stream`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    })
-      .then(async (res) => {
+    // SSE POST 同样需要 CSRF token 与凭证（与 agent.ts executeStream 保持一致）
+    ensureCsrfToken().then((csrfToken) => {
+      fetch(`${API_BASE}/agent/workflow/${workflowType}/execute/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+        credentials: 'include',
+      })
+        .then(async (res) => {
         if (!res.ok) throw new Error(`SSE ${res.status}`);
         const reader = res.body?.getReader();
         if (!reader) throw new Error('No response body');
@@ -254,13 +268,34 @@ export const workflowApi = {
         }
       })
       .catch(onError);
+    });
 
     return () => controller.abort();
   },
 
-  /** 列出可用工作流模板 */
+  /**
+   * 列出 workflow_exec 工作流模板（WorkflowVisualEditor 画布编辑用）。
+   *
+   * 注意：此端点返回 workflow_exec 模板（id 为数字、含 nodes/edges/preset_config），
+   * 供可视化编辑器使用；与 Agent 工作流的 execute() 类型不同源。
+   * 如需 Agent 工作流模板（formula_design 等，与 execute() 同源），请用 listAgentTemplates()。
+   */
   listTemplates: () =>
     request<{ items: WorkflowTemplate[]; total: number }>('/workflows/templates'),
+
+  /**
+   * 列出 Agent 工作流模板（Chief 工作台 useUnifiedAgent 用）。
+   *
+   * 必须与 execute() 同源 —— 均走 agent_router（/api/v1/agent/...）。
+   * GET /api/v1/agent/workflows/templates 返回 Agent 工作流模板
+   * （formula_design / compliance_check / experiment_plan / ingredient_lookup / full_pipeline），
+   * 与 POST /api/v1/agent/workflow/{workflow_type}/execute 接受的类型一致，
+   * 保证模板展示与执行类型一致。
+   */
+  listAgentTemplates: () =>
+    request<{ success: boolean; items: WorkflowTemplate[]; total: number }>(
+      '/agent/workflows/templates'
+    ),
 
   /** 获取单个模板详情 */
   getTemplate: (templateId: string) =>

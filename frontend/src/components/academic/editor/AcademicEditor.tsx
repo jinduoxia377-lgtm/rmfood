@@ -18,6 +18,7 @@ export function AcademicEditor() {
 
   useEffect(() => {
     if (currentReport) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditorState(prev => ({ ...prev, content: currentReport.abstract || '' }));
     }
   }, [currentReport]);

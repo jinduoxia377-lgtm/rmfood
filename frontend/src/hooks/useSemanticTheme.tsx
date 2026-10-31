@@ -137,7 +137,7 @@ function cssVar(name: string): string {
  * 返回的值都是 CSS 变量引用，不是硬编码颜色
  */
 export function useSemanticTheme(): SemanticColorVars {
- const dark = useIsDarkMode();
+ const _dark = useIsDarkMode();
 
  return {
  // 品牌色

@@ -195,6 +195,21 @@
   --color-knowledge-default: #94a3b8;
   --color-knowledge-text: #64748b;
 
+  /* ═══ Knowledge Graph 节点/边颜色（暗色提亮，对应 base.css --kg-*）═══ */
+  --kg-herb: #4ADE80;
+  --kg-compound: #6ECAFF;
+  --kg-target: #F59E0B;
+  --kg-disease: #EF4444;
+  --kg-peptide: #C084FC;
+  --kg-protein: #FB7185;
+  --kg-food: #FB923C;
+  --kg-edge-contains: #6ECAFF;
+  --kg-edge-targets: #F59E0B;
+  --kg-edge-treats: #EF4444;
+  --kg-edge-synergy: #4ADE80;
+  --kg-edge-antagonism: #FCA5A5;
+  --kg-edge-interacts: #C084FC;
+
   /* ═══ Semantic 10-scale (dark) — 补全 base.css 缺失的变量 ═══ */
   --color-success-50: #022c22;  --color-success-100: #064e3b;  --color-success-200: #065f46;
   --color-success-300: #047857; --color-success-400: #059669;  --color-success-500: #10b981;

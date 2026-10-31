@@ -10,6 +10,16 @@ import { logger } from '@/utils/safeLogger'
 import { useToast } from '@/components/ui'
 import { useTranslation } from 'react-i18next'
 
+/** 颜色名 → Tailwind 静态类名映射（JIT 无法解析动态类名） */
+const COLOR_CLASSES: Record<string, { bg: string; text: string; bg200: string; bgDark: string }> = {
+  purple: { bg: 'bg-purple-500', text: 'text-purple-600', bg200: 'bg-purple-200', bgDark: 'dark:bg-purple-900' },
+  blue: { bg: 'bg-blue-500', text: 'text-blue-600', bg200: 'bg-blue-200', bgDark: 'dark:bg-blue-900' },
+  green: { bg: 'bg-green-500', text: 'text-green-600', bg200: 'bg-green-200', bgDark: 'dark:bg-green-900' },
+  orange: { bg: 'bg-orange-500', text: 'text-orange-600', bg200: 'bg-orange-200', bgDark: 'dark:bg-orange-900' },
+  emerald: { bg: 'bg-emerald-500', text: 'text-emerald-600', bg200: 'bg-emerald-200', bgDark: 'dark:bg-emerald-900' },
+  red: { bg: 'bg-red-500', text: 'text-red-600', bg200: 'bg-red-200', bgDark: 'dark:bg-red-900' },
+}
+
 
 interface PeptideAnalysisResult {
   sequence?: string;
@@ -254,20 +264,23 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
 
-  const renderScoreBar = (label: string, score: number, color: string) => (
-    <div className="flex items-center gap-3 mb-2">
-      <span className="text-sm text-neutral-600 w-32">{label}</span>
-      <div className="flex-1 h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-500 bg-${color}-500`}
-          style={{ width: `${Math.min(score * 100, 100)}%` }}
-        />
+  const renderScoreBar = (label: string, score: number, color: string) => {
+    const c = COLOR_CLASSES[color] || COLOR_CLASSES.green
+    return (
+      <div className="flex items-center gap-3 mb-2">
+        <span className="text-sm text-neutral-600 w-32">{label}</span>
+        <div className="flex-1 h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${c.bg}`}
+            style={{ width: `${Math.min(score * 100, 100)}%` }}
+          />
+        </div>
+        <span className="text-sm font-mono font-semibold w-12 text-right">
+          {(score * 100).toFixed(1)}%
+        </span>
       </div>
-      <span className="text-sm font-mono font-semibold w-12 text-right">
-        {(score * 100).toFixed(1)}%
-      </span>
-    </div>
-  )
+    )
+  }
 
   const renderPropertyGrid = (props: Record<string, any>) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
@@ -592,17 +605,20 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                     { label: '类药性', value: Number(result.overall_scores?.druglikeness ?? 0), color: 'green' },
                     { label: '生物活性', value: Number(result.overall_scores?.bioactivity ?? 0), color: 'orange' },
                     { label: '安全性', value: Number(result.overall_scores?.safety ?? 0), color: 'emerald' },
-                  ].map(({ label, value, color }) => (
+                  ].map(({ label, value, color }) => {
+                    const c = COLOR_CLASSES[color] || COLOR_CLASSES.green
+                    return (
                     <div key={label} className="text-center">
                       <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">{label}</div>
-                      <div className={`text-3xl font-bold text-${color}-600`}>
+                      <div className={`text-3xl font-bold ${c.text}`}>
                         {(value * 100).toFixed(1)}<span className="text-lg">%</span>
                       </div>
-                      <div className={`mt-1 h-1.5 bg-${color}-200 dark:bg-${color}-900 rounded-full overflow-hidden`}>
-                        <div className={`h-full bg-${color}-500 rounded-full`} style={{ width: `${value * 100}%` }} />
+                      <div className={`mt-1 h-1.5 ${c.bg200} ${c.bgDark} rounded-full overflow-hidden`}>
+                        <div className={`h-full ${c.bg} rounded-full`} style={{ width: `${value * 100}%` }} />
                       </div>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
 
                 {/* Basic Properties */}

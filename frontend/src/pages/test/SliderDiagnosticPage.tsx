@@ -6,6 +6,7 @@ export const SliderDiagnosticPage: React.FC = () => {
   const [browserInfo, setBrowserInfo] = useState('')
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBrowserInfo(`UserAgent: ${navigator.userAgent}`)
   }, [])
 

@@ -135,7 +135,7 @@ export function BottomSheet({ open, onClose, title, children, height = '70%', dr
         )}
 
         {/* 标题栏 */}
-        {(title || true) && (
+        {(
           <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
             {title && <h3 className="text-base font-semibold text-neutral-900 dark:text-white">{title}</h3>}
             <button
@@ -179,6 +179,7 @@ export function PullToRefresh({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    void e;
     // 仅在顶部且滚动位置为0时触发
     const container = containerRef.current;
     if (container?.scrollTop === 0) {

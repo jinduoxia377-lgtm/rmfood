@@ -7,7 +7,7 @@
 
 import { secureApiKeyManager } from './secureKeyManager'
 import { ConfigManager } from './configManager'
-import type { ModelType, ModelConfig } from './configManager'
+import type { ModelConfig } from './configManager'
 import { logger } from './safeLogger'
 
 // ══════════════════════════════════════

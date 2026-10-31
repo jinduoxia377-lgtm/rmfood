@@ -58,7 +58,7 @@ export default function CentralityPanel({
         </span>
         <div className="flex items-center gap-1">
           <select value={sortBy} onChange={(e) => onSetSortBy(e.target.value as SortByOption)}
-            className="text-[8px] bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 rounded px-1 py-0.5">
+            className="text-[11px] bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 rounded px-1 py-0.5">
             <option value="degree">按度数</option>
             <option value="label">按名称</option>
             <option value="type">按类型</option>
@@ -79,7 +79,7 @@ export default function CentralityPanel({
           ].map(s => (
             <div key={s.label} className="bg-neutral-50 dark:bg-neutral-800/50 rounded-lg p-1.5 text-center">
               <div className={`text-xs font-bold tabular-nums ${s.color}`}>{s.value}</div>
-              <div className="text-[7px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{s.label}</div>
+              <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{s.label}</div>
             </div>
           ))}
         </div>
@@ -93,14 +93,14 @@ export default function CentralityPanel({
           ].map(s => (
             <div key={s.label} className="text-center py-1">
               <div className="text-xs font-mono font-semibold text-neutral-700 dark:text-neutral-300">{s.value}</div>
-              <div className="text-[7px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-tight">{s.label}</div>
+              <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] leading-tight">{s.label}</div>
             </div>
           ))}
         </div>
 
         {/* 类型分布 */}
         <div className="border-t border-neutral-100 dark:border-neutral-700/30 pt-2">
-          <div className="text-[8px] font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase mb-1.5">类型分布</div>
+          <div className="text-[11px] font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase mb-1.5">类型分布</div>
           <div className="space-y-1">
             {stats.typeDistribution.slice(0, 6).map(([type, count]) => {
               const conf = TYPE_CONFIG[type]
@@ -108,8 +108,8 @@ export default function CentralityPanel({
               return (
                 <div key={type} className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: conf?.color || '#9CA3AF' }} />
-                  <span className="text-[9px] text-neutral-600 dark:text-neutral-400 truncate flex-1">{conf?.label || type}</span>
-                  <span className="text-[9px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{count}</span>
+                  <span className="text-[11px] text-neutral-600 dark:text-neutral-400 truncate flex-1">{conf?.label || type}</span>
+                  <span className="text-[11px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{count}</span>
                   <div className="w-10 h-1.5 bg-neutral-100 dark:bg-neutral-700/40 rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: conf?.color || '#9CA3AF' }} />
                   </div>
@@ -122,8 +122,8 @@ export default function CentralityPanel({
         {/* Top 10 节点排行 */}
         <div className="border-t border-neutral-100 dark:border-neutral-700/30 pt-2">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[8px] font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">Top 10 关键节点</span>
-            <span className="text-[7px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">点击查看详情</span>
+            <span className="text-[11px] font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase">Top 10 关键节点</span>
+            <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">点击查看详情</span>
           </div>
           <div className="space-y-0.5">
             {sortedNodes.slice(0, 10).map((item, idx) => {
@@ -133,14 +133,14 @@ export default function CentralityPanel({
                 <button key={`${item.node.id}_${idx}`}
                   onClick={() => onNodeClick?.(item.node)}
                   className="w-full flex items-center gap-1 px-1.5 py-1 rounded-md hover:bg-secondary-50/70 dark:hover:bg-secondary-950/20 transition-colors group text-left">
-                  <span className={`w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold shrink-0 ${RANK_BADGES[idx] || 'bg-neutral-50 dark:bg-neutral-800 text-neutral-400'}`}>
+                  <span className={`w-4 h-4 rounded flex items-center justify-center text-[11px] font-bold shrink-0 ${RANK_BADGES[idx] || 'bg-neutral-50 dark:bg-neutral-800 text-neutral-400'}`}>
                     {idx + 1}
                   </span>
                   <span className="w-2 h-2 rounded-full shrink-0 mt-0.5" style={{ backgroundColor: conf?.color || '#9CA3AF' }} />
-                  <span className="text-[9px] font-medium text-neutral-700 dark:text-neutral-300 truncate flex-1 group-hover:text-secondary-600 dark:group-hover:text-secondary-400">
+                  <span className="text-[11px] font-medium text-neutral-700 dark:text-neutral-300 truncate flex-1 group-hover:text-secondary-600 dark:group-hover:text-secondary-400">
                     {item.node.label}
                   </span>
-                  <span className="text-[9px] font-mono font-bold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">{item.degree}</span>
+                  <span className="text-[11px] font-mono font-bold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">{item.degree}</span>
                   <div className="w-8 h-1 bg-neutral-100 dark:bg-neutral-700/30 rounded-full overflow-hidden">
                     <div className="h-full rounded-full bg-gradient-to-r from-secondary-400 to-accent-400 transition-all" style={{ width: `${pct}%` }} />
                   </div>
@@ -153,7 +153,7 @@ export default function CentralityPanel({
         {/* 连通分量警告 */}
         {stats.connectedComponents > 1 && (
           <div className="border-t border-neutral-100 dark:border-neutral-700/30 pt-2 mt-1">
-            <div className="text-[8px] text-warning-600 dark:text-warning-700 px-2 py-1.5 bg-warning-50 dark:bg-warning-300/18 rounded-lg">
+            <div className="text-[11px] text-warning-600 dark:text-warning-700 px-2 py-1.5 bg-warning-50 dark:bg-warning-300/18 rounded-lg">
               ⚠ 图存在 {stats.connectedComponents} 个连通分量，最大分量含 {stats.largestComponentSize} 节点
             </div>
           </div>

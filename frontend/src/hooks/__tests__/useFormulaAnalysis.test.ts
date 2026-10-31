@@ -1,6 +1,10 @@
 /**
  * useFormulaAnalysis Hook - 单元测试
- * 测试覆盖：初始状态、分析流程、阶段进度、取消分析、错误处理与回退
+ * 测试覆盖：初始状态、分析流程、阶段进度、取消分析、错误处理与显式降级（degraded）。
+ *
+ * P1-5 变更：
+ * - 移除 setTimeout(300) 人为延时，测试不再依赖 fake timers 推进；
+ * - 分析接口失败时不再伪造默认评分，而是置 degraded=true 并保持对应分数字段缺失。
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
@@ -64,12 +68,21 @@ const mockStabilityResult = {
   estimated_shelf_life_months: 24,
   risk_factors: [],
   monthly_curve: [],
-  storage_advice: 'Store in cool place',
+  storage_advice: ['Store in cool place'],
 };
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
 
 describe('useFormulaAnalysis', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
     vi.mocked(parseFormulaTable).mockReturnValue(mockParsedFormula as any);
     vi.mocked(aiApi.safetyCheck).mockResolvedValue(mockSafetyResult as any);
     vi.mocked(aiApi.synergyAnalysis).mockResolvedValue(mockSynergyResult as any);
@@ -79,7 +92,6 @@ describe('useFormulaAnalysis', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-    vi.useRealTimers();
   });
 
   describe('initial state', () => {
@@ -102,82 +114,48 @@ describe('useFormulaAnalysis', () => {
   });
 
   describe('analyzeFormula - loading state', () => {
-    it('should set isLoading to true when analysis starts', async () => {
+    it('should set isLoading to true when analysis starts and stay pending until API returns', async () => {
+      // 让安全检查保持 pending，验证加载态真实存在（而非依赖人为延时）
+      const d = deferred<any>();
+      vi.mocked(aiApi.safetyCheck).mockReturnValue(d.promise);
+
       const { result } = renderHook(() => useFormulaAnalysis());
 
-      await act(async () => {
-        const analysisPromise = result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(2000);
-        await analysisPromise;
+      let promise: Promise<unknown> | null = null;
+      act(() => {
+        promise = result.current.analyzeFormula('test content');
       });
 
-      // After completion, isLoading should be false
-      expect(result.current.result.isLoading).toBe(false);
-    });
-
-    it('should set isLoading to true immediately on start', async () => {
-      const { result } = renderHook(() => useFormulaAnalysis());
-
-      // 启动分析但不等待完成；act 结束时 React 会 flush 同步 setState
-      await act(async () => {
-        result.current.analyzeFormula('test content');
-      });
-
-      // 分析尚未完成（内部仍在等待 fake timers），isLoading 应为 true
       expect(result.current.result.isLoading).toBe(true);
 
       await act(async () => {
-        await vi.advanceTimersByTimeAsync(2000);
+        d.resolve(mockSafetyResult as any);
+        await promise;
       });
+
+      expect(result.current.result.isLoading).toBe(false);
+      expect(result.current.result.candidate).not.toBeNull();
     });
   });
 
   describe('analyzeFormula - stage progress updates', () => {
-    it('should progress through parsing stage', async () => {
+    it('should progress through stages and complete', async () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const p = result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(2000);
-        await p;
+        await result.current.analyzeFormula('test content');
       });
 
-      // After full completion, stage should be 'complete'
       expect(result.current.progress.stage).toBe('complete');
       expect(result.current.progress.percent).toBe(100);
-    });
-
-    it('should reach safety stage', async () => {
-      const progressStages: string[] = [];
-      const { result } = renderHook(() => useFormulaAnalysis());
-
-      // 启动分析（act 结束 flush → parsing 阶段）
-      await act(async () => {
-        result.current.analyzeFormula('test content');
-      });
-      progressStages.push(result.current.progress.stage);
-
-      // 推进 300ms：parsing 定时器触发 → safety 阶段（act 结束 flush）
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(300);
-      });
-      progressStages.push(result.current.progress.stage);
-
-      // 推进剩余时间完成分析
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(2000);
-      });
-
-      expect(progressStages).toContain('safety');
+      expect(result.current.result.candidate).not.toBeNull();
     });
 
     it('should call all five AI stages', async () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const p = result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(3000);
-        await p;
+        await result.current.analyzeFormula('test content');
       });
 
       expect(parseFormulaTable).toHaveBeenCalledWith('test content');
@@ -187,30 +165,38 @@ describe('useFormulaAnalysis', () => {
       expect(aiApi.stabilityPredict).toHaveBeenCalled();
     });
 
-    it('should produce a candidate result on success', async () => {
+    it('should produce a candidate result on success with real scores and degraded=false', async () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       let candidate: unknown = null;
       await act(async () => {
-        // 先启动分析，再推进 fake timers，最后 await 完成（避免死等）
-        const p = result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(3000);
-        candidate = await p;
+        candidate = await result.current.analyzeFormula('test content');
       });
 
       expect(candidate).not.toBeNull();
       expect(result.current.result.candidate).not.toBeNull();
       expect(result.current.result.error).toBeNull();
+      expect(result.current.result.candidate?.degraded).toBe(false);
+      expect(result.current.result.candidate?.synergy_score).toBe(0.85);
+      expect(result.current.result.candidate?.taste_score).toBe(0.8);
+      expect(result.current.result.candidate?.stability_score).toBe(0.9);
+      expect(result.current.result.candidate?.overall_score).toBeTypeOf('number');
     });
   });
 
   describe('analyzeFormula - abort / cancel', () => {
     it('should reset state when cancelAnalysis is called', async () => {
+      const d = deferred<any>();
+      vi.mocked(aiApi.safetyCheck).mockReturnValue(d.promise);
+
       const { result } = renderHook(() => useFormulaAnalysis());
 
-      await act(async () => {
+      act(() => {
         result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(100);
+      });
+      expect(result.current.result.isLoading).toBe(true);
+
+      act(() => {
         result.current.cancelAnalysis();
       });
 
@@ -221,41 +207,27 @@ describe('useFormulaAnalysis', () => {
     });
 
     it('should abort previous analysis when a new one starts', async () => {
+      const d1 = deferred<any>();
+      vi.mocked(aiApi.safetyCheck).mockReturnValueOnce(d1.promise);
+
       const { result } = renderHook(() => useFormulaAnalysis());
 
+      let p1: Promise<unknown> | null = null;
+      act(() => {
+        p1 = result.current.analyzeFormula('first content');
+      });
+
+      // 第二次分析会 abort 第一次
       await act(async () => {
-        // Start first analysis
-        const p1 = result.current.analyzeFormula('first content');
-        await vi.advanceTimersByTimeAsync(100);
-
-        // Start second analysis (should abort first)
         const p2 = result.current.analyzeFormula('second content');
-        await vi.advanceTimersByTimeAsync(3000);
-
-        await p1;
         await p2;
       });
 
-      // The second analysis should have completed
       expect(parseFormulaTable).toHaveBeenCalledWith('second content');
-    });
-
-    it('should reset progress to idle on cancel', async () => {
-      const { result } = renderHook(() => useFormulaAnalysis());
-
-      await act(async () => {
-        result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(500);
-        result.current.cancelAnalysis();
-      });
-
-      expect(result.current.progress.stage).toBe('idle');
-      expect(result.current.progress.percent).toBe(0);
-      expect(result.current.progress.message).toBe('');
     });
   });
 
-  describe('analyzeFormula - error handling with fallback', () => {
+  describe('analyzeFormula - error handling', () => {
     it('should set error when content is empty', async () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
@@ -285,7 +257,6 @@ describe('useFormulaAnalysis', () => {
 
       await act(async () => {
         const candidate = await result.current.analyzeFormula('invalid content');
-        await vi.advanceTimersByTimeAsync(500);
         expect(candidate).toBeNull();
       });
 
@@ -299,90 +270,11 @@ describe('useFormulaAnalysis', () => {
 
       await act(async () => {
         const candidate = await result.current.analyzeFormula('bad content');
-        await vi.advanceTimersByTimeAsync(500);
         expect(candidate).toBeNull();
       });
 
       expect(result.current.result.error).toBeDefined();
       expect(result.current.result.isLoading).toBe(false);
-    });
-
-    it('should use fallback when safetyCheck API fails', async () => {
-      vi.mocked(aiApi.safetyCheck).mockRejectedValue(new Error('Network error'));
-      const { result } = renderHook(() => useFormulaAnalysis());
-
-      await act(async () => {
-        const p = result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(3000);
-        const candidate = await p;
-        // Should still complete with fallback values
-        expect(candidate).not.toBeNull();
-      });
-
-      expect(result.current.result.error).toBeNull();
-      expect(result.current.result.candidate).not.toBeNull();
-    });
-
-    it('should use fallback when synergyAnalysis API fails', async () => {
-      vi.mocked(aiApi.synergyAnalysis).mockRejectedValue(new Error('Timeout'));
-      const { result } = renderHook(() => useFormulaAnalysis());
-
-      await act(async () => {
-        const p = result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(3000);
-        const candidate = await p;
-        expect(candidate).not.toBeNull();
-      });
-
-      expect(result.current.result.error).toBeNull();
-    });
-
-    it('should use fallback when tastePredict API fails', async () => {
-      vi.mocked(aiApi.tastePredict).mockRejectedValue(new Error('Service unavailable'));
-      const { result } = renderHook(() => useFormulaAnalysis());
-
-      await act(async () => {
-        const p = result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(3000);
-        const candidate = await p;
-        expect(candidate).not.toBeNull();
-      });
-
-      expect(result.current.result.error).toBeNull();
-    });
-
-    it('should use fallback when stabilityPredict API fails', async () => {
-      vi.mocked(aiApi.stabilityPredict).mockRejectedValue(new Error('Server error'));
-      const { result } = renderHook(() => useFormulaAnalysis());
-
-      await act(async () => {
-        const p = result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(3000);
-        const candidate = await p;
-        expect(candidate).not.toBeNull();
-      });
-
-      expect(result.current.result.error).toBeNull();
-    });
-
-    it('should use fallback when all API stages fail', async () => {
-      vi.mocked(aiApi.safetyCheck).mockRejectedValue(new Error('fail'));
-      vi.mocked(aiApi.synergyAnalysis).mockRejectedValue(new Error('fail'));
-      vi.mocked(aiApi.tastePredict).mockRejectedValue(new Error('fail'));
-      vi.mocked(aiApi.stabilityPredict).mockRejectedValue(new Error('fail'));
-
-      const { result } = renderHook(() => useFormulaAnalysis());
-
-      await act(async () => {
-        const p = result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(3000);
-        const candidate = await p;
-        // Should still produce a result with all fallback values
-        expect(candidate).not.toBeNull();
-      });
-
-      expect(result.current.result.candidate).not.toBeNull();
-      expect(result.current.result.error).toBeNull();
     });
 
     it('should set error stage on unexpected exception', async () => {
@@ -394,7 +286,6 @@ describe('useFormulaAnalysis', () => {
 
       await act(async () => {
         const candidate = await result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(500);
         expect(candidate).toBeNull();
       });
 
@@ -403,17 +294,106 @@ describe('useFormulaAnalysis', () => {
     });
   });
 
+  describe('analyzeFormula - degraded (显式降级，禁止伪造默认分)', () => {
+    it('should set degraded=true and keep safety fields missing when safetyCheck API fails', async () => {
+      vi.mocked(aiApi.safetyCheck).mockRejectedValue(new Error('Network error'));
+      const { result } = renderHook(() => useFormulaAnalysis());
+
+      let candidate: any = null;
+      await act(async () => {
+        candidate = await result.current.analyzeFormula('test content');
+      });
+
+      expect(candidate).not.toBeNull();
+      expect(candidate.degraded).toBe(true);
+      // 安全评分不再伪造：passed 为 undefined，safety_details 缺失
+      expect(candidate.safety_passed).toBeUndefined();
+      expect(candidate.safety_details).toBeUndefined();
+      // 其余真实接口仍返回评分
+      expect(candidate.synergy_score).toBe(0.85);
+      expect(candidate.taste_score).toBe(0.8);
+      expect(candidate.stability_score).toBe(0.9);
+      expect(result.current.result.error).toBeNull();
+    });
+
+    it('should set degraded=true and keep synergy score missing when synergyAnalysis API fails', async () => {
+      vi.mocked(aiApi.synergyAnalysis).mockRejectedValue(new Error('Timeout'));
+      const { result } = renderHook(() => useFormulaAnalysis());
+
+      let candidate: any = null;
+      await act(async () => {
+        candidate = await result.current.analyzeFormula('test content');
+      });
+
+      expect(candidate).not.toBeNull();
+      expect(candidate.degraded).toBe(true);
+      expect(candidate.synergy_score).toBeUndefined();
+      expect(candidate.safety_passed).toBe(true);
+      expect(result.current.result.error).toBeNull();
+    });
+
+    it('should set degraded=true and keep taste score missing when tastePredict API fails', async () => {
+      vi.mocked(aiApi.tastePredict).mockRejectedValue(new Error('Service unavailable'));
+      const { result } = renderHook(() => useFormulaAnalysis());
+
+      let candidate: any = null;
+      await act(async () => {
+        candidate = await result.current.analyzeFormula('test content');
+      });
+
+      expect(candidate).not.toBeNull();
+      expect(candidate.degraded).toBe(true);
+      expect(candidate.taste_score).toBeUndefined();
+      expect(result.current.result.error).toBeNull();
+    });
+
+    it('should set degraded=true and keep stability score missing when stabilityPredict API fails', async () => {
+      vi.mocked(aiApi.stabilityPredict).mockRejectedValue(new Error('Server error'));
+      const { result } = renderHook(() => useFormulaAnalysis());
+
+      let candidate: any = null;
+      await act(async () => {
+        candidate = await result.current.analyzeFormula('test content');
+      });
+
+      expect(candidate).not.toBeNull();
+      expect(candidate.degraded).toBe(true);
+      expect(candidate.stability_score).toBeUndefined();
+      expect(result.current.result.error).toBeNull();
+    });
+
+    it('should set degraded=true and overall_score undefined when all API stages fail', async () => {
+      vi.mocked(aiApi.safetyCheck).mockRejectedValue(new Error('fail'));
+      vi.mocked(aiApi.synergyAnalysis).mockRejectedValue(new Error('fail'));
+      vi.mocked(aiApi.tastePredict).mockRejectedValue(new Error('fail'));
+      vi.mocked(aiApi.stabilityPredict).mockRejectedValue(new Error('fail'));
+      const { result } = renderHook(() => useFormulaAnalysis());
+
+      let candidate: any = null;
+      await act(async () => {
+        candidate = await result.current.analyzeFormula('test content');
+      });
+
+      expect(candidate).not.toBeNull();
+      expect(candidate.degraded).toBe(true);
+      expect(candidate.synergy_score).toBeUndefined();
+      expect(candidate.taste_score).toBeUndefined();
+      expect(candidate.stability_score).toBeUndefined();
+      expect(candidate.safety_passed).toBeUndefined();
+      // 全部维度缺失时综合评分为 undefined，而非伪造 0.7
+      expect(candidate.overall_score).toBeUndefined();
+      expect(result.current.result.error).toBeNull();
+    });
+  });
+
   describe('resetResult', () => {
     it('should reset all state to initial values', async () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const p = result.current.analyzeFormula('test content');
-        await vi.advanceTimersByTimeAsync(3000);
-        await p;
+        await result.current.analyzeFormula('test content');
       });
 
-      // Verify state is populated
       expect(result.current.result.candidate).not.toBeNull();
 
       act(() => {
@@ -435,9 +415,7 @@ describe('useFormulaAnalysis', () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const p = result.current.analyzeFormula(longContent);
-        await vi.advanceTimersByTimeAsync(3000);
-        await p;
+        await result.current.analyzeFormula(longContent);
       });
 
       expect(parseFormulaTable).toHaveBeenCalledWith(longContent);
@@ -448,9 +426,7 @@ describe('useFormulaAnalysis', () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const p = result.current.analyzeFormula(specialContent);
-        await vi.advanceTimersByTimeAsync(3000);
-        await p;
+        await result.current.analyzeFormula(specialContent);
       });
 
       expect(parseFormulaTable).toHaveBeenCalledWith(specialContent);
@@ -461,9 +437,7 @@ describe('useFormulaAnalysis', () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const p = result.current.analyzeFormula(unicodeContent);
-        await vi.advanceTimersByTimeAsync(3000);
-        await p;
+        await result.current.analyzeFormula(unicodeContent);
       });
 
       expect(parseFormulaTable).toHaveBeenCalledWith(unicodeContent);
@@ -495,18 +469,13 @@ describe('useFormulaAnalysis', () => {
       const { result } = renderHook(() => useFormulaAnalysis());
 
       await act(async () => {
-        const p1 = result.current.analyzeFormula('formula 1');
-        await vi.advanceTimersByTimeAsync(3000);
-        await p1;
+        await result.current.analyzeFormula('formula 1');
       });
 
-      const firstCandidate = result.current.result.candidate;
-      expect(firstCandidate).not.toBeNull();
+      expect(result.current.result.candidate).not.toBeNull();
 
       await act(async () => {
-        const p2 = result.current.analyzeFormula('formula 2');
-        await vi.advanceTimersByTimeAsync(3000);
-        await p2;
+        await result.current.analyzeFormula('formula 2');
       });
 
       expect(result.current.result.candidate).not.toBeNull();

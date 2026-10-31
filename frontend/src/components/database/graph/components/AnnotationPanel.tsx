@@ -42,12 +42,12 @@ export default function AnnotationPanel({
           <div key={ann.id} className={`rounded-lg p-2.5 ${ann.resolved ? 'bg-neutral-50/80 dark:bg-neutral-800/30 opacity-60' : 'bg-danger-50/50 dark:bg-danger-950/10'}`}>
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-semibold text-danger-600 dark:text-danger-700">{ann.author}</span>
-              <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ann.createdAt.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+              <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{ann.createdAt.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
             <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">{ann.content}</p>
             {ann.mentions && ann.mentions.length > 0 && (
               <div className="flex gap-1 mt-1.5 flex-wrap">
-                {ann.mentions.map(m => <span key={m} className="px-1 py-0.5 rounded text-[8px] bg-secondary-100 text-secondary-600">@{m}</span>)}
+                {ann.mentions.map(m => <span key={m} className="px-1 py-0.5 rounded text-[11px] bg-secondary-100 text-secondary-600">@{m}</span>)}
               </div>
             )}
           </div>
@@ -62,7 +62,7 @@ export default function AnnotationPanel({
             placeholder="@提及某人 添加批注..."
             className="flex-1 px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-xs bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-danger-300"
           />
-          <button onClick={onAddAnnotation} disabled={!newAnnotationText.trim()} className="px-2.5 py-1.5 rounded-lg bg-danger-500 text-white text-xs font-medium hover:bg-danger-600 disabled:opacity-40 transition-colors">发送</button>
+          <button onClick={onAddAnnotation} disabled={!newAnnotationText.trim()} className="px-2.5 py-1.5 rounded-lg bg-[var(--color-danger-surface)] text-white text-xs font-medium hover:bg-[var(--color-danger-surface-deep)] disabled:opacity-40 transition-colors">发送</button>
         </div>
       </div>
     </div>

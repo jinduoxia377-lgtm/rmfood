@@ -218,7 +218,7 @@ export default function ExperimentEditPage() {
         <div className="flex items-center gap-[var(--space-apple-sm)]">
           <div className="flex items-center gap-2">
             <div className="w-16 h-1.5 bg-[var(--bg-tertiary)] rounded-[var(--radius-pill)] overflow-hidden">
-              <div className="h-full bg-[var(--color-primary-container)]0 rounded-[var(--radius-pill)] transition-all duration-500" style={{ width: `${formCompleteness.percent}%` }} />
+              <div className="h-full bg-[var(--color-primary-container)] rounded-[var(--radius-pill)] transition-all duration-500" style={{ width: `${formCompleteness.percent}%` }} />
             </div>
             <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-medium">{formCompleteness.percent}%</span>
           </div>
@@ -273,7 +273,7 @@ export default function ExperimentEditPage() {
 
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-                  {t('pages.experimentForm.experimentTitle')} <span className="text-[var(--color-error-text)]0">*</span>
+                  {t('pages.experimentForm.experimentTitle')} <span className="text-[var(--color-error-text)]">*</span>
                 </label>
                 <Input
                   value={form.title}
@@ -314,7 +314,7 @@ export default function ExperimentEditPage() {
                   {form.objectives.map((obj, i) => (
                     <Badge key={i} variant="info" className="gap-1">
                       {obj}
-                      <button onClick={() => removeObjective(i)} className="ml-0.5 hover:text-[var(--color-error-text)]0">
+                      <button onClick={() => removeObjective(i)} className="ml-0.5 hover:text-[var(--color-error-text)]">
                         <X size={10} />
                       </button>
                     </Badge>
@@ -380,7 +380,7 @@ export default function ExperimentEditPage() {
                   <span className="text-sm text-[var(--text-muted)] flex-1 truncate">{String(value)}</span>
                   <button
                     onClick={() => removeParam(key)}
-                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)]0 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)] opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <Trash2 size={12} />
                   </button>
@@ -422,7 +422,7 @@ export default function ExperimentEditPage() {
           <Card>
             <CardContent className="space-y-[var(--space-apple-md)]">
               <div className="flex items-center gap-2 text-[var(--text-primary)] font-semibold">
-                <FlaskConical size={18} className="text-[var(--color-accent-text)]0" />
+                <FlaskConical size={18} className="text-[var(--color-accent-text)]" />
                 {t('pages.experimentForm.experimentMaterials')}
               </div>
 
@@ -450,7 +450,7 @@ export default function ExperimentEditPage() {
                   </div>
                   <button
                     onClick={() => removeMaterial(idx)}
-                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)]0 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)] opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -491,7 +491,7 @@ export default function ExperimentEditPage() {
                   </Badge>
                   <button
                     onClick={() => removeEquipment(idx)}
-                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)]0 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-[var(--color-error-text)] opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <Trash2 size={14} />
                   </button>

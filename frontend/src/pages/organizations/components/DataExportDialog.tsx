@@ -3,7 +3,6 @@ import { memo } from 'react'
 import {
   Download,
   FileType,
-  FileText,
   X,
   Check,
   ChevronDown,

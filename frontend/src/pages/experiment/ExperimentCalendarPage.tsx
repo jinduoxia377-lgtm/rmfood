@@ -216,7 +216,7 @@ export default function ExperimentCalendarPage() {
                   <CardContent className="p-[var(--space-apple-md)] flex items-center gap-4">
                     <div className="w-12 h-12 rounded-[var(--radius-Apple-sm)] bg-[var(--color-accent-container)] flex flex-col items-center justify-center shrink-0">
                       <span className="text-xs font-bold text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)]">{safeDate(exp.start_date, 'MM')}</span>
-                      <span className="text-xs text-[var(--color-accent-text)]0 dark:text-[var(--color-accent-text)] -mt-0.5">{safeDate(exp.start_date, 'dd')}</span>
+                      <span className="text-xs text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)] -mt-0.5">{safeDate(exp.start_date, 'dd')}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">

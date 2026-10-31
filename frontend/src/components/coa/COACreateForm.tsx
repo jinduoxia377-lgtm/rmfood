@@ -49,7 +49,7 @@ const DEFAULT_TEMPLATE: COATestItem[] = [
 ];
 
 export function COACreateForm({ peptideId, onClose, editCOA }: COACreateFormProps) {
-  const { success: toastSuccess, error: toastError, warning: toastWarning } = useToast();
+  const { success: toastSuccess, error: toastError, warning: _toastWarning } = useToast();
   const queryClient = useQueryClient();
 
   const [form, setForm] = useState({

@@ -39,21 +39,21 @@ export default function ExportMenu({
         <button onClick={onExportJson}
           className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-secondary-50 dark:hover:bg-secondary-950/30 rounded-lg transition-colors">
           <span className="w-5 h-5 rounded bg-secondary-100 dark:bg-secondary-300/30 flex items-center justify-center shrink-0">
-            <span className="text-[9px] font-bold text-secondary-600">{ }</span>
+            <span className="text-[11px] font-bold text-secondary-600">{ }</span>
           </span>
           <div className="text-left">
             <div className="font-medium text-neutral-700 dark:text-neutral-300">JSON 格式</div>
-            <div className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">完整数据 + 属性 + 社群</div>
+            <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">完整数据 + 属性 + 社群</div>
           </div>
         </button>
         <button onClick={onExportGexf}
           className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-accent-50 dark:hover:bg-accent-950/30 rounded-lg transition-colors">
           <span className="w-5 h-5 rounded bg-accent-100 dark:bg-accent-300/30 flex items-center justify-center shrink-0">
-            <span className="text-[9px] font-bold text-accent-600">G</span>
+            <span className="text-[11px] font-bold text-accent-600">G</span>
           </span>
           <div className="text-left">
             <div className="font-medium text-neutral-700 dark:text-neutral-300">GEXF 格式</div>
-            <div className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">Gephi / NetworkX 兼容</div>
+            <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">Gephi / NetworkX 兼容</div>
           </div>
         </button>
         <button onClick={onExportSvg}
@@ -63,13 +63,13 @@ export default function ExportMenu({
           </span>
           <div className="text-left">
             <div className="font-medium text-neutral-700 dark:text-neutral-300">SVG 图像</div>
-            <div className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">矢量图形 / 可编辑</div>
+            <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">矢量图形 / 可编辑</div>
           </div>
         </button>
       </div>
       {selectedNodesCount > 0 && (
         <div className="px-3 py-1.5 bg-primary-50/50 dark:bg-primary-950/20 border-t border-neutral-100 dark:border-neutral-700/50">
-          <span className="text-[9px] text-primary-700 dark:text-primary-700">将导出选中的 {selectedNodesCount} 个节点</span>
+          <span className="text-[11px] text-primary-700 dark:text-primary-700">将导出选中的 {selectedNodesCount} 个节点</span>
         </div>
       )}
     </div>

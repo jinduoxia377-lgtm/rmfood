@@ -234,6 +234,25 @@
   --color-knowledge-default: #9CA3AF;   /* gray-400 — 节点/连线中性描边 */
   --color-knowledge-text: #6B7280;      /* gray-500 — 白底 4.83:1 ✅ AA（小字图例） */
 
+  /* ═══ Knowledge Graph 节点/边颜色（图谱域自适应令牌）═══
+     CHK-04：图谱节点/边颜色原先写死在 types.ts 的 TYPE_CONFIG/EDGE_COLORS，
+     暗色模式下深色节点落在暗色画布上不可辨（如 compound #0052AE on #0f172a ≈ 2:1）。
+     本组令牌提供亮/暗两套语义值，types.ts 改为引用 var(--kg-*)，
+     使图谱默认主题自动跟随全局主题切换（P0-5 收口）。 */
+  --kg-herb: #1E8E3E;            /* 药材 */
+  --kg-compound: #0052AE;        /* 化合物 */
+  --kg-target: #D97706;          /* 靶点 */
+  --kg-disease: #DC2626;         /* 疾病 */
+  --kg-peptide: #8B5CF6;         /* 肽 */
+  --kg-protein: #9D174D;         /* 蛋白质 */
+  --kg-food: #C2410C;            /* 食物/药食同源 */
+  --kg-edge-contains: #0052AE;
+  --kg-edge-targets: #D97706;
+  --kg-edge-treats: #DC2626;
+  --kg-edge-synergy: #1E8E3E;
+  --kg-edge-antagonism: #B91C1C;
+  --kg-edge-interacts: #8B5CF6;
+
   /* ═══ Borders ═══ */
   --border-color: var(--color-neutral-200);   /* slate-200 */
   --border-color-hover: rgba(0, 0, 0, 0.1);

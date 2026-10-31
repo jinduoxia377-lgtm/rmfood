@@ -58,7 +58,7 @@ const LocalStorageAdapter: StorageAdapter = {
   async set<T>(key: string, value: T): Promise<void> {
     try {
       localStorage.setItem(key, JSON.stringify(value));
-    } catch (e) {
+    } catch {
       // 存储配额不足，尝试清理旧数据
       this._evictOldData?.();
       localStorage.setItem(key, JSON.stringify(value));
@@ -80,7 +80,7 @@ const LocalStorageAdapter: StorageAdapter = {
   async size(): Promise<number> {
     let size = 0;
     for (const key in localStorage) {
-      if (localStorage.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
         size += localStorage.getItem(key)?.length || 0;
       }
     }

@@ -41,22 +41,22 @@ export default function PerformancePanel({
           <div className="p-2.5 space-y-2">
             {/* FPS 指示器 */}
             <div className="flex items-center justify-between">
-              <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">帧率 FPS</span>
+              <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">帧率 FPS</span>
               <span className={`text-xs font-mono font-bold tabular-nums ${
                 perfStats.fps >= 55 ? 'text-primary-400' : perfStats.fps >= 40 ? 'text-warning-400' : perfStats.fps >= 24 ? 'text-warning-400' : 'text-error-400'
               }`}>
-                {perfStats.fps} <span className="text-[8px] font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">fps</span>
+                {perfStats.fps} <span className="text-[11px] font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">fps</span>
               </span>
             </div>
             {/* 帧时间 */}
             <div className="flex items-center justify-between">
-              <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">帧时间</span>
-              <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">{perfStats.frameTime} <span className="text-[8px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">ms</span></span>
+              <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">帧时间</span>
+              <span className="text-xs font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] tabular-nums">{perfStats.frameTime} <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">ms</span></span>
             </div>
             {/* 性能评级 */}
             <div className="flex items-center justify-between">
-              <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">性能评级</span>
-              <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${
+              <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">性能评级</span>
+              <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${
                 perfStats.rating === 'excellent' ? 'bg-primary-500/20 text-primary-400' :
                 perfStats.rating === 'good' ? 'bg-secondary-500/20 text-secondary-400' :
                 perfStats.rating === 'fair' ? 'bg-warning-500/20 text-warning-400' :
@@ -68,26 +68,26 @@ export default function PerformancePanel({
             <div className="border-t border-neutral-700/30 pt-2 space-y-1.5">
               {/* 节点/边数 */}
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">节点 / 边</span>
-                <span className="text-[9px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{filteredNodeCount} / {filteredEdgeCount}</span>
+                <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">节点 / 边</span>
+                <span className="text-[11px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{filteredNodeCount} / {filteredEdgeCount}</span>
               </div>
               {/* LOD 级别 */}
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">渲染级别</span>
-                <span className={`text-[9px] font-medium ${
+                <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">渲染级别</span>
+                <span className={`text-[11px] font-medium ${
                   lodLevel === 'full' ? 'text-primary-400' : lodLevel === 'reduced' ? 'text-warning-400' : 'text-error-400'
                 }`}>{lodLabels[lodLevel] || lodLevel}</span>
               </div>
               {/* 内存估算 */}
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">内存估算</span>
-                <span className="text-[9px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{perfStats.memoryEst}</span>
+                <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">内存估算</span>
+                <span className="text-[11px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{perfStats.memoryEst}</span>
               </div>
             </div>
             {/* 增量更新状态 */}
             <div className="border-t border-neutral-700/30 pt-2 flex items-center justify-between">
-              <span className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">更新模式</span>
-              <span className={`text-[9px] font-medium ${dataChanged ? 'text-warning-400' : 'text-primary-400'}`}>
+              <span className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">更新模式</span>
+              <span className={`text-[11px] font-medium ${dataChanged ? 'text-warning-400' : 'text-primary-400'}`}>
                 {dataChanged ? '全量重绘' : '增量更新'}
               </span>
             </div>

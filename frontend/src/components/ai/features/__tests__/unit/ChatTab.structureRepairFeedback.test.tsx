@@ -121,6 +121,7 @@ vi.mock('../../components/pro', () => {
       ),
     ChatInputPro: () => React.createElement('input', { placeholder: '描述您的配方需求...' }),
     ChatHistory: () => null,
+    ChatProgressBar: () => null,
     TopBar: () => null,
     EmptyStateCard: () => null,
   }

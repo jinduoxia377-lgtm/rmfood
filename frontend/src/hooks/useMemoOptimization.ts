@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useRef, useEffect, useState } from 'react'
+import { useMemo, useCallback, useRef, useEffect } from 'react'
 
 export function useMemoizedFn<T extends (...args: any[]) => any>(
   fn: T,

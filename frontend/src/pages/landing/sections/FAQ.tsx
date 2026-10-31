@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FAQ 组件 v5 — 学术问答风格（升级 v5）
  *
  * 升级要点（v5）：
@@ -12,7 +12,7 @@ import { sectionLabel, faqs } from '../data/faqs';
 
 export default function FAQ() {
   return (
-    <section id="faq" className="py-16 lg:py-20 border-t" style={{ background: 'var(--bg-canvas, #f8fafc)', borderColor: 'var(--color-neutral-200, #e2e8f0)' }}>
+    <section id="faq" aria-label="常见问题" className="py-16 lg:py-20 border-t" style={{ background: 'var(--bg-canvas, #f8fafc)', borderColor: 'var(--color-neutral-200, #e2e8f0)' }}>
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
         <Reveal>
           <div className="text-center mb-8">

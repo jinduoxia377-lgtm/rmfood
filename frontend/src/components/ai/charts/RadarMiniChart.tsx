@@ -29,6 +29,9 @@ export function RadarMiniChart({ synergy, taste, stability, safety, overall }: R
     return `${point.x},${point.y}`
   }).join(' ')
 
+  // P0 修复：标签半径从 52 调整到 48，确保不超出 100×100 viewBox
+  const labelRadius = 48
+
   return (
     <svg viewBox="0 0 100 100" className="w-full h-full">
       {/* 背景网格 */}
@@ -71,20 +74,33 @@ export function RadarMiniChart({ synergy, taste, stability, safety, overall }: R
         stroke="var(--color-tertiary, var(--color-accent-500))"
         strokeWidth={2}
       />
-      {/* 数据点 */}
+      {/* 数据点 — P1 修复：显示实际数值 */}
       {data.map((d, i) => {
         const point = calculatePoint(d.value, d.angle)
         return (
-          <circle
-            key={i}
-            cx={point.x}
-            cy={point.y}
-            r={3}
-            fill="var(--color-tertiary, var(--color-accent-500))"
-          />
+          <g key={i}>
+            <circle
+              cx={point.x}
+              cy={point.y}
+              r={3}
+              fill="var(--color-tertiary, var(--color-accent-500))"
+            />
+            {/* 数值标签 */}
+            <text
+              x={point.x}
+              y={point.y - 8}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill="var(--text-secondary, #6E6E73)"
+              fontSize={7}
+              fontWeight={600}
+            >
+              {Math.round(d.value * 100)}
+            </text>
+          </g>
         )
       })}
-      {/* 标签 */}
+      {/* 维度标签 — P0 修复：半径调整防裁剪 */}
       {[
         { label: '协同', angle: 0 },
         { label: '口感', angle: 1 },
@@ -93,7 +109,7 @@ export function RadarMiniChart({ synergy, taste, stability, safety, overall }: R
         { label: '综合', angle: 4 },
       ].map((item) => {
         const angle = (item.angle * 72 - 90) * (Math.PI / 180)
-        const radius = 52
+        const radius = labelRadius
         return (
           <text
             key={item.label}

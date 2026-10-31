@@ -58,7 +58,6 @@ export function useAnalyticsRealtime(options: UseAnalyticsRealtimeOptions = {}) 
   })
 
   const messageHandlerRef = useRef<MessageHandler | null>(null)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // ─── 从 API 拉取最新 KPI ──────────────────────────────────

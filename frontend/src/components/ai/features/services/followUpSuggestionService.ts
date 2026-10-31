@@ -13,15 +13,17 @@ import { QUICK_QUESTIONS } from '@/config/ai/questions'
  */
 export interface FollowUpSuggestion {
   id: string
-  /** i18n key（ai.chat.quick.questions.*），用于在切换语言时翻译追问文本 */
-  questionKey: string
+  /** i18n key（ai.chat.quick.questions.*），用于在切换语言时翻译追问文本；动态问题无 i18n key 时缺省 */
+  questionKey?: string
   question: string
-  /** i18n key（ai.chat.quick.categories.*），用于在切换语言时翻译分类标签 */
-  categoryKey: string
+  /** i18n key（ai.chat.quick.categories.*），用于在切换语言时翻译分类标签；动态问题无 i18n key 时缺省 */
+  categoryKey?: string
   category: string
   confidence: number
   relatedEntities?: string[]
   relatedIntent?: string
+  /** 建议来源：llm=后端动态生成，local=本地规则引擎 */
+  source?: 'llm' | 'local'
 }
 
 /**
@@ -77,6 +79,7 @@ export class FollowUpSuggestionEngine {
       confidence: this.scoreQuestion(q),
       relatedEntities: this.extractRelatedEntities(q),
       relatedIntent: q.category,
+      source: 'local' as const,
     }))
 
     // 按置信度排序，取前N个

@@ -118,6 +118,7 @@ export default function PeptidesTab({
     if (initialSelectedSequence && peptideQuery.data?.items && !selectedPeptide) {
       const target = (peptideQuery.data.items.find((p: any) => p.sequence === initialSelectedSequence));
       if (target) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedPeptide(target);
         onSequenceConsumed?.();
       }
@@ -171,7 +172,7 @@ export default function PeptidesTab({
   const exportCSV = () => {
     setExportLoading(true);
     const headers = ['序列', '长度', '来源蛋白', '来源生物', '活性类型', '活性值', '单位', '分子量(Da)', '水解酶'];
-    const rows = items.map((p: any, any) => [
+    const rows = items.map((p: any) => [
       p.sequence,
       p.sequence?.length ?? '',
       p.source_protein || '',

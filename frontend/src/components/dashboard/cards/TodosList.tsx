@@ -5,7 +5,7 @@ import type { FC } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowRight, ClipboardList } from 'lucide-react'
-import { Badge, Card, CardHeader, CardTitle, CardContent, Skeleton } from '@/components/ui'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
 interface TodoItem {

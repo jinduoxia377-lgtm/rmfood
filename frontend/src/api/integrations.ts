@@ -4,7 +4,6 @@
  * 封装 /api/v1/integrations 端点的所有操作
  */
 import api from './client';
-import type { AxiosResponse } from 'axios';
 
 // ─── 类型定义 ─────────────────────────────────────────────
 

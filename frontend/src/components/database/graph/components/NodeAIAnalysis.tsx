@@ -31,11 +31,11 @@ export default function NodeAIAnalysis({ nodeAIAnalysis, onClose }: NodeAIAnalys
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="rounded-lg bg-accent-50/80 dark:bg-accent-950/20 p-2 text-center">
             <div className="text-lg font-bold text-accent-600 dark:text-accent-700">{nodeAIAnalysis.synergyScore}</div>
-            <div className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">协同评分</div>
+            <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">协同评分</div>
           </div>
           <div className="rounded-lg bg-accent-50/80 dark:bg-accent-950/20 p-2 text-center">
             <div className="text-lg font-bold text-accent-600 dark:text-accent-700">{nodeAIAnalysis.relationships.length}</div>
-            <div className="text-[9px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">关系类型</div>
+            <div className="text-[11px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">关系类型</div>
           </div>
         </div>
 

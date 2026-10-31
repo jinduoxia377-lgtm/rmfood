@@ -1,6 +1,6 @@
 {
     "name": "rmfood",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "description": "RMFOOD 药食同源配方平台",
     "main": "app.js",
     "scripts": {

@@ -22,7 +22,7 @@ export default function LegendPanel({
   if (!showLegend || legendItems.length === 0) return null
 
   return (
-    <div className="absolute bottom-3 left-3 z-30">
+    <div className="absolute top-3 left-3 z-30">
       {/* 图例触发器（始终可见的小标签条） */}
       <button
         onClick={onToggle}
@@ -53,7 +53,7 @@ export default function LegendPanel({
               <div className="flex items-center gap-2 min-w-0">
                 <div
                   className="w-3.5 h-3.5 rounded-full shadow-sm transition-transform duration-200 group-hover/item:scale-125"
-                  style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}50` }}
+                  style={{ backgroundColor: color, boxShadow: `0 0 10px color-mix(in srgb, ${color} 30%, transparent)` }}
                 />
                 <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{icon} {label}</span>
               </div>

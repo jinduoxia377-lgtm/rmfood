@@ -84,7 +84,7 @@ interface UseKeyboardShortcutsOptions {
 }
 
 export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) {
-  const { userRole, commandPaletteOpen, modalOpen } = options
+  const { userRole: _userRole, commandPaletteOpen, modalOpen } = options
   const navigate = useNavigate()
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -198,7 +198,6 @@ function Kbd({ children }: { children: ReactNode }) {
 
 /** 格式化快捷键显示 */
 function formatKeys(keys: string): ReactNode[] {
-  const parts = keys.replace(/Ctrl/g, '\u2318').replace(/Cmd/g, '\u2318').split('+')
   // 保留原始文本但分别用 Kbd 包裹
   const rawParts = keys.split('+')
   return rawParts.map((part, i) => (

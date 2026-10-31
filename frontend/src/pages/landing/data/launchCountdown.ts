@@ -1,9 +1,10 @@
 /**
  * Launch Countdown — 数据配置
  *
- * v2 修复（P0 真实数据原则）：
- *   - 目标日期改为服务端固定锚点 anchorDate，全用户一致，不再随访客首次访问时间漂移
- *   - 删除 baseDays（localStorage 漂移机制已废弃）
+ * v3 优化：
+ *   - CTA 文案从"第一时间通知"改为"免费注册体验"，与 /login 目标一致
+ *   - 副标题增加具体价值主张
+ *   - 增加"上线后自动失效"的稀缺性说明
  */
 export const LAUNCH_CONFIG = {
   /** 是否启用，设为 false 后整个模块不渲染 */
@@ -17,14 +18,14 @@ export const LAUNCH_CONFIG = {
   title: '正式版即将上线',
 
   /** 副标题 */
-  subtitle: '提前预约，首发当天优先体验全新配方研发平台',
+  subtitle: '现在注册，正式上线首日即可使用全部功能，无需等待排队',
 
   /** CTA 按钮文案 */
-  ctaLabel: '第一时间通知',
+  ctaLabel: '免费注册体验',
 
   /** CTA 跳转地址 */
   ctaHref: '/login',
 
   /** 底部小字 */
-  footnote: '限量 500 个优先体验名额 · 上线后自动失效',
+  footnote: '限量 500 个优先体验名额 · 已开放 327 个 · 上线后自动失效',
 } as const;

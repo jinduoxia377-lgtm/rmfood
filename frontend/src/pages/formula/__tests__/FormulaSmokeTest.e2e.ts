@@ -181,7 +181,7 @@ test.describe('配方管理 - 冒烟测试', () => {
   })
 
   // ==================== TC-012: 权限控制 - Viewer 角色 ====================
-  test('TC-012: Viewer 角色不应看到管理按钮', async ({ page, context }) => {
+  test('TC-012: Viewer 角色不应看到管理按钮', async ({ page, context: _context }) => {
     // 使用 viewer 账号登录（需要根据实际认证系统调整）
     // 这里假设可以通过 URL 参数切换角色，或者需要单独的登录流程
 
