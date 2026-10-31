@@ -112,7 +112,7 @@ echo "📋 运行 Python lint..."
 # ruff 门禁：仅 lint 本次暂存的 .py（避免全量既有积压阻塞无关提交）。
 # 用 repo root 绝对路径解析 backend venv python（其已装 ruff，git-hook 环境的 PATH python 无法运行 ruff）；
 # 无 venv 则回退 PATH python；再无则 fail-soft 跳过。
-# 默认【报告违规但放行】（既有积压大、多任务在途，避免阻塞）；RUFF_BLOCK=1 则违规即 exit 1 严格阻止。
+# 默认【违规即 exit 1 严格阻止】（后端 lint 清理完成，积压清零）；RUFF_WARN=1 临时放行。
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 if [ -x "$REPO_ROOT/backend/.venv/Scripts/python.exe" ]; then RUFFPY="$REPO_ROOT/backend/.venv/Scripts/python.exe";
 elif [ -x "$REPO_ROOT/backend/.venv/bin/python" ]; then RUFFPY="$REPO_ROOT/backend/.venv/bin/python";
@@ -122,11 +122,11 @@ if $RUFFPY -m ruff --version >/dev/null 2>&1; then
   if [ -n "$staged_py" ]; then
     if $RUFFPY -m ruff check $staged_py --output-format=github; then
       :
-    elif [ -n "$RUFF_BLOCK" ]; then
-      echo "❌ ruff 检测到 lint 违规（暂存 .py），RUFF_BLOCK=1 已启用，请修复后重新提交（临时放行：RUFF_WARN=1 git commit）"
+    elif [ -z "$RUFF_WARN" ]; then
+      echo "❌ ruff 检测到 lint 违规（暂存 .py），已严格阻止（后端 lint 清理完成，积压清零；临时放行：RUFF_WARN=1 git commit）"
       exit 1
     else
-      echo "⚠️  ruff 检测到 lint 违规（暂存 .py），默认放行（设 RUFF_BLOCK=1 git commit 可严格阻止）"
+      echo "⚠️  ruff 检测到 lint 违规（暂存 .py），RUFF_WARN=1 临时放行"
     fi
   fi
 else

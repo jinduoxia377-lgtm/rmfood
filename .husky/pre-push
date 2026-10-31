@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Pre-push hook: 运行测试和类型检查
 
 echo "🚀 运行 pre-push 检查..."

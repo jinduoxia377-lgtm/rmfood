@@ -350,3 +350,41 @@ backend/herb_mechanisms_patch.txt
 
 # ---- 卫生治理归档目录（本地暂存区，不入库）----
 backend/archive/
+# ---- RMFOOD 部署/调试临时产物（不应入库）----
+reports/
+screenshots/
+.e2e_tmp/
+_deploy_tmp/
+_user_cleanup_backup/
+tmp*.txt
+test_results.txt
+detect_msg_tmp.cjs
+CHAT_PAGE_AUDIT_REPORT.md
+DEEP_AUDIT_REPORT.md
+backend/_*
+backend/diag_*
+backend/data/chromadb/
+backend/data/chromadb_v2/
+backend/data/chroma.sqlite3.bak-*
+backend/data/pharmacopoeia2020_part1.pdf
+backend/data/pharmacopoeia2020_part1.txt
+backend/data/_verify_rerank.py
+backend/tests-reports/
+backend/tests/verify_contract_p0.py
+backend/alembic/versions/*.sql
+backend/scripts/diagnose_*
+backend/scripts/debug_*
+backend/scripts/check_off_*
+backend/scripts/verify_cache_fix.py
+backend/scripts/diagnose_sync_stats.py
+backend/scripts/diagnose_trilingual.py
+frontend/scripts/mobile-*-data.json
+frontend/scripts/mobile-*-verified*.json
+frontend/scripts/org-demock-verify.cjs
+
+# ---- 测试/审计输出 ----
+tests/e2e/*.txt
+tests/e2e/*_results.json
+tests/e2e/http_verify_results.json
+frontend/scripts/.mobile-*
+frontend/scripts/_large-btn.mjs
