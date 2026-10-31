@@ -8,7 +8,9 @@
 - ✅ Token 不再持久化在前端 localStorage
 - ✅ 登录成功后同时返回 Token（兼容）和设置 Cookie
 """
+import asyncio
 import logging
+import time
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
 from pydantic import BaseModel, Field
@@ -338,6 +340,69 @@ async def upload_current_user_avatar(
     return {"avatarUrl": avatar_url}
 
 
+# ════════════════════════════════════════════════════════════════
+# 真实头像代理：本地短 TTL 缓存 + 断路器（P2 稳定性修复）
+#
+# 设计：
+# - 成功获取一次头像后写入本地内存缓存（TTL 1 小时），TTL 内直接返回缓存，
+#   避免每次请求都打到外部服务；外部服务故障时即使缓存过期也降级返回
+#   最近一次成功字节，避免 502 刷屏。
+# - 连续失败 3 次后打开断路器（窗口 60s），窗口内不再请求外部服务，
+#   直接走缓存；无缓存时返回 503 明确提示，不伪造头像数据。
+# - 使用 asyncio.Lock 保护缓存与断路器状态的读写，避免并发竞态。
+# ════════════════════════════════════════════════════════════════
+_AVATAR_UPSTREAM_URL = "https://thispersondoesnotexist.com/random-person.jpeg"
+_AVATAR_CACHE_TTL = 3600.0            # 缓存有效期：1 小时
+_AVATAR_CIRCUIT_FAIL_THRESHOLD = 3    # 连续失败 N 次触发熔断
+_AVATAR_CIRCUIT_OPEN_SECONDS = 60.0   # 熔断窗口：60 秒
+
+_AVATAR_CACHE: dict = {
+    "content": None,       # bytes | None
+    "media_type": None,     # str | None
+    "ts": 0.0,              # time.time() 写入时间戳
+}
+_AVATAR_CIRCUIT: dict = {
+    "consecutive_failures": 0,
+    "open_until": 0.0,      # time.monotonic() 熔断截止时间
+}
+_AVATAR_LOCK = asyncio.Lock()
+
+
+async def _avatar_get_cached() -> tuple[bytes, str] | None:
+    """读取本地缓存（content + media_type 原子返回）"""
+    async with _AVATAR_LOCK:
+        if _AVATAR_CACHE["content"] is not None and _AVATAR_CACHE["media_type"]:
+            return _AVATAR_CACHE["content"], _AVATAR_CACHE["media_type"]
+    return None
+
+
+def _avatar_circuit_is_open() -> bool:
+    """断路器是否处于打开状态（返回 True 时不再请求外部服务）"""
+    # 简单读取：GIL 下 float 赋值/读取原子，且仅在请求入口读取一次，
+    # 不要求严格互斥，返回过期值最多多打一次外部请求，可接受。
+    return time.monotonic() < _AVATAR_CIRCUIT["open_until"]
+
+
+async def _avatar_record_failure() -> bool:
+    """记录一次连续失败；达到阈值时打开断路器。返回是否刚打开熔断。"""
+    opened = False
+    async with _AVATAR_LOCK:
+        _AVATAR_CIRCUIT["consecutive_failures"] += 1
+        if _AVATAR_CIRCUIT["consecutive_failures"] >= _AVATAR_CIRCUIT_FAIL_THRESHOLD:
+            _AVATAR_CIRCUIT["open_until"] = time.monotonic() + _AVATAR_CIRCUIT_OPEN_SECONDS
+            opened = True
+    return opened
+
+
+async def _avatar_store_cache(content: bytes, media_type: str) -> None:
+    """写入缓存并复位连续失败计数"""
+    async with _AVATAR_LOCK:
+        _AVATAR_CACHE["content"] = content
+        _AVATAR_CACHE["media_type"] = media_type
+        _AVATAR_CACHE["ts"] = time.time()
+        _AVATAR_CIRCUIT["consecutive_failures"] = 0
+
+
 @router.post("/me/avatar/generate-real", summary="生成真实 AI 人物头像")
 async def generate_real_avatar(
     current_user: User = Depends(get_current_user),
@@ -347,16 +412,41 @@ async def generate_real_avatar(
 
     设计说明：
     - 代理请求 https://thispersondoesnotexist.com/random-person.jpeg，
-      每次返回一张 AI 生成的假人照片（JPEG）；
+      返回一张 AI 生成的假人照片（JPEG）；
     - 仅返回图片字节（不写库），前端拿到图片后复用现有上传链路，
       由用户点击「保存修改」时通过 POST /auth/me/avatar 写入 avatar_url；
-    - 使用现有魔数校验确保返回内容确为图片，并限制 2MB 大小。
+    - 使用现有魔数校验确保返回内容确为图片，并限制 2MB 大小；
+    - 本地缓存（TTL 1 小时）+ 断路器：外部服务故障时降级返回最近
+      成功缓存的头像，避免持续 502；熔断且无缓存时返回 503。
     """
+    # ── 1. 熔断中：直接走缓存，不再请求外部服务 ──
+    if _avatar_circuit_is_open():
+        cached = await _avatar_get_cached()
+        if cached:
+            return Response(content=cached[0], media_type=cached[1])
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI 头像生成服务暂不可用（熔断中），请稍后重试",
+        )
+
+    # ── 2. 缓存新鲜（TTL 内）：直接返回缓存，避免频繁请求外部服务 ──
+    async with _AVATAR_LOCK:
+        cache_fresh = (
+            _AVATAR_CACHE["content"] is not None
+            and _AVATAR_CACHE["media_type"]
+            and (time.time() - _AVATAR_CACHE["ts"]) < _AVATAR_CACHE_TTL
+        )
+    if cache_fresh:
+        cached = await _avatar_get_cached()
+        if cached:
+            return Response(content=cached[0], media_type=cached[1])
+
+    # ── 3. 缓存缺失/过期：请求外部服务 ──
     import httpx
     try:
         async with httpx.AsyncClient(timeout=20, follow_redirects=True) as client:
             resp = await client.get(
-                "https://thispersondoesnotexist.com/random-person.jpeg",
+                _AVATAR_UPSTREAM_URL,
                 headers={
                     "User-Agent": (
                         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -368,6 +458,17 @@ async def generate_real_avatar(
             resp.raise_for_status()
             file_content = resp.content
     except httpx.HTTPError:
+        opened = await _avatar_record_failure()
+        if opened:
+            logger.warning(
+                "[avatar/generate-real] 连续失败达到 %d 次，断路器打开 %ss",
+                _AVATAR_CIRCUIT_FAIL_THRESHOLD,
+                _AVATAR_CIRCUIT_OPEN_SECONDS,
+            )
+        # 降级：返回最近一次成功缓存（即使已过期），避免 502 刷屏
+        cached = await _avatar_get_cached()
+        if cached:
+            return Response(content=cached[0], media_type=cached[1])
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="AI 头像生成服务暂时不可用，请稍后重试",
@@ -386,6 +487,9 @@ async def generate_real_avatar(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"error_code": "INVALID_FILE_TYPE", "message": "生成的头像文件格式无效"},
         )
+
+    # ── 4. 成功：写入缓存并复位熔断计数 ──
+    await _avatar_store_cache(file_content, detected_mime)
 
     return Response(content=file_content, media_type=detected_mime)
 

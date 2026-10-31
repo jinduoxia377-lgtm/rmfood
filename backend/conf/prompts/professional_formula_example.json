@@ -1,0 +1,1003 @@
+{
+  "responseType": "recommendation",
+  "title": "黄芪桑椹调糖方",
+  "blocks": [
+    {
+      "type": "header",
+      "data": {
+        "title": "黄芪桑椹调糖方",
+        "description": "益气健脾、辅助调节血糖代谢，适用于气虚兼血糖偏高倾向人群",
+        "level": 1,
+        "metadata": [
+          {
+            "label": "目标人群",
+            "value": "气虚体质、空腹血糖 5.6-6.1 mmol/L 边缘期成人"
+          },
+          {
+            "label": "使用场景",
+            "value": "代茶饮，每日1次"
+          },
+          {
+            "label": "证据等级",
+            "value": "体外/动物为主，待临床验证"
+          },
+          {
+            "label": "总干料",
+            "value": "63g/日"
+          }
+        ]
+      }
+    },
+    {
+      "type": "data-table",
+      "data": {
+        "title": "配方组成",
+        "columns": [
+          {
+            "key": "role",
+            "label": "角色",
+            "type": "tag"
+          },
+          {
+            "key": "name",
+            "label": "成分"
+          },
+          {
+            "key": "dosage",
+            "label": "用量(g)",
+            "type": "number",
+            "align": "right"
+          },
+          {
+            "key": "nature_flavor",
+            "label": "性味归经"
+          },
+          {
+            "key": "active_compound",
+            "label": "功效成分"
+          },
+          {
+            "key": "mechanism",
+            "label": "作用机理"
+          }
+        ],
+        "rows": [
+          {
+            "role": "君",
+            "name": "黄芪",
+            "dosage": "15",
+            "nature_flavor": "甘，微温；归脾、肺经",
+            "active_compound": "黄芪多糖、黄芪甲苷",
+            "mechanism": "激活AMPKα，促进糖摄取"
+          },
+          {
+            "role": "臣",
+            "name": "山药",
+            "dosage": "12",
+            "nature_flavor": "甘，平；归脾、肺、肾经",
+            "active_compound": "山药多糖、薯蓣皂苷",
+            "mechanism": "延缓肠道糖吸收，改善胰岛素抵抗"
+          },
+          {
+            "role": "臣",
+            "name": "桑椹",
+            "dosage": "10",
+            "nature_flavor": "甘、酸，寒；归肝、肾经",
+            "active_compound": "桑椹花青素（槲皮素-3-O-葡萄糖苷）",
+            "mechanism": "抑制α-葡萄糖苷酶，降低餐后血糖峰"
+          },
+          {
+            "role": "佐",
+            "name": "枸杞",
+            "dosage": "10",
+            "nature_flavor": "甘，平；归肝、肾经",
+            "active_compound": "枸杞多糖、玉米黄质",
+            "mechanism": "减轻氧化应激对胰岛β细胞的损伤"
+          },
+          {
+            "role": "佐",
+            "name": "葛根",
+            "dosage": "10",
+            "nature_flavor": "甘、辛，凉；归脾、胃、心经",
+            "active_compound": "葛根素、大豆苷元",
+            "mechanism": "改善周围组织胰岛素敏感性"
+          },
+          {
+            "role": "使",
+            "name": "大枣",
+            "dosage": "6",
+            "nature_flavor": "甘，温；归脾、胃经",
+            "active_compound": "环磷酸腺苷、多糖",
+            "mechanism": "缓和药性，改善口感与适从性"
+          }
+        ],
+        "summary": "共 6 味成分，总干料 63g/日，均为药食同源物质"
+      }
+    },
+    {
+      "type": "data-table",
+      "data": {
+        "title": "剂量安全性评估",
+        "columns": [
+          {
+            "key": "name",
+            "label": "成分"
+          },
+          {
+            "key": "dose",
+            "label": "本方用量(g)",
+            "type": "number",
+            "align": "right"
+          },
+          {
+            "key": "limit",
+            "label": "每日上限(g)",
+            "type": "number",
+            "align": "right"
+          },
+          {
+            "key": "ratio",
+            "label": "占上限比例",
+            "type": "percentage",
+            "align": "right"
+          },
+          {
+            "key": "level",
+            "label": "安全等级",
+            "type": "tag"
+          },
+          {
+            "key": "basis",
+            "label": "上限依据"
+          }
+        ],
+        "rows": [
+          {
+            "name": "黄芪",
+            "dose": "15",
+            "limit": "30",
+            "ratio": 0.5,
+            "level": "安全",
+            "basis": "《中国药典》2020年版 9-30g"
+          },
+          {
+            "name": "山药",
+            "dose": "12",
+            "limit": "15",
+            "ratio": 0.8,
+            "level": "临界",
+            "basis": "《中国药典》2020年版 9-15g"
+          },
+          {
+            "name": "桑椹",
+            "dose": "10",
+            "limit": "15",
+            "ratio": 0.67,
+            "level": "安全",
+            "basis": "《中国药典》2020年版 10-15g"
+          },
+          {
+            "name": "枸杞",
+            "dose": "10",
+            "limit": "12",
+            "ratio": 0.83,
+            "level": "临界",
+            "basis": "《中国药典》2020年版 6-12g"
+          },
+          {
+            "name": "葛根",
+            "dose": "10",
+            "limit": "15",
+            "ratio": 0.67,
+            "level": "安全",
+            "basis": "《中国药典》2020年版 10-15g"
+          },
+          {
+            "name": "大枣",
+            "dose": "6",
+            "limit": "15",
+            "ratio": 0.4,
+            "level": "安全",
+            "basis": "《中国药典》2020年版 6-15g"
+          }
+        ],
+        "summary": "枸杞占上限 83%，已接近警戒线，建议减至 9g；无显式上限者已在【安全警示】说明"
+      }
+    },
+    {
+      "type": "callout",
+      "data": {
+        "variant": "warning",
+        "title": "安全警示",
+        "content": "枸杞本方用量占每日上限 83%（接近 80% 警戒线），建议减至 9g；桑椹性寒，脾胃虚寒或大便溏泄者减量至 5g。本方不含任何超药食同源目录物质，但仍为辅助调理，不能替代医师诊断与治疗。",
+        "details": [
+          "正在服用二甲双胍、格列美脲等降糖药者：可能出现叠加效应，须监测低血糖症状",
+          "空腹血糖 ≥ 7.0 mmol/L 或已确诊糖尿病者：本方仅为辅助，必须继续规范用药与随访",
+          "感冒发热、外感实证期间暂停使用"
+        ]
+      }
+    },
+    {
+      "type": "data-table",
+      "data": {
+        "title": "营养成分理论计算（每 63g 干料）",
+        "columns": [
+          {
+            "key": "name",
+            "label": "营养素",
+            "type": "tag"
+          },
+          {
+            "key": "content",
+            "label": "理论含量",
+            "type": "number",
+            "align": "right"
+          },
+          {
+            "key": "unit",
+            "label": "单位"
+          },
+          {
+            "key": "nrv",
+            "label": "占NRV比例",
+            "type": "percentage",
+            "align": "right"
+          },
+          {
+            "key": "basis",
+            "label": "计算依据"
+          }
+        ],
+        "rows": [
+          {
+            "name": "能量",
+            "content": "176",
+            "unit": "kcal",
+            "nrv": 0.021,
+            "basis": "蛋白4 kcal/g + 碳水4 kcal/g + 脂肪9 kcal/g"
+          },
+          {
+            "name": "蛋白质",
+            "content": "4.3",
+            "unit": "g",
+            "nrv": 0.072,
+            "basis": "氮×6.25 折算"
+          },
+          {
+            "name": "碳水化合物",
+            "content": "38",
+            "unit": "g",
+            "nrv": 0.127,
+            "basis": "药典各成分碳水化合物数据求和"
+          },
+          {
+            "name": "脂肪",
+            "content": "0.7",
+            "unit": "g",
+            "nrv": 0.013,
+            "basis": "药典脂肪数据求和"
+          },
+          {
+            "name": "膳食纤维",
+            "content": "8.6",
+            "unit": "g",
+            "nrv": 0.43,
+            "basis": "山药/桑椹/大枣纤维占主体"
+          },
+          {
+            "name": "糖",
+            "content": "16.2",
+            "unit": "g",
+            "nrv": null,
+            "basis": "桑椹/大枣天然糖为主，已计入碳水"
+          },
+          {
+            "name": "GI值",
+            "content": "52",
+            "unit": "",
+            "nrv": null,
+            "basis": "全谷物+纤维主导，判为低GI（≤55），理论估算待实测"
+          }
+        ],
+        "summary": "NRV 参照 GB 28050-2011；能量与宏量营养素为理论估算值，投产前须实测复核"
+      }
+    },
+    {
+      "type": "metrics",
+      "data": {
+        "title": "核心营养指标",
+        "items": [
+          {
+            "label": "能量密度",
+            "value": 2.8,
+            "unit": "kcal/g"
+          },
+          {
+            "label": "蛋白供能比",
+            "value": "10",
+            "unit": "%"
+          },
+          {
+            "label": "脂肪供能比",
+            "value": "3.5",
+            "unit": "%"
+          },
+          {
+            "label": "膳食纤维",
+            "value": "0.136",
+            "unit": "g/g"
+          },
+          {
+            "label": "GI 分级",
+            "value": "低GI"
+          }
+        ]
+      }
+    },
+    {
+      "type": "data-table",
+      "data": {
+        "title": "活性成分含量预测",
+        "columns": [
+          {
+            "key": "name",
+            "label": "活性成分",
+            "type": "tag"
+          },
+          {
+            "key": "source",
+            "label": "来源成分"
+          },
+          {
+            "key": "content",
+            "label": "预测含量",
+            "type": "number",
+            "align": "right"
+          },
+          {
+            "key": "unit",
+            "label": "单位"
+          },
+          {
+            "key": "confidence",
+            "label": "置信度",
+            "type": "tag"
+          },
+          {
+            "key": "basis",
+            "label": "数据来源"
+          }
+        ],
+        "rows": [
+          {
+            "name": "黄芪甲苷 IV",
+            "source": "黄芪",
+            "content": 6,
+            "unit": "mg",
+            "confidence": "高",
+            "basis": "药典含量限度 ≥0.040% × 15g"
+          },
+          {
+            "name": "黄芪多糖",
+            "source": "黄芪",
+            "content": 2250,
+            "unit": "mg",
+            "confidence": "中",
+            "basis": "文献报道 10-30% 干重取中值"
+          },
+          {
+            "name": "山药多糖",
+            "source": "山药",
+            "content": 720,
+            "unit": "mg",
+            "confidence": "中",
+            "basis": "文献报道 5-8% 干重取中值"
+          },
+          {
+            "name": "桑椹花青素",
+            "source": "桑椹",
+            "content": 150,
+            "unit": "mg",
+            "confidence": "中",
+            "basis": "干桑椹总花青素 1-2% 取中值"
+          },
+          {
+            "name": "枸杞多糖",
+            "source": "枸杞",
+            "content": 600,
+            "unit": "mg",
+            "confidence": "中",
+            "basis": "枸杞干品 5-7% 取中值"
+          },
+          {
+            "name": "葛根素",
+            "source": "葛根",
+            "content": 5,
+            "unit": "mg",
+            "confidence": "高",
+            "basis": "药材报道 0.01-0.2% 取中值 × 10g"
+          },
+          {
+            "name": "毛蕊异黄酮",
+            "source": "黄芪",
+            "content": 0.75,
+            "unit": "mg",
+            "confidence": "低",
+            "basis": "药材报道 0.002-0.01% 取中值"
+          }
+        ],
+        "summary": "均为含量限度或文献报道范围推算的理论估算值，非实测；高置信度项来自药典含量测定限度"
+      }
+    },
+    {
+      "type": "chart",
+      "data": {
+        "chartType": "bar",
+        "title": "主要活性成分贡献度",
+        "data": [
+          {
+            "name": "黄芪多糖",
+            "contribution": 92,
+            "category": "synergy"
+          },
+          {
+            "name": "山药多糖",
+            "contribution": 68,
+            "category": "synergy"
+          },
+          {
+            "name": "桑椹花青素",
+            "contribution": 55,
+            "category": "synergy"
+          },
+          {
+            "name": "枸杞多糖",
+            "contribution": 48,
+            "category": "safety"
+          },
+          {
+            "name": "葛根素",
+            "contribution": 40,
+            "category": "synergy"
+          }
+        ]
+      }
+    },
+    {
+      "type": "ingredient-detail",
+      "data": {
+        "name": "黄芪",
+        "latin": "Astragalus membranaceus (Fisch.) Bge.",
+        "source": "豆科植物蒙自黄芪、膜荚黄芪或黄芪的干燥根",
+        "properties": "甘，微温；归脾、肺经",
+        "efficacy": "补气升阳、固表止汗、利水消肿、托毒生肌",
+        "active_compounds": [
+          "黄芪多糖",
+          "黄芪甲苷 IV",
+          "毛蕊异黄酮"
+        ],
+        "dosage_range": "9-30g",
+        "safety_level": "药食同源",
+        "notes": "表实邪盛、气滞湿阻者不宜；阴虚阳亢者慎用。黄芪多糖主要通过 AMPKα 通路改善糖代谢，现有证据以体外与动物实验为主"
+      }
+    },
+    {
+      "type": "ingredient-detail",
+      "data": {
+        "name": "桑椹",
+        "latin": "Morus alba L.",
+        "source": "桑科植物桑的干燥成熟果实",
+        "properties": "甘、酸，寒；归肝、肾经",
+        "efficacy": "滋阴补血、生津润燥",
+        "active_compounds": [
+          "桑椹花青素（槲皮素-3-O-葡萄糖苷）",
+          "桑椹多糖"
+        ],
+        "dosage_range": "10-15g",
+        "safety_level": "药食同源",
+        "notes": "性寒，脾虚便溏者减量；含天然糖分，血糖控制不佳者需权衡。花青素抑制α-葡萄糖苷酶属体外证据，人体餐后血糖效应待验证"
+      }
+    },
+    {
+      "type": "ingredient-detail",
+      "data": {
+        "name": "葛根",
+        "latin": "Puerariae Lobatae Radix",
+        "source": "豆科植物野葛的干燥根",
+        "properties": "甘、辛，凉；归脾、胃、心经",
+        "efficacy": "解肌退热、生津止渴、升阳止泻",
+        "active_compounds": [
+          "葛根素",
+          "大豆苷元"
+        ],
+        "dosage_range": "10-15g",
+        "safety_level": "药食同源",
+        "notes": "葛根素对胰岛素敏感性的改善证据来自体外与动物模型，尚缺人体试验；脾虚泄泻者慎用其凉性"
+      }
+    },
+    {
+      "type": "synergy-chart",
+      "data": {
+        "type": "hierarchy",
+        "title": "网络药理学靶点-通路层级",
+        "nodes": [
+          {
+            "id": "p1",
+            "label": "hsa05200 Pathways in diabetes",
+            "role": "其他",
+            "level": 0
+          },
+          {
+            "id": "p2",
+            "label": "hsa04930 Type II diabetes mellitus",
+            "role": "其他",
+            "level": 0
+          },
+          {
+            "id": "t1",
+            "label": "PRKAA1 (AMPKα)",
+            "role": "其他",
+            "level": 1
+          },
+          {
+            "id": "t2",
+            "label": "PPARG (PPARγ)",
+            "role": "其他",
+            "level": 1
+          },
+          {
+            "id": "t3",
+            "label": "SIRT1",
+            "role": "其他",
+            "level": 1
+          },
+          {
+            "id": "i1",
+            "label": "桑椹花青素",
+            "role": "其他",
+            "level": 2
+          },
+          {
+            "id": "i2",
+            "label": "黄芪多糖",
+            "role": "其他",
+            "level": 2
+          },
+          {
+            "id": "i3",
+            "label": "葛根素",
+            "role": "其他",
+            "level": 2
+          }
+        ],
+        "edges": [
+          {
+            "from": "i1",
+            "to": "t1",
+            "type": "相使",
+            "weight": 0.78
+          },
+          {
+            "from": "i2",
+            "to": "t2",
+            "type": "相使",
+            "weight": 0.7
+          },
+          {
+            "from": "i3",
+            "to": "t1",
+            "type": "相使",
+            "weight": 0.65
+          },
+          {
+            "from": "t1",
+            "to": "p1",
+            "type": "协同",
+            "weight": 0.82
+          },
+          {
+            "from": "t2",
+            "to": "p2",
+            "type": "协同",
+            "weight": 0.6
+          }
+        ]
+      }
+    },
+    {
+      "type": "data-table",
+      "data": {
+        "title": "靶点-通路证据",
+        "columns": [
+          {
+            "key": "target",
+            "label": "靶点(基因)",
+            "type": "tag"
+          },
+          {
+            "key": "pathway",
+            "label": "关键通路",
+            "type": "tag"
+          },
+          {
+            "key": "compound",
+            "label": "关联成分"
+          },
+          {
+            "key": "level",
+            "label": "证据等级",
+            "type": "tag"
+          },
+          {
+            "key": "source",
+            "label": "来源"
+          }
+        ],
+        "rows": [
+          {
+            "target": "PRKAA1 (AMPKα)",
+            "pathway": "hsa05200",
+            "compound": "桑椹花青素、黄芪多糖",
+            "level": "体外",
+            "source": "TCMSP v2.9 + 文献报道，待核实"
+          },
+          {
+            "target": "PPARG (PPARγ)",
+            "pathway": "hsa04930",
+            "compound": "黄芪多糖",
+            "level": "动物",
+            "source": "TCMSP v2.9 + 文献报道，待核实"
+          },
+          {
+            "target": "SIRT1",
+            "pathway": "hsa04930",
+            "compound": "桑椹花青素、枸杞多糖",
+            "level": "体外",
+            "source": "TCMSP v2.9 + 文献报道，待核实"
+          },
+          {
+            "target": "SLC2A2 (GLUT2)",
+            "pathway": "hsa05200",
+            "compound": "葛根素",
+            "level": "体外",
+            "source": "文献报道，待核实"
+          }
+        ],
+        "summary": "靶点采用 HGNC 标准基因符号，通路采用 KEGG 命名；证据等级不得高于原文献等级"
+      }
+    },
+    {
+      "type": "list",
+      "data": {
+        "title": "分子机制详解",
+        "variant": "analysis",
+        "items": [
+          {
+            "label": "桑椹花青素 → 抑制 α-葡萄糖苷酶 → 延缓小肠糖吸收 → 降低餐后血糖峰",
+            "description": "槲皮素苷类与α-葡萄糖苷酶活性位点结合，竞争抑制麦芽糖/蔗糖水解，作用起效快于全身降糖通路",
+            "value": "体外",
+            "status": "info"
+          },
+          {
+            "label": "黄芪多糖 → 激活 AMPKα(PRKAA1) → 促进 GLUT4 转位与葡萄糖摄取",
+            "description": "AMPK 磷酸化后增强骨骼肌葡萄糖转运体膜表达，并上调 PGC-1α 驱动的线粒体氧化磷酸化",
+            "value": "体外/动物",
+            "status": "positive"
+          },
+          {
+            "label": "黄芪多糖/毛蕊异黄酮 → 激活 PPARγ → 改善胰岛素受体信号传导",
+            "description": "PPARγ 配体激活后经 IRS-1/PI3K-Akt 轴提高周围组织胰岛素敏感性，减轻胰岛素抵抗",
+            "value": "动物",
+            "status": "positive"
+          },
+          {
+            "label": "枸杞多糖 → SIRT1/氧化应激轴 → 保护胰岛β细胞",
+            "description": "清除自由基并下调 NF-κB 介导的炎症因子，缓解高糖环境下的β细胞凋亡",
+            "value": "体外",
+            "status": "info"
+          }
+        ]
+      }
+    },
+    {
+      "type": "synergy-chart",
+      "data": {
+        "type": "network",
+        "title": "君臣佐使配伍",
+        "nodes": [
+          {
+            "id": "hj",
+            "label": "黄芪",
+            "role": "君"
+          },
+          {
+            "id": "sy",
+            "label": "山药",
+            "role": "臣"
+          },
+          {
+            "id": "sg",
+            "label": "桑椹",
+            "role": "臣"
+          },
+          {
+            "id": "gg",
+            "label": "枸杞",
+            "role": "佐"
+          },
+          {
+            "id": "ggg",
+            "label": "葛根",
+            "role": "佐"
+          },
+          {
+            "id": "dz",
+            "label": "大枣",
+            "role": "使"
+          }
+        ],
+        "edges": [
+          {
+            "from": "hj",
+            "to": "sy",
+            "type": "相须",
+            "weight": 0.85
+          },
+          {
+            "from": "hj",
+            "to": "sg",
+            "type": "相使",
+            "weight": 0.7
+          },
+          {
+            "from": "sy",
+            "to": "dz",
+            "type": "相使",
+            "weight": 0.6
+          },
+          {
+            "from": "sg",
+            "to": "gg",
+            "type": "相须",
+            "weight": 0.62
+          }
+        ]
+      }
+    },
+    {
+      "type": "data-table",
+      "data": {
+        "title": "个体化调整方案（按体质）",
+        "columns": [
+          {
+            "key": "type",
+            "label": "体质",
+            "type": "tag"
+          },
+          {
+            "key": "add",
+            "label": "加法"
+          },
+          {
+            "key": "reduce",
+            "label": "减法"
+          },
+          {
+            "key": "adjust",
+            "label": "剂量调整"
+          },
+          {
+            "key": "basis",
+            "label": "调整依据"
+          }
+        ],
+        "rows": [
+          {
+            "type": "气虚质",
+            "add": "黄芪 +3g、山药 +2g",
+            "reduce": "-",
+            "adjust": "基准方，总量 68g",
+            "basis": "补气为主，气虚为本证核心"
+          },
+          {
+            "type": "湿热质",
+            "add": "玉米须 10g",
+            "reduce": "大枣 -3g",
+            "adjust": "总量 70g",
+            "basis": "湿阻中焦，大枣甘温助湿"
+          },
+          {
+            "type": "阴虚质",
+            "add": "桑椹 +3g、枸杞 +2g",
+            "reduce": "黄芪 -3g",
+            "adjust": "总量 63g",
+            "basis": "养阴生津，防黄芪温燥伤阴"
+          },
+          {
+            "type": "痰湿质",
+            "add": "陈皮 6g",
+            "reduce": "桑椹 -5g",
+            "adjust": "总量 64g",
+            "basis": "化痰理气，桑椹甘腻助痰"
+          }
+        ],
+        "summary": "若已在【用户约束】中提供体质/过敏原/禁忌，须以用户提供信息为准，不得输出与其冲突的加减法"
+      }
+    },
+    {
+      "type": "timeline",
+      "data": {
+        "title": "服用周期",
+        "duration_days": 28,
+        "phases": [
+          {
+            "key": "初期",
+            "label": "初期",
+            "days": [
+              1,
+              7
+            ]
+          },
+          {
+            "key": "中期",
+            "label": "中期",
+            "days": [
+              8,
+              21
+            ]
+          },
+          {
+            "key": "巩固",
+            "label": "巩固",
+            "days": [
+              22,
+              28
+            ]
+          }
+        ],
+        "items": [
+          {
+            "day": 1,
+            "phase": "初期",
+            "title": "适应期",
+            "description": "观察消化与睡眠，记录空腹/餐后2小时血糖",
+            "dosage": "每日1次，1袋(63g)代茶饮"
+          },
+          {
+            "day": 8,
+            "phase": "中期",
+            "title": "调理期",
+            "description": "血糖波动趋于平稳，继续监测",
+            "dosage": "每日1次，可连服7天后间隔1天"
+          },
+          {
+            "day": 22,
+            "phase": "巩固",
+            "title": "巩固期",
+            "description": "症状改善后减量巩固，复查空腹血糖",
+            "dosage": "隔日1次"
+          }
+        ]
+      }
+    },
+    {
+      "type": "list",
+      "data": {
+        "title": "制备工艺SOP",
+        "variant": "number",
+        "items": [
+          {
+            "label": "称量",
+            "description": "按配方精确称量各成分，误差 ±0.5g"
+          },
+          {
+            "label": "清洗",
+            "description": "清水快速冲洗去除浮尘，大枣去核"
+          },
+          {
+            "label": "煎煮",
+            "description": "加 800ml 水，大火煮沸后文火 30 分钟，温度维持 95-100℃"
+          },
+          {
+            "label": "复煎",
+            "description": "药渣再加 400ml 水，文火 20 分钟，两次煎液合并约 600ml"
+          },
+          {
+            "label": "服用",
+            "description": "温服或代茶饮；空腹食用会加重胃部不适，建议餐后 30 分钟"
+          }
+        ]
+      }
+    },
+    {
+      "type": "callout",
+      "data": {
+        "variant": "info",
+        "title": "监测与迭代建议",
+        "content": "建议每 7 天记录一次空腹血糖与餐后 2 小时血糖，28 天后复查空腹血糖与糖化血红蛋白（HbA1c）。若空腹血糖下降 > 1.0 mmol/L 且无低血糖症状，维持现方；若出现心慌、出汗等低血糖表现，立即减量或停用并就医。",
+        "details": [
+          "重点监测指标：空腹血糖、餐后2小时血糖、HbA1c（建议 3 个月复查1次）",
+          "不适反应记录：胃肠胀气、大便次数增加（桑椹性寒所致）",
+          "本方与降糖药联用属辅助调理，不得自行停用降糖药"
+        ]
+      }
+    },
+    {
+      "type": "list",
+      "data": {
+        "title": "参考文献",
+        "variant": "analysis",
+        "items": [
+          {
+            "label": "《中国药典》2020年版一部（黄芪、山药、桑椹、枸杞、葛根、大枣）",
+            "description": "各成分剂量范围、含量测定限度与功能主治",
+            "value": "药典",
+            "status": "info"
+          },
+          {
+            "label": "GB 28050-2011 预包装食品营养标签通则",
+            "description": "NRV 参考值与营养标签量化依据",
+            "value": "国家标准",
+            "status": "info"
+          },
+          {
+            "label": "GB 14881-2013 食品生产通用卫生规范",
+            "description": "制备工艺卫生控制依据",
+            "value": "国家标准",
+            "status": "info"
+          },
+          {
+            "label": "原卫生部 2002 年第 51 号公告",
+            "description": "既是食品又是药品的物质名单",
+            "value": "法规",
+            "status": "info"
+          },
+          {
+            "label": "TCMSP v2.9 (https://www.tcmsp-e.com/)",
+            "description": "靶点预测、药-靶-通路关联与 ADMET 参数",
+            "value": "数据库",
+            "status": "info"
+          },
+          {
+            "label": "《中华本草》（上海科学技术出版社）",
+            "description": "药材功效与主治的现代整理",
+            "value": "典籍",
+            "status": "info"
+          },
+          {
+            "label": "黄芪多糖改善胰岛素抵抗的研究综述",
+            "description": "AMPKα/PPARγ 通路，证据以动物模型为主",
+            "value": "待核实",
+            "status": "neutral"
+          },
+          {
+            "label": "花青素抑制 α-葡萄糖苷酶活性的研究",
+            "description": "体外酶抑制与餐后血糖效应，人体证据有限",
+            "value": "待核实",
+            "status": "neutral"
+          },
+          {
+            "label": "葛根素对糖代谢相关信号通路的调节",
+            "description": "体外与动物模型证据，待人体试验验证",
+            "value": "待核实",
+            "status": "neutral"
+          },
+          {
+            "label": "枸杞多糖抗氧化与胰岛β细胞保护研究",
+            "description": "体外抗氧化与β细胞保护作用",
+            "value": "待核实",
+            "status": "neutral"
+          }
+        ]
+      }
+    },
+    {
+      "type": "callout",
+      "data": {
+        "variant": "warning",
+        "title": "免责声明",
+        "content": "本建议为辅助调理方案，不能替代医师诊断与治疗。方中活性成分含量、GI 值与网络药理学关联均为理论估算或文献报道推算，投产前须实测复核；靶点-通路证据等级不得高于原文献等级。"
+      }
+    }
+  ]
+}
