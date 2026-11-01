@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.performance.resilience import AIRateLimiter, AIRateLimitConfig
+from ...core.performance.resilience import AIRateLimitConfig, AIRateLimiter
 from ...services.ai.shared.observability import ai_observability
 from ...services.ai.shared.response_cache import ai_cache
 from . import (
@@ -426,9 +426,9 @@ async def model_status(
     try:
         # 判定 LLM 密钥来源：用户级密钥 > 全局 db > 全局 env > none
         key_source = "none"
+        user_llm = None
         try:
             from ...services.llm_service import LLMService
-            user_llm = None
             if current_user and current_user.id:
                 user_llm = await LLMService.get_user_service(current_user.id)
             if user_llm is not None:
@@ -439,17 +439,18 @@ async def model_status(
                     key_source = "db" if getattr(cfg, "key_from_db", False) else "env"
         except Exception:
             key_source = "none"
-        # 检查 LLM 服务的详细状态
+        # 检查 LLM 服务的详细状态（优先展示用户级配置，含正确 model）
         llm_status_detail = {}
-        if hasattr(_get_llm_service(), 'is_available') and _get_llm_service().is_available:
+        _svc_for_status = user_llm if user_llm is not None else _get_llm_service()
+        if hasattr(_svc_for_status, 'is_available') and _svc_for_status.is_available:
             llm_status_detail = {
                 "status": "active",
-                "provider": getattr(_get_llm_service().config, 'provider', 'unknown'),
-                "model": getattr(_get_llm_service().config, 'model', 'unknown'),
-                "base_url": getattr(_get_llm_service().config, 'base_url', None) or "not set",
+                "provider": getattr(_svc_for_status.config, 'provider', 'unknown'),
+                "model": getattr(_svc_for_status.config, 'model', 'unknown'),
+                "base_url": getattr(_svc_for_status.config, 'base_url', None) or "not set",
                 "note": "已配置并可用",
                 "api_key_configured": True,
-                "api_key_length": len(getattr(_get_llm_service().config, 'api_key', '')) if getattr(_get_llm_service().config, 'api_key', None) else 0,
+                "api_key_length": len(getattr(_svc_for_status.config, 'api_key', '')) if getattr(_svc_for_status.config, 'api_key', None) else 0,
                 "key_source": key_source,
                 "user_key_source": key_source if key_source == "user" else "none",
             }
