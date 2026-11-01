@@ -22,6 +22,9 @@ class Team(Base):
     owner_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
+    org_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True
+    )
     settings: Mapped[dict | None] = mapped_column(JSON, default=dict)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False, index=True)
@@ -34,6 +37,7 @@ class Team(Base):
 
     __table_args__ = (
         Index("idx_team_owner_id_created_at", "owner_id", "created_at"),
+        Index("idx_teams_org_id", "org_id"),
     )
 
     def __repr__(self) -> str:
