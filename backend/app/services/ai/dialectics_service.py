@@ -217,11 +217,24 @@ async def _retrieve_rag(query: str, top_k: int = 3, user_id: Optional[str] = Non
         return []
 
 
-async def _llm_analyze(query: str, rag_chunks: List[Dict[str, str]]) -> Dict[str, Any]:
-    """调用 LLM 进行辨证分析（结构化 JSON 输出）"""
-    from app.services.llm_service import LLMMessage, llm_service
+async def _llm_analyze(query: str, rag_chunks: List[Dict[str, str]], user_id: Optional[str] = None) -> Dict[str, Any]:
+    """调用 LLM 进行辨证分析（结构化 JSON 输出）
 
-    if not llm_service.is_available:
+    优先使用用户级 LLM 服务（正确模型，如 agnes-3.0-flash），
+    用户未配置密钥或不可用时回退全局服务，避免空模型名导致 400。
+    """
+    from app.services.llm_service import LLMMessage, LLMService, llm_service
+
+    svc = None
+    if user_id:
+        try:
+            svc = await LLMService.get_user_service(int(user_id))
+        except Exception:
+            svc = None
+    if svc is None or not getattr(svc, "is_available", False):
+        svc = llm_service
+
+    if not svc.is_available:
         raise RuntimeError("LLM 服务未配置")
 
     rag_text = ""
@@ -270,7 +283,7 @@ async def _llm_analyze(query: str, rag_chunks: List[Dict[str, str]]) -> Dict[str
         LLMMessage(role="user", content=user_prompt),
     ]
 
-    resp = await llm_service.chat(
+    resp = await svc.chat(
         messages,
         response_format={"type": "json_object"},
         temperature=0.3,
@@ -370,7 +383,7 @@ async def analyze_dialectics(query: str, db: Optional[Any] = None, user_id: Opti
             timeout=_DIALECTICS_RAG_TIMEOUT,
         )
         result = await asyncio.wait_for(
-            _llm_analyze(query, rag_chunks),
+            _llm_analyze(query, rag_chunks, user_id=user_id),
             timeout=_DIALECTICS_LLM_TIMEOUT,
         )
         logger.info(f"[Dialectics] LLM+RAG 辨证完成 engine=llm_rag urgent={result['urgent']}")
