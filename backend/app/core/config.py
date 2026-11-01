@@ -481,6 +481,16 @@ class Settings(BaseSettings):
     admin_password: str = Field(default="", alias="ADMIN_PASSWORD", description="初始管理员密码（生产环境必须通过环境变量设置）")
     admin_email: str = Field(default="admin@rmfood.com", alias="ADMIN_EMAIL", description="初始管理员邮箱")
 
+    # ─── 平台默认组织启动自愈引导（ORG-001 方案 C）───
+    # 默认开启：启动时若 organizations 表为空，自愈确保平台默认组织（slug=rmfood-platform）
+    # 存在并回填存量用户归属，防止默认组织被误删后 /api/v1/formulas 等租户隔离端点 403。
+    # 关闭（ORG_AUTO_BOOTSTRAP=false）则完全禁用，不产生任何写库副作用。
+    org_auto_bootstrap: bool = Field(
+        default=True,
+        alias="ORG_AUTO_BOOTSTRAP",
+        description="启动时自愈确保平台默认组织存在（防止组织被误删后租户隔离端点 403）",
+    )
+
     # ─── 子配置 ───
     app: "AppInfoConfig" = Field(default_factory=lambda: AppInfoConfig())
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)

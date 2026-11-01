@@ -398,8 +398,8 @@ async def get_formula(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="配方不存在")
     service = FormulaService(db)
     result = await service.get_formula(formula_id)
-    # 验证所属组织
-    if result.organization_id is not None and result.organization_id != org_id:
+    # 验证所属组织（严格要求匹配：organization_id=None 的全局配方不再放行，P0 统一信任边界）
+    if result.organization_id != org_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="配方不存在",
@@ -457,7 +457,7 @@ async def update_formula(
     if org_id is None:
         raise HTTPException(status_code=404, detail="配方不存在")
     formula = await service.get_formula(formula_id)
-    if formula.organization_id is not None and formula.organization_id != org_id:
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
     is_owner = formula.creator_id == current_user.id
     is_admin = current_user.role in (UserRole.ADMIN, UserRole.FORMULATOR)
@@ -484,7 +484,7 @@ async def delete_formula(
     if org_id is None:
         raise HTTPException(status_code=404, detail="配方不存在")
     formula = await service.get_formula(formula_id)
-    if formula.organization_id is not None and formula.organization_id != org_id:
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
     await service.delete_formula(formula_id, user_id=current_user.id)
     return SuccessResponse(message="配方已归档删除")
@@ -495,11 +495,19 @@ async def delete_formula(
 @router.get("/{formula_id}/versions", response_model=list[FormulaVersionResponse], summary="版本历史")
 async def get_version_history(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: Optional[User] = Depends(_optional_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """获取配方版本历史"""
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     service = FormulaService(db)
+    formula = await service.get_formula(formula_id)
+    if formula.organization_id != org_id:
+        raise HTTPException(status_code=404, detail="配方不存在")
     return await service.get_version_history(formula_id)
 
 
@@ -507,11 +515,19 @@ async def get_version_history(
 async def create_version(
     formula_id: int,
     change_summary: str = Query(..., description="变更说明"),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """创建配方新版本快照"""
+    # P0 租户隔离：校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     service = FormulaService(db)
+    formula = await service.get_formula(formula_id)
+    if formula.organization_id != org_id:
+        raise HTTPException(status_code=404, detail="配方不存在")
     return await service.create_version(formula_id, change_summary, current_user.id)
 
 
@@ -519,11 +535,19 @@ async def create_version(
 async def restore_version(
     formula_id: int,
     version: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(require_role(UserRole.FORMULATOR, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db_session),
 ):
     """恢复到指定版本"""
+    # P0 租户隔离：校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     service = FormulaService(db)
+    formula = await service.get_formula(formula_id)
+    if formula.organization_id != org_id:
+        raise HTTPException(status_code=404, detail="配方不存在")
     return await service.restore_version(formula_id, version, current_user.id)
 
 
@@ -532,11 +556,19 @@ async def restore_version(
 @router.post("/{formula_id}/submit", response_model=FormulaResponse, summary="提交审核")
 async def submit_for_review(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """提交配方进行审核"""
+    # P0 租户隔离：校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     service = FormulaService(db)
+    formula = await service.get_formula(formula_id)
+    if formula.organization_id != org_id:
+        raise HTTPException(status_code=404, detail="配方不存在")
     return await service.submit_for_review(formula_id, current_user.id)
 
 
@@ -544,43 +576,83 @@ async def submit_for_review(
 async def review_formula(
     formula_id: int,
     review: FormulaReviewRequest,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(require_role(UserRole.REVIEWER, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db_session),
 ):
     """审核配方（审核员/管理员）"""
+    # P0 租户隔离：校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     service = FormulaService(db)
+    formula = await service.get_formula(formula_id)
+    if formula.organization_id != org_id:
+        raise HTTPException(status_code=404, detail="配方不存在")
     return await service.review_formula(formula_id, review, current_user.id)
 
 
 @router.post("/{formula_id}/publish", response_model=FormulaResponse, summary="发布配方")
 async def publish_formula(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db_session),
 ):
     """发布配方（仅管理员）"""
+    # P0 租户隔离：校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     service = FormulaService(db)
+    formula = await service.get_formula(formula_id)
+    if formula.organization_id != org_id:
+        raise HTTPException(status_code=404, detail="配方不存在")
     return await service.publish_formula(formula_id, current_user.id)
 
 
 @router.post("/{formula_id}/archive", response_model=FormulaResponse, summary="归档配方")
 async def archive_formula(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """归档配方"""
+    # P0 租户隔离：校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     service = FormulaService(db)
+    formula = await service.get_formula(formula_id)
+    if formula.organization_id != org_id:
+        raise HTTPException(status_code=404, detail="配方不存在")
     return await service.archive_formula(formula_id, current_user.id)
 
 
 @router.patch("/batch-status", response_model=SuccessResponse, summary="批量更新配方状态")
 async def batch_update_status(
     request: BatchStatusUpdateRequest,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """批量更新配方状态（带 Pydantic Schema 校验）"""
+    # P0 租户隔离：所有目标配方必须属于当前租户（任一不匹配→404，防跨租户批量改）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if request.ids:
+        matched = (
+            await db.execute(
+                select(Formula.id).where(
+                    Formula.id.in_(request.ids),
+                    Formula.organization_id == org_id,
+                )
+            )
+        ).scalars().all()
+        if len(matched) != len(set(request.ids)):
+            raise HTTPException(status_code=404, detail="配方不存在")
     service = FormulaService(db)
     updated = await service.batch_update_status(request.ids, request.status, current_user.id)
     return SuccessResponse(
@@ -594,14 +666,21 @@ async def batch_update_status(
 @router.get("/{formula_id}/nutrition", summary="获取配方营养成分")
 async def get_formula_nutrition(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """计算并返回配方的营养成分摘要（热量、宏量营养素、过敏原等）"""
     from ..services.formula.nutrition_service import FormulaNutritionService
 
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     result = await _get_formula_with_ingredients(db, formula_id)
     if not result:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if result.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     # 获取配方成分及其用量
@@ -666,14 +745,21 @@ async def get_formula_nutrition(
 async def validate_formula_nutrition(
     formula_id: int,
     tolerance_pct: float = Query(5.0, ge=0.1, le=20.0, description="允许偏差百分比"),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """校验配方成分总重量是否为 100%"""
     from ..services.formula.nutrition_service import FormulaNutritionService
 
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     result = await _get_formula_with_ingredients(db, formula_id)
     if not result:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if result.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     ingredients_data = []
@@ -717,7 +803,7 @@ async def optimize_formula_lp(
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
         raise HTTPException(status_code=404, detail="配方不存在")
-    if org_id is None or (formula.organization_id is not None and formula.organization_id != org_id):
+    if org_id is None or formula.organization_id != org_id:
         raise HTTPException(status_code=403, detail="无权访问此配方的优化功能")
 
     # 提取成分名称
@@ -793,13 +879,20 @@ async def optimize_formula_lp(
 @router.post("/{formula_id}/synergy/analyze", summary="分析配方协同效应")
 async def analyze_formula_synergy(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     from ..services.formula.synergy_engine import SynergyEngine
 
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     ingredient_names = [ing.name for ing in formula.ingredients]
@@ -837,13 +930,20 @@ async def analyze_formula_synergy(
 async def predict_formula_stability(
     formula_id: int,
     temperature_c: float = Query(25.0),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     from ..services.formula.stability_predictor import StabilityPredictor
 
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     ingredient_names = [ing.name for ing in formula.ingredients]
@@ -889,13 +989,20 @@ async def predict_formula_stability(
 @router.post("/{formula_id}/taste/predict", summary="预测配方风味")
 async def predict_formula_taste(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     from ..services.formula.taste_predictor import TastePredictor
 
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     ingredient_names = [ing.name for ing in formula.ingredients]
@@ -926,13 +1033,20 @@ async def predict_formula_taste(
 async def check_formula_safety(
     formula_id: int,
     daily_dosage_g: float = Query(10.0),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     from ..services.formula.safety_alert_system import SafetyAlertSystem
 
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     ingredients_data = [{"name": ing.name, "amount_g": (ing.properties or {}).get("weight_g", 0)} for ing in formula.ingredients]
@@ -957,13 +1071,20 @@ async def check_formula_safety(
 @router.post("/{formula_id}/compatibility/check", summary="检查配方兼容性")
 async def check_formula_compatibility(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     from ..services.formula.compatibility_checker import CompatibilityChecker
 
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     checker = CompatibilityChecker()
@@ -990,13 +1111,20 @@ async def check_formula_compatibility(
 @router.post("/{formula_id}/effect/predict", summary="预测配方效果曲线")
 async def predict_formula_effect(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     from ..services.formula.effect_simulator import EffectSimulator
 
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     simulator = EffectSimulator()
@@ -1155,8 +1283,8 @@ async def copy_formula(
     source = await _get_formula_with_ingredients(db, formula_id)
     if not source:
         raise HTTPException(status_code=404, detail="源配方不存在")
-    # 源配方归属校验：organization_id=None 的全局配方不暴露（P0 隔离）
-    if source.organization_id is not None and source.organization_id != org_id:
+    # 源配方归属校验：严格要求 organization_id == org_id（全局 None 不放行，P0 统一信任边界）
+    if source.organization_id != org_id:
         raise HTTPException(status_code=404, detail="源配方不存在")
 
     # 生成新配方（code 为 NOT NULL 唯一字段，须显式生成，与导入/创建一致）
@@ -1258,13 +1386,20 @@ async def multi_algorithm_optimize(
 async def export_formula(
     formula_id: int,
     format_type: str = Query("pdf", description="导出格式: pdf/excel/csv"),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(require_plan("advanced_report_export")),
     db: AsyncSession = Depends(get_db_session),
 ):
     """导出单个配方的详细信息为 PDF 或 Excel"""
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
 
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     if format_type in ("excel", "csv"):
@@ -1332,13 +1467,20 @@ async def export_formula(
 async def apply_optimization_result(
     formula_id: int,
     request: dict = Body(...),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """将 MILP 或 RatioOptimizer 的结果应用到配方成分"""
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
 
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     ratios = request.get("ratios", [])
@@ -1372,13 +1514,20 @@ async def apply_optimization_result(
 async def save_analysis_result(
     formula_id: int,
     request: dict = Body(...),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """保存深度分析结果到数据库，支持后续查看"""
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
 
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     # 保存分析结果到公式的 JSON 字段
@@ -1407,13 +1556,20 @@ async def save_analysis_result(
 @router.get("/{formula_id}/analysis/history", summary="获取分析历史记录")
 async def get_analysis_history(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """获取配方的分析历史记录"""
+    # P0 租户隔离：解析有效组织并校验配方归属（与 get_formula 一致，不匹配→404）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=404, detail="配方不存在")
 
     formula = await _get_formula_with_ingredients(db, formula_id)
     if not formula:
+        raise HTTPException(status_code=404, detail="配方不存在")
+    if formula.organization_id != org_id:
         raise HTTPException(status_code=404, detail="配方不存在")
 
     history = {
@@ -1996,6 +2152,7 @@ async def import_formulas(
 @router.post("/export", summary="批量导出配方（CSV/Excel/PDF）")
 async def export_formulas_batch(
     request: dict = Body(...),
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.RESEARCHER, UserRole.FORMULATOR)),
     _plan_user: User = Depends(require_plan("advanced_report_export")),
     db: AsyncSession = Depends(get_db_session),
@@ -2015,7 +2172,11 @@ async def export_formulas_batch(
     ids = request.get("ids") or []
     scope = request.get("scope", "all")
 
-    query = select(Formula).order_by(Formula.id.desc())
+    # P0 租户隔离：批量导出仅限当前租户配方（防跨租户导出）
+    org_id = await _resolve_effective_org_id(tenant.org_id, current_user, db)
+    if org_id is None:
+        raise HTTPException(status_code=403, detail="缺少租户上下文，禁止导出配方")
+    query = select(Formula).where(Formula.organization_id == org_id).order_by(Formula.id.desc())
     if ids:
         valid_ids = [int(i) for i in ids if str(i).isdigit()]
         if valid_ids:

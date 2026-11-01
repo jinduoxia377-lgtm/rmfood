@@ -100,10 +100,10 @@ async def list_experiments(
         sort_order=filters.sort_order,
     )
     # P0：API 层追加 org 过滤（experiment_service 不可改）。
-    # 保留全局实验（organization_id 为 None）与当前租户实验；其余剔除。
+    # 严格要求 organization_id == org_id（不再放行全局 None，统一 P0 信任边界）。
     experiments = [
         e for e in experiments
-        if e.organization_id is None or e.organization_id == org_id
+        if e.organization_id == org_id
     ]
     total = len(experiments)
     return ExperimentListResponse(

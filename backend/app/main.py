@@ -164,6 +164,32 @@ async def lifespan(app: FastAPI):
         logger.info("[Startup] 莱茵分子白名单组织已确保存在")
     except Exception as e:
         logger.warning(f"[Startup] 白名单组织确保失败（非阻塞）: {e}")
+    # 2.3 平台默认组织启动自愈引导（ORG-001 方案 C）：防止默认组织被误删后
+    #     /api/v1/formulas 等租户隔离端点再次 403。仅在 ORG_AUTO_BOOTSTRAP 开启且
+    #     organizations 表为空时写库（幂等、自愈、非阻塞；不改租户隔离判定逻辑）。
+    if settings.org_auto_bootstrap:
+        try:
+            from .core.database.session import AsyncSessionLocal
+            from .core.multi_tenant.bootstrap import ensure_default_org
+
+            async with AsyncSessionLocal() as _org_db:
+                _org_count = (
+                    await _org_db.execute(text("SELECT COUNT(*) FROM organizations"))
+                ).scalar() or 0
+                if _org_count == 0:
+                    _org_id = await ensure_default_org(_org_db)
+                    logger.info(
+                        "[Startup] 平台默认组织自愈引导完成（id=%s, slug=rmfood-platform）",
+                        _org_id,
+                    )
+                else:
+                    logger.info(
+                        "[Startup] organizations 非空（%d 个），跳过默认组织自愈引导", _org_count
+                    )
+        except Exception as e:
+            logger.warning(f"[Startup] 默认组织自愈引导失败（非阻塞）: {e}")
+    else:
+        logger.info("[Startup] 默认组织自愈引导已禁用（ORG_AUTO_BOOTSTRAP=false）")
     # 2.5 ② 配额安全接线：加载组织 plan 缓存并挂载 plan 感知 quota provider
     try:
         from .core.multi_tenant.tenant_quota import wire_plan_aware_quota
