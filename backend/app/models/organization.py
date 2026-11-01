@@ -14,6 +14,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -65,6 +66,10 @@ class Organization(BaseModel):
 class OrganizationMember(BaseModel):
     """Organization membership"""
     __tablename__ = "organization_members"
+    # 用户在同一组织内至多一条成员关系（ON CONFLICT 依赖此约束；与 whitelist_org.py 一致）
+    __table_args__ = (
+        UniqueConstraint("organization_id", "user_id", name="uq_org_member"),
+    )
 
     organization_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("organizations.id"), nullable=False, index=True)
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)
