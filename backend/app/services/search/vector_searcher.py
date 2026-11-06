@@ -181,7 +181,11 @@ class VectorSearcher:
             except Exception as rb_err:  # pragma: no cover - 防御性
                 logger.warning("[VectorSearcher] rollback 失败: %s", rb_err)
 
-        # 回退: embedding 存储为 JSON 数组，用客户端计算余弦相似度
+        # 回退: embedding 存储为 JSON 数组，用客户端计算余弦相似度。
+        # 注意：必须拉取全部有 embedding 的候选行再在客户端算余弦、排序、取 top_k。
+        # 早期版本误写成 ORDER BY created_at DESC LIMIT :top_k——只在"最近创建的 top_k 行"
+        # 这个任意子集上算余弦，语义相关的原料通常不在其中，导致向量路几乎恒返回空。
+        # 128 行量级全量拉取+客户端余弦开销可忽略。
         fallback_params: Dict[str, Any] = {"top_k": top_k}
         fallback_conditions = self._build_filter_conditions(
             filters, fallback_params, alias="fm"
@@ -206,10 +210,11 @@ class VectorSearcher:
             WHERE fm.embedding IS NOT NULL
               AND fm.review_status = 'approved'
               AND fm.data_quality >= 0.3{fallback_extra}
-            ORDER BY fm.created_at DESC
-            LIMIT :top_k
         """)
 
+        # 必须传入 fallback_params（_build_filter_conditions 可能注入 :min_dq 等占位符）。
+        # 既不能丢 params（占位符无值→asyncpg 报错），也不能不传（空 SQL 无占位符时
+        # SQLAlchemy 会给 asyncpg 传 [{}] 触发 ProgrammingError）；传 dict 兼容两种情况。
         result = await self.db.execute(fallback_sql, fallback_params)
         rows = result.fetchall()
 
@@ -224,7 +229,8 @@ class VectorSearcher:
                 d["similarity"] = round(sim, 4)
                 filtered.append(d)
 
-        return sorted(filtered, key=lambda x: x["similarity"], reverse=True)[:top_k]
+        filtered.sort(key=lambda x: x["similarity"], reverse=True)
+        return filtered[:top_k]
 
     async def search_retail_products(
         self,
@@ -285,11 +291,12 @@ class VectorSearcher:
             FROM retail_products rp
             WHERE rp.embedding IS NOT NULL
               AND rp.data_quality >= 0.3
-            ORDER BY rp.created_at DESC
-            LIMIT :top_k
         """)
 
-        result = await self.db.execute(fallback_sql, {"top_k": top_k})
+        # 同 food_materials 回退：全量拉取候选行，客户端算余弦后取 top_k，
+        # 不再 ORDER BY created_at LIMIT top_k（那只覆盖最近创建的任意子集）。
+        # 显式传空 dict 避免 asyncpg 收到 [{}] 触发 ProgrammingError。
+        result = await self.db.execute(fallback_sql, {})
         rows = result.fetchall()
 
         filtered = []
@@ -303,7 +310,8 @@ class VectorSearcher:
                 d["similarity"] = round(sim, 4)
                 filtered.append(d)
 
-        return sorted(filtered, key=lambda x: x["similarity"], reverse=True)[:top_k]
+        filtered.sort(key=lambda x: x["similarity"], reverse=True)
+        return filtered[:top_k]
 
     def _row_to_dict(self, row) -> Dict[str, Any]:
         if row is None:

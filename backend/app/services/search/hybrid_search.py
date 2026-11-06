@@ -80,8 +80,8 @@ class RRFFusion:
                     item_type="food_material",
                     name=item.get("name_cn", ""),
                     category=item.get("category"),
-                    bm25_score=rrf_score,
                 )
+            # 统一在构造后累加一次 rrf，避免构造器赋初值 + 累加导致新项被算两次。
             items_map[item_id].bm25_score += rrf_score
             items_map[item_id].extra.update({
                 k: v for k, v in item.items()
@@ -94,7 +94,6 @@ class RRFFusion:
             if item_id is None:
                 continue
             rrf_score = 1.0 / (K_RRF + rank + 1)
-            similarity = item.get("similarity", 0.0)
 
             if item_id not in items_map:
                 items_map[item_id] = SearchResultItem(
@@ -102,9 +101,16 @@ class RRFFusion:
                     item_type="food_material",
                     name=item.get("name_cn", ""),
                     category=item.get("category"),
-                    vector_score=similarity,
                 )
+            # 纯 RRF：vector_score 只累加 rrf 排名分，与 bm25 同一量纲。
+            # 原实现误用 vector_score=similarity（余弦 ~0.6）作初值再叠加 rrf(~0.016)，
+            # 使向量路量纲远大于 BM25 的纯 rrf——关键词精确命中（仅 bm25，
+            # fused≈0.4*0.016=0.0066）被所有向量项（fused≈0.3*0.6=0.18）淹没，
+            # 出现"搜枸杞返回一堆不相关药材、精确项消失"的回归。
+            # similarity 仅存入 item.similarity 供展示/阈值，不参与融合排序。
             items_map[item_id].vector_score += rrf_score
+            if items_map[item_id].similarity is None:
+                items_map[item_id].similarity = item.get("similarity")
 
         # 处理规则结果
         if rule_results:
