@@ -15,6 +15,70 @@ from ..openfoodfacts.config import OFFConfig
 logger = logging.getLogger(__name__)
 
 
+def build_tsquery_or_groups(keywords: List[str]) -> List[List[str]]:
+    """
+    把关键词列表折叠成 tsquery 的 OR 组。
+
+    P1 修复：原实现对所有同义词扩展词一律用 & (AND) 连接，
+    导致查询被过度约束、频繁空手。现在改为「核心词 AND、
+    同义词组内 OR」——同义词之间任一命中即可，不同概念之间仍取交集。
+
+    例如关键词 = ["补气", "健脾"]，TCM_SYNONYMS 中
+        补气 -> [益气, 补中益气, 培元]
+        健脾 -> [益气健脾, 和中]
+    折叠后得到:
+        [["补气","益气","补中益气","培元"], ["健脾","益气健脾","和中"]]
+    再由 to_tsquery 拼成 (补气|益气|补中益气|培元)&(健脾|益气健脾|和中)。
+
+    已被某个组吸收的词 (含同义词) 不会再独立成组，
+    避免概念重复计数。
+    """
+    from app.services.search.chinese_nlp import TCM_SYNONYMS
+
+    groups: List[List[str]] = []
+    seen: set[str] = set()
+    for kw in keywords:
+        if kw in seen:
+            continue
+        group = [kw]
+        for syn in TCM_SYNONYMS.get(kw, []):
+            if syn not in group:
+                group.append(syn)
+        # 该组的全部成员都标记为已用，防止同一概念被反复成组
+        for term in group:
+            seen.add(term)
+        groups.append(group)
+    return groups
+
+
+def build_tsquery_str(keywords: List[str]) -> str:
+    """
+    由关键词生成 to_tsquery 字符串。
+
+    优先按同义词组折叠 (核心词 AND、组内 OR)；无同义词展开时
+    退化为全部关键词 AND 连接。
+    """
+    or_groups = build_tsquery_or_groups(keywords)
+    flat = [k.replace("'", "''") for k in keywords if len(k) >= 2]
+    if not flat:
+        return ""
+    if not or_groups:
+        return " & ".join(flat)
+    parts = [
+        "(" + "|".join(g.replace("'", "''") for g in group) + ")"
+        for group in or_groups
+        if any(len(g) >= 2 for g in group)
+    ]
+    return " & ".join(parts)
+
+
+def build_where_clause(conditions: List[str]) -> str:
+    """把过滤条件拼成 WHERE 后缀 (P0-3: 与 count 共用，保证语义一致)"""
+    if not conditions:
+        return ""
+    return " AND " + " AND ".join(conditions)
+
+
 class BM25Searcher:
     """PostgreSQL FTS BM25 搜索器"""
 
@@ -58,32 +122,11 @@ class BM25Searcher:
         if not keywords:
             return []
 
-        # 构建 tsquery: 使用 & (AND) 要求所有关键词匹配
-        tsquery_parts = [k.replace("'", "''") for k in keywords if len(k) >= 2]
-        if not tsquery_parts:
+        # 构建 tsquery: 核心词 AND，同义词组内 OR (P1)
+        tsquery_str = build_tsquery_str(keywords)
+        if not tsquery_str:
             return []
-
-        tsquery_str = " & ".join(tsquery_parts)
         regconfig = OFFConfig.FTS_REGCONFIG
-
-        sql = text("""
-            SELECT fm.id, fm.name_cn, fm.name_latin, fm.name_en,
-                   fm.aliases, fm.category, fm.sub_category,
-                   fm.food_homology, fm.toxicity_class,
-                   fm.active_ingredients, fm.effects, fm.indications,
-                   fm.ob_percent, fm.dl_value, fm.bioavailability_score,
-                   fm.safe_dose_min, fm.safe_dose_max,
-                   fm.contraindications, fm.interactions,
-                   fm.regulatory_status, fm.approved_regions,
-                   fm.max_daily_intake, fm.suppliers, fm.origin_countries,
-                   fm.description, fm.image_url, fm.msds_url, fm.coa_url,
-                   fm.source_db, fm.data_quality, fm.review_status,
-                   ts_rank(fm.search_vector, to_tsquery(:rc, :tsquery)) AS rank
-            FROM food_materials fm
-            WHERE fm.search_vector @@ to_tsquery(:rc, :tsquery)
-              AND fm.review_status = 'approved'
-              AND fm.data_quality >= 0.3
-        """)
 
         params: dict[str, Any] = {"tsquery": tsquery_str, "rc": regconfig}
 
@@ -108,17 +151,156 @@ class BM25Searcher:
                 conditions.append("fm.data_quality >= :min_dq")
                 params["min_dq"] = filters["min_data_quality"]
 
-        if conditions:
-            sql = text(str(sql) + " AND " + " AND ".join(conditions) +
-                       "\n            ORDER BY rank DESC\n            LIMIT :limit OFFSET :offset")
-        else:
-            sql = text(str(sql) +
-                       "\n            ORDER BY rank DESC\n            LIMIT :limit OFFSET :offset")
+        where_clause = build_where_clause(conditions)
+
+        sql = text(f"""
+            SELECT fm.id, fm.name_cn, fm.name_latin, fm.name_en,
+                   fm.aliases, fm.category, fm.sub_category,
+                   fm.food_homology, fm.toxicity_class,
+                   fm.active_ingredients, fm.effects, fm.indications,
+                   fm.ob_percent, fm.dl_value, fm.bioavailability_score,
+                   fm.safe_dose_min, fm.safe_dose_max,
+                   fm.contraindications, fm.interactions,
+                   fm.regulatory_status, fm.approved_regions,
+                   fm.max_daily_intake, fm.suppliers, fm.origin_countries,
+                   fm.description, fm.image_url, fm.msds_url, fm.coa_url,
+                   fm.source_db, fm.data_quality, fm.review_status,
+                   ts_rank(fm.search_vector, to_tsquery(:rc, :tsquery)) AS rank
+            FROM food_materials fm
+            WHERE fm.search_vector @@ to_tsquery(:rc, :tsquery)
+              AND fm.review_status = 'approved'
+              AND fm.data_quality >= 0.3{where_clause}
+            ORDER BY rank DESC
+            LIMIT :limit OFFSET :offset
+        """)
 
         result = await self.db.execute(sql, {**params, "limit": limit, "offset": offset})
         rows = result.fetchall()
 
         return [self._row_to_dict(row) for row in rows]
+
+    async def count_food_materials(
+        self,
+        query: str,
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> int:
+        """
+        返回与 search_food_materials 完全一致的匹配总数 (P0-3)。
+
+        复用同一 WHERE (tsquery + review_status + data_quality + filters)，
+        仅把 SELECT 换成 COUNT(*)。召回上限封顶不会影响该值。
+        优先走 FTS，失败回退 ILIKE，保证与 search 返回的 total 语义一致。
+        """
+        try:
+            return await self._count_food_materials_fts(query, filters)
+        except Exception as e:
+            logger.warning("[BM25] count FTS 失败，回退到 ILIKE: %s", e)
+            return await self._count_food_materials_ilike(query, filters)
+
+    async def _count_food_materials_fts(
+        self, query: str, filters
+    ) -> int:
+        from app.services.search.chinese_nlp import get_nlp_pipeline
+        nlp = get_nlp_pipeline()
+        keywords = nlp.extract_keywords(query)
+        if not keywords:
+            return 0
+
+        tsquery_str = build_tsquery_str(keywords)
+        if not tsquery_str:
+            return 0
+
+        regconfig = OFFConfig.FTS_REGCONFIG
+        params: dict[str, Any] = {"tsquery": tsquery_str, "rc": regconfig}
+        conditions: list[str] = []
+        if filters:
+            if filters.get("category"):
+                conditions.append("fm.category = :category")
+                params["category"] = filters["category"]
+            if filters.get("food_homology") is not None:
+                conditions.append("fm.food_homology = :food_homology")
+                params["food_homology"] = filters["food_homology"]
+            if filters.get("toxicity_class"):
+                conditions.append("fm.toxicity_class = :toxicity_class")
+                params["toxicity_class"] = filters["toxicity_class"]
+            if filters.get("regulatory_status"):
+                conditions.append("fm.regulatory_status = :regulatory_status")
+                params["regulatory_status"] = filters["regulatory_status"]
+            if filters.get("min_ob") is not None:
+                conditions.append("fm.ob_percent >= :min_ob")
+                params["min_ob"] = filters["min_ob"]
+            if filters.get("min_data_quality") is not None:
+                conditions.append("fm.data_quality >= :min_dq")
+                params["min_dq"] = filters["min_data_quality"]
+
+        where_clause = build_where_clause(conditions)
+
+        sql = text(f"""
+            SELECT COUNT(*) AS total
+            FROM food_materials fm
+            WHERE fm.search_vector @@ to_tsquery(:rc, :tsquery)
+              AND fm.review_status = 'approved'
+              AND fm.data_quality >= 0.3{where_clause}
+        """)
+        result = await self.db.execute(sql, params)
+        return int(result.scalar() or 0)
+
+    async def _count_food_materials_ilike(
+        self, query: str, filters
+    ) -> int:
+        search_terms = [t for t in query.split() if t]
+        if not search_terms:
+            return 0
+
+        params: dict[str, Any] = {}
+        term_conditions = []
+        for idx, term in enumerate(search_terms):
+            term_conditions.append(f"""
+                (
+                    fm.name_cn ILIKE :term_{idx} OR
+                    fm.name_en ILIKE :term_{idx} OR
+                    fm.name_latin ILIKE :term_{idx} OR
+                    fm.category ILIKE :term_{idx} OR
+                    fm.sub_category ILIKE :term_{idx} OR
+                    fm.description ILIKE :term_{idx} OR
+                    fm.indications ILIKE :term_{idx}
+                )
+            """)
+            params[f"term_{idx}"] = f"%{term}%"
+        where_clause = " AND ".join(term_conditions)
+
+        conditions = []
+        if filters:
+            if filters.get("category"):
+                conditions.append("fm.category = :category")
+                params["category"] = filters["category"]
+            if filters.get("food_homology") is not None:
+                conditions.append("fm.food_homology = :food_homology")
+                params["food_homology"] = filters["food_homology"]
+            if filters.get("toxicity_class"):
+                conditions.append("fm.toxicity_class = :toxicity_class")
+                params["toxicity_class"] = filters["toxicity_class"]
+            if filters.get("regulatory_status"):
+                conditions.append("fm.regulatory_status = :regulatory_status")
+                params["regulatory_status"] = filters["regulatory_status"]
+            if filters.get("min_ob") is not None:
+                conditions.append("fm.ob_percent >= :min_ob")
+                params["min_ob"] = filters["min_ob"]
+            if filters.get("min_data_quality") is not None:
+                conditions.append("fm.data_quality >= :min_dq")
+                params["min_dq"] = filters["min_data_quality"]
+
+        filter_clause = build_where_clause(conditions)
+
+        sql = text(f"""
+            SELECT COUNT(*) AS total
+            FROM food_materials fm
+            WHERE ({where_clause})
+              AND fm.review_status = 'approved'
+              AND fm.data_quality >= 0.3{filter_clause}
+        """)
+        result = await self.db.execute(sql, params)
+        return int(result.scalar() or 0)
 
     async def _search_with_ilike(
         self, query: str, filters, limit: int, offset: int
@@ -146,25 +328,6 @@ class BM25Searcher:
 
         where_clause = " AND ".join(term_conditions)
 
-        sql = text(f"""
-            SELECT fm.id, fm.name_cn, fm.name_latin, fm.name_en,
-                   fm.aliases, fm.category, fm.sub_category,
-                   fm.food_homology, fm.toxicity_class,
-                   fm.active_ingredients, fm.effects, fm.indications,
-                   fm.ob_percent, fm.dl_value, fm.bioavailability_score,
-                   fm.safe_dose_min, fm.safe_dose_max,
-                   fm.contraindications, fm.interactions,
-                   fm.regulatory_status, fm.approved_regions,
-                   fm.max_daily_intake, fm.suppliers, fm.origin_countries,
-                   fm.description, fm.image_url, fm.msds_url, fm.coa_url,
-                   fm.source_db, fm.data_quality, fm.review_status,
-                   fm.created_at
-            FROM food_materials fm
-            WHERE ({where_clause})
-              AND fm.review_status = 'approved'
-              AND fm.data_quality >= 0.3
-        """)
-
         conditions = []
         if filters:
             if filters.get("category"):
@@ -186,12 +349,28 @@ class BM25Searcher:
                 conditions.append("fm.data_quality >= :min_dq")
                 params["min_dq"] = filters["min_data_quality"]
 
-        if conditions:
-            sql = text(str(sql)[:-1] + " AND " + " AND ".join(conditions) +
-                       "\n            ORDER BY fm.created_at DESC\n            LIMIT :limit OFFSET :offset")
-        else:
-            sql = text(str(sql) +
-                       "\n            ORDER BY fm.created_at DESC\n            LIMIT :limit OFFSET :offset")
+        filter_clause = build_where_clause(conditions)
+
+        sql = text(f"""
+            SELECT fm.id, fm.name_cn, fm.name_latin, fm.name_en,
+                   fm.aliases, fm.category, fm.sub_category,
+                   fm.food_homology, fm.toxicity_class,
+                   fm.active_ingredients, fm.effects, fm.indications,
+                   fm.ob_percent, fm.dl_value, fm.bioavailability_score,
+                   fm.safe_dose_min, fm.safe_dose_max,
+                   fm.contraindications, fm.interactions,
+                   fm.regulatory_status, fm.approved_regions,
+                   fm.max_daily_intake, fm.suppliers, fm.origin_countries,
+                   fm.description, fm.image_url, fm.msds_url, fm.coa_url,
+                   fm.source_db, fm.data_quality, fm.review_status,
+                   fm.created_at
+            FROM food_materials fm
+            WHERE ({where_clause})
+              AND fm.review_status = 'approved'
+              AND fm.data_quality >= 0.3{filter_clause}
+            ORDER BY fm.created_at DESC
+            LIMIT :limit OFFSET :offset
+        """)
 
         result = await self.db.execute(sql, {**params, "limit": limit, "offset": offset})
         rows = result.fetchall()

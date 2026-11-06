@@ -7,6 +7,106 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+# ── 食品原料 CRUD 白名单 Schema (P0-7) ──────────────────────────
+#
+# 显式白名单可写字段，杜绝 FoodMaterial(**data) 直灌原始 dict
+# 以及 for key in data: setattr 的越权写入 (id/review_status/审计字段)。
+#
+# 安全说明：id / created_at / updated_at / created_by /
+#           reviewed_by / reviewed_at / embedding 不在白名单内，
+#           由服务端按鉴权上下文与业务流程填充。
+
+_WRITEABLE_MATERIAL_FIELDS = (
+    "external_id", "gb_code", "name_cn", "name_latin", "name_en", "aliases",
+    "category", "sub_category", "food_homology", "toxicity_class",
+    "active_ingredients", "compound_refs",
+    "effects", "indications",
+    "ob_percent", "dl_value", "bioavailability_score",
+    "safe_dose_min", "safe_dose_max", "contraindications", "interactions",
+    "regulatory_status", "approved_regions", "max_daily_intake",
+    "suppliers", "origin_countries",
+    "description", "image_url", "msds_url", "coa_url",
+    "source_db", "data_quality",
+)
+
+
+class FoodMaterialCreate(BaseModel):
+    """创建食品原料请求体（显式白名单）"""
+    external_id: Optional[str] = None
+    gb_code: Optional[str] = None
+    name_cn: str = Field(..., min_length=1, max_length=200, description="中文名称（必填）")
+    name_latin: Optional[str] = None
+    name_en: Optional[str] = None
+    aliases: Optional[List[str]] = None
+    category: Optional[str] = None
+    sub_category: Optional[str] = None
+    food_homology: Optional[bool] = None
+    toxicity_class: Optional[str] = None
+    active_ingredients: Optional[List[str]] = None
+    compound_refs: Optional[List[int]] = None
+    effects: Optional[List[str]] = None
+    indications: Optional[str] = None
+    ob_percent: Optional[float] = None
+    dl_value: Optional[float] = None
+    bioavailability_score: Optional[float] = None
+    safe_dose_min: Optional[float] = None
+    safe_dose_max: Optional[float] = None
+    contraindications: Optional[List[str]] = None
+    interactions: Optional[List[str]] = None
+    regulatory_status: Optional[str] = None
+    approved_regions: Optional[List[str]] = None
+    max_daily_intake: Optional[str] = None
+    suppliers: Optional[Dict[str, Any]] = None
+    origin_countries: Optional[List[str]] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    msds_url: Optional[str] = None
+    coa_url: Optional[str] = None
+    # 数据来源允许显式指定（如 manual / fooddb / usda），
+    # 但默认服务端会覆写为 "manual"。
+    source_db: Optional[str] = None
+    data_quality: Optional[float] = Field(None, ge=0, le=1)
+
+    model_config = {"extra": "forbid"}  # 未知字段直接 422，不接受 id/审计字段注入
+
+
+class FoodMaterialUpdate(BaseModel):
+    """更新食品原料请求体（全部可选，partial update）"""
+    external_id: Optional[str] = None
+    gb_code: Optional[str] = None
+    name_cn: Optional[str] = Field(None, min_length=1, max_length=200)
+    name_latin: Optional[str] = None
+    name_en: Optional[str] = None
+    aliases: Optional[List[str]] = None
+    category: Optional[str] = None
+    sub_category: Optional[str] = None
+    food_homology: Optional[bool] = None
+    toxicity_class: Optional[str] = None
+    active_ingredients: Optional[List[str]] = None
+    compound_refs: Optional[List[int]] = None
+    effects: Optional[List[str]] = None
+    indications: Optional[str] = None
+    ob_percent: Optional[float] = None
+    dl_value: Optional[float] = None
+    bioavailability_score: Optional[float] = None
+    safe_dose_min: Optional[float] = None
+    safe_dose_max: Optional[float] = None
+    contraindications: Optional[List[str]] = None
+    interactions: Optional[List[str]] = None
+    regulatory_status: Optional[str] = None
+    approved_regions: Optional[List[str]] = None
+    max_daily_intake: Optional[str] = None
+    suppliers: Optional[Dict[str, Any]] = None
+    origin_countries: Optional[List[str]] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    msds_url: Optional[str] = None
+    coa_url: Optional[str] = None
+    source_db: Optional[str] = None
+    data_quality: Optional[float] = Field(None, ge=0, le=1)
+
+    model_config = {"extra": "forbid"}
+
 
 class FoodMaterialFilter(BaseModel):
     """食品原料搜索筛选条件"""

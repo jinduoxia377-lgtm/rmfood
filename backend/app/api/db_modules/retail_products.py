@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user, get_db_session
 from app.models.food_material import FoodMaterial
 from app.models.user_model import User
+from app.schemas.search_new import FoodMaterialCreate, FoodMaterialUpdate
 
 # 使用共享 router 实例
 from . import router
@@ -76,32 +77,61 @@ async def get_food_material(
     return material.to_dict()
 
 
-@router.post("/food-materials")
+@router.post("/food-materials/manual", summary="创建食品原料（管理后台）")
 async def create_food_material(
-    data: dict,
+    data: FoodMaterialCreate,
     db: AsyncSession = Depends(get_db_session),
+    current_user: Optional[User] = Depends(get_current_user),
 ):
     """
-    创建食品原料 (管理后台用)
-    """
-    from app.models.food_material import FoodMaterial
+    创建食品原料（管理后台用）
 
-    material = FoodMaterial(**data)
+    注意：POST /food-materials 被 db_modules/food_materials.py 的
+    混合搜索端点占用，因此管理创建端点挂载在 /food-materials/manual 下
+    （对齐零售侧 /retail-products/manual 模式）。
+
+    需要管理员或配方师权限。
+    """
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="未认证，请先登录")
+    if current_user.role not in ("admin", "formulator"):
+        raise HTTPException(status_code=403, detail="权限不足，需要管理员或配方师权限")
+
+    # P0-7：用 Pydantic 白名单 schema（FoodMaterialCreate）过滤字段，
+    # 杜绝 FoodMaterial(**data) 直灌原始 dict 写入 id/review_status/审计字段。
+    # extra="forbid" 已在 schema 层拒绝未知字段，这里再显式取一次以防御。
+    payload = data.model_dump()
+    payload.pop("id", None)
+    payload.pop("created_at", None)
+    payload.pop("updated_at", None)
+    payload.pop("created_by", None)
+    payload.pop("reviewed_by", None)
+    payload.pop("reviewed_at", None)
+    # 服务端强制默认值：新创建记录一律进入待审核状态
+    payload.setdefault("source_db", "manual")
+    payload.setdefault("review_status", "pending")
+
+    material = FoodMaterial(**payload)
+    material.created_by = current_user.id
     db.add(material)
     await db.commit()
     await db.refresh(material)
     return material.to_dict()
 
 
-@router.put("/food-materials/{material_id}")
+@router.put("/food-materials/{material_id}", summary="更新食品原料")
 async def update_food_material(
     material_id: int,
-    data: dict,
+    data: FoodMaterialUpdate,
     db: AsyncSession = Depends(get_db_session),
+    current_user: Optional[User] = Depends(get_current_user),
 ):
-    """
-    更新食品原料
-    """
+    """更新食品原料（管理后台用，需要管理员或配方师权限）"""
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="未认证，请先登录")
+    if current_user.role not in ("admin", "formulator"):
+        raise HTTPException(status_code=403, detail="权限不足，需要管理员或配方师权限")
+
     result = await db.execute(
         select(FoodMaterial).where(FoodMaterial.id == material_id)
     )
@@ -109,23 +139,35 @@ async def update_food_material(
     if not material:
         raise HTTPException(status_code=404, detail="食品原料不存在")
 
-    for key, value in data.items():
-        if hasattr(material, key):
-            setattr(material, key, value)
+    # P0-7：仅应用 schema 白名单字段；exclude_unset 保证未传字段不动，
+    # 显式传入 null 才会清空该字段。审计字段被 schema 排除，无法越权写入。
+    updates = data.model_dump(exclude_unset=True)
+    updates.pop("id", None)
+    updates.pop("created_by", None)
+    updates.pop("created_at", None)
+    updates.pop("reviewed_by", None)
+    updates.pop("reviewed_at", None)
+    for key, value in updates.items():
+        setattr(material, key, value)
+    material.updated_at = datetime.now(timezone.utc)
 
     await db.commit()
     await db.refresh(material)
     return material.to_dict()
 
 
-@router.delete("/food-materials/{material_id}")
+@router.delete("/food-materials/{material_id}", summary="删除食品原料")
 async def delete_food_material(
     material_id: int,
     db: AsyncSession = Depends(get_db_session),
+    current_user: Optional[User] = Depends(get_current_user),
 ):
-    """
-    删除食品原料
-    """
+    """删除食品原料（管理后台用，仅管理员可删除）"""
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="未认证，请先登录")
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="仅管理员可删除")
+
     result = await db.execute(
         select(FoodMaterial).where(FoodMaterial.id == material_id)
     )
