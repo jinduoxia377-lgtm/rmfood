@@ -30,10 +30,10 @@ import {
   UserX,
   Copy,
   Search,
-  Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import api from '@/api/client';
+import { useAuthStore } from '@/stores/auth';
 import {
   Card,
   CardContent,
@@ -55,11 +55,9 @@ interface TeamMember {
   id: number;
   user_id: number;
   username: string;
-  email: string;
   role: 'owner' | 'admin' | 'member' | 'guest';
   joined_at: string;
-  invited_by?: number;
-  is_online: boolean;
+  avatar_url?: string | null;
 }
 
 interface Team {
@@ -74,16 +72,15 @@ interface Team {
   updated_at: string;
 }
 
-interface TeamDetail {
-  team: Team;
+/**
+ * 后端 GET /teams/{id} 返回扁平的 TeamDetailResponse
+ * （继承 TeamResponse：id/name/description/owner_id/settings/is_archived/
+ *   member_count/created_at/updated_at，再加 members + invite_link）。
+ * 不含 online_count / current_user_role / stats —— 前端按需本地推导或降级。
+ */
+interface TeamDetail extends Team {
   members: TeamMember[];
-  member_count: number;
-  online_count: number;
-  current_user_role: string;
-  stats: {
-    prompt_count: number;
-    version_count: number;
-  };
+  invite_link: string | null;
 }
 
 interface InviteLink {
@@ -92,8 +89,9 @@ interface InviteLink {
   expires_at: string;
   max_uses: number;
   used_count: number;
-  team_id: number;
 }
+
+type TeamRoleValue = 'owner' | 'admin' | 'member' | 'guest';
 
 // ── 常量 ──
 
@@ -137,6 +135,18 @@ export function TeamManagement({ className }: { className?: string }) {
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [activeTab, setActiveTab] = useState<'members' | 'settings' | 'permissions'>('members');
   const toast = useToast();
+  const currentUser = useAuthStore((s) => s.user);
+  const currentUserId = currentUser?.id;
+
+  // 后端详情响应不含 current_user_role，从 members 中匹配当前用户推导；
+  // members 缺失时回退到 owner_id 判断，均无则视为 null（无权限）。
+  const currentUserRole = useMemo<TeamRoleValue | null>(() => {
+    if (!teamDetail || currentUserId == null) return null;
+    const me = teamDetail.members.find((m) => m.user_id === currentUserId);
+    if (me) return me.role;
+    if (teamDetail.owner_id === currentUserId) return 'owner';
+    return null;
+  }, [teamDetail, currentUserId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/immutability
@@ -154,7 +164,7 @@ export function TeamManagement({ className }: { className?: string }) {
   const fetchTeams = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/api/v1/teams/my-teams');
+      const response = await api.get('/teams');
       if (response.data) {
         setTeams(response.data.teams || []);
       }
@@ -168,7 +178,7 @@ export function TeamManagement({ className }: { className?: string }) {
   // 获取团队详情
   const fetchTeamDetail = async (teamId: number) => {
     try {
-      const response = await api.get(`/api/v1/teams/${teamId}`);
+      const response = await api.get(`/teams/${teamId}`);
       if (response.data) {
         setTeamDetail(response.data);
       }
@@ -191,7 +201,7 @@ export function TeamManagement({ className }: { className?: string }) {
   // 创建团队
   const handleCreateTeam = async (data: { name: string; description?: string }) => {
     try {
-      await api.post('/api/v1/teams', data);
+      await api.post('/teams', data);
       setShowCreateModal(false);
       fetchTeams();
       toast.success('团队创建成功');
@@ -205,7 +215,7 @@ export function TeamManagement({ className }: { className?: string }) {
     if (!confirm('确定要归档此团队吗？归档后数据保留但不可操作。')) return;
 
     try {
-      await api.post(`/api/v1/teams/${teamId}/archive`);
+      await api.delete(`/teams/${teamId}`);
       fetchTeams();
       if (selectedTeamId === teamId) setSelectedTeamId(null);
       toast.success('团队已归档');
@@ -215,15 +225,16 @@ export function TeamManagement({ className }: { className?: string }) {
   };
 
   // 邀请成员
+  // 产品要求团队邀请只接受邮箱邀请：后端 InviteMemberRequest 认 {email, role?}，
+  // 故此处仅提交 email / role（不再传 user_id）。邮箱未注册由后端返回 404 detail。
   const handleInviteMember = async (inviteData: {
-    user_id?: number;
-    email?: string;
-    role: 'owner' | 'admin' | 'member' | 'guest';
+    email: string;
+    role: TeamRoleValue;
   }) => {
     if (!selectedTeamId) return;
 
     try {
-      await api.post(`/api/v1/teams/${selectedTeamId}/members/invite`, inviteData);
+      await api.post(`/teams/${selectedTeamId}/members`, inviteData);
       setShowInviteModal(false);
       fetchTeamDetail(selectedTeamId);
       toast.success('邀请已发送');
@@ -237,7 +248,7 @@ export function TeamManagement({ className }: { className?: string }) {
     if (!selectedTeamId || !confirm('确定要移除此成员吗？')) return;
 
     try {
-      await api.delete(`/api/v1/teams/${selectedTeamId}/members/${memberId}`);
+      await api.delete(`/teams/${selectedTeamId}/members/${memberId}`);
       fetchTeamDetail(selectedTeamId);
       toast.success('成员已移除');
     } catch (error: any) {
@@ -246,11 +257,11 @@ export function TeamManagement({ className }: { className?: string }) {
   };
 
   // 更新角色
-  const handleUpdateRole = async (memberId: number, newRole: string) => {
+  const handleUpdateRole = async (memberId: number, userId: number, newRole: string) => {
     if (!selectedTeamId) return;
 
     try {
-      await api.put(`/api/v1/teams/${selectedTeamId}/members/${memberId}/role`, { role: newRole });
+      await api.put(`/teams/${selectedTeamId}/members/${memberId}`, { role: newRole, user_id: userId });
       fetchTeamDetail(selectedTeamId);
       toast.success('角色已更新');
     } catch (error: any) {
@@ -264,7 +275,7 @@ export function TeamManagement({ className }: { className?: string }) {
     if (!selectedTeamId) return;
 
     try {
-      const response = await api.post(`/api/v1/teams/${selectedTeamId}/invite-link`);
+      const response = await api.post(`/teams/${selectedTeamId}/invite-link`);
       setInviteLink(response.data);
     } catch (error: any) {
       toast.error(error.response?.data?.detail || '生成失败');
@@ -381,31 +392,26 @@ export function TeamManagement({ className }: { className?: string }) {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-xl font-bold text-neutral-900 dark:text-white">{teamDetail.team.name}</h2>
-                    <Badge className={ROLE_CONFIG[teamDetail.current_user_role as keyof typeof ROLE_CONFIG]?.color}>
-                      {ROLE_CONFIG[teamDetail.current_user_role as keyof typeof ROLE_CONFIG]?.label}
+                    <h2 className="text-xl font-bold text-neutral-900 dark:text-white">{teamDetail.name}</h2>
+                    <Badge className={ROLE_CONFIG[currentUserRole as keyof typeof ROLE_CONFIG]?.color}>
+                      {ROLE_CONFIG[currentUserRole as keyof typeof ROLE_CONFIG]?.label}
                     </Badge>
                   </div>
 
-                  {teamDetail.team.description && (
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{teamDetail.team.description}</p>
+                  {teamDetail.description && (
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{teamDetail.description}</p>
                   )}
 
                   <div className="flex items-center gap-4 mt-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                    <span>创建于 {new Date(teamDetail.team.created_at).toLocaleDateString('zh-CN')}</span>
+                    <span>创建于 {new Date(teamDetail.created_at).toLocaleDateString('zh-CN')}</span>
                     <span>·</span>
                     <span>{teamDetail.member_count} 位成员</span>
-                    <span>·</span>
-                    <span className="flex items-center gap-1">
-                      <Activity size={12} className="text-success-500" />
-                      {teamDetail.online_count} 人在线
-                    </span>
                   </div>
                 </div>
 
                 {/* 操作按钮 */}
                 <div className="flex items-center gap-2 ml-4">
-                  {(teamDetail.current_user_role === 'owner' || teamDetail.current_user_role === 'admin') && (
+                  {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
                     <>
                       <Button size="sm" variant="outline" onClick={() => setShowInviteModal(true)}>
                         <UserPlus size={14} className="mr-1" />
@@ -414,12 +420,12 @@ export function TeamManagement({ className }: { className?: string }) {
                       <Button size="sm" variant="outline" onClick={() => setShowSettingsPanel(!showSettingsPanel)}>
                         <Settings size={14} />
                       </Button>
-                      {teamDetail.current_user_role === 'owner' && (
+                      {currentUserRole === 'owner' && (
                         <Button
                           size="sm"
                           variant="outline"
                           className="text-warning-600 hover:bg-warning-50"
-                          onClick={() => handleArchiveTeam(teamDetail.team.id)}
+                          onClick={() => handleArchiveTeam(teamDetail.id)}
                         >
                           <Archive size={14} />
                         </Button>
@@ -469,7 +475,7 @@ export function TeamManagement({ className }: { className?: string }) {
                       <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
                         全部成员 ({teamDetail.members.length})
                       </h3>
-                      {(teamDetail.current_user_role === 'owner' || teamDetail.current_user_role === 'admin') && (
+                      {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
                         <Button size="sm" onClick={() => setShowInviteModal(true)}>
                           <UserPlus size={14} className="mr-1" />
                           添加成员
@@ -487,14 +493,11 @@ export function TeamManagement({ className }: { className?: string }) {
                             key={member.id}
                             className="flex items-center gap-4 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors group"
                           >
-                            {/* 头像 */}
+                            {/* 头像（后端 TeamMemberInfo 无 is_online，移除在线圆点） */}
                             <div className="relative">
                               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-secondary-surface)] to-[var(--color-accent-surface-deep)] flex items-center justify-center text-white font-medium">
                                 {member.username.charAt(0).toUpperCase()}
                               </div>
-                              {member.is_online && (
-                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success-500 rounded-full border-2 border-white dark:border-neutral-800" />
-                              )}
                             </div>
 
                             {/* 信息 */}
@@ -508,21 +511,24 @@ export function TeamManagement({ className }: { className?: string }) {
                                   {roleConfig.label}
                                 </Badge>
                               </div>
-                              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{member.email}</p>
+                              {/* 后端 TeamMemberInfo 不含 email，改为展示 user_id 标识 */}
+                              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">
+                                ID: {member.user_id}
+                              </p>
                               <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">
                                 加入于 {new Date(member.joined_at).toLocaleDateString('zh-CN')}
                               </p>
                             </div>
 
                             {/* 操作按钮 */}
-                            {(teamDetail.current_user_role === 'owner' || teamDetail.current_user_role === 'admin') &&
-                              member.user_id !== teamDetail.team.owner_id && (
+                            {(currentUserRole === 'owner' || currentUserRole === 'admin') &&
+                              member.user_id !== teamDetail.owner_id && (
                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                                   <select
                                     value={member.role}
-                                    onChange={(e) => handleUpdateRole(member.id, e.target.value)}
+                                    onChange={(e) => handleUpdateRole(member.id, member.user_id, e.target.value)}
                                     className="text-xs border rounded px-2 py-1 bg-white dark:bg-neutral-700"
-                                    disabled={member.user_id === teamDetail.team.owner_id}
+                                    disabled={member.user_id === teamDetail.owner_id}
                                   >
                                     {Object.entries(ROLE_CONFIG).map(([key, config]) => (
                                       <option key={key} value={key}>
@@ -558,8 +564,8 @@ export function TeamManagement({ className }: { className?: string }) {
                           团队名称
                         </label>
                         <Input
-                          defaultValue={teamDetail.team.name}
-                          disabled={teamDetail.current_user_role === 'guest'}
+                          defaultValue={teamDetail.name}
+                          disabled={currentUserRole === 'guest'}
                         />
                       </div>
                       <div>
@@ -567,9 +573,9 @@ export function TeamManagement({ className }: { className?: string }) {
                           描述
                         </label>
                         <Textarea
-                          defaultValue={teamDetail.team.description || ''}
+                          defaultValue={teamDetail.description || ''}
                           rows={3}
-                          disabled={teamDetail.current_user_role === 'guest'}
+                          disabled={currentUserRole === 'guest'}
                         />
                       </div>
                     </div>
@@ -627,8 +633,8 @@ export function TeamManagement({ className }: { className?: string }) {
 
                   <div>
                     <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-4">危险区域</h3>
-                    {teamDetail.current_user_role === 'owner' && (
-                      <Button variant="danger" onClick={() => handleArchiveTeam(teamDetail.team.id)}>
+                    {currentUserRole === 'owner' && (
+                      <Button variant="danger" onClick={() => handleArchiveTeam(teamDetail.id)}>
                         <Archive size={16} className="mr-2" />
                         归档团队
                       </Button>
@@ -637,7 +643,7 @@ export function TeamManagement({ className }: { className?: string }) {
                 </div>
               )}
 
-              {activeTab === 'permissions' && <PermissionMatrix readOnly={teamDetail.current_user_role !== 'owner'} />}
+              {activeTab === 'permissions' && <PermissionMatrix readOnly={currentUserRole !== 'owner'} />}
             </div>
           </>
         )}
@@ -736,29 +742,26 @@ function InviteMemberModal({
 }: {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: { user_id?: number; email?: string; role: 'owner' | 'admin' | 'member' | 'guest' }) => void;
+  onSubmit: (data: { email: string; role: TeamRoleValue }) => void;
   onGenerateLink: () => void;
 }) {
-  const [inviteMethod, setInviteMethod] = useState<'direct' | 'email' | 'link'>('direct');
-  const [userId, setUserId] = useState('');
+  // 产品要求团队邀请只接受邮箱邀请：direct 方式 = 输入邮箱 + 选角色，link 方式 = 生成分享链接。
+  // 默认 direct(邮箱)。
+  const [inviteMethod, setInviteMethod] = useState<'direct' | 'link'>('direct');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'member' | 'admin' | 'guest'>('member');
+  const [role, setRole] = useState<TeamRoleValue>('member');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (inviteMethod === 'direct' && !userId.trim()) return;
-    if (inviteMethod === 'email' && !email.trim()) return;
+    if (inviteMethod === 'direct' && !email.trim()) return;
 
     setSubmitting(true);
     try {
       if (inviteMethod === 'direct') {
-        await onSubmit({ user_id: parseInt(userId), role });
-      } else if (inviteMethod === 'email') {
         await onSubmit({ email: email.trim(), role });
       }
-      setUserId('');
       setEmail('');
     } finally {
       setSubmitting(false);
@@ -769,10 +772,9 @@ function InviteMemberModal({
     <Modal open={open} onClose={onClose} title="邀请成员">
       <div className="pt-4 space-y-4">
         {/* 邀请方式切换 */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {[
-            { key: 'direct', label: '用户ID', icon: UserPlus },
-            { key: 'email', label: '邮件邀请', icon: Mail },
+            { key: 'direct', label: '邮箱邀请', icon: Mail },
             { key: 'link', label: '分享链接', icon: Link },
           ].map((method) => (
             <button
@@ -807,35 +809,22 @@ function InviteMemberModal({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {inviteMethod === 'direct' ? (
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">用户ID</label>
-                <Input
-                  type="number"
-                  value={userId}
-                  onChange={(e) => setUserId(e.target.value)}
-                  placeholder="输入要邀请的用户ID"
-                  required
-                />
-              </div>
-            ) : (
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">邮箱地址</label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="user@example.com"
-                  required
-                />
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">邮箱</label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="输入要邀请的成员邮箱"
+                required
+              />
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">初始角色</label>
               <select
                 value={role}
-                onChange={(e) => setRole(e.target.value as typeof role)}
+                onChange={(e) => setRole(e.target.value as TeamRoleValue)}
                 className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-sm"
               >
                 <option value="member">成员</option>
