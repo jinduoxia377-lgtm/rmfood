@@ -111,6 +111,14 @@ class RRFFusion:
             items_map[item_id].vector_score += rrf_score
             if items_map[item_id].similarity is None:
                 items_map[item_id].similarity = item.get("similarity")
+            # 与 BM25 路对称：向量路也要把原始字段（product_name/brand/effects/...）写入
+            # extra。否则"仅向量命中"的项 extra 为空——食品原料靠 name 取到 name_cn 尚可显示，
+            # 零售（标识字段是 product_name/brand 而非 name_cn）展开 extra 后 product_name
+            # 为空，出现空名结果。merge 不覆盖 bm25 已写入的字段以外的新键。
+            items_map[item_id].extra.update({
+                k: v for k, v in item.items()
+                if k not in ("rank", "similarity")
+            })
 
         # 处理规则结果
         if rule_results:
