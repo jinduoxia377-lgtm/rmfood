@@ -4,6 +4,7 @@
 对标 Potion AI VFT 的 /search/raw-materials 和 /search/products 端点。
 使用共享 router 实例注册到 /databases 前缀下。
 """
+import asyncio
 import logging
 import time
 from typing import List
@@ -34,6 +35,7 @@ from . import router
 
 logger = logging.getLogger(__name__)
 
+
 # ── 食品原料搜索 ──
 
 @router.post("/food-materials", response_model=FoodMaterialSearchResponse)
@@ -53,17 +55,40 @@ async def search_food_materials(
 
     filters = request.filters.model_dump(exclude_none=True) if request.filters else {}
 
-    # 并行执行 BM25 和向量搜索
     bm25_service = BM25Searcher(db)
     vector_service = VectorSearcher(db)
 
+    # P0-3 修复：召回阶段不传 offset，两路都取全量前 N 条，
+    # offset 只在最终 fused 列表上做 Python 切片，
+    # 避免向量路恒取全局 top_k 无 offset 导致的翻页重复/漏项/顺序漂移。
+    # N 必须至少覆盖到本页末尾 (page*per_page)，否则深页切片会漏项。
+    recall_limit = max(request.per_page * 2, request.page * request.per_page)
+
+    # P1 修复：先探测 embedding 覆盖率，为 0 时跳过向量路，
+    # 避免白跑 encode_query（本地 fastembed 模型加载/推理有真实开销）。
+    has_embedding = await vector_service.embedding_coverage("food_materials") > 0
+
+    # P1 修复：原注释写"并行"实为顺序 await。
+    # 注意：bm25 / vector / count 共用同一个 AsyncSession，SQLAlchemy 禁止
+    # 同一会话上真正并发执行多条查询（会抛 "concurrent operations are not
+    # permitted"）。因此把向量路与 COUNT 路并发（二者在 FTS 命中后可重叠，
+    # 向量路含本地 encode_query 的 CPU 开销，并发收益最大），BM25 召回单独
+    # 顺序执行以保证会话安全。
     bm25_results = await bm25_service.search_food_materials(
-        normalized_query, filters=filters,
-        limit=request.per_page * 2, offset=(request.page - 1) * request.per_page,
+        normalized_query, filters=filters, limit=recall_limit,
     )
-    vector_results = await vector_service.search_food_materials(
-        normalized_query, top_k=request.per_page * 2,
-    )
+    if has_embedding:
+        vector_results, total = await asyncio.gather(
+            vector_service.search_food_materials(
+                normalized_query, top_k=recall_limit, filters=filters,
+            ),
+            bm25_service.count_food_materials(normalized_query, filters=filters),
+        )
+    else:
+        vector_results = []
+        total = await bm25_service.count_food_materials(
+            normalized_query, filters=filters,
+        )
 
     # RRF 融合
     hybrid_weights = {
@@ -76,14 +101,18 @@ async def search_food_materials(
         bm25_results, vector_results, query=request.query,
     )
 
+    # P0-3：offset 只在最终 fused 列表上切片
+    offset = (request.page - 1) * request.per_page
+    page_results = fused_results[offset:offset + request.per_page]
+
     elapsed_ms = (time.time() - start_time) * 1000
 
     return FoodMaterialSearchResponse(
         query=request.query,
-        total=len(fused_results),
+        total=total,  # P0-3：真实 total，不再用 len(fused_results)
         page=request.page,
         per_page=request.per_page,
-        results=fused_results[:request.per_page],
+        results=page_results,
         search_time_ms=round(elapsed_ms, 2),
         search_modes_used=request.search_modes,
     )

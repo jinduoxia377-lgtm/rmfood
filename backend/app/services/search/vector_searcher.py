@@ -57,6 +57,68 @@ class VectorSearcher:
             return 0.0
         return dot / (norm_a * norm_b)
 
+    def _build_filter_conditions(
+        self, filters: Optional[Dict[str, Any]], params: Dict[str, Any], alias: str = "fm",
+    ) -> List[str]:
+        """
+        把 filters 翻译成 SQL WHERE 片段 (P1 修复)。
+
+        原实现在方法体中从未引用 filters 形参，导致向量路忽略所有筛选，
+        与 BM25 侧 (bm25_searcher.py) 的 WHERE 构造不对称。
+        这里与 BM25Searcher._search_with_fts 的字段保持同构，
+        仅覆盖两路共用、且向量表上也存在的字段：
+            category / food_homology / toxicity_class / regulatory_status
+            min_ob / min_data_quality
+        """
+        conditions: List[str] = []
+        if not filters:
+            return conditions
+        if filters.get("category"):
+            conditions.append(f"{alias}.category = :category")
+            params["category"] = filters["category"]
+        if filters.get("food_homology") is not None:
+            conditions.append(f"{alias}.food_homology = :food_homology")
+            params["food_homology"] = filters["food_homology"]
+        if filters.get("toxicity_class"):
+            conditions.append(f"{alias}.toxicity_class = :toxicity_class")
+            params["toxicity_class"] = filters["toxicity_class"]
+        if filters.get("regulatory_status"):
+            conditions.append(f"{alias}.regulatory_status = :regulatory_status")
+            params["regulatory_status"] = filters["regulatory_status"]
+        if filters.get("min_ob") is not None:
+            conditions.append(f"{alias}.ob_percent >= :min_ob")
+            params["min_ob"] = filters["min_ob"]
+        if filters.get("min_data_quality") is not None:
+            # data_quality 基线已在主 WHERE 里写死 0.3；这里允许外部覆盖为更严的阈值
+            conditions.append(f"{alias}.data_quality >= :min_dq")
+            params["min_dq"] = filters["min_data_quality"]
+        return conditions
+
+    async def embedding_coverage(self, table: str = "food_materials") -> int:
+        """
+        统计指定表里已生成 embedding 的已批准记录数 (P1 修复)。
+
+        调用方 (food_materials.py) 可在进入向量路之前先探测量，
+        若为 0 直接跳过向量搜索，避免白跑一次 encode_query
+        (本地 fastembed 模型加载/推理开销不小)。
+        """
+        if table not in ("food_materials", "retail_products"):
+            return 0
+        alias = "fm" if table == "food_materials" else "rp"
+        sql = text(f"""
+            SELECT COUNT(*) AS total
+            FROM {table} {alias}
+            WHERE {alias}.embedding IS NOT NULL
+              AND {alias}.review_status = 'approved'
+              AND {alias}.data_quality >= 0.3
+        """)
+        try:
+            result = await self.db.execute(sql)
+            return int(result.scalar() or 0)
+        except Exception as e:
+            logger.warning("[VectorSearcher] embedding_coverage 探测失败: %s", e)
+            return 0
+
     async def search_food_materials(
         self,
         query: str,
@@ -68,13 +130,21 @@ class VectorSearcher:
         食品原料向量语义搜索
 
         优先使用 pgvector 操作符，回退到 JSON 列 + 客户端余弦相似度。
+        filters 会真正应用到两路 SQL 的 WHERE 上 (P1 修复)。
         """
         query_vec = self.encode_query(query)
         vec_str = "[" + ",".join(f"{v:.6f}" for v in query_vec) + "]"
 
         # 尝试使用 pgvector 操作符
         try:
-            sql = text("""
+            params: Dict[str, Any] = {
+                "query_vec": vec_str,
+                "min_sim": min_similarity,
+                "top_k": top_k,
+            }
+            conditions = self._build_filter_conditions(filters, params, alias="fm")
+            where_extra = (" AND " + " AND ".join(conditions)) if conditions else ""
+            sql = text(f"""
                 SELECT fm.id, fm.name_cn, fm.name_latin, fm.name_en,
                        fm.aliases, fm.category, fm.sub_category,
                        fm.food_homology, fm.toxicity_class,
@@ -92,16 +162,12 @@ class VectorSearcher:
                 WHERE fm.embedding IS NOT NULL
                   AND fm.embedding::vector <=> :query_vec::vector < 1 - :min_sim
                   AND fm.review_status = 'approved'
-                  AND fm.data_quality >= 0.3
+                  AND fm.data_quality >= 0.3{where_extra}
                 ORDER BY fm.embedding::vector <=> :query_vec::vector
                 LIMIT :top_k
             """)
 
-            result = await self.db.execute(sql, {
-                "query_vec": vec_str,
-                "min_sim": min_similarity,
-                "top_k": top_k,
-            })
+            result = await self.db.execute(sql, params)
             rows = result.fetchall()
             if rows:
                 return [self._row_to_dict(row) for row in rows]
@@ -109,7 +175,14 @@ class VectorSearcher:
             logger.warning("[VectorSearcher] pgvector food_materials fallback: %s", e)
 
         # 回退: embedding 存储为 JSON 数组，用客户端计算余弦相似度
-        fallback_sql = text("""
+        fallback_params: Dict[str, Any] = {"top_k": top_k}
+        fallback_conditions = self._build_filter_conditions(
+            filters, fallback_params, alias="fm"
+        )
+        fallback_extra = (
+            " AND " + " AND ".join(fallback_conditions)
+        ) if fallback_conditions else ""
+        fallback_sql = text(f"""
             SELECT fm.id, fm.name_cn, fm.name_latin, fm.name_en,
                    fm.aliases, fm.category, fm.sub_category,
                    fm.food_homology, fm.toxicity_class,
@@ -125,12 +198,12 @@ class VectorSearcher:
             FROM food_materials fm
             WHERE fm.embedding IS NOT NULL
               AND fm.review_status = 'approved'
-              AND fm.data_quality >= 0.3
+              AND fm.data_quality >= 0.3{fallback_extra}
             ORDER BY fm.created_at DESC
             LIMIT :top_k
         """)
 
-        result = await self.db.execute(fallback_sql, {"top_k": top_k})
+        result = await self.db.execute(fallback_sql, fallback_params)
         rows = result.fetchall()
 
         filtered = []
