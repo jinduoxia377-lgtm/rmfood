@@ -405,6 +405,10 @@ class BM25Searcher:
                 return results
         except Exception as e:
             logger.warning("[BM25] retail tsvector 搜索失败，回退到 ILIKE: %s", e)
+            # FTS 失败(缺 search_vector 列)会中止 PG 事务毒化共享会话，回退 ILIKE 前必须
+            # rollback，否则 ILIKE 抛 InFailedSQLTransactionError("当前事务被终止") → 503。
+            # 与 food_materials 搜索同一根因，复用 _safe_rollback。
+            await self._safe_rollback()
 
         return await self._search_retail_ilike(query, filters, limit, offset)
 
@@ -496,14 +500,15 @@ class BM25Searcher:
 
         term_conditions = []
         for idx, term in enumerate(search_terms):
+            # 注意：retail_products 表无 description 列（实测 41 列无 description），
+            # 原代码在此 ILIKE rp.description 会抛 UndefinedColumnError → 503。已移除。
             term_conditions.append(f"""
                 (
                     rp.product_name ILIKE :term_{idx} OR
                     rp.brand ILIKE :term_{idx} OR
                     rp.category ILIKE :term_{idx} OR
                     rp.sub_category ILIKE :term_{idx} OR
-                    rp.full_ingredients ILIKE :term_{idx} OR
-                    rp.description ILIKE :term_{idx}
+                    rp.full_ingredients ILIKE :term_{idx}
                 )
             """)
             params[f"term_{idx}"] = f"%{term}%"
@@ -527,39 +532,45 @@ class BM25Searcher:
               AND rp.data_quality >= 0.3
         """)
 
-        conditions = []
-        params = {}
+        filter_conditions = []
+        filter_params: Dict[str, Any] = {}
 
         if filters:
             if filters.get("category"):
-                conditions.append("rp.category = :category")
-                params["category"] = filters["category"]
+                filter_conditions.append("rp.category = :category")
+                filter_params["category"] = filters["category"]
             if filters.get("formulation_type"):
-                conditions.append("rp.formulation_type = :formulation_type")
-                params["formulation_type"] = filters["formulation_type"]
+                filter_conditions.append("rp.formulation_type = :formulation_type")
+                filter_params["formulation_type"] = filters["formulation_type"]
             if filters.get("brand"):
-                conditions.append("rp.brand = :brand")
-                params["brand"] = filters["brand"]
+                filter_conditions.append("rp.brand = :brand")
+                filter_params["brand"] = filters["brand"]
             if filters.get("price_range"):
                 pr = filters["price_range"]
                 if pr.get("min") is not None:
-                    conditions.append("rp.price >= :price_min")
-                    params["price_min"] = pr["min"]
+                    filter_conditions.append("rp.price >= :price_min")
+                    filter_params["price_min"] = pr["min"]
                 if pr.get("max") is not None:
-                    conditions.append("rp.price <= :price_max")
-                    params["price_max"] = pr["max"]
+                    filter_conditions.append("rp.price <= :price_max")
+                    filter_params["price_max"] = pr["max"]
             if filters.get("min_rating") is not None:
-                conditions.append("rp.avg_rating >= :min_rating")
-                params["min_rating"] = filters["min_rating"]
+                filter_conditions.append("rp.avg_rating >= :min_rating")
+                filter_params["min_rating"] = filters["min_rating"]
 
-        if conditions:
-            sql = text(str(sql)[:-1] + " AND " + " AND ".join(conditions) +
+        if filter_conditions:
+            sql = text(str(sql)[:-1] + " AND " + " AND ".join(filter_conditions) +
                        "\n            ORDER BY rp.created_at DESC\n            LIMIT :limit OFFSET :offset")
         else:
             sql = text(str(sql) +
                        "\n            ORDER BY rp.created_at DESC\n            LIMIT :limit OFFSET :offset")
 
-        result = await self.db.execute(sql, {**params, "limit": limit, "offset": offset})
+        # 关键修复：上面的 term_N 占位符参数存放在 self 参数 `params`（第 509 行），
+        # 但原代码此处误写 `params = {}` 把 term_N 全部清空，导致执行时
+        # "A value is required for bind parameter term_0" → 503。
+        # 现把 filter 参数单独存放，最后与 term 参数合并，term_N 不再丢失。
+        result = await self.db.execute(
+            sql, {**params, **filter_params, "limit": limit, "offset": offset}
+        )
         rows = result.fetchall()
 
         return [self._row_to_dict(row) for row in rows]

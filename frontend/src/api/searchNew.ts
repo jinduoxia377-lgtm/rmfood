@@ -316,18 +316,22 @@ export async function getFoodMaterial(id: number): Promise<FoodMaterialDetail> {
 
 /**
  * 零售产品混合搜索
- * POST /databases/search/retail-products
+ * POST /databases/retail-products
+ * 注意：后端混合搜索端点在 /databases/retail-products（food_materials.py 注册），
+ * 无 /search 中间段。原路径 /databases/search/retail-products 不存在会 404。
  */
 export async function searchRetailProducts(
   request: RetailProductSearchRequest,
 ): Promise<RetailProductSearchResponse> {
-  const response = await databaseApi.post('/databases/search/retail-products', request);
+  const response = await databaseApi.post('/databases/retail-products', request);
   return unwrapResponse<RetailProductSearchResponse>(response);
 }
 
 /**
  * 零售产品流式搜索 (SSE)
- * POST /databases/search/retail-products/stream
+ * POST /api/v1/databases/retail-products/stream
+ * 注意：原生 fetch 不走 axios baseURL，须手补 /api/v1 全路径；且后端为
+ * /databases/retail-products/stream，无 /search 中间段。
  */
 export function searchRetailProductsStream(
   request: RetailProductSearchRequest,
@@ -336,7 +340,7 @@ export function searchRetailProductsStream(
 ): AbortController {
   const controller = new AbortController();
 
-  fetch('/databases/search/retail-products/stream', {
+  fetch('/api/v1/databases/retail-products/stream', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),

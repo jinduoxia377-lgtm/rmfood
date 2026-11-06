@@ -178,5 +178,25 @@ class HybridSearchService:
         vector_results: List[Dict],
         query: str = "",
     ) -> List[Dict]:
-        """融合零售产品搜索结果"""
-        return self.fusion.fuse(bm25_results, vector_results, query=query)
+        """融合零售产品搜索结果
+
+        fuse() 是为食品原料设计的，输出 item_type="food_material"、name 取自 name_cn，
+        其余字段埋在 extra 里。零售产品的标识字段是 product_name/brand（非 name_cn），
+        且前端 RetailProductSearchResult 期望这些字段平铺在顶层。因此这里在融合后把
+        extra 展开回顶层，并修正 item_type / product_name。
+        """
+        fused = self.fusion.fuse(bm25_results, vector_results, query=query)
+        remapped: List[Dict] = []
+        for item in fused:
+            extra = item.get("extra") or {}
+            flat = dict(extra)  # 展开零售原始字段到顶层（product_name/brand/price/...）
+            flat["id"] = item.get("id")
+            flat["item_type"] = "retail_product"
+            flat["score"] = item.get("score", 0.0)
+            # product_name 兜底：优先 extra.product_name，缺失时退回融合 name
+            flat["product_name"] = extra.get("product_name") or item.get("name") or ""
+            flat["brand"] = extra.get("brand", "")
+            if item.get("similarity") is not None:
+                flat["similarity"] = item["similarity"]
+            remapped.append(flat)
+        return remapped
