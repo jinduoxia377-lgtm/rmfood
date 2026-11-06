@@ -2,29 +2,35 @@
 
 用于 Potion AI VFT x RMFOOD 深度融合方案。
 对 food_materials 和 retail_products 表的文本字段生成向量嵌入。
-使用 sentence-transformers 的中文模型。
 
-══════════════════════════════════════════════════════════════════
-维度口径澄清（三口径不一，务必阅读）
+═══════════════════════════════════════════════════════════════════
+模型口径（与查询侧严格对齐，务必阅读）
 ────────────────────────────────────────────────────────────────
-- 本脚本实际产出 **384 维** 向量，模型为
-  `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
-  （MiniLM-L12-v2 的隐藏维度即 384），并做 L2 归一化。
-- 数据库 `embedding` 列**当前实际类型为 JSON**（存 JSON 数组），
-  并非 pgvector 的 VECTOR 类型。
-- `app/models/food_material.py` 中「VECTOR(768)」的注释是**过期注释**，
-  与实际不符，请勿据其推断维度。
-- 若将来迁移到 pgvector，应统一为 `vector(384)`（与本脚本 384 维对齐），
-  同时清理掉 768 的过期注释。本脚本**不改动数据库 schema**。
+- 本脚本用 **fastembed** 的 `BAAI/bge-small-zh-v1.5` 产出 **512 维** 向量，
+  与查询侧（运行时搜索）`app/services/search/vector_searcher.py` 的
+  `encode_query` → `EmbeddingService(provider="local")._embed_local_sync`
+  → `TextEmbedding(model_name="BAAI/bge-small-zh-v1.5")` **完全一致**。
+- vector_searcher.DIMENSIONS == 512，EmbeddingService.model_dim 中
+  `{"BAAI/bge-small-zh-v1.5": 512}` 亦为 512。库存量与查询向量同维，
+  pgvector `<=>` 余弦相似度才不会报错或失真。
+- 旧版曾用 `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
+  （384 维），但 sentence-transformers **未安装**且 384 与查询侧 512 不匹配，
+  已彻底移除。若将来迁移到 pgvector，应统一为 `vector(512)`。
+
+数据库 `embedding` 列**当前实际类型为 JSON**（存 JSON 数组），并非 pgvector
+的 VECTOR 类型。本脚本**不改动数据库 schema**，直接存 JSON 数组即可
+（vector_searcher 有 JSON 回退路径 `_cosine_similarity`，pgvector 路径会
+`embedding::vector` 转换）。
 
 安全约束（P0-5 修复）
 ────────────────────────────────────────────────────────────────
 - 模型加载失败时**立即中止（abort）**，绝不写入任何占位/随机向量。
-  旧版行为是「模型缺装 → 静默生成随机 384 维向量 → 照常 commit」，
+  旧版行为是「模型缺装 → 静默生成随机向量 → 照常 commit」，
   会产生「看似有值、实为噪声」的污染数据，且 `WHERE embedding IS NOT NULL`
   会误判为已覆盖。此逻辑已彻底删除。
-- 每条 embedding 在写入前做校验：维度必须 == 384、非全零、范数合理
-  （L2 归一化后应 ≈ 1）。不通过的行**跳过并告警，不计入成功数**。
+- 每条 embedding 在写入前做校验：维度必须 == 512、非全零、无 NaN/Inf、
+  范数合理（fastembed bge 默认已 L2 归一化，应 ≈ 1）。不通过的行
+  **跳过并告警，不计入成功数**。
 
 运行模式
 ────────────────────────────────────────────────────────────────
@@ -43,48 +49,49 @@ import logging
 import math
 import sys
 from datetime import datetime, timezone
+from pathlib import Path
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-# 默认使用本地模型路径
-DEFAULT_MODEL_PATH = r"D:\RMFOOD配方平台\models\paraphrase-multilingual-minilm-l12-v2"
-# 在线模型标识（与本地为同一模型）
-DEFAULT_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+# 保证 backend/ 在 sys.path（本脚本位于 backend/scripts/ 下），
+# 使 `from app.xxx import ...` 在直接运行脚本时也能导入。
+_BACKEND_DIR = Path(__file__).resolve().parents[1]
+if str(_BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(_BACKEND_DIR))
 
-# 期望维度：MiniLM-L12-v2 固定为 384。若与实际模型不符会在校验时暴露。
-EXPECTED_DIM = 384
+# 本地 fastembed 模型标识（与查询侧 EmbeddingService 默认 local 模型一致）
+EMBED_MODEL_NAME = "BAAI/bge-small-zh-v1.5"
+
+# 期望维度：bge-small-zh-v1.5 固定为 512。若与实际模型不符会在校验时暴露。
+EXPECTED_DIM = 512
 # L2 归一化后向量范数应 ≈ 1，允许的误差容差
 NORM_TOLERANCE = 0.01
 
 
 def get_embedding_model():
-    """加载 Sentence-BERT 模型。
+    """加载 fastembed TextEmbedding 模型。
 
-    返回可用的 SentenceTransformer 实例；任何失败都抛出异常（绝不返回 None
+    返回可用的 TextEmbedding 实例；任何失败都抛出异常（绝不返回 None
     让调用方退化为随机向量）。加载失败时由 main() 统一 abort。
     """
     # 延迟导入：仅在真正需要时引入重型依赖
-    import os
+    from fastembed import TextEmbedding
 
-    from sentence_transformers import SentenceTransformer
-
-    if os.path.exists(DEFAULT_MODEL_PATH):
-        model = SentenceTransformer(DEFAULT_MODEL_PATH)
-        logger.info(f"加载本地模型: {DEFAULT_MODEL_PATH}")
-    else:
-        model = SentenceTransformer(DEFAULT_MODEL_NAME)
-        logger.info(f"加载在线模型: {DEFAULT_MODEL_NAME}")
-    return model
+    logger.info(f"加载 fastembed 模型: {EMBED_MODEL_NAME}（首次运行将下载模型文件，请稍候）")
+    return TextEmbedding(model_name=EMBED_MODEL_NAME)
 
 
 def generate_embedding(model, text):
-    """为文本生成向量嵌入（L2 归一化）。
+    """为文本生成向量嵌入（fastembed bge 默认已 L2 归一化）。
 
-    model 必为已加载的 SentenceTransformer（调用前已 abort 保护），
+    model 必为已加载的 TextEmbedding（调用前已 abort 保护），
     因此这里不再有随机占位分支。
     """
-    return model.encode(text, normalize_embeddings=True).tolist()
+    vectors = list(model.embed([text]))
+    if not vectors:
+        raise ValueError("fastembed 未返回任何向量")
+    return [float(x) for x in vectors[0]]
 
 
 def validate_embedding(vector, expected_dim=EXPECTED_DIM):
@@ -92,8 +99,9 @@ def validate_embedding(vector, expected_dim=EXPECTED_DIM):
 
     检查项：
     1. 是 list 且长度 == expected_dim
-    2. 非全零
-    3. 范数合理（L2 归一化后应 ≈ 1）
+    2. 无 NaN/Inf 元素
+    3. 非全零
+    4. 范数合理（L2 归一化后应 ≈ 1）
 
     返回 (ok: bool, reason: str)。ok=False 时 reason 说明原因。
     """
@@ -109,7 +117,7 @@ def validate_embedding(vector, expected_dim=EXPECTED_DIM):
     if norm < 1e-6:
         return False, f"范数近似为 0: {norm}"
     if abs(norm - 1.0) > NORM_TOLERANCE:
-        # 未做 L2 归一化或归一化异常；非致命但需人工确认
+        # 未做 L2 归一化或归一化异常；跳过并告警，避免失真向量入库
         return False, f"范数偏离 1.0 过多: {norm:.6f} (容差 {NORM_TOLERANCE})"
     return True, "ok"
 
@@ -144,13 +152,32 @@ async def _load_pending_retail_products(db):
 
 
 def _build_food_material_text(material):
-    """组合食品原料的搜索文本"""
-    return (
-        f"{material.name_cn} {material.name_latin or ''} "
-        f"{' '.join(material.aliases or [])} "
-        f"{' '.join(material.effects or [])} "
-        f"{material.description or ''}"
-    )
+    """组合食品原料的语义搜索文本。
+
+    不只用名字：拼接分类、子类、活性成分、功效、适应症、描述等有值字段，
+    拼成一句有语义的文本，使向量携带更丰富的语义信号。
+    """
+    parts = [material.name_cn]
+    if material.name_en:
+        parts.append(material.name_en)
+    if material.name_latin:
+        parts.append(material.name_latin)
+    if material.aliases:
+        parts.append(" ".join(material.aliases))
+    if material.category:
+        parts.append(f"分类: {material.category}")
+    if material.sub_category:
+        parts.append(f"子类: {material.sub_category}")
+    if material.active_ingredients:
+        parts.append("活性成分: " + "、".join(material.active_ingredients))
+    if material.effects:
+        parts.append("功效: " + "、".join(material.effects))
+    if material.indications:
+        parts.append(f"适应症: {material.indications}")
+    if material.description:
+        parts.append(material.description)
+    # 过滤空串，避免多余空格污染文本
+    return " ".join(p for p in parts if p and p.strip())
 
 
 def _build_retail_product_text(product):
@@ -246,7 +273,7 @@ async def process_retail_products(db, model, apply):
 def _get_session_factory():
     """返回 async session 工厂。
 
-    优先从 app.core.database.session 取真实工厂（该模块实际存在）。
+    从 app.core.database.session 取真实工厂（该模块实际存在）。
     """
     from app.core.database.session import async_session_factory
 
@@ -272,7 +299,7 @@ async def main():
         model = get_embedding_model()
     except ImportError as e:
         logger.error(f"模型依赖缺失，无法加载嵌入模型：{e}")
-        logger.error("请先安装 sentence-transformers 或确认本地模型路径存在后重试。")
+        logger.error("请先安装 fastembed 或确认模型可下载后重试。")
         logger.error("为避免写入噪声/占位向量污染数据，本次运行中止，未处理任何行。")
         sys.exit(2)
     except Exception as e:
@@ -282,10 +309,11 @@ async def main():
 
     # 模型输出维度自检：确认与 EXPECTED_DIM 一致，否则提前暴露口径错配
     try:
-        probe_dim = len(model.encode("维度探针", normalize_embeddings=True).tolist())
+        probe_vec = generate_embedding(model, "维度探针")
     except Exception as e:
         logger.error(f"模型编码探针失败：{type(e).__name__}: {e}")
         sys.exit(2)
+    probe_dim = len(probe_vec)
     if probe_dim != EXPECTED_DIM:
         logger.error(
             f"模型实际输出维度 {probe_dim} 与期望 {EXPECTED_DIM} 不符，"
