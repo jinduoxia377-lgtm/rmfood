@@ -110,11 +110,18 @@ async def search_food_materials(
     offset = (request.page - 1) * request.per_page
     page_results = fused_results[offset:offset + request.per_page]
 
+    # total 修正：早期只用 BM25 COUNT，但 RRF 融合后向量路会额外召回 BM25 未命中的
+    # 语义相关项（如"活血化瘀"BM25 仅 2 条，融合后可达 8+ 条），导致 total < 实际可返回
+    # 结果数，前端分页误判"只有一页"而截断向量结果。取 BM25 COUNT 与融合后总长度的较大者：
+    # - 向量额外召回超出 BM25 命中数时用 len(fused_results)，保证这些项可被翻页取到；
+    # - BM25 命中数本身超过 recall_limit（如极常见词）时保留 BM25 COUNT，不丢后续页。
+    total = max(total, len(fused_results))
+
     elapsed_ms = (time.time() - start_time) * 1000
 
     return FoodMaterialSearchResponse(
         query=request.query,
-        total=total,  # P0-3：真实 total，不再用 len(fused_results)
+        total=total,  # max(BM25 COUNT, len(fused_results))：覆盖向量额外召回
         page=request.page,
         per_page=request.per_page,
         results=page_results,
