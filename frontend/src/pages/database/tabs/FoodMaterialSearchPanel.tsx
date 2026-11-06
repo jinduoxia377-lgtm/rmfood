@@ -83,6 +83,7 @@ const MaterialCard: React.FC<{
       setCompliancePassed(r?.passed ?? null);
       setComplianceChecked(true);
     } catch {
+      // 检查失败/无数据 → 显式中性「待评估」，不误导为不合规
       setCompliancePassed(null);
       setComplianceChecked(true);
     }
@@ -182,10 +183,10 @@ const MaterialCard: React.FC<{
         </Button>
       ) : (
         <Badge
-          variant={compliancePassed ? 'success' : 'destructive'}
+          variant={compliancePassed === null ? 'neutral' : compliancePassed ? 'success' : 'destructive'}
           className="mt-2"
         >
-          {compliancePassed === null ? '未知' : compliancePassed ? '合规' : '不合规'}
+          {compliancePassed === null ? '待评估·数据不足' : compliancePassed ? '合规' : '不合规'}
         </Badge>
       )}
     </div>
@@ -278,7 +279,7 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
   }, []);
 
   // 执行搜索
-  const handleSearch = useCallback(async () => {
+  const handleSearch = useCallback(async (page = 1) => {
     if (!query.trim()) return;
     setLoading(true);
     try {
@@ -289,13 +290,14 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
       const response: FoodMaterialSearchResponse = await searchFoodMaterials({
         query: normResult.canonical,
         filters: { ...filters, ...normResult },
-        page: currentPage,
+        page,
         per_page: 20,
         search_modes: searchModes,
       });
       setResults(response.results);
       setTotal(response.total);
       setSearchTime(response.search_time_ms);
+      setCurrentPage(page);
       // 换页/换词时清空多选，避免误操作不可见项
       setSelectedIds(new Set());
     } catch (err) {
@@ -303,7 +305,7 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
     } finally {
       setLoading(false);
     }
-  }, [query, filters, currentPage, searchModes]);
+  }, [query, filters, searchModes]);
 
   // ── 多选 ──
   const toggleSelect = useCallback((id: number) => {
@@ -401,7 +403,7 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
               size="lg"
               icon={<Search className="h-4 w-4" />}
               loading={loading}
-              onClick={handleSearch}
+              onClick={() => handleSearch()}
             >
               搜索
             </Button>
@@ -517,6 +519,7 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
               total={total}
               onPageChange={(page) => {
                 setCurrentPage(page);
+                handleSearch(page);
               }}
               className="mt-[var(--space-apple-md)]"
             />
