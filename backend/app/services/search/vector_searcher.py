@@ -173,6 +173,13 @@ class VectorSearcher:
                 return [self._row_to_dict(row) for row in rows]
         except Exception as e:
             logger.warning("[VectorSearcher] pgvector food_materials fallback: %s", e)
+            # pgvector 失败(如 vector 类型未安装)会中止 PostgreSQL 事务并毒化共享会话，
+            # 必须先 rollback，否则紧随的 JSON 回退查询会抛 InFailedSQLTransactionError
+            # ("当前事务被终止") → 上层 503。
+            try:
+                await self.db.rollback()
+            except Exception as rb_err:  # pragma: no cover - 防御性
+                logger.warning("[VectorSearcher] rollback 失败: %s", rb_err)
 
         # 回退: embedding 存储为 JSON 数组，用客户端计算余弦相似度
         fallback_params: Dict[str, Any] = {"top_k": top_k}
