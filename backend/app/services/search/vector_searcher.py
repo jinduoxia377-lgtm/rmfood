@@ -275,6 +275,13 @@ class VectorSearcher:
                 return [self._row_to_dict(row) for row in rows]
         except Exception as e:
             logger.warning("[VectorSearcher] pgvector retail fallback: %s", e)
+            # pgvector 失败(缺 vector 类型)会中止 PG 事务毒化共享会话，回退 JSON 查询前
+            # 必须 rollback，否则回退抛 InFailedSQLTransactionError → 503。与 food_materials
+            # 向量路同一根因。
+            try:
+                await self.db.rollback()
+            except Exception as rb_err:  # pragma: no cover - 防御性
+                logger.warning("[VectorSearcher] rollback 失败: %s", rb_err)
 
         fallback_sql = text("""
             SELECT rp.id, rp.brand, rp.product_name, rp.product_line,
