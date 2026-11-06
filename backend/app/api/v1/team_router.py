@@ -85,10 +85,16 @@ async def create_team(
 
     创建者自动成为团队Owner。
     """
+    if current_user.organization_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="当前用户未归属组织，无法创建团队",
+        )
     team = Team(
         name=request.name,
         description=request.description,
         owner_id=current_user.id,
+        org_id=current_user.organization_id,
         settings=request.settings or {},
     )
     db.add(team)
@@ -292,20 +298,29 @@ async def invite_member(
     current_user: CurrentUser,
 ):
     """
-    邀请新成员加入团队
+    按邮箱邀请新成员加入团队
 
     - **team_id**: 团队ID
-    - **user_id**: 被邀请用户的ID
+    - **email**: 被邀请用户的邮箱
     - **role**: 初始角色（默认member）
 
     需要Owner或Admin权限。
     """
     await _check_team_permission(db, team_id, current_user.id)
 
+    target_user = (
+        await db.execute(select(User).where(User.email == request.email))
+    ).scalar_one_or_none()
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="该邮箱未注册",
+        )
+
     existing_member = await db.execute(
         select(TeamMember).where(
             TeamMember.team_id == team_id,
-            TeamMember.user_id == request.user_id,
+            TeamMember.user_id == target_user.id,
         )
     )
     if existing_member.scalar_one_or_none():
@@ -314,25 +329,16 @@ async def invite_member(
             detail="该用户已经是团队成员",
         )
 
-    target_user = await db.execute(
-        select(User).where(User.id == request.user_id)
-    )
-    if not target_user.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="目标用户不存在",
-        )
-
     new_member = TeamMember(
         team_id=team_id,
-        user_id=request.user_id,
+        user_id=target_user.id,
         role=request.role,
         invited_by=current_user.id,
     )
     db.add(new_member)
 
     notification = Notification(
-        user_id=request.user_id,
+        user_id=target_user.id,
         type=NotificationType.SYSTEM,
         title="团队邀请通知",
         content="您已被邀请加入团队",

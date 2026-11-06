@@ -6,7 +6,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from ..models.enums import TeamRole
 
@@ -72,9 +72,25 @@ class TeamMemberUpdate(BaseModel):
 
 
 class InviteMemberRequest(BaseModel):
-    """邀请成员请求"""
-    user_id: int = Field(..., description="被邀请用户的ID")
+    """邀请成员请求（按邮箱邀请）"""
+    email: str = Field(
+        ...,
+        min_length=3,
+        max_length=254,
+        description="被邀请用户的邮箱",
+        examples=["user@example.com"],
+    )
     role: TeamRole = Field(default=TeamRole.MEMBER, description="初始角色")
+
+    @field_validator("email")
+    @classmethod
+    def _validate_email_format(cls, v: str) -> str:
+        import re
+
+        normalized = v.strip().lower()
+        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", normalized):
+            raise ValueError("邮箱格式不正确")
+        return normalized
 
 
 class InviteLinkResponse(BaseModel):

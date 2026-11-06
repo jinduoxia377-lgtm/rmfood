@@ -10,80 +10,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.enums import TeamRole
-from ..models.team import Team
 from ..models.team_member import TeamMember
 from ..schemas.base import ApiResponse
 from .deps import get_db
 
 router = APIRouter(prefix="/teams", tags=["团队管理"])
-
-
-@router.get("/{team_id}/members", response_model=ApiResponse)
-async def list_team_members(
-    team_id: int,
-    db: AsyncSession = Depends(get_db),
-):
-    """获取团队成员列表及角色"""
-    team = (await db.execute(select(Team).where(Team.id == team_id))).scalar_one_or_none()
-    if not team:
-        raise HTTPException(status_code=404, detail="团队不存在")
-
-    members = (await db.execute(select(TeamMember).where(
-        TeamMember.team_id == team_id
-    ))).scalars().all()
-
-    return ApiResponse(data={
-        "team_id": team_id,
-        "team_name": team.name,
-        "members": [
-            {
-                "id": m.id,
-                "user_id": m.user_id,
-                "username": m.user.username if m.user else "unknown",
-                "email": m.user.email if m.user else "",
-                "role": m.role.value,
-                "joined_at": m.joined_at.isoformat() if m.joined_at else None,
-            }
-            for m in members
-        ],
-        "total": len(members),
-    })
-
-
-@router.post("/{team_id}/members", response_model=ApiResponse)
-async def add_team_member(
-    team_id: int,
-    payload: Dict[str, Any],
-    db: AsyncSession = Depends(get_db),
-):
-    """添加团队成员"""
-    user_id = payload.get("user_id")
-    role = payload.get("role", "member")
-
-    if not user_id:
-        raise HTTPException(status_code=400, detail="缺少 user_id")
-
-    # 检查是否已存在
-    existing = (await db.execute(
-        select(TeamMember).where(
-            TeamMember.team_id == team_id,
-            TeamMember.user_id == user_id,
-        )
-    )).scalar_one_or_none()
-
-    if existing:
-        raise HTTPException(status_code=409, detail="该用户已是团队成员")
-
-    member = TeamMember(
-        team_id=team_id,
-        user_id=user_id,
-        role=TeamRole(role),
-    )
-    db.add(member)
-    await db.commit()
-    await db.refresh(member)
-
-    return ApiResponse(data={"member_id": member.id, "role": member.role.value})
 
 
 @router.put("/{team_id}/members/{member_id}/role", response_model=ApiResponse)
