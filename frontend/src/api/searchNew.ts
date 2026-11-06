@@ -72,6 +72,68 @@ export interface FoodMaterialSearchResponse {
   search_modes_used: Record<string, number>;
 }
 
+/** 食品原料详情 — 安全信息子对象（字段可 optional，后端 to_dict() 口径） */
+export interface FoodMaterialSafety {
+  safe_dose_min?: number;
+  safe_dose_max?: number;
+  /** 禁忌：后端可能返回 string[] 或长字符串，用 unknown + asArray 归一 */
+  contraindications?: unknown;
+  /** 相互作用：同上 */
+  interactions?: unknown;
+}
+
+/** 食品原料详情 — 法规信息子对象 */
+export interface FoodMaterialRegulatory {
+  status?: string;
+  approved_regions?: unknown;
+  max_daily_intake?: string;
+}
+
+/**
+ * 食品原料详情（FoodMaterial.to_dict()）
+ * 数组字段后端存在 string[] / string / 缺失 等多种形态，统一用 unknown + asArray 归一渲染。
+ */
+export interface FoodMaterialDetail {
+  id?: number;
+  name_cn?: string;
+  name_latin?: string;
+  name_en?: string;
+  aliases?: unknown;
+  category?: string;
+  sub_category?: string;
+  food_homology?: boolean;
+  toxicity_class?: string;
+  active_ingredients?: unknown;
+  effects?: unknown;
+  indications?: unknown;
+  ob_percent?: number;
+  dl_value?: number;
+  bioavailability_score?: number;
+  safety?: FoodMaterialSafety;
+  regulatory?: FoodMaterialRegulatory;
+  description?: string;
+  source_db?: string;
+  data_quality?: number;
+  review_status?: string;
+  /** 后端合规判定辅助字段：数据是否足以支撑合规结论 */
+  data_sufficient?: boolean;
+}
+
+/** 批量配方合规检查 — 单条结果（violations/warnings/info 共用结构） */
+export interface ComplianceViolation {
+  code?: string;
+  message?: string;
+  severity?: string;
+}
+
+/** 批量配方合规检查响应 */
+export interface FormulaComplianceResult {
+  violations?: ComplianceViolation[];
+  warnings?: ComplianceViolation[];
+  info?: ComplianceViolation[];
+  [key: string]: unknown;
+}
+
 export interface RetailProductFilter {
   category?: string;
   formulation_type?: string;
@@ -245,9 +307,9 @@ export async function listFoodMaterials(params?: {
  * 获取单个食品原料详情
  * GET /databases/food-materials/:id
  */
-export async function getFoodMaterial(id: number): Promise<unknown> {
+export async function getFoodMaterial(id: number): Promise<FoodMaterialDetail> {
   const response = await databaseApi.get(`/food-materials/${id}`);
-  return response.data;
+  return response.data as FoodMaterialDetail;
 }
 
 // ── 零售产品搜索 ──
@@ -564,9 +626,9 @@ export async function checkMaterialCompliance(materialId: number): Promise<unkno
  */
 export async function checkFormulaCompliance(
   materialIds: number[],
-): Promise<unknown> {
+): Promise<FormulaComplianceResult> {
   const response = await databaseApi.post('/databases/search/compliance/formula', {
     material_ids: materialIds,
   });
-  return unwrapResponse<unknown>(response);
+  return unwrapResponse<FormulaComplianceResult>(response);
 }
