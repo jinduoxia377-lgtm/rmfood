@@ -65,7 +65,7 @@ def user_factory():
         email: str = "test@example.com",
         hashed_password: str = "hashed_pw",
         is_active: bool = True,
-        role: str = "user",
+        role: str = "GUEST",  # 合法 userrole 枚举值（'user' 不在枚举内）
     ):
         user = MagicMock()
         user.id = id
