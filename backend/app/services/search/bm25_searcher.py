@@ -106,9 +106,20 @@ class BM25Searcher:
                 return results
         except Exception as e:
             logger.warning("[BM25] tsvector 搜索失败，回退到 ILIKE: %s", e)
+            # FTS 失败(如 search_vector 列缺失)会中止 PostgreSQL 事务，毒化共享会话；
+            # 必须先 rollback 释放中止事务，否则紧随的 ILIKE 回退会抛
+            # InFailedSQLTransactionError("当前事务被终止") → 上层 503。
+            await self._safe_rollback()
 
         # 回退: ILIKE 模糊匹配
         return await self._search_with_ilike(query, filters, limit, offset)
+
+    async def _safe_rollback(self) -> None:
+        """安全回滚当前会话，吞掉回滚本身的异常(会话已不可用时避免二次抛错)。"""
+        try:
+            await self.db.rollback()
+        except Exception as e:  # pragma: no cover - 防御性
+            logger.warning("[BM25] rollback 失败: %s", e)
 
     async def _search_with_fts(
         self, query: str, filters, limit: int, offset: int
@@ -195,6 +206,9 @@ class BM25Searcher:
             return await self._count_food_materials_fts(query, filters)
         except Exception as e:
             logger.warning("[BM25] count FTS 失败，回退到 ILIKE: %s", e)
+            # 同 search：FTS 失败会中止事务毒化会话，先 rollback 再走 ILIKE 回退，
+            # 否则 ILIKE count 抛 InFailedSQLTransactionError → 上层 503。
+            await self._safe_rollback()
             return await self._count_food_materials_ilike(query, filters)
 
     async def _count_food_materials_fts(

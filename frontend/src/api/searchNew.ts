@@ -221,12 +221,12 @@ export interface NormalizeResult {
 
 /**
  * 食品原料混合搜索 (BM25 + 向量 RRF 融合)
- * POST /databases/search/food-materials
+ * POST /databases/food-materials
  */
 export async function searchFoodMaterials(
   request: FoodMaterialSearchRequest,
 ): Promise<FoodMaterialSearchResponse> {
-  const response = await databaseApi.post('/databases/search/food-materials', request);
+  const response = await databaseApi.post('/databases/food-materials', request);
   return unwrapResponse<FoodMaterialSearchResponse>(response);
 }
 
@@ -239,10 +239,10 @@ export function searchFoodMaterialsStream(
   onEvent: (event: string, data: unknown) => void,
   onComplete?: () => void,
 ): EventSource | null {
-  // SSE 使用 fetch + ReadableStream 实现
+  // SSE 使用 fetch + ReadableStream 实现（原生 fetch 不走 axios baseURL，需带 /api/v1 全路径）
   const controller = new AbortController();
 
-  fetch('/databases/search/food-materials/stream', {
+  fetch('/api/v1/databases/food-materials/stream', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
@@ -299,8 +299,8 @@ export async function listFoodMaterials(params?: {
   limit?: number;
   offset?: number;
 }): Promise<unknown[]> {
-  const response = await databaseApi.get('/food-materials', { params });
-  return response.data;
+  const response = await databaseApi.get('/databases/food-materials', { params });
+  return unwrapResponse<unknown[]>(response);
 }
 
 /**
@@ -308,8 +308,8 @@ export async function listFoodMaterials(params?: {
  * GET /databases/food-materials/:id
  */
 export async function getFoodMaterial(id: number): Promise<FoodMaterialDetail> {
-  const response = await databaseApi.get(`/food-materials/${id}`);
-  return response.data as FoodMaterialDetail;
+  const response = await databaseApi.get(`/databases/food-materials/${id}`);
+  return unwrapResponse<FoodMaterialDetail>(response);
 }
 
 // ── 零售产品搜索 ──
@@ -594,13 +594,13 @@ export async function getPantryRetailProducts(): Promise<PantryRetailProduct[]> 
 
 /**
  * 名称标准化 (别名归一)
- * POST /databases/search/normalize
+ * POST /databases/normalize
  */
 export async function normalizeName(
   name: string,
   searchType: string = 'food_material',
 ): Promise<NormalizeResult> {
-  const response = await databaseApi.post('/databases/search/normalize', {
+  const response = await databaseApi.post('/databases/normalize', {
     name,
     search_type: searchType,
   });
@@ -611,10 +611,10 @@ export async function normalizeName(
 
 /**
  * 检查单个食品原料合规性
- * GET /databases/search/compliance/check?material_id=:id
+ * GET /databases/compliance/check?material_id=:id
  */
 export async function checkMaterialCompliance(materialId: number): Promise<unknown> {
-  const response = await databaseApi.get('/databases/search/compliance/check', {
+  const response = await databaseApi.get('/databases/compliance/check', {
     params: { material_id: materialId },
   });
   return unwrapResponse<unknown>(response);
@@ -622,13 +622,11 @@ export async function checkMaterialCompliance(materialId: number): Promise<unkno
 
 /**
  * 检查配方合规性
- * POST /databases/search/compliance/formula
+ * POST /databases/compliance/formula  (body 为裸 List[int]，非 {material_ids})
  */
 export async function checkFormulaCompliance(
   materialIds: number[],
 ): Promise<FormulaComplianceResult> {
-  const response = await databaseApi.post('/databases/search/compliance/formula', {
-    material_ids: materialIds,
-  });
+  const response = await databaseApi.post('/databases/compliance/formula', materialIds);
   return unwrapResponse<FormulaComplianceResult>(response);
 }

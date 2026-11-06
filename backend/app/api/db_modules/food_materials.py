@@ -4,7 +4,6 @@
 对标 Potion AI VFT 的 /search/raw-materials 和 /search/products 端点。
 使用共享 router 实例注册到 /databases 前缀下。
 """
-import asyncio
 import logging
 import time
 from typing import List
@@ -77,12 +76,18 @@ async def search_food_materials(
     bm25_results = await bm25_service.search_food_materials(
         normalized_query, filters=filters, limit=recall_limit,
     )
+    # 注意：vector 路与 COUNT 路共用同一个 AsyncSession（= 同一条 asyncpg 连接）。
+    # asyncpg 禁止在同一连接上并发执行多条查询（会抛 InterfaceError
+    # "cannot perform operation: another operation is in progress"）。
+    # 早期版本曾用 asyncio.gather 并发这两路，一旦两路同时落入回退分支
+    # （FTS 缺 search_vector 列 / pgvector 缺 vector 类型），两个回退查询会在
+    # 同一连接上相撞 → 503。因此这里改为顺序执行，保证会话安全。
     if has_embedding:
-        vector_results, total = await asyncio.gather(
-            vector_service.search_food_materials(
-                normalized_query, top_k=recall_limit, filters=filters,
-            ),
-            bm25_service.count_food_materials(normalized_query, filters=filters),
+        vector_results = await vector_service.search_food_materials(
+            normalized_query, top_k=recall_limit, filters=filters,
+        )
+        total = await bm25_service.count_food_materials(
+            normalized_query, filters=filters,
         )
     else:
         vector_results = []
