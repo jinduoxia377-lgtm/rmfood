@@ -28,6 +28,53 @@ _RetailProduct = None
 _RetailProductResponse = None
 
 
+def _set_food_search_tokens(material) -> None:
+    """创建/更新 food_materials 时用 jieba 生成 search_tokens_{a..d}。
+
+    迁移 022：触发器 fn_food_materials_search_vector 在这些 token 列非空时
+    按 to_tsvector('simple', tokens) 分词构建 search_vector（真中文召回）；
+    分词逻辑与查询侧 chinese_nlp 完全一致（同一 jieba 词典 + 同义词表）。
+    """
+    from app.services.search.chinese_nlp import get_nlp_pipeline
+
+    nlp = get_nlp_pipeline()
+    tok = nlp.build_food_search_tokens(
+        name_cn=material.name_cn,
+        aliases=material.aliases,
+        effects=material.effects,
+        indications=material.indications,
+        category=material.category,
+        sub_category=material.sub_category,
+        description=material.description,
+    )
+    material.search_tokens_a = tok["a"]
+    material.search_tokens_b = tok["b"]
+    material.search_tokens_c = tok["c"]
+    material.search_tokens_d = tok["d"]
+
+
+def _set_retail_search_tokens(product) -> None:
+    """创建/更新 retail_products 时用 jieba 生成 search_tokens_{a..d}（迁移 022）。"""
+    from app.services.search.chinese_nlp import get_nlp_pipeline
+
+    nlp = get_nlp_pipeline()
+    tok = nlp.build_retail_search_tokens(
+        product_name=product.product_name,
+        brand=product.brand,
+        category=product.category,
+        sub_category=product.sub_category,
+        effects=product.effects,
+        target_population=product.target_population,
+        full_ingredients=product.full_ingredients,
+        formulation_type=product.formulation_type,
+        key_ingredients=product.key_ingredients,
+    )
+    product.search_tokens_a = tok["a"]
+    product.search_tokens_b = tok["b"]
+    product.search_tokens_c = tok["c"]
+    product.search_tokens_d = tok["d"]
+
+
 @router.get("/food-materials", response_model=List[dict])
 async def list_food_materials(
     category: Optional[str] = Query(None, description="分类筛选"),
@@ -113,6 +160,8 @@ async def create_food_material(
 
     material = FoodMaterial(**payload)
     material.created_by = current_user.id
+    # 迁移 022：创建时用 jieba 生成 search_tokens，激活真中文全文召回
+    _set_food_search_tokens(material)
     db.add(material)
     await db.commit()
     await db.refresh(material)
@@ -150,6 +199,8 @@ async def update_food_material(
     for key, value in updates.items():
         setattr(material, key, value)
     material.updated_at = datetime.now(timezone.utc)
+    # 迁移 022：字段变更后重算 search_tokens（若更新涉及检索字段）
+    _set_food_search_tokens(material)
 
     await db.commit()
     await db.refresh(material)
@@ -292,6 +343,8 @@ async def create_retail_product(
 
     product = _RetailProduct(**data)
     product.created_by = current_user.id
+    # 迁移 022：创建时用 jieba 生成 search_tokens，激活真中文全文召回
+    _set_retail_search_tokens(product)
     db.add(product)
     await db.commit()
     await db.refresh(product)
@@ -333,6 +386,8 @@ async def update_retail_product(
         if hasattr(product, key):
             setattr(product, key, value)
     product.updated_at = datetime.now(timezone.utc)
+    # 迁移 022：字段变更后重算 search_tokens（若更新涉及检索字段）
+    _set_retail_search_tokens(product)
 
     await db.commit()
     await db.refresh(product)
