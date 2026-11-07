@@ -1,0 +1,736 @@
+{
+  "generated_at": "2026-11-08T00:43:46",
+  "source": "Wikimedia Commons (CC / PD, via commons.wikimedia.org/w/api.php)",
+  "note": "image_url 溯源清单（--rebuild-manifest 从 DB 重建，data_quality 为保守估计）。source_db 未改动（保留法规溯源）。",
+  "count": 91,
+  "items": [
+    {
+      "id": 15,
+      "name_cn": "枸杞子",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Lycium_barbarum_kz04.jpg/960px-Lycium_barbarum_kz04.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 17,
+      "name_cn": "山药",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Dioscorea_polystachya_UGA2307129.jpg/960px-Dioscorea_polystachya_UGA2307129.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 18,
+      "name_cn": "黄芪",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Astragalus_membranaceus.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 19,
+      "name_cn": "人参",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Jilin_Mt._Changbai_panax_ginseng_slices.jpg/960px-Jilin_Mt._Changbai_panax_ginseng_slices.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 20,
+      "name_cn": "桂花",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Osmanthus_fragrans_%28orange_flowers%29.jpg/960px-Osmanthus_fragrans_%28orange_flowers%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 21,
+      "name_cn": "金银花",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/Lonicera_japonica_%27hall%27s_prolific%27._14-06-2020_%28d.j.b.%29_01.jpg/960px-Lonicera_japonica_%27hall%27s_prolific%27._14-06-2020_%28d.j.b.%29_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 23,
+      "name_cn": "山楂",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Crataegus_pinnatifida_kz01.jpg/960px-Crataegus_pinnatifida_kz01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 24,
+      "name_cn": "薏苡仁",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Coix_lacryma-jobi_MHNT.BOT.2016.12.1.jpg/960px-Coix_lacryma-jobi_MHNT.BOT.2016.12.1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 25,
+      "name_cn": "大豆",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Glycine_max_kz04.jpg/960px-Glycine_max_kz04.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 26,
+      "name_cn": "黑芝麻",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Sesamum_indicum_13062014.jpg/960px-Sesamum_indicum_13062014.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 27,
+      "name_cn": "核桃仁",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Juglans_regia_2009_G2.jpg/960px-Juglans_regia_2009_G2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 30,
+      "name_cn": "八角茴香",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Illicium_verum20170511_7548.jpg/960px-Illicium_verum20170511_7548.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 31,
+      "name_cn": "白扁豆",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Purple_hyacinth_bean_%28Lablab_purpureus%29_blossoms.jpg/960px-Purple_hyacinth_bean_%28Lablab_purpureus%29_blossoms.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 33,
+      "name_cn": "白果",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/%D0%9F%D0%BE%D0%BF%D0%B5%D1%80%D0%B5%D1%87%D0%BD%D1%8B%D0%B9_%D1%81%D1%80%D0%B5%D0%B7_%D1%81%D1%82%D0%B5%D0%B1%D0%BB%D1%8F_Ginkgo_biloba.jpg/960px-%D0%9F%D0%BE%D0%BF%D0%B5%D1%80%D0%B5%D1%87%D0%BD%D1%8B%D0%B9_%D1%81%D1%80%D0%B5%D0%B7_%D1%81%D1%82%D0%B5%D0%B1%D0%BB%D1%8F_Ginkgo_biloba.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 34,
+      "name_cn": "白芷",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Angelica_dahurica_%288855221294%29.jpg/960px-Angelica_dahurica_%288855221294%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 35,
+      "name_cn": "百合",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/Lilium_lancifolium-IMG_9248.jpg/960px-Lilium_lancifolium-IMG_9248.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 36,
+      "name_cn": "薄荷",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Mentha_haplocalyx.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 37,
+      "name_cn": "荜茇",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/6/60/Piper_longum_print.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 38,
+      "name_cn": "草果",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/17/Lanxangia_tsao-ko-brun-kardemumma.jpg/960px-Lanxangia_tsao-ko-brun-kardemumma.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 39,
+      "name_cn": "赤小豆",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/Vigna_angularis_fruit.jpg/960px-Vigna_angularis_fruit.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 40,
+      "name_cn": "代代花",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/5/57/Citrus_aurantium_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-042.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 42,
+      "name_cn": "淡竹叶",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Lophatherum_gracile_sasakusa01.JPG/960px-Lophatherum_gracile_sasakusa01.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 43,
+      "name_cn": "当归",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a1/Danggui_Angelica_sinensis_herbier.jpg/960px-Danggui_Angelica_sinensis_herbier.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 44,
+      "name_cn": "党参",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/5/55/Codonopsis_pilosula_flowers.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 45,
+      "name_cn": "刀豆",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Canavalia_gladiata2.jpg/960px-Canavalia_gladiata2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 46,
+      "name_cn": "地黄",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Rehmannia_glutinosa%2C_son_aire_de_r%C3%A9partition_est_la_Chine.jpg/960px-Rehmannia_glutinosa%2C_son_aire_de_r%C3%A9partition_est_la_Chine.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 47,
+      "name_cn": "丁香",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Syzygium_aromaticum_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-030.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 48,
+      "name_cn": "杜仲叶",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a3/Eucommia_ulmoides_kz05.jpg/960px-Eucommia_ulmoides_kz05.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 49,
+      "name_cn": "榧子",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Torreya_grandis.jpg/960px-Torreya_grandis.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 51,
+      "name_cn": "佛手",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/20260317_Citrus_medica_var._sarcodactylis.jpg/960px-20260317_Citrus_medica_var._sarcodactylis.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 52,
+      "name_cn": "茯苓",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Wolfiporia_extensa_cube.jpg/960px-Wolfiporia_extensa_cube.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 53,
+      "name_cn": "蝮蛇",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/8/8f/Stamp_of_Kyrgyzstan_110.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 54,
+      "name_cn": "覆盆子",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/Raspberry_-_whole_%28Rubus_idaeus%29.jpg/960px-Raspberry_-_whole_%28Rubus_idaeus%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 55,
+      "name_cn": "甘草",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/aa/Glycyrrhizauralensis.jpg/960px-Glycyrrhizauralensis.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 56,
+      "name_cn": "高良姜",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/8/89/Alpinia_officinarum_-_K%C3%B6hler%E2%80%93s_Medizinal-Pflanzen-156.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 57,
+      "name_cn": "葛根",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Pueraria_montana_25014259.jpg/960px-Pueraria_montana_25014259.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 58,
+      "name_cn": "荷叶",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Nelumbo_nucifera%2C_also_known_as_Indian_lotus_in_bud_stage_%28Image_7_of_7%29.jpg/960px-Nelumbo_nucifera%2C_also_known_as_Indian_lotus_in_bud_stage_%28Image_7_of_7%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 60,
+      "name_cn": "花椒",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Zanthoxylum_bungeanum_in_Palm_House_Schoenbrunn_%281%29.jpg/960px-Zanthoxylum_bungeanum_in_Palm_House_Schoenbrunn_%281%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 62,
+      "name_cn": "槐花",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d2/%E6%A7%90%E8%8A%B1%EF%BC%88%E6%AF%9B%E6%B4%8B%E6%A7%90%2C%E6%AF%9B%E5%88%BA%E6%A7%90%EF%BC%89.jpg/960px-%E6%A7%90%E8%8A%B1%EF%BC%88%E6%AF%9B%E6%B4%8B%E6%A7%90%2C%E6%AF%9B%E5%88%BA%E6%A7%90%EF%BC%89.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 65,
+      "name_cn": "黄精",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d2/Polygonatum_sibiricum_%2820241118%29.jpg/960px-Polygonatum_sibiricum_%2820241118%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 66,
+      "name_cn": "火麻仁",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dd/Cannabis_sativa_plant_%284%29.JPG/960px-Cannabis_sativa_plant_%284%29.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 68,
+      "name_cn": "鸡内金",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Gallus_gallus_domesticus_-_Vogelpark_Steinen_03.jpg/960px-Gallus_gallus_domesticus_-_Vogelpark_Steinen_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 71,
+      "name_cn": "姜黄",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Curcuma_longa_roots.jpg/960px-Curcuma_longa_roots.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 72,
+      "name_cn": "桔梗",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Platycodon_grandiflorum_HRM.JPG/960px-Platycodon_grandiflorum_HRM.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 74,
+      "name_cn": "菊花",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a1/Chrysanthemum_morifolium_08NOV.jpg/960px-Chrysanthemum_morifolium_08NOV.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 75,
+      "name_cn": "菊苣",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/Cichorium_intybus-alvesgaspar1.jpg/960px-Cichorium_intybus-alvesgaspar1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 76,
+      "name_cn": "橘皮",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Mandarin_Oranges_%28Citrus_Reticulata%29.jpg/960px-Mandarin_Oranges_%28Citrus_Reticulata%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 77,
+      "name_cn": "决明子",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/Cassia_obtusifolia_L._of_village-Parala.jpg/960px-Cassia_obtusifolia_L._of_village-Parala.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 78,
+      "name_cn": "昆布",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/%E8%92%B2%E5%8F%B0%E5%B3%B6%E6%BC%81%E6%B0%91%E6%99%BE%E6%9B%AC%E6%B5%B7%E5%B8%B6.jpg/960px-%E8%92%B2%E5%8F%B0%E5%B3%B6%E6%BC%81%E6%B0%91%E6%99%BE%E6%9B%AC%E6%B5%B7%E5%B8%B6.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 79,
+      "name_cn": "莱菔子",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/73/Raphanus_sativus_of_Salem.jpg/960px-Raphanus_sativus_of_Salem.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 80,
+      "name_cn": "莲子",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Nelumbo_nucifera%2C_also_known_as_Indian_lotus_in_bud_stage_%28Image_7_of_7%29.jpg/960px-Nelumbo_nucifera%2C_also_known_as_Indian_lotus_in_bud_stage_%28Image_7_of_7%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 81,
+      "name_cn": "灵芝",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/8/81/Ganoderma_lucidum_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 82,
+      "name_cn": "龙眼肉",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/Dimocarpus_longan_fruits.jpg/960px-Dimocarpus_longan_fruits.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 84,
+      "name_cn": "罗汉果",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Siraitia_grosvenorii_%E7%BE%85%E6%BC%A2%E6%9E%9C.jpg/960px-Siraitia_grosvenorii_%E7%BE%85%E6%BC%A2%E6%9E%9C.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 85,
+      "name_cn": "马齿苋",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Portulaca_oleracea_MHNT.jpg/960px-Portulaca_oleracea_MHNT.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 87,
+      "name_cn": "麦芽",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8f/Champ_d%27Orge_carr%C3%A9e_%28Hordeum_vulgare%29.jpg/960px-Champ_d%27Orge_carr%C3%A9e_%28Hordeum_vulgare%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 88,
+      "name_cn": "牡蛎",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Crassostrea_gigas_p1040848.jpg/960px-Crassostrea_gigas_p1040848.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 89,
+      "name_cn": "木瓜",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Chaenomeles_speciosa_kz02.jpg/960px-Chaenomeles_speciosa_kz02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 90,
+      "name_cn": "胖大海",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/Sterculia_lychnophora_seeds.jpg/960px-Sterculia_lychnophora_seeds.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 93,
+      "name_cn": "青果",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Green_beans_with_olive_vegetable.jpg/960px-Green_beans_with_olive_vegetable.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 94,
+      "name_cn": "肉苁蓉",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/2017-07-22_Cistanche_deserticola_anagoria.jpg/960px-2017-07-22_Cistanche_deserticola_anagoria.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 96,
+      "name_cn": "肉豆蔻",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Myristica_fragrans_by_kadavoor.jpg/960px-Myristica_fragrans_by_kadavoor.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 98,
+      "name_cn": "桑椹",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/%E6%9D%B1%E6%A6%AE%E6%9D%91%E6%A1%91%E6%A4%B9.jpg/960px-%E6%9D%B1%E6%A6%AE%E6%9D%91%E6%A1%91%E6%A4%B9.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 99,
+      "name_cn": "桑叶",
+      "image_url": "https://upload.wikimedia.org/wikipedia/commons/c/c4/%E6%A1%91%E5%8F%B6.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 101,
+      "name_cn": "砂仁",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/Amomum_villosum_-_Hong_Kong_Botanical_Garden_-_IMG_9580.JPG/960px-Amomum_villosum_-_Hong_Kong_Botanical_Garden_-_IMG_9580.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 102,
+      "name_cn": "山柰",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/%E5%B1%B1%E6%9F%B0_Kaempferia_galanga_-%E9%A6%99%E6%B8%AF%E5%98%89%E9%81%93%E7%90%86%E8%BE%B2%E5%A0%B4_Kadoorie_Farm%2C_Hong_Kong-_%289200911576%29.jpg/960px-%E5%B1%B1%E6%9F%B0_Kaempferia_galanga_-%E9%A6%99%E6%B8%AF%E5%98%89%E9%81%93%E7%90%86%E8%BE%B2%E5%A0%B4_Kadoorie_Farm%2C_Hong_Kong-_%289200911576%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 105,
+      "name_cn": "桃仁",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/PrunusPersica4.jpg/960px-PrunusPersica4.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 106,
+      "name_cn": "天冬",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/HK_Central_Zoo_%26_Botanical_Gardens_%E7%8B%90%E5%B0%BE%E5%A4%A9%E5%86%AC_Asparagus_densiflorus.JPG/960px-HK_Central_Zoo_%26_Botanical_Gardens_%E7%8B%90%E5%B0%BE%E5%A4%A9%E5%86%AC_Asparagus_densiflorus.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 107,
+      "name_cn": "天麻",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/HK_SYP_Sai_Ying_Pun_Queen%27s_Road_West_%E8%97%A5%E6%9D%90%E5%BA%97_shop_%E6%9B%AC%E5%A4%AA%E9%99%BD_sun_drying_Gastrodia_elata_%E5%85%B0%E7%A7%91_Orchidaceae_%E5%A4%A9%E9%BA%BB%E5%B1%9E_Gastrodia_%E5%AE%9A%E9%A3%8E%E8%8D%89_%E6%98%8E%E5%A4%A9%E9%BA%BB_%E8%B5%A4%E5%A4%A9%E7%AE%AD_%E8%B5%A4%E7%AE%AD_April_2020_SS2_02.jpg/960px-thumbnail.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 109,
+      "name_cn": "乌梅",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Flowers_of_Prunus_mume_%28Armeniaca_mume%29_at_Nagai_Park%2C_January_2024_-_1221_%282%29.jpg/960px-Flowers_of_Prunus_mume_%28Armeniaca_mume%29_at_Nagai_Park%2C_January_2024_-_1221_%282%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 112,
+      "name_cn": "西洋参",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/Panax_quinquefolius.jpg/960px-Panax_quinquefolius.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 113,
+      "name_cn": "鲜白茅根",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Imperata_cylindrica_-_Cogon_grass.jpg/960px-Imperata_cylindrica_-_Cogon_grass.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 114,
+      "name_cn": "鲜芦根",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/43/Phragmites_australis_Vikmanshyttesj%C3%B6n.jpg/960px-Phragmites_australis_Vikmanshyttesj%C3%B6n.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 115,
+      "name_cn": "香薷",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a7/%E9%A6%99%E8%96%B7_20190928171029_03.jpg/960px-%E9%A6%99%E8%96%B7_20190928171029_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 117,
+      "name_cn": "小茴香",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/Theba_pisana_on_Foeniculum_vulgare%2C_Montbazin%2C_H%C3%A9rault_03.jpg/960px-Theba_pisana_on_Foeniculum_vulgare%2C_Montbazin%2C_H%C3%A9rault_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 119,
+      "name_cn": "薤白",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/Allium_chinense_%28as_Caloscordum_exsertum%29_Edwards%27s_Bot._Reg._33._5._1847.jpg/960px-Allium_chinense_%28as_Caloscordum_exsertum%29_Edwards%27s_Bot._Reg._33._5._1847.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 125,
+      "name_cn": "玉竹",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2c/Angular_solomons-seal_Polygonatum_odoratum.jpg/960px-Angular_solomons-seal_Polygonatum_odoratum.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 129,
+      "name_cn": "栀子",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Gardenia_Jasminoides_Flower.jpg/960px-Gardenia_Jasminoides_Flower.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 131,
+      "name_cn": "紫苏",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Perilla_frutescens_in_Gimpo.jpg/960px-Perilla_frutescens_in_Gimpo.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 138,
+      "name_cn": "白芍",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/Paeonia_lactiflora_%27Jacques_Doriat%27_%28Pivoine_de_Chine%29_-_113.jpg/960px-Paeonia_lactiflora_%27Jacques_Doriat%27_%28Pivoine_de_Chine%29_-_113.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 139,
+      "name_cn": "石斛",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Dendrobium_officinale_%28colored_stem_type%29_Kimura_%26_Migo%2C_J._Shanghai_Sci._Inst._3_122_%281936%29%2C_nom._cons_%2846810867685%29.jpg/960px-Dendrobium_officinale_%28colored_stem_type%29_Kimura_%26_Migo%2C_J._Shanghai_Sci._Inst._3_122_%281936%29%2C_nom._cons_%2846810867685%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 145,
+      "name_cn": "杏叶",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/%D0%9F%D0%BE%D0%BF%D0%B5%D1%80%D0%B5%D1%87%D0%BD%D1%8B%D0%B9_%D1%81%D1%80%D0%B5%D0%B7_%D1%81%D1%82%D0%B5%D0%B1%D0%BB%D1%8F_Ginkgo_biloba.jpg/960px-%D0%9F%D0%BE%D0%BF%D0%B5%D1%80%D0%B5%D1%87%D0%BD%D1%8B%D0%B9_%D1%81%D1%80%D0%B5%D0%B7_%D1%81%D1%82%D0%B5%D0%B1%D0%BB%D1%8F_Ginkgo_biloba.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 146,
+      "name_cn": "玫瑰花",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/Rosa_rugosa_RF.jpg/960px-Rosa_rugosa_RF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 147,
+      "name_cn": "知母",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a6/Anemarrhena_asphodeloides_%2814945496940%29.jpg/960px-Anemarrhena_asphodeloides_%2814945496940%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 150,
+      "name_cn": "葛花",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Pueraria_montana_25014259.jpg/960px-Pueraria_montana_25014259.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 151,
+      "name_cn": "墨旱莲",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/Eclipta_prostrata_%2819240%29.jpg/960px-Eclipta_prostrata_%2819240%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 152,
+      "name_cn": "大米",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Oryza_sativa_MHNT.BOT.2015.2.52.jpg/960px-Oryza_sativa_MHNT.BOT.2015.2.52.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 153,
+      "name_cn": "小麦",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/Triticum_aestivum_subsp._aestivum_MHNT.BOT.2015.2.31.jpg/960px-Triticum_aestivum_subsp._aestivum_MHNT.BOT.2015.2.31.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 154,
+      "name_cn": "玉米",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/eb/Zea_mays_%27morado%27_MHNT.BOT.2015.34.11.jpg/960px-Zea_mays_%27morado%27_MHNT.BOT.2015.34.11.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 155,
+      "name_cn": "花生",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Peanuts_%28Arachis_hypogaea%29_-_in_shell%2C_shell_cracked_open%2C_shelled%2C_peeled.jpg/960px-Peanuts_%28Arachis_hypogaea%29_-_in_shell%2C_shell_cracked_open%2C_shelled%2C_peeled.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    },
+    {
+      "id": 156,
+      "name_cn": "大蒜",
+      "image_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Knoblauch_%28Allium_sativum%29-20200621-RM-085344.jpg/960px-Knoblauch_%28Allium_sativum%29-20200621-RM-085344.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "commons_file": "(rebuilt from DB url)",
+      "method": "rebuilt",
+      "data_quality": 0.75
+    }
+  ]
+}
