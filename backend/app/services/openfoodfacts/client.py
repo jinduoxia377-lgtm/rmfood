@@ -19,6 +19,19 @@ from .config import OFFConfig
 logger = logging.getLogger(__name__)
 
 
+class RateLimitedError(RuntimeError):
+    """OFF 返回 429 Too Many Requests —— 限流，非「条码不存在」。
+
+    必须与 404 严格区分：调用方据此做长退避重试，绝不可当成「数据缺失」
+    而诚实留空（那会漏补真实存在的数据）。
+    """
+
+    def __init__(self, barcode: str = "", retry_after: float = None):
+        self.barcode = barcode
+        self.retry_after = retry_after
+        super().__init__(f"OFF 429 Too Many Requests (barcode={barcode}, retry_after={retry_after})")
+
+
 class TokenBucket:
     """令牌桶限速器 — 只限流不阻塞（异步端点在线程池中调用时不需 sleep）"""
 
@@ -121,23 +134,45 @@ class OFFClient:
 
         url = f"{self.config.API_BASE}/api/v2/product/{barcode}.json"
         response = None  # 初始化 response 避免 UnboundLocalError
+        last_rate_limit_wait = None
         for attempt in range(self.config.MAX_RETRIES):
             try:
                 response = self._http_client.get(url)
                 if response.status_code == 404:
                     return None
+                if response.status_code == 429:
+                    # 限流：非「不存在」。读取 Retry-After（秒）做长退避后重试；
+                    # 重试耗尽则抛 RateLimitedError，让调用方明确这是限流而非缺失。
+                    retry_after = None
+                    ra = response.headers.get("Retry-After")
+                    if ra and ra.strip().isdigit():
+                        retry_after = float(ra.strip())
+                    last_rate_limit_wait = retry_after
+                    wait = max(retry_after or 0.0, self.config.RETRY_BACKOFF_FACTOR ** attempt)
+                    logger.warning(
+                        f"[OFFClient] 429 限流 {barcode}, {wait:.1f}s 后重试 "
+                        f"({attempt+1}/{self.config.MAX_RETRIES})")
+                    time.sleep(wait)
+                    continue
                 response.raise_for_status()
                 data = response.json()
                 product = data.get("product") or data.get("products", [{}])[0]
                 return product if product else None
+            except httpx.HTTPStatusError:
+                # 非 404/429 的 HTTP 错误（如 5xx 已在上面处理）：不重试，返回 None
+                logger.warning(f"[OFFClient] 条码查询 HTTP 错误 {barcode}: {response.status_code}")
+                break
             except httpx.HTTPError as e:
-                if response.status_code in (503, 502, 504):
+                if response is not None and response.status_code in (503, 502, 504):
                     wait = self.config.RETRY_BACKOFF_FACTOR ** attempt
                     logger.warning(f"[OFFClient] 服务器错误 {response.status_code}, {barcode} 重试 ({attempt+1}/{self.config.MAX_RETRIES})")
                     time.sleep(wait)
                     continue
                 logger.warning(f"[OFFClient] 条码查询失败 {barcode}: {e}")
                 break
+        # 重试耗尽：若最后是限流，抛专用异常（区别于「不存在」）
+        if last_rate_limit_wait is not None:
+            raise RateLimitedError(barcode=barcode, retry_after=last_rate_limit_wait)
         return None
 
     def search_products_batch(
