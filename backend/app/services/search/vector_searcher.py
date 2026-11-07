@@ -11,6 +11,8 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.services.search.bm25_searcher import RETAIL_PLACEHOLDER_FILTER
+
 logger = logging.getLogger(__name__)
 
 
@@ -261,9 +263,10 @@ class VectorSearcher:
                 WHERE rp.embedding IS NOT NULL
                   AND rp.embedding::vector <=> :query_vec::vector < 1 - :min_sim
                   AND rp.data_quality >= 0.3
+                  {placeholder_filter}
                 ORDER BY rp.embedding::vector <=> :query_vec::vector
                 LIMIT :top_k
-            """)
+            """.format(placeholder_filter=RETAIL_PLACEHOLDER_FILTER))
 
             result = await self.db.execute(sql, {
                 "query_vec": vec_str,
@@ -298,7 +301,8 @@ class VectorSearcher:
             FROM retail_products rp
             WHERE rp.embedding IS NOT NULL
               AND rp.data_quality >= 0.3
-        """)
+              {placeholder_filter}
+        """.format(placeholder_filter=RETAIL_PLACEHOLDER_FILTER))
 
         # 同 food_materials 回退：全量拉取候选行，客户端算余弦后取 top_k，
         # 不再 ORDER BY created_at LIMIT top_k（那只覆盖最近创建的任意子集）。
