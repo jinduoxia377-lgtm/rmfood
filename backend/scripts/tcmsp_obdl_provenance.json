@@ -1,0 +1,917 @@
+{
+  "materials": {
+    "15": {
+      "id": 15,
+      "name_cn": "枸杞子",
+      "original": {
+        "ob_percent": 40.0,
+        "dl_value": 0.7,
+        "bioavailability_score": 0.0,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "17": {
+      "id": 17,
+      "name_cn": "山药",
+      "original": {
+        "ob_percent": 65.0,
+        "dl_value": 0.8,
+        "bioavailability_score": 0.0,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "18": {
+      "id": 18,
+      "name_cn": "黄芪",
+      "original": {
+        "ob_percent": 60.0,
+        "dl_value": 0.8,
+        "bioavailability_score": 0.0,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "19": {
+      "id": 19,
+      "name_cn": "人参",
+      "original": {
+        "ob_percent": 80.0,
+        "dl_value": 1.0,
+        "bioavailability_score": 0.0,
+        "source_db": "tcm_herbs+hf_enriched_herbs.compounds",
+        "data_quality": 0.85
+      }
+    },
+    "21": {
+      "id": 21,
+      "name_cn": "金银花",
+      "original": {
+        "ob_percent": 55.0,
+        "dl_value": 0.7,
+        "bioavailability_score": 0.0,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "24": {
+      "id": 24,
+      "name_cn": "薏苡仁",
+      "original": {
+        "ob_percent": 60.0,
+        "dl_value": 0.75,
+        "bioavailability_score": 0.0,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "26": {
+      "id": 26,
+      "name_cn": "黑芝麻",
+      "original": {
+        "ob_percent": 45.0,
+        "dl_value": 0.6,
+        "bioavailability_score": 0.0,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "27": {
+      "id": 27,
+      "name_cn": "核桃仁",
+      "original": {
+        "ob_percent": 50.0,
+        "dl_value": 0.65,
+        "bioavailability_score": 0.0,
+        "source_db": "tcm_herbs+hf_enriched_herbs.compounds",
+        "data_quality": 0.85
+      }
+    },
+    "30": {
+      "id": 30,
+      "name_cn": "八角茴香",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "31": {
+      "id": 31,
+      "name_cn": "白扁豆",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "33": {
+      "id": 33,
+      "name_cn": "白果",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "34": {
+      "id": 34,
+      "name_cn": "白芷",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "35": {
+      "id": 35,
+      "name_cn": "百合",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "36": {
+      "id": 36,
+      "name_cn": "薄荷",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "37": {
+      "id": 37,
+      "name_cn": "荜茇",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "38": {
+      "id": 38,
+      "name_cn": "草果",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "39": {
+      "id": 39,
+      "name_cn": "赤小豆",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "41": {
+      "id": 41,
+      "name_cn": "淡豆豉",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "43": {
+      "id": 43,
+      "name_cn": "当归",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "44": {
+      "id": 44,
+      "name_cn": "党参",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "45": {
+      "id": 45,
+      "name_cn": "刀豆",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "47": {
+      "id": 47,
+      "name_cn": "丁香",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "48": {
+      "id": 48,
+      "name_cn": "杜仲叶",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "51": {
+      "id": 51,
+      "name_cn": "佛手",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "52": {
+      "id": 52,
+      "name_cn": "茯苓",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "54": {
+      "id": 54,
+      "name_cn": "覆盆子",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "55": {
+      "id": 55,
+      "name_cn": "甘草",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "56": {
+      "id": 56,
+      "name_cn": "高良姜",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "57": {
+      "id": 57,
+      "name_cn": "葛根",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "58": {
+      "id": 58,
+      "name_cn": "荷叶",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "60": {
+      "id": 60,
+      "name_cn": "花椒",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "61": {
+      "id": 61,
+      "name_cn": "化橘红",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "62": {
+      "id": 62,
+      "name_cn": "槐花",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "65": {
+      "id": 65,
+      "name_cn": "黄精",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "66": {
+      "id": 66,
+      "name_cn": "火麻仁",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "71": {
+      "id": 71,
+      "name_cn": "姜黄",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "72": {
+      "id": 72,
+      "name_cn": "桔梗",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "74": {
+      "id": 74,
+      "name_cn": "菊花",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "75": {
+      "id": 75,
+      "name_cn": "菊苣",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "77": {
+      "id": 77,
+      "name_cn": "决明子",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "78": {
+      "id": 78,
+      "name_cn": "昆布",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "79": {
+      "id": 79,
+      "name_cn": "莱菔子",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "81": {
+      "id": 81,
+      "name_cn": "灵芝",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "84": {
+      "id": 84,
+      "name_cn": "罗汉果",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "85": {
+      "id": 85,
+      "name_cn": "马齿苋",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "87": {
+      "id": 87,
+      "name_cn": "麦芽",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "89": {
+      "id": 89,
+      "name_cn": "木瓜",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "90": {
+      "id": 90,
+      "name_cn": "胖大海",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "92": {
+      "id": 92,
+      "name_cn": "芡实",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "93": {
+      "id": 93,
+      "name_cn": "青果",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "94": {
+      "id": 94,
+      "name_cn": "肉苁蓉",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "96": {
+      "id": 96,
+      "name_cn": "肉豆蔻",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "98": {
+      "id": 98,
+      "name_cn": "桑椹",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "99": {
+      "id": 99,
+      "name_cn": "桑叶",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "100": {
+      "id": 100,
+      "name_cn": "沙棘",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "101": {
+      "id": 101,
+      "name_cn": "砂仁",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "102": {
+      "id": 102,
+      "name_cn": "山柰",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "103": {
+      "id": 103,
+      "name_cn": "山茱萸",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "104": {
+      "id": 104,
+      "name_cn": "酸枣仁",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "105": {
+      "id": 105,
+      "name_cn": "桃仁",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "106": {
+      "id": 106,
+      "name_cn": "天冬",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "109": {
+      "id": 109,
+      "name_cn": "乌梅",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "111": {
+      "id": 111,
+      "name_cn": "西红花",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "112": {
+      "id": 112,
+      "name_cn": "西洋参",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "115": {
+      "id": 115,
+      "name_cn": "香薷",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "116": {
+      "id": 116,
+      "name_cn": "香橼",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "117": {
+      "id": 117,
+      "name_cn": "小茴香",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "118": {
+      "id": 118,
+      "name_cn": "小蓟",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "119": {
+      "id": 119,
+      "name_cn": "薤白",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "123": {
+      "id": 123,
+      "name_cn": "余甘子",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "124": {
+      "id": 124,
+      "name_cn": "鱼腥草",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "125": {
+      "id": 125,
+      "name_cn": "玉竹",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "126": {
+      "id": 126,
+      "name_cn": "郁李仁",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "129": {
+      "id": 129,
+      "name_cn": "栀子",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "130": {
+      "id": 130,
+      "name_cn": "枳椇子",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "131": {
+      "id": 131,
+      "name_cn": "紫苏",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "133": {
+      "id": 133,
+      "name_cn": "白术",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "tcm_herbs+mmid_herbs",
+        "data_quality": 0.95
+      }
+    },
+    "135": {
+      "id": 135,
+      "name_cn": "太子参",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "tcm_herbs+mmid_herbs",
+        "data_quality": 0.95
+      }
+    },
+    "138": {
+      "id": 138,
+      "name_cn": "白芍",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "tcm_herbs+mmid_herbs",
+        "data_quality": 0.95
+      }
+    },
+    "146": {
+      "id": 146,
+      "name_cn": "玫瑰花",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "tcm_herbs+hf_enriched_herbs.compounds",
+        "data_quality": 0.85
+      }
+    },
+    "147": {
+      "id": 147,
+      "name_cn": "知母",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "tcm_herbs+hf_enriched_herbs.compounds",
+        "data_quality": 0.85
+      }
+    },
+    "150": {
+      "id": 150,
+      "name_cn": "葛花",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "tcm_herbs+hf_enriched_herbs.compounds",
+        "data_quality": 0.85
+      }
+    },
+    "151": {
+      "id": 151,
+      "name_cn": "墨旱莲",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "tcm_herbs+hf_enriched_herbs.compounds",
+        "data_quality": 0.85
+      }
+    }
+  }
+}
