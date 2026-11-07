@@ -27,6 +27,17 @@ logger = logging.getLogger(__name__)
 _RetailProduct = None
 _RetailProductResponse = None
 
+# 占位/测试行过滤（product_name 为空或形如 Test/测试/sample/demo/placeholder/tmp/na/null...）。
+# 与 services/search/bm25_searcher.py 的 RETAIL_PLACEHOLDER_FILTER 语义一致：
+# phase-10 已把占位行排除出【搜索】，但 list_retail_products 列表端点此前未过滤，
+# 导致 /databases 零售列表仍漏出 "Test"/"Test roast"/"TEST Trauerkarte"/空名 等垃圾行。
+# 此处为【查询期非破坏过滤】——不删除任何数据，仅不在列表/计数中呈现占位行。
+# 正则锚定品名开头，故 "Ritter Sport Test Schokolade"（Test 在中间的真实产品）不受影响。
+_RETAIL_PLACEHOLDER_NAME_RE = (
+    r'^(test|测试|sample|demo|placeholder|tmp|temp|asdf|aaa|unknown|na|n/a|none|null)'
+    r'([[:space:]]|$|[-–—])'
+)
+
 
 def _set_food_search_tokens(material) -> None:
     """创建/更新 food_materials 时用 jieba 生成 search_tokens_{a..d}。
@@ -257,6 +268,15 @@ async def list_retail_products(
         stmt = stmt.where(_RetailProduct.category.ilike(f"%{category}%"))
     if brand:
         stmt = stmt.where(_RetailProduct.brand.ilike(f"%{brand}%"))
+
+    # 占位/测试行非破坏过滤（与搜索路径 RETAIL_PLACEHOLDER_FILTER 一致）：
+    # 排除 product_name 为空或形如 Test/测试/sample/... 的垃圾行，避免 /databases 列表漏出占位行。
+    # 必须在 count 之前施加，使 total 计数同样排除占位行（诚实反映真实产品数）。
+    stmt = stmt.where(
+        _RetailProduct.product_name.isnot(None),
+        func.length(func.btrim(_RetailProduct.product_name)) > 0,
+        ~_RetailProduct.product_name.op('~*')(_RETAIL_PLACEHOLDER_NAME_RE),
+    )
 
     count_stmt = select(func.count()).select_from(stmt.subquery())
     total = (await db.execute(count_stmt)).scalar() or 0
