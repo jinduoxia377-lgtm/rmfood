@@ -15,6 +15,18 @@ from ..openfoodfacts.config import OFFConfig
 logger = logging.getLogger(__name__)
 
 
+# 零售搜索通用占位/测试行过滤（非破坏：仅搜索时排除，不删数据）。
+# OpenFoodFacts 抓取数据里混有 product_name 为 "Test"/"test"/"Test product API" 等
+# 占位行，会污染搜索结果（如搜品牌"无限极"却返回名为"Test"的行）。此处按
+# product_name 形态排除占位行：空名、纯 test/测试/demo/sample 等占位词。
+# 不误伤真实商品：正常品名不会以这些占位词开头。
+RETAIL_PLACEHOLDER_FILTER = """
+              AND rp.product_name IS NOT NULL
+              AND length(btrim(rp.product_name)) > 0
+              AND rp.product_name !~* '^(test|测试|sample|demo|placeholder|tmp|temp|asdf|aaa|unknown|na|n/a|none|null)([[:space:]]|$|[-–—])'
+"""
+
+
 def build_tsquery_or_groups(keywords: List[str]) -> List[List[str]]:
     """
     把关键词列表折叠成 tsquery 的 OR 组。
@@ -451,7 +463,8 @@ class BM25Searcher:
             FROM retail_products rp
             WHERE rp.search_vector @@ to_tsquery(:rc, :tsquery)
               AND rp.data_quality >= 0.3
-        """)
+              {placeholder_filter}
+        """.format(placeholder_filter=RETAIL_PLACEHOLDER_FILTER))
         params: dict[str, Any] = {"tsquery": tsquery_str, "rc": regconfig}
 
         conditions = []
@@ -530,6 +543,7 @@ class BM25Searcher:
             FROM retail_products rp
             WHERE ({where_clause})
               AND rp.data_quality >= 0.3
+              {RETAIL_PLACEHOLDER_FILTER}
         """)
 
         filter_conditions = []
