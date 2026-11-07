@@ -1,0 +1,32 @@
+{
+  "cleared_because": "not_in_tcmsp_index_unfounded_estimates",
+  "originals": [
+    {
+      "id": 20.0,
+      "name_cn": "桂花",
+      "source_db": "bencao+pharmacopoeia",
+      "data_quality": 0.95,
+      "ob_percent": 70.0,
+      "dl_value": 0.85,
+      "bioavailability_score": 0.0
+    },
+    {
+      "id": 23.0,
+      "name_cn": "山楂",
+      "source_db": "china_food_regulations",
+      "data_quality": 0.98,
+      "ob_percent": 55.0,
+      "dl_value": 0.7,
+      "bioavailability_score": 0.0
+    },
+    {
+      "id": 25.0,
+      "name_cn": "大豆",
+      "ob_percent": 35.0,
+      "dl_value": 0.5,
+      "bioavailability_score": 0.0,
+      "source_db": "china_food_regulations",
+      "data_quality": 0.98
+    }
+  ]
+}
