@@ -303,10 +303,20 @@ const FoodMaterialDetailDrawer: React.FC<FoodMaterialDetailDrawerProps> = ({
                 <InfoRow label="OB% (口服生物利用度)" value={detail.ob_percent != null ? `${Number(detail.ob_percent).toFixed(2)}%` : '—'} />
                 <InfoRow label="DL (类药性)" value={detail.dl_value != null ? Number(detail.dl_value).toFixed(3) : '—'} />
                 <InfoRow label="生物利用度评分" value={detail.bioavailability_score != null ? Number(detail.bioavailability_score).toFixed(2) : '—'} />
-                <div className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
-                  <Info className="h-3 w-3" />
-                  口径说明：以上药代数值为 TCMSP 化合物级口径，非原料整体实测值，仅供参考。
-                </div>
+                {detail.ob_percent != null || detail.dl_value != null ? (
+                  <div className="text-[11px] text-muted-foreground mt-2 flex items-start gap-1">
+                    <Info className="h-3 w-3 mt-0.5 shrink-0" />
+                    {detail.source_db === 'tcm_sp' ? (
+                      <span>
+                        数据来源：TCMSP（中药系统药理学数据库）。以上为该原料活性化合物的
+                        <strong> in-silico 预测值</strong>（非人体实测），按 ADME 阈值
+                        （OB≥30% 且 DL≥0.18）筛选后聚合，属原料整体参考口径，非绝对实测。
+                      </span>
+                    ) : (
+                      <span>口径说明：以上药代数值为参考口径，非原料整体实测值，仅供参考。</span>
+                    )}
+                  </div>
+                ) : null}
               </Section>
 
               {/* 成分 */}
