@@ -78,6 +78,16 @@ class RetailProduct(Base):
     # 注: 无 pgvector 时存储为 JSON 数组; 有 pgvector 时可用 VECTOR(768) 类型
     embedding: Mapped[list | None] = mapped_column(JSON, comment="产品嵌入向量 (JSON 数组)")
 
+    # ── 全文检索 token（应用侧 jieba 预分词，迁移 022）──
+    # search_vector 由 DB 触发器 fn_retail_products_search_vector 维护：
+    # 这四列非空时按 to_tsvector('simple', tokens) 分词构建（真中文召回）；
+    # 全空时触发器回退用原文按权重构建（迁移 020 旧行为，非破坏）。
+    # 写入时由 chinese_nlp.build_retail_search_tokens 生成（空格分隔 token 串）。
+    search_tokens_a: Mapped[str | None] = mapped_column(Text, comment="jieba 分词 token 串 (权重A: product_name/brand)")
+    search_tokens_b: Mapped[str | None] = mapped_column(Text, comment="jieba 分词 token 串 (权重B: category/sub_category)")
+    search_tokens_c: Mapped[str | None] = mapped_column(Text, comment="jieba 分词 token 串 (权重C: effects/target_population/full_ingredients)")
+    search_tokens_d: Mapped[str | None] = mapped_column(Text, comment="jieba 分词 token 串 (权重D: formulation_type/key_ingredients)")
+
     # ── 元数据 ──
     source: Mapped[str] = mapped_column(String(50), default="crawl", index=True, comment="数据来源")
     crawl_timestamp: Mapped[datetime | None] = mapped_column(nullable=True, comment="爬取时间")

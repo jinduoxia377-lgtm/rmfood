@@ -388,6 +388,130 @@ class ChineseNLPPipeline:
             parts.append(category)
         return " ".join(parts)
 
+    # ── 应用侧 jieba 预分词（激活真·中文全文检索）─────────────────
+    # 背景：DB 侧 pg_jieba 不可用，search_vector 此前由未分词原文 +
+    # regconfig='simple' 构建，'simple' 不分词 → 整串中文成一个 token，
+    # 搜"活血"匹配不到"活血化瘀"（召回缺失）。
+    # 方案：应用侧用 jieba 把各字段分词，产出**空格分隔的 token 串**存入
+    # search_tokens_{a..d} 列；触发器改用 to_tsvector('simple', tokens) 构建
+    # search_vector。这样索引里是分好的词，查询侧 jieba 关键词能对上。
+    #
+    # 关键一致性：本方法与查询侧 extract_keywords/normalize_query 用**同一套**
+    # jieba 词典 + 同义词表。 compound 术语（如"活血化瘀"）既是词典词会被
+    # segment 整体保留，又通过 TCM_SYNONYMS 展开出细粒度词（活血/化瘀/通络），
+    # 因此无论查询粗粒度词还是细粒度词都能命中索引。
+
+    def _tokens_with_synonyms(self, text: str) -> List[str]:
+        """对单段文本分词并展开同义词，返回去重后的 token 列表。
+
+        - segment 用与查询侧相同的 jieba 词典；
+        - 命中 TCM_SYNONYMS 的词额外追加其同义词（细粒度召回）；
+        - 过滤空白；保持出现顺序去重。
+        """
+        if not text:
+            return []
+        out: List[str] = []
+        seen: set = set()
+        for tok in self.segment(text):
+            tok = tok.strip()
+            if not tok:
+                continue
+            if tok not in seen:
+                out.append(tok)
+                seen.add(tok)
+            for syn in TCM_SYNONYMS.get(tok, []):
+                if syn and syn not in seen:
+                    out.append(syn)
+                    seen.add(syn)
+        return out
+
+    @staticmethod
+    def _join_tokens(tokens: List[str]) -> str:
+        """把 token 列表拼成空格分隔串（触发器 to_tsvector('simple', ...) 用）。"""
+        return " ".join(tokens)
+
+    def build_food_search_tokens(
+        self,
+        name_cn: str,
+        aliases=None,
+        effects=None,
+        indications: Optional[str] = None,
+        category: Optional[str] = None,
+        sub_category: Optional[str] = None,
+        description: Optional[str] = None,
+    ) -> Dict[str, str]:
+        """为 food_materials 产出按权重分组的分词 token 串。
+
+        权重分组与迁移 022 触发器一一对应：
+          A = name_cn
+          B = aliases
+          C = effects + indications
+          D = category + sub_category + description
+        返回 {'a','b','c','d'} 四个空格分隔 token 串（空组为 ''）。
+        """
+        def _arr(v):
+            if isinstance(v, (list, tuple)):
+                return " ".join(str(x) for x in v if x)
+            return str(v) if v else ""
+
+        return {
+            "a": self._join_tokens(self._tokens_with_synonyms(name_cn or "")),
+            "b": self._join_tokens(self._tokens_with_synonyms(_arr(aliases))),
+            "c": self._join_tokens(
+                self._tokens_with_synonyms((_arr(effects) + " " + (indications or "")).strip())
+            ),
+            "d": self._join_tokens(
+                self._tokens_with_synonyms(
+                    ((category or "") + " " + (sub_category or "") + " " + (description or "")).strip()
+                )
+            ),
+        }
+
+    def build_retail_search_tokens(
+        self,
+        product_name: str,
+        brand: Optional[str] = None,
+        category: Optional[str] = None,
+        sub_category: Optional[str] = None,
+        effects=None,
+        target_population=None,
+        full_ingredients: Optional[str] = None,
+        formulation_type: Optional[str] = None,
+        key_ingredients=None,
+    ) -> Dict[str, str]:
+        """为 retail_products 产出按权重分组的分词 token 串。
+
+        权重分组与迁移 022 触发器一一对应：
+          A = product_name + brand
+          B = category + sub_category
+          C = effects + target_population + full_ingredients
+          D = formulation_type + key_ingredients
+        返回 {'a','b','c','d'} 四个空格分隔 token 串（空组为 ''）。
+        """
+        def _arr(v):
+            if isinstance(v, (list, tuple)):
+                return " ".join(str(x) for x in v if x)
+            if isinstance(v, dict):
+                return " ".join(str(x) for x in v.values() if x)
+            return str(v) if v else ""
+
+        return {
+            "a": self._join_tokens(
+                self._tokens_with_synonyms(((product_name or "") + " " + (brand or "")).strip())
+            ),
+            "b": self._join_tokens(
+                self._tokens_with_synonyms(((category or "") + " " + (sub_category or "")).strip())
+            ),
+            "c": self._join_tokens(
+                self._tokens_with_synonyms(
+                    (_arr(effects) + " " + _arr(target_population) + " " + (full_ingredients or "")).strip()
+                )
+            ),
+            "d": self._join_tokens(
+                self._tokens_with_synonyms((_arr(formulation_type) + " " + _arr(key_ingredients)).strip())
+            ),
+        }
+
 
 # 全局单例
 _nlp_pipeline: Optional[ChineseNLPPipeline] = None
