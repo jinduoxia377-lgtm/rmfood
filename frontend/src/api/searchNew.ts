@@ -118,6 +118,11 @@ export interface FoodMaterialDetail {
   review_status?: string;
   /** 后端合规判定辅助字段：数据是否足以支撑合规结论 */
   data_sufficient?: boolean;
+  /** 溯源/审校相关（to_dict 顶层字段） */
+  suppliers?: Record<string, unknown>;
+  origin_countries?: unknown;
+  msds_url?: string | null;
+  coa_url?: string | null;
 }
 
 /** 批量配方合规检查 — 单条结果（violations/warnings/info 共用结构） */
@@ -133,6 +138,20 @@ export interface FormulaComplianceResult {
   warnings?: ComplianceViolation[];
   info?: ComplianceViolation[];
   [key: string]: unknown;
+}
+
+/**
+ * 专家审校更新载荷（对齐后端 FoodMaterialUpdate 白名单，partial update）
+ * 仅传改动的字段；后端 exclude_unset 保证未传字段不动。
+ * 注意：interactions/contraindications 在更新 schema 中为顶层 List[str]。
+ */
+export interface FoodMaterialReviewUpdate {
+  interactions?: string[];
+  contraindications?: string[];
+  suppliers?: Record<string, unknown>;
+  origin_countries?: string[];
+  msds_url?: string;
+  coa_url?: string;
 }
 
 export interface RetailProductFilter {
@@ -311,6 +330,19 @@ export async function listFoodMaterials(params?: {
 export async function getFoodMaterial(id: number): Promise<FoodMaterialDetail> {
   const response = await databaseApi.get(`/databases/food-materials/${id}`);
   return unwrapResponse<FoodMaterialDetail>(response);
+}
+
+/**
+ * 更新食品原料（专家审校，admin/formulator）
+ * PUT /databases/food-materials/:id — partial update，仅传改动字段。
+ * 走 axios 实例（baseURL 已含 /api/v1），Cookie 自动携带认证 + CSRF。
+ */
+export async function updateFoodMaterial(
+  id: number,
+  data: FoodMaterialReviewUpdate,
+): Promise<FoodMaterialDetail> {
+  const response = await api.put<FoodMaterialDetail>(`/databases/food-materials/${id}`, data);
+  return response.data;
 }
 
 // ── 零售产品搜索 ──
