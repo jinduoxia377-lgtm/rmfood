@@ -6,15 +6,21 @@
 """
 import logging
 import time
-from typing import List
+from datetime import datetime, timezone
+from typing import Any, List, Optional
 
 from fastapi import Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_db_session
+from app.api.deps import get_current_user, get_db_session
+from app.models.material_field_review import MaterialFieldReview
+from app.models.user_model import User
 from app.schemas.search_new import (
+    REVIEWABLE_MATERIAL_FIELDS,
     FoodMaterialSearchRequest,
     FoodMaterialSearchResponse,
+    MaterialFieldReviewCreate,
     NormalizeRequest,
     NormalizeResponse,
     RetailProductSearchRequest,
@@ -388,3 +394,132 @@ async def check_formula_compliance(
     formula_items = [m.to_dict() for m in materials]
     check_result = await engine.check_formula_compliance(formula_items)
     return check_result.to_dict()
+
+
+# ── 字段级审校审计 (material_field_review) ──────────────────────────────────
+#
+# 专家审校工作流的 provenance 溯源：安全关键字段的「值」仍存 food_materials
+# 主表（PUT 语义不变），审校动作的「谁/何时/来源/备注/值快照」追加写入
+# material_field_review。一 (material_id, field_name) 唯一，重复审校 upsert
+# 覆盖为最新 provenance。reviewed_by 一律由服务端从 current_user 取，绝不
+# 接受客户端传入（MaterialFieldReviewCreate extra="forbid" 已在 schema 层拒绝）。
+
+
+def _json_safe_field_value(material, field_name: str) -> Any:
+    """从 FoodMaterial ORM 对象取字段值并转为 JSON 兼容形态（list/dict 原样，其余直接取）。"""
+    value = getattr(material, field_name, None)
+    if isinstance(value, (list, dict)) or value is None:
+        return value
+    return value
+
+
+@router.post("/food-materials/{material_id}/review", summary="提交单字段审校（专家审校工作流）")
+async def review_food_material_field(
+    material_id: int,
+    data: MaterialFieldReviewCreate,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: Optional[User] = Depends(get_current_user),
+):
+    """
+    记录专家对单个安全关键字段的审校动作。
+
+    - 值写入 food_materials 主表（与 PUT 一致），同时在 material_field_review
+      upsert 一条 provenance（谁/何时/来源/备注/值快照）。
+    - reviewed_by 由服务端从 current_user 取，客户端无法伪造。
+    - field_name 必须在 REVIEWABLE_MATERIAL_FIELDS 白名单内。
+    - 需要管理员或配方师权限。
+    """
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="未认证，请先登录")
+    if current_user.role not in ("admin", "formulator"):
+        raise HTTPException(status_code=403, detail="权限不足，需要管理员或配方师权限")
+
+    if data.field_name not in REVIEWABLE_MATERIAL_FIELDS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"字段 '{data.field_name}' 不在可审校白名单内",
+        )
+
+    from app.models.food_material import FoodMaterial
+
+    material = (
+        await db.execute(select(FoodMaterial).where(FoodMaterial.id == material_id))
+    ).scalar_one_or_none()
+    if not material:
+        raise HTTPException(status_code=404, detail="食品原料不存在")
+
+    # 1. 更新主表字段值（值真相仍在主表）
+    setattr(material, data.field_name, data.value)
+    material.updated_at = datetime.now(timezone.utc)
+    # 重算中文分词向量（_set_food_search_tokens 定义在 retail_products.py，
+    # 本地导入避免 db_modules 子模块间的加载顺序耦合）
+    from .retail_products import _set_food_search_tokens
+    _set_food_search_tokens(material)
+
+    # 2. upsert 审计 provenance（reviewed_by 服务端取，防越权）
+    review = (
+        await db.execute(
+            select(MaterialFieldReview).where(
+                MaterialFieldReview.material_id == material_id,
+                MaterialFieldReview.field_name == data.field_name,
+            )
+        )
+    ).scalar_one_or_none()
+
+    now = datetime.now(timezone.utc)
+    if review is None:
+        review = MaterialFieldReview(
+            material_id=material_id,
+            field_name=data.field_name,
+            value=_json_safe_field_value(material, data.field_name),
+            source=data.source,
+            review_note=data.review_note,
+            reviewed_by=current_user.id,
+            reviewed_at=now,
+        )
+        db.add(review)
+    else:
+        review.value = _json_safe_field_value(material, data.field_name)
+        review.source = data.source
+        review.review_note = data.review_note
+        review.reviewed_by = current_user.id
+        review.reviewed_at = now
+
+    await db.commit()
+    await db.refresh(review)
+    return review.to_dict()
+
+
+@router.get("/food-materials/{material_id}/review", summary="查询字段审校 provenance")
+async def get_food_material_field_reviews(
+    material_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: Optional[User] = Depends(get_current_user),
+):
+    """
+    返回某食品原料各安全关键字段的审校历史（谁/何时/来源/备注/值快照）。
+
+    需认证；管理员/配方师/审校员可读（审校工作流相关角色）。
+    """
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="未认证，请先登录")
+    if current_user.role not in ("admin", "formulator", "reviewer"):
+        raise HTTPException(status_code=403, detail="权限不足")
+
+    from app.models.food_material import FoodMaterial
+
+    material = (
+        await db.execute(select(FoodMaterial).where(FoodMaterial.id == material_id))
+    ).scalar_one_or_none()
+    if not material:
+        raise HTTPException(status_code=404, detail="食品原料不存在")
+
+    reviews = (
+        await db.execute(
+            select(MaterialFieldReview)
+            .where(MaterialFieldReview.material_id == material_id)
+            .order_by(MaterialFieldReview.reviewed_at.desc())
+        )
+    ).scalars().all()
+
+    return {"material_id": material_id, "items": [r.to_dict() for r in reviews]}

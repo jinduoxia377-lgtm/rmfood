@@ -107,6 +107,7 @@ from .ingredient_lot import IngredientLot
 
 # 知识图谱模块
 from .knowledge_graph import KGEdge, KGNode
+from .material_field_review import MaterialFieldReview
 from .mcp_server import McpServerConfig
 from .notification import Notification, NotificationPreference
 
@@ -128,6 +129,9 @@ from .pre_register import PreRegisterRequest, PreRegisterStatus
 # AI辅助模块
 from .prompt_template import PromptTemplate
 from .prompt_version import PromptVersion
+
+# RAG 知识来源（本草古籍书目元数据）
+from .rag_knowledge_source import RagKnowledgeSource
 from .retail_product import RetailProduct
 from .sample import Sample
 
@@ -319,4 +323,8 @@ __all__ = [
     # RAG 知识库文档版本持久化
     "RAGDocumentVersion",
     "RAGDocumentAuditLog",
+    # RAG 知识来源（本草古籍书目元数据）
+    "RagKnowledgeSource",
+    # 字段级审校审计（food_materials 专家审校工作流）
+    "MaterialFieldReview",
 ]
