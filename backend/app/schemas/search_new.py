@@ -108,6 +108,49 @@ class FoodMaterialUpdate(BaseModel):
     model_config = {"extra": "forbid"}
 
 
+# ── 字段级审校审计 (material_field_review) ─────────────────────
+#
+# 允许专家审校的安全关键字段白名单。审校端点据此校验 field_name，
+# 防止对任意字段（尤其 id / 审计字段）建立伪造 provenance。
+REVIEWABLE_MATERIAL_FIELDS = frozenset({
+    "interactions",
+    "contraindications",
+    "active_ingredients",
+    "effects",
+    "safe_dose_min",
+    "safe_dose_max",
+    "regulatory_status",
+    "toxicity_class",
+    "max_daily_intake",
+})
+
+
+class MaterialFieldReviewCreate(BaseModel):
+    """提交单字段审校（专家审校工作流）。
+
+    reviewed_by 由服务端从 current_user 取，此处不接受任何身份字段
+    （extra="forbid" 确保 reviewed_by/reviewed_at 传入即 422）。
+    """
+    field_name: str = Field(..., description="被审校字段名（须在 REVIEWABLE_MATERIAL_FIELDS 内）")
+    value: Optional[Any] = Field(None, description="审校后的字段值（写入主表并存快照）")
+    source: Optional[str] = Field(None, max_length=128, description="依据来源：本草/药典/文献/专家经验")
+    review_note: Optional[str] = Field(None, description="审校备注")
+
+    model_config = {"extra": "forbid"}
+
+
+class MaterialFieldReviewResponse(BaseModel):
+    """字段审校 provenance 响应"""
+    id: int
+    material_id: int
+    field_name: str
+    value: Optional[Any] = None
+    source: Optional[str] = None
+    review_note: Optional[str] = None
+    reviewed_by: int
+    reviewed_at: Optional[str] = None
+
+
 class FoodMaterialFilter(BaseModel):
     """食品原料搜索筛选条件"""
     category: Optional[str] = None
