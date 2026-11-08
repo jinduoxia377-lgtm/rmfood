@@ -16,9 +16,11 @@ import {
 } from '@/components/ui';
 import {
   X, Star, AlertTriangle, ShieldCheck, FlaskConical, Leaf, Pill,
-  Scale, Info,
+  Scale, Info, ClipboardCheck,
 } from 'lucide-react';
 import { getFoodMaterial, type FoodMaterialDetail } from '../../../api/searchNew';
+import { useAuthStore } from '@/stores/auth';
+import FoodMaterialReviewPanel from './FoodMaterialReviewPanel';
 
 interface FoodMaterialDetailDrawerProps {
   open: boolean;
@@ -141,7 +143,16 @@ const FoodMaterialDetailDrawer: React.FC<FoodMaterialDetailDrawerProps> = ({
   onToggleFavorite,
   favoriteLoading = false,
 }) => {
-  const [showAllIngredients, setShowAllIngredients] = useState(false);
+  // 「展开全部成分」按原料记忆；切换原料时自动回落为折叠（派生值，无需 effect）
+  const [expandedState, setExpandedState] = useState<{ id: number | null; expanded: boolean }>({ id: null, expanded: false });
+  const showAllIngredients = expandedState.id === materialId ? expandedState.expanded : false;
+  const toggleAllIngredients = () => setExpandedState({ id: materialId, expanded: !showAllIngredients });
+  const [reviewOpen, setReviewOpen] = useState(false);
+
+  // 专家审校入口：仅 admin / formulator 可见（与后端 PUT 权限一致）
+  const user = useAuthStore((s) => s.user);
+  const reviewRole = (user?.role ?? '').toLowerCase();
+  const canReview = reviewRole === 'admin' || reviewRole === 'formulator';
 
   const {
     data: detail,
@@ -153,11 +164,6 @@ const FoodMaterialDetailDrawer: React.FC<FoodMaterialDetailDrawerProps> = ({
     queryFn: () => getFoodMaterial(materialId as number),
     enabled: open && materialId != null,
   });
-
-  // 每次打开/切换原料时重置「展开全部成分」
-  useEffect(() => {
-    setShowAllIngredients(false);
-  }, [materialId, open]);
 
   // Esc 关闭
   useEffect(() => {
@@ -240,6 +246,16 @@ const FoodMaterialDetailDrawer: React.FC<FoodMaterialDetailDrawerProps> = ({
             >
               {isFavorited ? '已收藏' : '收藏'}
             </Button>
+            {canReview && (
+              <Button
+                variant="outline"
+                size="sm"
+                icon={<ClipboardCheck className="h-3.5 w-3.5" />}
+                onClick={() => setReviewOpen(true)}
+              >
+                专家审校
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -359,7 +375,7 @@ const FoodMaterialDetailDrawer: React.FC<FoodMaterialDetailDrawerProps> = ({
                         variant="ghost"
                         size="sm"
                         className="mt-2 h-7 text-xs"
-                        onClick={() => setShowAllIngredients((v) => !v)}
+                        onClick={toggleAllIngredients}
                       >
                         {showAllIngredients ? '收起' : `展开全部 ${ingredients.length} 项`}
                       </Button>
@@ -399,7 +415,19 @@ const FoodMaterialDetailDrawer: React.FC<FoodMaterialDetailDrawerProps> = ({
 
   // Portal 到 body，避免被父级 overflow 裁剪
   if (typeof document === 'undefined') return null;
-  return createPortal(drawer, document.body);
+  return createPortal(
+    <>
+      {drawer}
+      {/* 专家审校面板（admin/formulator，由 header 入口触发）；key 保证每次打开重新播种 */}
+      <FoodMaterialReviewPanel
+        key={reviewOpen ? `review-${materialId}` : 'review-closed'}
+        open={reviewOpen}
+        materialId={materialId}
+        onClose={() => setReviewOpen(false)}
+      />
+    </>,
+    document.body,
+  );
 };
 
 export default FoodMaterialDetailDrawer;
