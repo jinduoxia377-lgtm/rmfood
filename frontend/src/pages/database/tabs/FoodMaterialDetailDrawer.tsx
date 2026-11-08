@@ -16,9 +16,9 @@ import {
 } from '@/components/ui';
 import {
   X, Star, AlertTriangle, ShieldCheck, FlaskConical, Leaf, Pill,
-  Scale, Info, ClipboardCheck,
+  Scale, Info, ClipboardCheck, Dna, ExternalLink,
 } from 'lucide-react';
-import { getFoodMaterial, type FoodMaterialDetail } from '../../../api/searchNew';
+import { getFoodMaterial, type FoodMaterialDetail, type BioactivePeptide } from '../../../api/searchNew';
 import { useAuthStore } from '@/stores/auth';
 import FoodMaterialReviewPanel from './FoodMaterialReviewPanel';
 
@@ -95,6 +95,65 @@ const InfoRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, v
     <span className="font-medium text-right break-words">{value}</span>
   </div>
 );
+
+/** 字段非空（排除 null/undefined/空串） */
+function hasValue(v: unknown): boolean {
+  return v !== null && v !== undefined && String(v).trim() !== '';
+}
+
+/**
+ * 单条已确证活性肽卡片。诚实展示：字段为 None 就不渲染那一项，不臆造。
+ * name 多为 NULL（后端已回退为 sequence）；序列为三字母码原样显示；
+ * DOI 渲染为可点链接 https://doi.org/<doi>。
+ */
+const PeptideItem: React.FC<{ peptide: BioactivePeptide }> = ({ peptide }) => {
+  const displayName = hasValue(peptide.name) ? String(peptide.name) : String(peptide.sequence ?? '未知肽');
+  const doi = hasValue(peptide.literature_doi) ? String(peptide.literature_doi) : null;
+  const sourceParts = [peptide.source_protein, peptide.source_organism].filter(hasValue).join(' · ');
+
+  return (
+    <div className="rounded-[var(--radius-Apple-sm)] border border-border p-[var(--space-apple-sm)] bg-background/40">
+      {/* 标题行：肽名 + 文献确证徽章 */}
+      <div className="flex items-center gap-2 flex-wrap mb-1">
+        <span className="text-sm font-semibold">{displayName}</span>
+        <Badge variant="success">文献确证</Badge>
+      </div>
+
+      {/* 序列（三字母码原样） */}
+      {hasValue(peptide.sequence) && (
+        <InfoRow label="序列" value={<code className="text-xs">{String(peptide.sequence)}</code>} />
+      )}
+      {/* 食源 */}
+      {hasValue(sourceParts) && <InfoRow label="食源" value={sourceParts} />}
+      {/* 活性 */}
+      {(hasValue(peptide.activity_type) || hasValue(peptide.activity_detail)) && (
+        <InfoRow
+          label="活性"
+          value={[peptide.activity_type, peptide.activity_detail].filter(hasValue).join('：')}
+        />
+      )}
+      {/* 机制 */}
+      {hasValue(peptide.mechanism_of_action) && (
+        <InfoRow label="机制" value={String(peptide.mechanism_of_action)} />
+      )}
+      {/* DOI 溯源 */}
+      {doi && (
+        <div className="flex justify-between gap-4 py-1.5 text-sm">
+          <span className="text-muted-foreground shrink-0">DOI</span>
+          <a
+            href={`https://doi.org/${encodeURIComponent(doi)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-primary hover:underline break-all text-right inline-flex items-center gap-1"
+          >
+            {doi}
+            <ExternalLink className="h-3 w-3 shrink-0" />
+          </a>
+        </div>
+      )}
+    </div>
+  );
+};
 
 /** 原料图片：直接用 detail.image_url，加载失败/缺失时优雅降级为占位图标（不破图） */
 const MaterialImage: React.FC<{ src?: string | null; alt: string }> = ({ src, alt }) => {
@@ -181,6 +240,12 @@ const FoodMaterialDetailDrawer: React.FC<FoodMaterialDetailDrawerProps> = ({
   const ingredients = asArray(detail?.active_ingredients);
   const INGREDIENT_PREVIEW = 6;
   const shownIngredients = showAllIngredients ? ingredients : ingredients.slice(0, INGREDIENT_PREVIEW);
+
+  // 已确证活性肽：后端已只返回 literature_confirmed，这里再客户端兜底过滤一次，
+  // 绝不展示合成未验证肽（synthetic_unverified）。无关联肽时为 []，区块不渲染。
+  const confirmedPeptides = (detail?.bioactive_peptides ?? []).filter(
+    (p) => p?.provenance === 'literature_confirmed',
+  );
 
   const safeDose = (() => {
     const min = detail?.safety?.safe_dose_min;
@@ -383,6 +448,20 @@ const FoodMaterialDetailDrawer: React.FC<FoodMaterialDetailDrawerProps> = ({
                   </div>
                 )}
               </Section>
+
+              {/* 已确证活性肽（只展示后端返回的 literature_confirmed 文献确证肽；无则不显示区块） */}
+              {confirmedPeptides.length > 0 && (
+                <Section title={`已确证活性肽（${confirmedPeptides.length}）`} icon={<Dna className="h-4 w-4 text-success" />}>
+                  <div className="text-[11px] text-muted-foreground mb-2">
+                    仅列出来自公开文献、带 DOI 溯源的确证肽（合成未验证肽已排除）。
+                  </div>
+                  <div className="space-y-2">
+                    {confirmedPeptides.map((pep, idx) => (
+                      <PeptideItem key={`${pep.sequence ?? 'pep'}-${idx}`} peptide={pep} />
+                    ))}
+                  </div>
+                </Section>
+              )}
 
               {/* 描述 */}
               {detail.description && String(detail.description).trim() !== '' && (

@@ -90,6 +90,24 @@ export interface FoodMaterialRegulatory {
 }
 
 /**
+ * 已确证活性肽（后端详情端点附带的 bioactive_peptides，只含 provenance='literature_confirmed'）。
+ * 数据诚实口径：name 可能回退为 sequence；sequence 为三字母码；多数描述字段可空，
+ * 前端逐字段判空展示，不臆造。
+ */
+export interface BioactivePeptide {
+  name?: string | null;
+  sequence?: string | null;
+  length?: number | null;
+  source_protein?: string | null;
+  source_organism?: string | null;
+  activity_type?: string | null;
+  activity_detail?: string | null;
+  mechanism_of_action?: string | null;
+  literature_doi?: string | null;
+  provenance?: string | null;
+}
+
+/**
  * 食品原料详情（FoodMaterial.to_dict()）
  * 数组字段后端存在 string[] / string / 缺失 等多种形态，统一用 unknown + asArray 归一渲染。
  */
@@ -123,6 +141,8 @@ export interface FoodMaterialDetail {
   origin_countries?: unknown;
   msds_url?: string | null;
   coa_url?: string | null;
+  /** 已确证活性肽（只 literature_confirmed；无关联肽为 []） */
+  bioactive_peptides?: BioactivePeptide[];
 }
 
 /** 批量配方合规检查 — 单条结果（violations/warnings/info 共用结构） */
