@@ -154,6 +154,40 @@ export interface FoodMaterialReviewUpdate {
   coa_url?: string;
 }
 
+/**
+ * 字段级审校提交载荷（对齐后端 MaterialFieldReviewCreate，extra="forbid"）。
+ * 严禁传 reviewed_by/reviewed_at（服务端从 current_user 取，传入即 422）。
+ * field_name 须在后端 REVIEWABLE_MATERIAL_FIELDS 白名单内。
+ */
+export interface MaterialFieldReviewCreate {
+  field_name: string;
+  /** 审校后的字段值（写入主表并存快照） */
+  value?: unknown;
+  /** 依据来源：本草/药典/文献/专家经验/其他 */
+  source?: string;
+  /** 审校备注 */
+  review_note?: string;
+}
+
+/** 单条字段审校 provenance（POST /review 返回体 & GET /review items 元素） */
+export interface MaterialFieldReviewItem {
+  id: number;
+  material_id: number;
+  field_name: string;
+  value?: unknown;
+  source?: string | null;
+  review_note?: string | null;
+  /** 审校人用户 ID（服务端从 current_user 取） */
+  reviewed_by: number;
+  reviewed_at?: string | null;
+}
+
+/** GET /food-materials/:id/review 响应（按 reviewed_at desc） */
+export interface MaterialReviewResponse {
+  material_id: number;
+  items: MaterialFieldReviewItem[];
+}
+
 export interface RetailProductFilter {
   category?: string;
   formulation_type?: string;
@@ -342,6 +376,28 @@ export async function updateFoodMaterial(
   data: FoodMaterialReviewUpdate,
 ): Promise<FoodMaterialDetail> {
   const response = await api.put<FoodMaterialDetail>(`/databases/food-materials/${id}`, data);
+  return response.data;
+}
+
+/**
+ * 提交单字段审校（存值 + 留 provenance 痕）
+ * POST /databases/food-materials/:id/review
+ * 服务端从 current_user 取 reviewed_by；field_name 须在白名单内（否则 400）。
+ */
+export async function reviewMaterialField(
+  id: number,
+  data: MaterialFieldReviewCreate,
+): Promise<MaterialFieldReviewItem> {
+  const response = await api.post<MaterialFieldReviewItem>(`/databases/food-materials/${id}/review`, data);
+  return response.data;
+}
+
+/**
+ * 查询字段审校 provenance 历史（按 reviewed_at desc）
+ * GET /databases/food-materials/:id/review
+ */
+export async function getMaterialReview(id: number): Promise<MaterialReviewResponse> {
+  const response = await api.get<MaterialReviewResponse>(`/databases/food-materials/${id}/review`);
   return response.data;
 }
 
