@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import Depends, HTTPException, Query
-from sqlalchemy import func, select  # A-27: ilike 不是顶层函数，改用列方法 .ilike()
+from sqlalchemy import func, select, text  # A-27: ilike 不是顶层函数，改用列方法 .ilike()
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, get_db_session
@@ -116,6 +116,60 @@ async def list_food_materials(
     return [m.to_dict() for m in materials]
 
 
+async def _fetch_confirmed_peptides(db: AsyncSession, material_id: int) -> List[dict]:
+    """取该食材关联的「已确证活性肽」（只 literature_confirmed）。
+
+    路径1 数据分层（commit 19a78a4）后：bioactive_peptides.provenance 区分
+    literature_confirmed（5 条真 DOI 文献确证肽）/ synthetic_unverified（7655 条程序合成）。
+    本函数**硬过滤 provenance='literature_confirmed'，绝不返回 synthetic_unverified**
+    （合成肽不可溯源，不端给用户）。食材无关联确证肽时返回空数组 []。
+
+    参数化查询（:material_id）防注入；只读。
+    """
+    sql = text(
+        "SELECT sequence, length, name, source_protein, source_organism, "
+        "activity_type, activity_value, activity_unit, mechanism_of_action, "
+        "literature_doi, provenance "
+        "FROM bioactive_peptides "
+        "WHERE food_material_id = :material_id "
+        "AND provenance = 'literature_confirmed' "
+        "ORDER BY id"
+    )
+    result = await db.execute(sql, {"material_id": material_id})
+    peptides: List[dict] = []
+    for row in result.mappings():
+        seq = row.get("sequence") or ""
+        # name 多为 NULL，回退用 sequence 展示。
+        # 注意：库里 sequence 存「三字母码」（如 Ile-Pro-Pro），length 列多为 NULL；
+        # 不臆造 length（三字母串 len≠残基数），如实返回 DB 的 length（可能为 None）。
+        display_name = row.get("name") or seq
+        length = row.get("length")
+        # 活性详情：表无 activity_detail 列，由 activity_value + activity_unit 组合
+        value = row.get("activity_value")
+        unit = row.get("activity_unit")
+        if value is not None and unit:
+            activity_detail = f"{value}{unit}"
+        elif value is not None:
+            activity_detail = str(value)
+        else:
+            activity_detail = None
+        peptides.append(
+            {
+                "name": display_name,
+                "sequence": seq,
+                "length": length,
+                "source_protein": row.get("source_protein"),
+                "source_organism": row.get("source_organism"),
+                "activity_type": row.get("activity_type"),
+                "activity_detail": activity_detail,
+                "mechanism_of_action": row.get("mechanism_of_action"),
+                "literature_doi": row.get("literature_doi"),
+                "provenance": row.get("provenance"),
+            }
+        )
+    return peptides
+
+
 @router.get("/food-materials/{material_id}", response_model=dict)
 async def get_food_material(
     material_id: int,
@@ -132,7 +186,10 @@ async def get_food_material(
     material = result.scalar_one_or_none()
     if not material:
         raise HTTPException(status_code=404, detail="食品原料不存在")
-    return material.to_dict()
+    data = material.to_dict()
+    # 附带「已确证活性肽」列表（只 literature_confirmed；无关联肽返回 []）
+    data["bioactive_peptides"] = await _fetch_confirmed_peptides(db, material_id)
+    return data
 
 
 @router.post("/food-materials/manual", summary="创建食品原料（管理后台）")
