@@ -11,6 +11,7 @@
  * - 多选 + 批量配方合规检查（弹窗分组展示 violations/warnings/info）
  */
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Card,
   Button, Input,
@@ -23,11 +24,12 @@ import {
   useToast,
 } from '@/components/ui';
 import {
-  Search, Filter,
+  Search, Filter, List,
   ShieldCheck, Star, CheckSquare, X, AlertTriangle,
 } from 'lucide-react';
 import {
   searchFoodMaterials,
+  listFoodMaterials,
   type FoodMaterialFilter,
   type FoodMaterialSearchResult,
   type FoodMaterialSearchResponse,
@@ -48,6 +50,55 @@ interface FoodMaterialSearchPanelProps {
 
 type BadgeVariant = 'default' | 'success' | 'warning' | 'destructive' | 'info' | 'neutral';
 
+/**
+ * 卡片统一展示模型 —— 把「搜索结果」与「浏览全部列表」两种来源归一到此，
+ * 让 MaterialCard 复用同一渲染。score 仅搜索模式有值；浏览模式 undefined → 隐藏相关度。
+ */
+interface DisplayMaterial {
+  id: number;
+  nameCn: string;
+  nameLatin?: string;
+  category?: string;
+  foodHomology?: boolean;
+  toxicity?: string;
+  effects: string[];
+  description?: string;
+  /** 相关度（0~1）。浏览模式无此值 → 不显示相关度块 */
+  score?: number;
+  similarity?: number;
+}
+
+/** 搜索结果 → 展示模型 */
+function searchResultToDisplay(r: FoodMaterialSearchResult): DisplayMaterial {
+  return {
+    id: r.id,
+    nameCn: (r.extra.name_cn as string | undefined) ?? r.name,
+    nameLatin: r.extra.name_latin as string | undefined,
+    category: r.extra.category as string | undefined,
+    foodHomology: r.extra.food_homology as boolean | undefined,
+    toxicity: r.extra.toxicity_class as string | undefined,
+    effects: (r.extra.effects as string[] | undefined) ?? [],
+    description: r.extra.description as string | undefined,
+    score: r.score,
+    similarity: r.extra.similarity as number | undefined,
+  };
+}
+
+/** 浏览列表项（FoodMaterial.to_dict()，扁平结构）→ 展示模型（无相关度） */
+function listItemToDisplay(m: unknown): DisplayMaterial {
+  const rec = (m && typeof m === 'object' ? m : {}) as Record<string, unknown>;
+  return {
+    id: typeof rec.id === 'number' ? rec.id : Number(rec.id),
+    nameCn: (rec.name_cn as string | undefined) ?? (rec.name_en as string | undefined) ?? `原料 #${String(rec.id)}`,
+    nameLatin: rec.name_latin as string | undefined,
+    category: rec.category as string | undefined,
+    foodHomology: rec.food_homology as boolean | undefined,
+    toxicity: rec.toxicity_class as string | undefined,
+    effects: Array.isArray(rec.effects) ? (rec.effects as string[]) : [],
+    description: rec.description as string | undefined,
+  };
+}
+
 /** 单条合规结果徽章配色 */
 function severityVariant(severity: string | undefined): BadgeVariant {
   const s = (severity ?? '').toLowerCase();
@@ -64,21 +115,21 @@ function severityVariant(severity: string | undefined): BadgeVariant {
  * 食品原料搜索结果卡片
  */
 const MaterialCard: React.FC<{
-  result: FoodMaterialSearchResult;
+  material: DisplayMaterial;
   selected: boolean;
   onToggleSelect: (id: number) => void;
   onOpenDetail: (id: number) => void;
   isFavorited: boolean;
   onToggleFavorite: (id: number) => void;
   favoriteLoading: boolean;
-}> = ({ result, selected, onToggleSelect, onOpenDetail, isFavorited, onToggleFavorite, favoriteLoading }) => {
+}> = ({ material, selected, onToggleSelect, onOpenDetail, isFavorited, onToggleFavorite, favoriteLoading }) => {
   const [complianceChecked, setComplianceChecked] = useState(false);
   const [compliancePassed, setCompliancePassed] = useState<boolean | null>(null);
 
   const handleCheckCompliance = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const resp = await checkMaterialCompliance(result.id);
+      const resp = await checkMaterialCompliance(material.id);
       const r = resp as unknown as { passed?: boolean };
       setCompliancePassed(r?.passed ?? null);
       setComplianceChecked(true);
@@ -87,26 +138,19 @@ const MaterialCard: React.FC<{
       setCompliancePassed(null);
       setComplianceChecked(true);
     }
-  }, [result.id]);
+  }, [material.id]);
 
-  const toxicity = result.extra.toxicity_class as string | undefined;
-  const toxicityColor: BadgeVariant = toxicity === '无毒' ? 'success' : 'warning';
-  const category = result.extra.category as string | undefined;
-  const nameCn = result.extra.name_cn as string | undefined;
-  const nameLatin = result.extra.name_latin as string | undefined;
-  const foodHomology = result.extra.food_homology as boolean | undefined;
-  const effects = (result.extra.effects as string[] | undefined) ?? [];
-  const description = result.extra.description as string | undefined;
-  const similarity = result.extra.similarity as number | undefined;
+  const toxicityColor: BadgeVariant = material.toxicity === '无毒' ? 'success' : 'warning';
+  const hasRelevance = material.score !== undefined;
 
   return (
     <div
       className="card card-hover cursor-pointer mb-[var(--space-apple-sm)] p-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] border border-border hover:shadow-md transition-shadow"
       style={{ marginBottom: 12 }}
-      onClick={() => onOpenDetail(result.id)}
+      onClick={() => onOpenDetail(material.id)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenDetail(result.id); } }}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenDetail(material.id); } }}
     >
       <div className="flex justify-between items-start gap-3">
         {/* 多选框 + 主体 */}
@@ -114,48 +158,52 @@ const MaterialCard: React.FC<{
           <label
             className="flex items-center pt-0.5 cursor-pointer shrink-0"
             onClick={(e) => e.stopPropagation()}
-            aria-label={`选择 ${nameCn || result.name}`}
+            aria-label={`选择 ${material.nameCn}`}
           >
             <input
               type="checkbox"
               className="h-4 w-4 accent-primary cursor-pointer"
               checked={selected}
-              onChange={() => onToggleSelect(result.id)}
+              onChange={() => onToggleSelect(material.id)}
             />
           </label>
           <div className="min-w-0 flex-1">
             <div className="text-base font-semibold mb-1 truncate">
-              {nameCn || result.name}
-              {nameLatin && (
+              {material.nameCn}
+              {material.nameLatin && (
                 <span className="text-xs text-muted-foreground ml-2">
-                  ({nameLatin})
+                  ({material.nameLatin})
                 </span>
               )}
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {category && <Badge variant="info">{category}</Badge>}
-              {foodHomology === true && <Badge variant="success">药食同源</Badge>}
-              {toxicity && <Badge variant={toxicityColor}>{toxicity}</Badge>}
-              {effects.map((e: string) => (
+              {material.category && <Badge variant="info">{material.category}</Badge>}
+              {material.foodHomology === true && <Badge variant="success">药食同源</Badge>}
+              {material.toxicity && <Badge variant={toxicityColor}>{material.toxicity}</Badge>}
+              {material.effects.map((e: string) => (
                 <Badge key={e} variant="secondary">{e}</Badge>
               ))}
             </div>
-            {description && (
+            {material.description && (
               <div className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                {description.substring(0, 120)}...
+                {material.description.substring(0, 120)}...
               </div>
             )}
           </div>
         </div>
         <div className="text-right ml-4 shrink-0" style={{ minWidth: 80 }}>
-          <div className="text-xs text-muted-foreground">相关度</div>
-          <div className="text-xl font-bold text-primary">
-            {(result.score * 100).toFixed(1)}%
-          </div>
-          {similarity !== undefined && (
-            <div className="text-xs text-muted-foreground mt-1">
-              语义: {(similarity * 100).toFixed(1)}%
-            </div>
+          {hasRelevance && (
+            <>
+              <div className="text-xs text-muted-foreground">相关度</div>
+              <div className="text-xl font-bold text-primary">
+                {((material.score ?? 0) * 100).toFixed(1)}%
+              </div>
+              {material.similarity !== undefined && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  语义: {(material.similarity * 100).toFixed(1)}%
+                </div>
+              )}
+            </>
           )}
           {/* 收藏按钮 */}
           <Button
@@ -163,8 +211,8 @@ const MaterialCard: React.FC<{
             size="sm"
             icon={<Star className={`h-3.5 w-3.5 ${isFavorited ? 'fill-current' : ''}`} />}
             loading={favoriteLoading}
-            className="mt-2 h-7 text-xs"
-            onClick={(e) => { e.stopPropagation(); onToggleFavorite(result.id); }}
+            className={`h-7 text-xs ${hasRelevance ? 'mt-2' : ''}`}
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(material.id); }}
           >
             {isFavorited ? '已收藏' : '收藏'}
           </Button>
@@ -278,9 +326,67 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
     return () => { cancelled = true; };
   }, []);
 
+  // ── 浏览全部模式（默认）──
+  const [mode, setMode] = useState<'browse' | 'search'>('browse');
+  const [browseCategory, setBrowseCategory] = useState<string>('all');
+  const [browseHomology, setBrowseHomology] = useState<string>('all'); // all | true | false
+  const [browsePage, setBrowsePage] = useState(1);
+  const BROWSE_PER_PAGE = 50;
+  // 后端 list 端点 limit 上限 200；当前 128 条（含 106 药食同源）一次可全量返回。
+  // 一次取全量后做客户端筛选 + 分页：分类下拉用真实数据 distinct 得到，总数 = 筛选后长度，
+  // 用户明确看到「共 128 条」，不会再误以为「只有 40 条」。
+  const BROWSE_FETCH_LIMIT = 200;
+
+  // 全量目录（真实后端数据，不伪造）；react-query 承载加载态，避免 setState-in-effect
+  const {
+    data: browseRaw,
+    isLoading: browseLoading,
+    error: browseError,
+  } = useQuery<unknown[], Error>({
+    queryKey: ['foodMaterialsBrowse'],
+    queryFn: () => listFoodMaterials({ limit: BROWSE_FETCH_LIMIT, offset: 0 }),
+  });
+
+  const browseAll = useMemo<DisplayMaterial[]>(
+    () => (Array.isArray(browseRaw) ? browseRaw : []).map(listItemToDisplay),
+    [browseRaw],
+  );
+
+  // 分类下拉选项：从真实数据 distinct（不硬编码、不伪造）
+  const browseCategories = useMemo(() => {
+    const set = new Set<string>();
+    for (const m of browseAll) {
+      if (m.category) set.add(m.category);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'zh'));
+  }, [browseAll]);
+
+  // 客户端筛选
+  const browseFiltered = useMemo(() => browseAll.filter((m) => {
+    if (browseCategory !== 'all' && m.category !== browseCategory) return false;
+    if (browseHomology === 'true' && m.foodHomology !== true) return false;
+    if (browseHomology === 'false' && m.foodHomology !== false) return false;
+    return true;
+  }), [browseAll, browseCategory, browseHomology]);
+
+  const browseTotal = browseFiltered.length;
+  const browsePageCount = Math.max(1, Math.ceil(browseTotal / BROWSE_PER_PAGE));
+  const browsePageItems = browseFiltered.slice((browsePage - 1) * BROWSE_PER_PAGE, browsePage * BROWSE_PER_PAGE);
+
+  const enterBrowseMode = useCallback(() => {
+    setMode('browse');
+    setQuery('');
+    setResults([]);
+    setNormalized(null);
+    setTotal(0);
+    setSelectedIds(new Set());
+    setBrowsePage(1);
+  }, []);
+
   // 执行搜索
   const handleSearch = useCallback(async (page = 1) => {
     if (!query.trim()) return;
+    setMode('search');
     setLoading(true);
     try {
       // 名称标准化
@@ -407,6 +513,21 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
             >
               搜索
             </Button>
+            <Button
+              variant={mode === 'browse' ? 'secondary' : 'outline'}
+              size="lg"
+              icon={<List className="h-4 w-4" />}
+              onClick={enterBrowseMode}
+            >
+              浏览全部
+            </Button>
+          </div>
+
+          {/* 模式提示 */}
+          <div className="text-xs text-muted-foreground">
+            {mode === 'browse'
+              ? '当前：浏览全部目录（默认）。可按分类 / 药食同源筛选，点击卡片查看详情。'
+              : '当前：搜索结果。点击「浏览全部」可回到完整目录。'}
           </div>
 
           {/* 名称标准化提示 */}
@@ -489,52 +610,136 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
         </div>
       </Card>
 
-      {/* 搜索结果 */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-10 gap-[var(--space-apple-sm)]">
-          <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-[var(--radius-pill)]" />
-          <span className="text-sm text-muted-foreground">搜索中...</span>
-        </div>
-      ) : results.length > 0 ? (
+      {/* ── 浏览全部模式 ── */}
+      {mode === 'browse' ? (
         <>
-          <div className="mb-[var(--space-apple-sm)] text-xs text-muted-foreground">
-            找到 {total} 条结果，耗时 {searchTime.toFixed(1)}ms · 点击卡片查看详情 · 勾选可批量合规检查
+          {/* 浏览筛选：分类 + 药食同源（客户端筛选，全量已加载） */}
+          <div className="flex flex-wrap items-center gap-2 mb-[var(--space-apple-sm)]">
+            <Select
+              value={browseCategory}
+              onValueChange={(v: string) => { setBrowseCategory(v); setBrowsePage(1); }}
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部分类</SelectItem>
+                {browseCategories.map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={browseHomology}
+              onValueChange={(v: string) => { setBrowseHomology(v); setBrowsePage(1); }}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部原料</SelectItem>
+                <SelectItem value="true">药食同源</SelectItem>
+                <SelectItem value="false">非药食同源</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-sm text-muted-foreground">
+              共 <b className="text-foreground">{browseTotal}</b> 条原料
+              {browseCategory !== 'all' || browseHomology !== 'all' ? '（已筛选）' : ''}
+            </span>
           </div>
-          {results.map((result) => (
-            <MaterialCard
-              key={result.id}
-              result={result}
-              selected={selectedIds.has(result.id)}
-              onToggleSelect={toggleSelect}
-              onOpenDetail={openDetail}
-              isFavorited={favoriteIds.has(result.id)}
-              onToggleFavorite={toggleFavorite}
-              favoriteLoading={favoriteLoadingId === result.id}
+
+          {browseLoading ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-[var(--space-apple-sm)]">
+              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-[var(--radius-pill)]" />
+              <span className="text-sm text-muted-foreground">加载目录...</span>
+            </div>
+          ) : browseError ? (
+            <EmptyState
+              title="目录加载失败"
+              description={browseError.message || '请稍后重试'}
             />
-          ))}
-          {total > 20 && (
-            <Pagination
-              page={currentPage}
-              pageSize={20}
-              total={total}
-              onPageChange={(page) => {
-                setCurrentPage(page);
-                handleSearch(page);
-              }}
-              className="mt-[var(--space-apple-md)]"
+          ) : browsePageItems.length === 0 ? (
+            <EmptyState
+              title="该筛选下暂无原料"
+              description="请调整分类或药食同源筛选条件"
             />
+          ) : (
+            <>
+              <div className="mb-[var(--space-apple-sm)] text-xs text-muted-foreground">
+                共 {browseTotal} 条 · 第 {browsePage}/{browsePageCount} 页 · 每页 {BROWSE_PER_PAGE} 条 · 点击卡片查看详情 · 勾选可批量合规检查
+              </div>
+              {browsePageItems.map((material) => (
+                <MaterialCard
+                  key={material.id}
+                  material={material}
+                  selected={selectedIds.has(material.id)}
+                  onToggleSelect={toggleSelect}
+                  onOpenDetail={openDetail}
+                  isFavorited={favoriteIds.has(material.id)}
+                  onToggleFavorite={toggleFavorite}
+                  favoriteLoading={favoriteLoadingId === material.id}
+                />
+              ))}
+              {browsePageCount > 1 && (
+                <Pagination
+                  page={browsePage}
+                  pageSize={BROWSE_PER_PAGE}
+                  total={browseTotal}
+                  onPageChange={(page) => setBrowsePage(page)}
+                  className="mt-[var(--space-apple-md)]"
+                />
+              )}
+            </>
           )}
         </>
-      ) : query ? (
-        <EmptyState
-          title="未找到匹配的原料"
-          description="请尝试更换关键词或调整筛选条件"
-        />
       ) : (
-        <EmptyState
-          title="请输入关键词开始搜索"
-          description="支持按名称、分类、药食同源属性搜索食品原料"
-        />
+        /* ── 搜索结果模式 ── */
+        loading ? (
+          <div className="flex flex-col items-center justify-center py-10 gap-[var(--space-apple-sm)]">
+            <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-[var(--radius-pill)]" />
+            <span className="text-sm text-muted-foreground">搜索中...</span>
+          </div>
+        ) : results.length > 0 ? (
+          <>
+            <div className="mb-[var(--space-apple-sm)] text-xs text-muted-foreground">
+              找到 {total} 条结果，耗时 {searchTime.toFixed(1)}ms · 点击卡片查看详情 · 勾选可批量合规检查
+            </div>
+            {results.map((result) => (
+              <MaterialCard
+                key={result.id}
+                material={searchResultToDisplay(result)}
+                selected={selectedIds.has(result.id)}
+                onToggleSelect={toggleSelect}
+                onOpenDetail={openDetail}
+                isFavorited={favoriteIds.has(result.id)}
+                onToggleFavorite={toggleFavorite}
+                favoriteLoading={favoriteLoadingId === result.id}
+              />
+            ))}
+            {total > 20 && (
+              <Pagination
+                page={currentPage}
+                pageSize={20}
+                total={total}
+                onPageChange={(page) => {
+                  setCurrentPage(page);
+                  handleSearch(page);
+                }}
+                className="mt-[var(--space-apple-md)]"
+              />
+            )}
+          </>
+        ) : query ? (
+          <EmptyState
+            title="未找到匹配的原料"
+            description="请尝试更换关键词或调整筛选条件"
+          />
+        ) : (
+          <EmptyState
+            title="请输入关键词开始搜索"
+            description="支持按名称、分类、药食同源属性搜索食品原料"
+          />
+        )
       )}
 
       {/* 批量操作浮条 */}
