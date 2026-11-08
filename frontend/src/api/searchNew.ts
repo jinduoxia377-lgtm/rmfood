@@ -112,6 +112,7 @@ export interface FoodMaterialDetail {
   safety?: FoodMaterialSafety;
   regulatory?: FoodMaterialRegulatory;
   description?: string;
+  image_url?: string | null;
   source_db?: string;
   data_quality?: number;
   review_status?: string;
