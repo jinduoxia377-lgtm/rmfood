@@ -1,0 +1,37 @@
+{
+  "materials": {
+    "32": {
+      "id": 32,
+      "name_cn": "白扁豆花",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "40": {
+      "id": 40,
+      "name_cn": "代代花",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    },
+    "69": {
+      "id": 69,
+      "name_cn": "姜",
+      "original": {
+        "ob_percent": null,
+        "dl_value": null,
+        "bioavailability_score": null,
+        "source_db": "china_food_regulations",
+        "data_quality": 0.98
+      }
+    }
+  }
+}
