@@ -94,6 +94,27 @@ const InfoRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, v
   </div>
 );
 
+/** 原料图片：直接用 detail.image_url，加载失败/缺失时优雅降级为占位图标（不破图） */
+const MaterialImage: React.FC<{ src?: string | null; alt: string }> = ({ src, alt }) => {
+  const [error, setError] = useState(false);
+  if (!src || error) {
+    return (
+      <div className="w-14 h-14 shrink-0 rounded-[var(--radius-Apple-sm)] border border-border bg-muted/40 flex items-center justify-center text-muted-foreground" title={alt}>
+        <Leaf className="h-5 w-5" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      onError={() => setError(true)}
+      className="w-14 h-14 shrink-0 rounded-[var(--radius-Apple-sm)] border border-border object-cover"
+    />
+  );
+};
+
 /** 法规状态 → 徽章 variant */
 function regulatoryBadge(status: string | undefined): { label: string; variant: 'success' | 'warning' | 'destructive' | 'info' | 'neutral' } {
   if (!status || status.trim() === '') {
@@ -192,19 +213,22 @@ const FoodMaterialDetailDrawer: React.FC<FoodMaterialDetailDrawerProps> = ({
       >
         {/* 头部 */}
         <div className="shrink-0 border-b border-border p-[var(--space-apple-md)] flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-lg font-semibold truncate">{name}</h2>
-              {detail?.food_homology === true && (
-                <Badge variant="success">药食同源</Badge>
-              )}
-              <Badge variant={reg.variant}>{reg.label}</Badge>
-            </div>
-            {(latin || nameEn) && (
-              <div className="text-xs text-muted-foreground mt-1 truncate">
-                {latin ? String(latin) : ''}{latin && nameEn ? ' · ' : ''}{nameEn ? String(nameEn) : ''}
+          <div className="min-w-0 flex-1 flex items-start gap-3">
+            <MaterialImage src={detail?.image_url} alt={name} />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg font-semibold truncate">{name}</h2>
+                {detail?.food_homology === true && (
+                  <Badge variant="success">药食同源</Badge>
+                )}
+                <Badge variant={reg.variant}>{reg.label}</Badge>
               </div>
-            )}
+              {(latin || nameEn) && (
+                <div className="text-xs text-muted-foreground mt-1 truncate">
+                  {latin ? String(latin) : ''}{latin && nameEn ? ' · ' : ''}{nameEn ? String(nameEn) : ''}
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Button
