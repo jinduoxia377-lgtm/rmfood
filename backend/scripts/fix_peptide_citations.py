@@ -39,6 +39,16 @@ FIXES = {
           "豌豆抗氧化新肽 EEHLCFR，DPPH IC50=0.027 mg/mL。PMID 37049715。"),
     131: ("10.3390/molecules28072952",
           "豌豆抗氧化新肽 TFY，体外+LO2 细胞抗氧化。PMID 37049715。"),
+    # ── id7966 Ile-Pro-Ile（路径1，引用纠错批次2）──
+    # Lead 核实：原 DOI 10.1016/j.jff.2019.103456 实际=Rosa Roxburghii 综述，与 Ile-Pro-Ile 无关（错）。
+    # 经 NCBI E-utilities 核实：Ile-Pro-Ile=Diprotin A，最确切可溯源引用为
+    # Rahfeld et al. 1991, Biochim Biophys Acta 1076(2):314-6, DOI 10.1016/0167-4838(91)90284-7,
+    # PMID 1671823（该文专门表征 Diprotin A(Ile-Pro-Ile)/Diprotin B 与 DPP-IV 的抑制剂/底物关系）。
+    7966: ("10.1016/0167-4838(91)90284-7",
+           "Ile-Pro-Ile=Diprotin A，DPP-IV 相关肽（β-Casein/Bos taurus 源）。"
+           "DOI=Rahfeld et al. 1991, Biochim Biophys Acta 1076(2):314-6, PMID 1671823"
+           "（专门表征 Diprotin A(Ile-Pro-Ile) 与 DPP-IV 关系）。原错 DOI(10.1016/j.jff.2019.103456,"
+           "实为 Rosa Roxburghii 综述)已清除。"),
 }
 
 
