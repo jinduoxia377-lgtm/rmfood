@@ -15,6 +15,20 @@ logger = logging.getLogger(__name__)
 
 K_RRF = 60  # RRF 常数
 
+# RRF 分数地板（诚实空态）：低于此 final_score 视为「无真实命中」，fuse 返回 []，
+# 让前端显示诚实空态，而不是用一堆弱相关结果凑满 per_page 误导用户。
+#
+# 标定（真实数据采样，见 git 历史 / 审计记录）：
+#   - 乱码词（zzzqqq/QQQZZZ/xxxyyy/啊啊啊zzz/qqqqwwww）top final_score 全部 ≈ 0.00492
+#     （仅单条弱向量路命中，0.3 * 1/(60+1) ≈ 0.00492；BM25 无命中）。
+#   - 真词（肽/胶原蛋白/牛骨/蛋清/小麦/collagen + 黄芪/茯苓/砂仁/白术/紫苏/枸杞）
+#     top final_score ≈ 0.0111 ~ 0.01148（BM25+向量多路一致命中，分数叠加）。
+#   - 真词最低 top 分 = collagen 0.0111；乱码最高 = 0.00492。
+# 阈值 0.008 取两者 gap 中点：真词（≥0.0111）有 ~39% 余量不被误杀，乱码（≤0.00492）被拦。
+# 注意：只滤「最终融合分」，单路内部检索不受影响；肽源原料召回（上轮刚修）top 分均
+# ≥0.0111，远高于阈值，不会被误伤。
+MIN_FUSED_SCORE = 0.008
+
 
 @dataclass
 class SearchResultItem:
@@ -151,6 +165,10 @@ class RRFFusion:
             results.append(item)
 
         results.sort(key=lambda x: x.score, reverse=True)
+        # 诚实空态：滤掉低于分数地板的弱命中。乱码/无意义词只有单条弱向量命中
+        # （final_score ≈0.00492 < 0.008），被拦 → 返回 []，前端显空态。
+        # 真词多路一致命中（≥0.0111）不受影响。标定见 MIN_FUSED_SCORE 注释。
+        results = [r for r in results if r.score >= MIN_FUSED_SCORE]
         return [self._item_to_dict(r) for r in results]
 
     def _item_to_dict(self, item: SearchResultItem) -> Dict[str, Any]:
