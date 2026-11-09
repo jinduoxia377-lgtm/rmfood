@@ -115,6 +115,27 @@ async def test_existing_data_untouched():
 
 
 @pytest.mark.asyncio
+async def test_activities_enriched_from_source():
+    """活性维度已回源补全：具体活性肽应占绝大多数，笼统 Bioactive 仅少数（论文确实只写 bioactive）。"""
+    conn = await _conn()
+    try:
+        rows = await conn.fetch(
+            "SELECT activity_type, COUNT(*) k FROM bioactive_peptides "
+            "WHERE provenance='literature_confirmed' GROUP BY 1")
+        d = {r["activity_type"]: r["k"] for r in rows}
+        total = sum(d.values())
+        bio = d.get("Bioactive", 0)
+        specific = total - bio
+        assert total >= 150
+        assert specific > bio, f"具体活性肽({specific}) 应多于笼统 Bioactive({bio})"
+        # 常见具体活性存在
+        for act in ["ACE inhibitory", "Antioxidant"]:
+            assert d.get(act, 0) >= 1, f"应存在 {act} 肽"
+    finally:
+        await conn.close()
+
+
+@pytest.mark.asyncio
 async def test_expansion_idempotent():
     conn = await _conn()
     try:
