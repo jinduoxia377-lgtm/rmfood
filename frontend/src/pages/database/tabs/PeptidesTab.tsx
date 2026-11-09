@@ -100,8 +100,9 @@ export default function PeptidesTab({
   // 品类筛选（维度=载体/来源蛋白 source_protein，客户端过滤；'' = 全部）
   const [selectedCategory, setSelectedCategory] = useState('');
 
-  // 排序
-  const [sortField, setSortField] = useState<SortField>('activity_value');
+  // 排序：默认按「长度(aa)」(field='sequence'，按 sequence.length 排)——确证肽 activity_value 大多为空，
+  // 用它做默认排序前 20 行全 null、点表头无反馈；长度列确证肽恒有值，默认视图排序即有反馈。
+  const [sortField, setSortField] = useState<SortField>('sequence');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   // 序列长度筛选
@@ -196,8 +197,11 @@ export default function PeptidesTab({
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
+    // 非当前排序列：淡色小箭头（提示可排序）；当前列：放大 + 主色 + 高不透明度，方向一眼可辨
     if (sortField !== field) return <ChevronUp className="w-3 h-3 opacity-30" />;
-    return sortDir === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />;
+    return sortDir === 'asc'
+      ? <ChevronUp className="w-3.5 h-3.5 text-[var(--text-primary,#1D1D1F)] dark:text-white" />
+      : <ChevronDown className="w-3.5 h-3.5 text-[var(--text-primary,#1D1D1F)] dark:text-white" />;
   };
 
   // 导出 CSV
@@ -371,7 +375,9 @@ export default function PeptidesTab({
                   ].map(({ label, field }) => (
                     <th
                       key={label}
-                      className={`px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider ${field ? 'cursor-pointer hover:text-[var(--text-primary,#1D1D1F)] dark:hover:text-white select-none' : ''}`}
+                      className={`px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-left text-xs font-semibold uppercase tracking-wider select-none ${field
+                        ? 'cursor-pointer text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-primary,#1D1D1F)] dark:hover:text-white'
+                        : 'cursor-default text-[var(--text-muted,#9A9A9F)] dark:text-[var(--text-muted,#9A9A9F)] opacity-70'}`}
                       onClick={() => field && toggleSort(field)}
                     >
                       <span className="flex items-center gap-1">
