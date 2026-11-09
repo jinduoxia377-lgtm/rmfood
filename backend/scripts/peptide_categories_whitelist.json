@@ -1,0 +1,163 @@
+{
+  "_comment": "食源活性多肽 品类载体行 + 序列级确证肽白名单（路径1 扩充，批次1）。每条序列肽必须有真 DOI（literature_doi）+ 真实序列 + 真实活性，绝不伪造。PMID 存 evidence_note。蛋清肽只有品类载体行，无确证序列故不挂序列肽（不硬凑）。",
+  "carriers": [
+    {
+      "key": "soy_peptide",
+      "name_cn": "大豆肽粉",
+      "name_en": "Soy peptide powder",
+      "name_latin": "Glycine max",
+      "category": "普通食品",
+      "sub_category": "加工成分",
+      "food_homology": false,
+      "toxicity_class": "无毒",
+      "source_db": "pubmed_literature",
+      "data_quality": 0.9,
+      "description": "大豆蛋白经酶解/发酵制得的食源活性肽制品（食品工业大豆肽粉），含 Lunasin 等确证活性肽。来源：PubMed 文献 10331812/19056440。"
+    },
+    {
+      "key": "collagen_peptide",
+      "name_cn": "胶原蛋白肽",
+      "name_en": "Collagen peptide",
+      "name_latin": null,
+      "category": "普通食品",
+      "sub_category": "加工成分",
+      "food_homology": false,
+      "toxicity_class": "无毒",
+      "source_db": "pubmed_literature",
+      "data_quality": 0.9,
+      "description": "胶原蛋白经酶解制得的食源活性肽制品（含牛骨/鱼等来源），富 Gly/Pro/Hyp，含 Gly-Pro-Hyp/Pro-Hyp/Hyp-Gly 等确证肽。来源：PubMed 31905705。合并牛骨/鱼胶原品类（共享胶原肽序列）。"
+    },
+    {
+      "key": "pea_peptide",
+      "name_cn": "豌豆肽",
+      "name_en": "Pea peptide",
+      "name_latin": "Pisum sativum",
+      "category": "普通食品",
+      "sub_category": "加工成分",
+      "food_homology": false,
+      "toxicity_class": "无毒",
+      "source_db": "pubmed_literature",
+      "data_quality": 0.9,
+      "description": "豌豆蛋白经酶解制得的食源抗氧化肽制品，含 YLVN/EEHLCFR/TFY 等确证肽。来源：PubMed 37049715。"
+    },
+    {
+      "key": "whey_peptide",
+      "name_cn": "乳清肽",
+      "name_en": "Whey peptide",
+      "name_latin": "Bos taurus",
+      "category": "普通食品",
+      "sub_category": "加工成分",
+      "food_homology": false,
+      "toxicity_class": "无毒",
+      "source_db": "pubmed_literature",
+      "data_quality": 0.9,
+      "description": "乳清蛋白（β-乳球蛋白/α-乳白蛋白）经酶解制得的食源活性肽制品，含 β-lactorphin 等降压肽。来源：PubMed 10399349。"
+    },
+    {
+      "key": "egg_white_peptide",
+      "name_cn": "蛋清肽",
+      "name_en": "Egg white peptide",
+      "name_latin": "Gallus gallus",
+      "category": "普通食品",
+      "sub_category": "加工成分",
+      "food_homology": false,
+      "toxicity_class": "无毒",
+      "source_db": "pubmed_literature",
+      "data_quality": 0.85,
+      "description": "蛋清蛋白经酶解制得的食源抗氧化肽制品。品类级载体行；具体代表序列待从 PMC4597870 原文确证后另批次挂载，本轮不挂序列肽（不硬凑）。来源：PMC4597870。"
+    }
+  ],
+  "sequence_peptides": [
+    {
+      "key": "lunasin",
+      "peptide_name": "Lunasin",
+      "sequence": "SKWQHQQDSCRKQLQGVNLTPCEKHIMEKIQGRGDDDDDDDDD",
+      "source_protein": "Soybean 2S albumin (Gm2S1)",
+      "source_organism": "Glycine max",
+      "activity_type": "Anticancer/Cholesterol-lowering",
+      "activity_value": null,
+      "activity_unit": null,
+      "carrier_key": "soy_peptide",
+      "literature_doi": "10.1038/nbt1099-1171",
+      "evidence_note": "Lunasin 43AA，C端9个Asp+RGD 基序（序列据 PMC9455814 转录）。DOI=原始克隆文 Galvez & de Lumen Nat Biotechnol 1999 (PMID 10331812)；综述 PMID 19056440/PMC9455814。"
+    },
+    {
+      "key": "gly_pro_hyp",
+      "peptide_name": "Gly-Pro-Hyp (GPH)",
+      "sequence": "Gly-Pro-Hyp",
+      "source_protein": "Collagen",
+      "source_organism": "Bos taurus / fish",
+      "activity_type": "Pro-collagen synthesis",
+      "activity_value": null,
+      "activity_unit": null,
+      "carrier_key": "collagen_peptide",
+      "literature_doi": null,
+      "evidence_note": "胶原三肽 Gly-Pro-Hyp (GPH)，促胶原合成。来源: PMID 31905705 (Food-Derived Collagen Peptides, Pro-Hyp/Hyp-Gly, 2020)；品类综述 PMC10538231。无确切 DOI 故不填（诚实）。"
+    },
+    {
+      "key": "hyp_gly",
+      "peptide_name": "Hyp-Gly (HG)",
+      "sequence": "Hyp-Gly",
+      "source_protein": "Collagen",
+      "source_organism": "Bos taurus / fish",
+      "activity_type": "Pro-collagen synthesis",
+      "activity_value": null,
+      "activity_unit": null,
+      "carrier_key": "collagen_peptide",
+      "literature_doi": null,
+      "evidence_note": "胶原二肽 Hyp-Gly (HG)，促胶原合成。来源: PMID 31905705 (Food-Derived Collagen Peptides, 2020)。无确切 DOI 故不填（诚实）。"
+    },
+    {
+      "key": "ylvn",
+      "peptide_name": "YLVN",
+      "sequence": "YLVN",
+      "source_protein": "Pea protein",
+      "source_organism": "Pisum sativum",
+      "activity_type": "Antioxidant",
+      "activity_value": 0.002,
+      "activity_unit": "mg/mL ABTS IC50",
+      "carrier_key": "pea_peptide",
+      "literature_doi": "10.3390/molecules28072952",
+      "evidence_note": "豌豆抗氧化新肽 YLVN，ABTS IC50=0.002 mg/mL，ORAC 1.120 μmol TE/μmol（优于 GSH）。PMID 37049715 (Zhao & Liu, Molecules 2023;28:2952)。"
+    },
+    {
+      "key": "eehlcfr",
+      "peptide_name": "EEHLCFR",
+      "sequence": "EEHLCFR",
+      "source_protein": "Pea protein",
+      "source_organism": "Pisum sativum",
+      "activity_type": "Antioxidant",
+      "activity_value": 0.027,
+      "activity_unit": "mg/mL DPPH IC50",
+      "carrier_key": "pea_peptide",
+      "literature_doi": "10.3390/molecules28072952",
+      "evidence_note": "豌豆抗氧化新肽 EEHLCFR，DPPH IC50=0.027 mg/mL。PMID 37049715。"
+    },
+    {
+      "key": "tfy",
+      "peptide_name": "TFY",
+      "sequence": "TFY",
+      "source_protein": "Pea protein",
+      "source_organism": "Pisum sativum",
+      "activity_type": "Antioxidant",
+      "activity_value": null,
+      "activity_unit": null,
+      "carrier_key": "pea_peptide",
+      "literature_doi": "10.3390/molecules28072952",
+      "evidence_note": "豌豆抗氧化新肽 TFY，体外+LO2 细胞抗氧化。PMID 37049715。"
+    },
+    {
+      "key": "beta_lactorphin",
+      "peptide_name": "Beta-lactorphin",
+      "sequence": "Tyr-Leu-Leu-Phe-Gly-Val",
+      "source_protein": "Beta-lactoglobulin (f142-148)",
+      "source_organism": "Bos taurus",
+      "activity_type": "ACE inhibitory",
+      "activity_value": null,
+      "activity_unit": null,
+      "carrier_key": "whey_peptide",
+      "literature_doi": null,
+      "evidence_note": "β-lactorphin=β-LG f142-148 (Tyr-Leu-Leu-Phe-Gly-Val)，乳清降压肽。来源: lactokinins 综述 PMID 10399349 (Fitzgerald & Meisel 2003, 无现代 DOI)。无确切 DOI 故不填（诚实）。"
+    }
+  ]
+}
