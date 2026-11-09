@@ -94,6 +94,26 @@ async def test_wrong_dois_nulled_and_pmid_in_evidence_note():
             "SELECT literature_doi, evidence_note FROM bioactive_peptides WHERE id=129")
         assert r["literature_doi"] == "10.3390/molecules28072952", "豌豆肽正确 DOI 应保留"
         assert "37049715" in (r["evidence_note"] or "")
+
+    finally:
+        await conn.close()
+
+
+@pytest.mark.asyncio
+async def test_id7966_ile_pro_ile_doi_corrected():
+    """id7966 Ile-Pro-Ile(Diprotin A)：错 DOI(Rosa Roxburghii) 已换成核实正确的 Diprotin A 文献。"""
+    conn = await _conn()
+    try:
+        r = await conn.fetchrow(
+            "SELECT literature_doi, evidence_note, provenance, food_material_id "
+            "FROM bioactive_peptides WHERE id=7966")
+        # 核实正确的 Diprotin A 文献 DOI（Rahfeld 1991, PMID 1671823），不再是错的 Rosa Roxburghii DOI
+        assert r["literature_doi"] == "10.1016/0167-4838(91)90284-7", \
+            f"id7966 DOI 应为核实正确的 Diprotin A 文献，实际 {r['literature_doi']}"
+        assert r["literature_doi"] != "10.1016/j.jff.2019.103456", "错 DOI 应已清除"
+        assert "1671823" in (r["evidence_note"] or ""), "evidence_note 应含 PMID 1671823"
+        assert r["provenance"] == "literature_confirmed"
+        assert r["food_material_id"] == 160, "id7966 应仍挂牛乳160"
     finally:
         await conn.close()
 
