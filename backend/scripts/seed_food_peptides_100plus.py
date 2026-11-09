@@ -29,8 +29,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 DB_DSN = "postgresql://postgres:password@localhost:5432/rmfood"
-SIDECAR = Path(__file__).resolve().parent / "food_peptides_expansion_b100w.json"
-BATCH_TAG = "pep_b100w"  # 扩量批次（补蛋清/乳清/牛骨胶原）；上批 pep_b100v 已 commit 不动
+SIDECAR = Path(__file__).resolve().parent / "food_peptides_rice_b100x.json"
+BATCH_TAG = "pep_b100x"  # 大米肽补强批次（挂已 approved+embedding 的 rice_peptide 载体167）
 
 # 复用批次1已建载体 key -> food_materials.name_cn（幂等按名取）
 EXISTING_CARRIER_NAME = {

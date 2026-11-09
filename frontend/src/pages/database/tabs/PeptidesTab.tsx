@@ -81,6 +81,8 @@ export default function PeptidesTab({
   const [showStructureAnalyzer, setShowStructureAnalyzer] = useState(false);
   // 默认只看「文献确证」真食源肽，避免 7887 条合成/未溯源行淹没 232 条真肽
   const [confirmedOnly, setConfirmedOnly] = useState(true);
+  // 品类筛选（维度=载体/来源蛋白 source_protein，客户端过滤；'' = 全部）
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   // 排序
   const [sortField, setSortField] = useState<SortField>('activity_value');
@@ -139,6 +141,9 @@ export default function PeptidesTab({
     const raw = peptideQuery.data?.items ?? [];
     let arr: unknown[] = [...raw];
 
+    // 品类筛选（载体/来源蛋白）
+    if (selectedCategory) arr = arr.filter((p: any) => (p.source_protein ?? '') === selectedCategory);
+
     // 长度筛选
     if (lenMin) arr = arr.filter((p: any) => (p.sequence?.length ?? 0) >= Number(lenMin));
     if (lenMax) arr = arr.filter((p: any) => (p.sequence?.length ?? 0) <= Number(lenMax));
@@ -159,7 +164,18 @@ export default function PeptidesTab({
       return sortDir === 'asc' ? va - vb : vb - va;
     });
     return arr;
-  }, [peptideQuery.data?.items, sortField, sortDir, lenMin, lenMax]);
+  }, [peptideQuery.data?.items, sortField, sortDir, lenMin, lenMax, selectedCategory]);
+
+  // 品类下拉选项：从当前加载结果的真实 source_protein 值 distinct（不臆造）
+  const categoryOptions = useMemo(() => {
+    const raw = peptideQuery.data?.items ?? [];
+    const set = new Set<string>();
+    for (const p of raw) {
+      const sp = (p as { source_protein?: string | null })?.source_protein;
+      if (sp && String(sp).trim() !== '') set.add(String(sp));
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [peptideQuery.data?.items]);
 
   const total = peptideQuery.data?.total ?? 0;
 
@@ -246,6 +262,18 @@ export default function PeptidesTab({
           <Dna className="w-3.5 h-3.5" />
           仅看已确证食源肽
         </button>
+        {/* 品类筛选（载体/来源蛋白 source_protein，客户端过滤） */}
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="input w-auto min-w-[150px]"
+          aria-label="按品类筛选"
+        >
+          <option value="">全部品类</option>
+          {categoryOptions.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
         {/* 长度筛选 */}
         <div className="flex items-center gap-1">
           <Filter className="w-4 h-4 text-[var(--text-muted,#9A9A9F)]" />
@@ -289,6 +317,14 @@ export default function PeptidesTab({
           结构分析
         </Button>
       </div>
+
+      {/* 品类筛选生效提示：诚实标注当前为「当前页」客户端过滤（分页由后端返回，品类作用于已加载页） */}
+      {selectedCategory && (
+        <div className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">
+          已选品类「{selectedCategory}」· 本页匹配 <b className="text-[var(--color-secondary-text)]">{items.length}</b> 条
+          <span className="ml-1">（翻页后可继续筛选该品类的其他条目）</span>
+        </div>
+      )}
 
       {/* 活性类型快速筛选标签 */}
       <div className="flex flex-wrap gap-1.5">
@@ -396,7 +432,7 @@ export default function PeptidesTab({
           <div className="p-16 text-center">
             <Dna className="w-10 h-10 mx-auto mb-[var(--space-apple-sm)] opacity-30" />
             <div className="text-[var(--text-muted,#9A9A9F)] text-sm">
-              {keyword || activityType || lenMin || lenMax ? '未找到匹配结果' : '请输入关键词搜索活性肽数据'}
+              {keyword || activityType || lenMin || lenMax || selectedCategory ? '未找到匹配结果' : '请输入关键词搜索活性肽数据'}
             </div>
           </div>
         )}
