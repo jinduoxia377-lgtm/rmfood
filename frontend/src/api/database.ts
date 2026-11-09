@@ -77,6 +77,8 @@ export const databaseApi = {
     provenance?: string
     /** 按食品原料 ID 查其关联肽 */
     food_material_id?: number
+    /** 按载体/来源蛋白精确过滤（品类筛选；值用 DB 真实 source_protein 全称） */
+    source_protein?: string
     /** 排序字段：sequence | activity_type | molecular_weight */
     sort?: string
   }) => api.get<PaginatedResponse<BioactivePeptide>>('/databases/peptides', { params }).then((r) => r.data),

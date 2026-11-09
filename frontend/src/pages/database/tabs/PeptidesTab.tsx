@@ -62,6 +62,22 @@ function TableSkeleton() {
 type SortField = 'activity_value' | 'molecular_weight' | 'sequence';
 type SortDir = 'asc' | 'desc';
 
+// 品类=载体/来源蛋白，DB 真实 source_protein 全称（Lead 从 DB distinct 取，精确 == 匹配用）。
+// 全称而非缩写：'Soy protein' 非 'Soy'，'Egg white protein' 非 'Egg'。
+const CATEGORY_OPTIONS = [
+  'Collagen',
+  'Soy protein',
+  'Egg white protein',
+  'Wheat protein',
+  'Casein',
+  'Whey protein',
+  'Pea protein',
+  'Corn protein',
+  'Rice protein',
+  'Zein',
+  'β-Casein',
+];
+
 interface PeptidesTabProps {
   initKeyword?: string;
   initialSelectedSequence?: string | null;
@@ -107,7 +123,7 @@ export default function PeptidesTab({
   }, [activityTypesQuery.data]);
 
   const peptideQuery = useQuery({
-    queryKey: ['db-peptides', keyword, activityType, page, confirmedOnly],
+    queryKey: ['db-peptides', keyword, activityType, page, confirmedOnly, selectedCategory],
     queryFn: () =>
       databaseApi.searchPeptides({
         keyword,
@@ -116,6 +132,8 @@ export default function PeptidesTab({
         page_size: 20,
         // 默认只拉「文献确证」真食源肽；关掉开关则传 undefined（后端默认 all 向后兼容）
         provenance: confirmedOnly ? 'literature_confirmed' : undefined,
+        // 品类=载体/来源蛋白，服务端精确过滤一次拉全（非当前页子集）
+        source_protein: selectedCategory || undefined,
       }),
   });
 
@@ -141,9 +159,6 @@ export default function PeptidesTab({
     const raw = peptideQuery.data?.items ?? [];
     let arr: unknown[] = [...raw];
 
-    // 品类筛选（载体/来源蛋白）
-    if (selectedCategory) arr = arr.filter((p: any) => (p.source_protein ?? '') === selectedCategory);
-
     // 长度筛选
     if (lenMin) arr = arr.filter((p: any) => (p.sequence?.length ?? 0) >= Number(lenMin));
     if (lenMax) arr = arr.filter((p: any) => (p.sequence?.length ?? 0) <= Number(lenMax));
@@ -164,18 +179,10 @@ export default function PeptidesTab({
       return sortDir === 'asc' ? va - vb : vb - va;
     });
     return arr;
-  }, [peptideQuery.data?.items, sortField, sortDir, lenMin, lenMax, selectedCategory]);
+  }, [peptideQuery.data?.items, sortField, sortDir, lenMin, lenMax]);
 
-  // 品类下拉选项：从当前加载结果的真实 source_protein 值 distinct（不臆造）
-  const categoryOptions = useMemo(() => {
-    const raw = peptideQuery.data?.items ?? [];
-    const set = new Set<string>();
-    for (const p of raw) {
-      const sp = (p as { source_protein?: string | null })?.source_protein;
-      if (sp && String(sp).trim() !== '') set.add(String(sp));
-    }
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [peptideQuery.data?.items]);
+  // 品类下拉选项：见模块级 CATEGORY_OPTIONS
+
 
   const total = peptideQuery.data?.total ?? 0;
 
@@ -262,15 +269,15 @@ export default function PeptidesTab({
           <Dna className="w-3.5 h-3.5" />
           仅看已确证食源肽
         </button>
-        {/* 品类筛选（载体/来源蛋白 source_protein，客户端过滤） */}
+        {/* 品类筛选（载体/来源蛋白 source_protein，服务端精确过滤一次拉全） */}
         <select
           value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
+          onChange={(e) => { setSelectedCategory(e.target.value); setPage(1); }}
           className="input w-auto min-w-[150px]"
           aria-label="按品类筛选"
         >
           <option value="">全部品类</option>
-          {categoryOptions.map((c) => (
+          {CATEGORY_OPTIONS.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
@@ -317,14 +324,6 @@ export default function PeptidesTab({
           结构分析
         </Button>
       </div>
-
-      {/* 品类筛选生效提示：诚实标注当前为「当前页」客户端过滤（分页由后端返回，品类作用于已加载页） */}
-      {selectedCategory && (
-        <div className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">
-          已选品类「{selectedCategory}」· 本页匹配 <b className="text-[var(--color-secondary-text)]">{items.length}</b> 条
-          <span className="ml-1">（翻页后可继续筛选该品类的其他条目）</span>
-        </div>
-      )}
 
       {/* 活性类型快速筛选标签 */}
       <div className="flex flex-wrap gap-1.5">
