@@ -22,6 +22,9 @@ logger = logging.getLogger(__name__)
 async def search_peptides(
     keyword: str = Query("", description="搜索关键词（序列/来源蛋白/活性类型）"),
     activity_type: str | None = Query(None, description="活性类型过滤"),
+    source_protein: str | None = Query(
+        None, description="来源蛋白品类精确过滤（如 Collagen/Casein/Soy protein）"
+    ),
     provenance: str | None = Query(
         None,
         description="溯源过滤: literature_confirmed(真食源肽,逐条PMID/DOI) | synthetic_unverified(合成未确证) | all(默认,向后兼容)",
@@ -60,6 +63,11 @@ async def search_peptides(
     if activity_type:
         query = query.where(BioactivePeptide.activity_type == activity_type)
         count_query = count_query.where(BioactivePeptide.activity_type == activity_type)
+
+    # 来源蛋白品类精确过滤（默认 None 不加 where，向后兼容；与 provenance 等可叠加）
+    if source_protein:
+        query = query.where(BioactivePeptide.source_protein == source_protein)
+        count_query = count_query.where(BioactivePeptide.source_protein == source_protein)
 
     # 溯源过滤（默认 all 不加 where，向后兼容）
     if provenance and provenance != "all":
