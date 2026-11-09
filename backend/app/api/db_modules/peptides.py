@@ -11,6 +11,7 @@ from ...models import (
     BioactivePeptide,
     User,
 )
+from ...services.search.ttl_cache import search_result_cache
 from ..deps import get_current_user, get_db_session
 
 # Shared router for peptides module.
@@ -47,6 +48,15 @@ async def search_peptides(
     其余多为 synthetic_unverified（合成/未溯源）。前端传 provenance=literature_confirmed
     可只看真食源肽；默认 all 保持向后兼容（不破坏既有调用）。
     """
+    # P0 稳定性：短 TTL 缓存。key 含全部影响结果的参数，避免脏读。
+    cache_key = (
+        f"pep|kw={keyword}|at={activity_type}|sp={source_protein}|"
+        f"pv={provenance}|fm={food_material_id}|sort={sort}|p{page}n{page_size}"
+    )
+    cached = search_result_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     query = select(BioactivePeptide)
     count_query = select(func.count()).select_from(BioactivePeptide)
 
@@ -94,7 +104,7 @@ async def search_peptides(
 
     # 数据库有结果直接返回
     if total > 0:
-        return {
+        result = {
             "items": [
                 {
                     "id": p.id,
@@ -117,6 +127,8 @@ async def search_peptides(
             "page": page,
             "page_size": page_size,
         }
+        search_result_cache.put(cache_key, result)
+        return result
 
     # Fallback: 从内存知识库搜索
     from ...services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
