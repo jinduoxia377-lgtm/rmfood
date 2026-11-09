@@ -405,7 +405,10 @@ export function AcademicReportEditor({ initialReport }: AcademicReportEditorProp
 
   // 自动保存：定时器仅在开启时创建一次；每次触发执行最新的保存逻辑（避免闭包捕获过期内容）
   const autoSaveActionRef = React.useRef<() => void>(() => {});
-  autoSaveActionRef.current = () => { void performSave(); };
+  // 在 commit 阶段同步最新保存逻辑到 ref（不能在 render 期写 ref，React 反模式）
+  React.useEffect(() => {
+    autoSaveActionRef.current = () => { void performSave(); };
+  }, [performSave]);
 
   useEffect(() => {
     if (!autoSaveEnabled) return;

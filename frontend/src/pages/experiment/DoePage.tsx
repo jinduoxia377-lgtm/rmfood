@@ -8,7 +8,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   Beaker, Plus, Trash2, Play, Search, Sparkles, TrendingUp,
-  ChevronRight, FileText, Target, RefreshCw,
+  FileText, Target, RefreshCw,
   Save, ClipboardList, Eye, EyeOff, Lightbulb,
   FolderInput, Send, FlaskConical, PieChart,
 } from 'lucide-react'
@@ -19,7 +19,7 @@ import {
 } from 'recharts'
 import { doeApi, type DOEFactor, type DOERun, type FittedModel } from '@/api/doe'
 import { useToast } from '@/components/ui/Toast'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge, StatCard } from '@/components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge, StatCard, Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui'
 
 const STORAGE_KEY = 'rmfood_doe_history'
 const loadHistory = () => {
@@ -44,25 +44,27 @@ function FactorRow({ factor, index, onChange, onRemove, canRemove }: {
   onRemove: () => void
   canRemove: boolean
 }) {
+  const { t } = useTranslation()
   return (
-    <div className="flex items-center gap-[var(--space-apple-sm)] p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/70 dark:bg-[var(--bg-tertiary)]/40 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)]">
+    <div className="flex items-center gap-[var(--space-apple-sm)] p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/70 dark:bg-[var(--bg-tertiary)]/40 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] flex-wrap">
       <span className="text-xs font-mono text-[var(--text-muted)] w-6">{index + 1}</span>
-      <Input className="flex-1 h-8 text-sm"
-        placeholder="因子名称（例如：温度）" value={factor.name}
+      <Input className="flex-1 min-w-0 text-sm"
+        placeholder={t('pages.doe.factorNamePlaceholder')} value={factor.name}
         onChange={e => onChange({ ...factor, name: e.target.value })} />
       {(['low', 'high', 'center'] as const).map(k => (
         <div key={k} className="flex flex-col items-center gap-1">
-          <span className="text-xs text-[var(--text-muted)] uppercase tracking-wide">{k === 'low' ? '低水平 (-1)' : k === 'high' ? '高水平 (+1)' : '中心点 (0)'}</span>
+          <span className="text-xs text-[var(--text-muted)] uppercase tracking-wide">{k === 'low' ? t('pages.doe.factorRowLowLevel') : k === 'high' ? t('pages.doe.factorRowHighLevel') : t('pages.doe.factorRowCenterLevel')}</span>
           <Input type="number" step="0.1"
-            className="w-20 h-8 text-sm text-center tabular-nums"
+            aria-label={`${factor.name} ${k === 'low' ? t('pages.doe.lowLevel') : k === 'high' ? t('pages.doe.highLevel') : t('pages.doe.centerLevel')}`}
+            className="w-20 text-sm text-center tabular-nums"
             value={factor[k]}
             onChange={e => onChange({ ...factor, [k]: parseFloat(e.target.value) || 0 })} />
         </div>
       ))}
-      <button onClick={onRemove} disabled={!canRemove}
-        className="p-1.5 rounded-[var(--radius-Apple-sm)] hover:bg-danger-50 dark:hover:bg-danger-950/40 text-[var(--text-muted)] hover:text-danger-500 disabled:opacity-30 transition-colors">
+      <Button variant="ghost" size="icon" type="button" onClick={onRemove} disabled={!canRemove} aria-label={t('pages.doe.ariaRemoveFactor')}
+        className="text-[var(--text-muted)] hover:bg-[var(--color-error-container)] hover:text-[var(--color-error-text)] transition-colors">
         <Trash2 size={14} />
-      </button>
+      </Button>
     </div>
   )
 }
@@ -72,62 +74,64 @@ function MixtureComponentRow({ comp, index, onChange, onRemove }: {
   onChange: (c: { name: string; lower: number; upper: number }) => void
   onRemove: () => void
 }) {
+  const { t } = useTranslation()
   return (
-    <div className="flex items-center gap-[var(--space-apple-sm)] p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/70 dark:bg-[var(--bg-tertiary)]/40 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)]">
+    <div className="flex items-center gap-[var(--space-apple-sm)] p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/70 dark:bg-[var(--bg-tertiary)]/40 rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] flex-wrap">
       <span className="text-xs font-mono text-[var(--text-muted)] w-6">{index + 1}</span>
-      <Input className="flex-1 h-8 text-sm"
-        placeholder="组分名称（例如：黄芪）" value={comp.name}
+      <Input className="flex-1 min-w-0 text-sm"
+        placeholder={t('pages.doe.componentNamePlaceholder')} value={comp.name}
         onChange={e => onChange({ ...comp, name: e.target.value })} />
       {(['lower', 'upper'] as const).map(k => (
         <div key={k} className="flex flex-col items-center gap-1">
-          <span className="text-xs text-[var(--text-muted)] uppercase tracking-wide">{k === 'lower' ? '下限' : '上限'}</span>
+          <span className="text-xs text-[var(--text-muted)] uppercase tracking-wide">{k === 'lower' ? t('pages.doe.componentLowerLimit') : t('pages.doe.componentUpperLimit')}</span>
           <Input type="number" step="0.01"
-            className="w-20 h-8 text-sm text-center tabular-nums"
+            aria-label={`${comp.name} ${k === 'lower' ? t('pages.doe.componentLowerLimit') : t('pages.doe.componentUpperLimit')}`}
+            className="w-20 text-sm text-center tabular-nums"
             value={comp[k]}
             onChange={e => onChange({ ...comp, [k]: parseFloat(e.target.value) || 0 })} />
         </div>
       ))}
-      <button onClick={onRemove} className="p-1.5 rounded-[var(--radius-Apple-sm)] hover:bg-danger-50 dark:hover:bg-danger-950/40 text-[var(--text-muted)] hover:text-danger-500 transition-colors">
+      <Button variant="ghost" size="icon" type="button" onClick={onRemove} aria-label={t('pages.doe.ariaRemoveComponent')} className="text-[var(--text-muted)] hover:bg-[var(--color-error-container)] hover:text-[var(--color-error-text)] transition-colors">
         <Trash2 size={14} />
-      </button>
+      </Button>
     </div>
   )
 }
 
-function ResponseInputTable({ runs, factors, values, onChange, autoFill }: {
+function ResponseInputTable({ runs, factors, values, onChange }: {
   runs: DOERun[]
   factors: DOEFactor[]
   values: Record<number, number>
   onChange: (runId: number, v: number) => void
-  autoFill?: (run: DOERun) => number | null
 }) {
+  const { t } = useTranslation()
   const factorNames = factors.map(f => f.name)
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-xs">
+      <table className="data-table w-full text-xs">
         <thead>
-          <tr className="border-b border-[var(--border-color)] text-[var(--text-muted)]">
-            <th className="pb-2 pr-2 text-left w-10">#</th>
-            {factorNames.map(name => <th key={name} className="pb-2 px-2 text-center min-w-[80px]">{name}</th>)}
-            <th className="pb-2 px-2 text-center min-w-[100px]">响应值?y)</th>
+          <tr>
+            <th className="pr-3 text-left w-10">#</th>
+            {factorNames.map(name => <th key={name} className="px-2 text-center min-w-[80px]">{name}</th>)}
+            <th className="pl-2 text-center min-w-[100px]">{t('pages.doe.responseValue')}</th>
           </tr>
         </thead>
         <tbody>
           {runs.map(run => {
-            const shown = values[run.run_id] ?? (autoFill ? autoFill(run) : undefined)
+            const shown = values[run.run_id]
             return (
-              <tr key={run.run_id} className="border-b border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/50">
-                <td className="py-2 pr-2 text-[var(--text-muted)] font-mono">{run.run_id}</td>
+              <tr key={run.run_id}>
+                <td className="pr-3 text-[var(--text-muted)] font-mono">{run.run_id}</td>
                 {factorNames.map(name => (
-                  <td key={name} className="py-2 px-2 text-center font-mono text-[var(--text-secondary)] tabular-nums">
+                  <td key={name} className="px-2 text-center font-mono text-[var(--text-secondary)] tabular-nums">
                     {((run.factor_levels?.[name] ?? run.coded_levels?.[name] ?? 0) as number).toFixed(2)}
                   </td>
                 ))}
-                <td className="py-2 px-2">
+                <td className="pl-2">
                   <Input type="number" step="0.01" value={shown ?? ''}
                     onChange={e => onChange(run.run_id, parseFloat(e.target.value) || 0)}
-                    placeholder="输入响应值"
-                    className="h-7 w-full text-center tabular-nums" />
+                    placeholder={t('pages.doe.inputResponseValue')}
+                    className="w-full text-center tabular-nums" />
                 </td>
               </tr>
             )
@@ -143,6 +147,7 @@ function ScatterPlot({ runs, factors, values }: {
   factors: DOEFactor[]
   values: Record<number, number>
 }) {
+  const { t } = useTranslation()
   if (factors.length < 2) return null
   const f1 = factors[0].name
   const f2 = factors[1].name
@@ -157,7 +162,7 @@ function ScatterPlot({ runs, factors, values }: {
   if (scatterData.length < 3) {
     return (
       <div className="h-56 flex items-center justify-center text-[var(--text-muted)] text-sm bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-md)]">
-        请输入至少组响应值以生成分散图      </div>
+        {t('pages.doe.scatterNeedMore')}      </div>
     )
   }
   return (
@@ -167,27 +172,27 @@ function ScatterPlot({ runs, factors, values }: {
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color, rgba(148,163,184,0.12))" opacity={0.35} />
           <XAxis type="number" dataKey="x" name={f1} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={{ stroke: 'var(--border-color)' }} tickLine={{ stroke: 'var(--border-color)' }} label={{ value: f1, position: 'bottom', offset: 0, fontSize: 12, fill: 'var(--text-muted)' }} />
           <YAxis type="number" dataKey="y" name={f2} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={{ stroke: 'var(--border-color)' }} tickLine={{ stroke: 'var(--border-color)' }} label={{ value: f2, angle: -90, position: 'left', offset: 0, fontSize: 12, fill: 'var(--text-muted)' }} />
-          <ZAxis type="number" dataKey="z" range={[60, 400]} name="响应值" />
+          <ZAxis type="number" dataKey="z" range={[60, 400]} name={t('pages.doe.scatterResponseName')} />
           <RechartsTooltip
             content={({ active, payload }) => {
               if (!active || !payload?.[0]) return null
               const d = payload[0].payload as unknown as { run_id: number; f1_val: number; f2_val: number; z: number }
               return (
                 <div className="bg-card border border-[var(--border-color)] rounded-[var(--radius-Apple-sm)] p-2 text-xs shadow-lg">
-                  <div className="font-semibold mb-1">第#{d.run_id} 组</div>
+                  <div className="font-semibold mb-1">{t('pages.doe.groupLabel', { id: d.run_id })}</div>
                   <div>{f1}: {d.f1_val.toFixed(2)}</div>
                   <div>{f2}: {d.f2_val.toFixed(2)}</div>
-                  <div className="text-[var(--color-primary-text)] font-bold">响应值 {d.z.toFixed(2)}</div>
+                  <div className="text-[var(--color-primary-text)] font-bold">{t('pages.doe.scatterResponseTooltip', { value: d.z.toFixed(2) })}</div>
                 </div>
               )
             }}
           />
           <Legend />
-          <Scatter name="散点" data={scatterData} fill="var(--color-primary, #10b981)" fillOpacity={0.7} />
+          <Scatter name={t('pages.doe.scatterName')} data={scatterData} fill="var(--color-primary, var(--color-primary-surface, #047857))" fillOpacity={0.7} />
         </ScatterChart>
       </ResponsiveContainer>
       <p className="text-xs text-[var(--text-muted)] text-center mt-1">
-        气泡大小 = 响应值· X值= {f1} · Y值= {f2}
+        {t('pages.doe.bubbleLegend', { f1, f2 })}
       </p>
     </div>
   )
@@ -210,11 +215,16 @@ export default function DoePage() {
   ])
   const [mixtureDesignType, setMixtureDesignType] = useState<'lattice' | 'centroid'>('lattice')
   const [mixtureDegree, setMixtureDegree] = useState(2)
+  // CCD/BBD 中心点重复次数（n_center），默认 6 保持既有行为
+  const [nCenterPoints, setNCenterPoints] = useState<number>(6)
+  // 生成标签页当前设计类型：n_center 仅适用于 CCD / BBD（混料不适用）
+  const [designType, setDesignType] = useState<'ccd' | 'bbd' | 'mixture'>('ccd')
   const [designResult, setDesignResult] = useState<null | { type: string; runs: DOERun[]; notes: string }>(null)
   const [showResponseInput, setShowResponseInput] = useState(false)
   const [responseValues, setResponseValues] = useState<Record<number, number>>({})
   const [fittingRuns, setFittingRuns] = useState<DOERun[]>([])
   const [fitResult, setFitResult] = useState<FittedModel[] | null>(null)
+  const [activeFitIdx, setActiveFitIdx] = useState<number>(0)
   const [targetValue, setTargetValue] = useState('')
   const [searchResult, setSearchResult] = useState<any>(null)
   const [activeLearningResult, setActiveLearningResult] = useState<any[]>([])
@@ -225,8 +235,9 @@ export default function DoePage() {
   // 配方种子
   const [seedFormulas, setSeedFormulas] = useState<Array<{ id: number; name: string }>>([])
   const [seedFormulaId, setSeedFormulaId] = useState('')
-  const [seedRespParam, setSeedRespParam] = useState('感官评分')
+  const [seedRespParam, setSeedRespParam] = useState('')
   const [seedExpId, setSeedExpId] = useState('')
+  const [seedFormulasLoading, setSeedFormulasLoading] = useState(true)
   const [seedMeta, setSeedMeta] = useState<null | {
     formulaId: number; formulaName: string; totalRuns: number; responseParam: string
     experimentId: number | null; responsePool: number[]
@@ -235,12 +246,23 @@ export default function DoePage() {
   const [fitResponseParam, setFitResponseParam] = useState('y')
   // P2-1：记录用户是否手动改过响应参数；一旦手动改过，不再被自动切换覆盖
   const [respParamTouched, setRespParamTouched] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState<string | null>(null)
+  const isLoading = (k: string) => loading === k
   const [history, setHistory] = useState<any[]>(loadHistory)
   const [showHistory, setShowHistory] = useState(false)
 
   // 从 fittingRuns → response_values 自动推导可用响应参数
   const responseCandidates = useMemo(() => deriveResponseNames(fittingRuns), [fittingRuns])
+
+  // H3：拟合/搜索/主动学习结果仅在关键输入变化时失效，避免陈旧结果继续展示（设置结果本身不触发本效应）
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setFitResult(null)
+    setSearchResult(null)
+    setActiveLearningResult([])
+    setActiveFitIdx(0)
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [fittingRuns, factors, fitResponseParam])
 
   // 当 fittingRuns 变化时，自动把默认响应参数切到首个真实参数（P2-1 修复：仅当用户没有手动改过 respParamTouched=false 时才自动切换，尊重用户选择）
   useEffect(() => {
@@ -261,12 +283,14 @@ export default function DoePage() {
       setSeedFormulas(list)
       if (import.meta.env.DEV) console.log('[DOE] listSeedFormulas total', imp?.total, 'recipes', list.length)
       if (list.length === 0) {
-        addToast({ type: 'warning', message: `配方列表为空（API 返回 total=${imp?.total ?? '?'})，请确认 /doe/formulas 端点正常` })
+        addToast({ type: 'warning', message: t('pages.doe.toastFormulaListEmpty', { total: imp?.total ?? '?' }) })
       }
     }).catch((e: any) => {
       if (cancelled) return
       if (import.meta.env.DEV) console.warn('[DOE] listSeedFormulas failed', e?.response?.status, e?.response?.data ?? e)
-      addToast({ type: 'error', message: `加载配方列表失败 ${e?.response?.status ?? e?.message}` })
+      addToast({ type: 'error', message: t('pages.doe.toastLoadFormulasFailed', { err: e?.response?.status ?? e?.message }) })
+    }).finally(() => {
+      if (!cancelled) setSeedFormulasLoading(false)
     })
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -297,8 +321,8 @@ export default function DoePage() {
   // 从真实配方生成种子runs →回填因子 + 拟合队列
   const handleSeedFromFormula = () => {
     const fid = parseInt(seedFormulaId, 10)
-    if (!fid) { addToast({ type: 'warning', message: '请选择至少一个配方' }); return }
-    setLoading(true)
+    if (!fid) { addToast({ type: 'warning', message: t('pages.doe.toastSelectFormula') }); return }
+    setLoading('seed')
     ;(async () => {
       try {
         // P0-1：把 seedExpId 传给后端 →按该实验真实数据点取响应值（pool 循环使用）
@@ -311,7 +335,7 @@ export default function DoePage() {
         const imp = body?.data ?? body
         const runs: DOERun[] = imp.runs ?? []
         if (runs.length === 0) {
-          addToast({ type: 'warning', message: '该配方无法生成种子（有效成分不足 2 个）' })
+          addToast({ type: 'warning', message: t('pages.doe.toastSeedUnavailable') })
           return
         }
         setFittingRuns(runs)
@@ -319,23 +343,38 @@ export default function DoePage() {
         // P0-1：seedMeta 携带 experimentId主动学习闭环可写回该实验
         setSeedMeta({
           formulaId: fid,
-          formulaName: imp.formula?.name ?? `配方 ${fid}`,
+          formulaName: imp.formula?.name ?? t('pages.doe.seedFormulaFallback', { id: fid }),
           totalRuns: runs.length,
           responseParam: imp.response_parameter ?? '感官评分',
           experimentId: imp.experiment_id ?? expId ?? null,
           responsePool: imp.response_pool ?? [],
         })
-        // 自动把拟合响应参数指向种子真实响应值
+        // 自动把拟合响应参数指向种子真实响应值（尊重用户手选）
         const firstResp = Object.keys(runs[0]?.response_values ?? {})
-        if (firstResp.length > 0) setFitResponseParam(firstResp[0])
+        if (!respParamTouched && firstResp.length > 0) setFitResponseParam(firstResp[0])
         const pool = imp.response_pool ?? []
-        const poolNote = pool.length > 1 ? `，响应池 ${pool.length} 个不同真实响应` : ''
-        addToast({ type: 'success', message: `已用真实配方{imp.formula?.name}」生成${runs.length} 组种子（响应：{imp.response_parameter}${poolNote}）` })
+        if (imp.degenerate) {
+          const di = imp.degenerate_info ?? {}
+          const cands = (di.multi_value_candidates ?? []).map((c: any) => c?.name).filter(Boolean)
+          addToast({
+            type: 'warning',
+            duration: 10000,
+            title: t('pages.doe.seedDegenerateTitle'),
+            message: t('pages.doe.seedDegenerateDetail', {
+              resp: imp.response_parameter ?? '感官评分',
+              count: di.n_distinct_real_values ?? 1,
+              cand: cands.length ? cands.join(t('pages.doe.listSeparator')) : t('pages.doe.seedDegenerateNoCand'),
+            }),
+          })
+        } else {
+          const poolNote = pool.length > 1 ? t('pages.doe.seedPoolNote', { count: pool.length }) : ''
+          addToast({ type: 'success', message: t('pages.doe.seedGeneratedFromFormula', { name: imp.formula?.name ?? t('pages.doe.seedFormulaFallback', { id: fid }), count: runs.length, resp: imp.response_parameter, pool: poolNote }) })
+        }
         setActiveTab('fit')
       } catch (e: any) {
-        addToast({ type: 'error', message: e?.response?.data?.detail ?? String(e) })
+        addToast({ type: 'error', message: e?.response?.data?.detail ?? t('pages.doe.networkError') })
       } finally {
-        setLoading(false)
+        setLoading(null)
       }
     })()
   }
@@ -356,14 +395,14 @@ export default function DoePage() {
   const handleImportFromExperiment = (expIdOverride?: string) => {
     const expIdRaw = expIdOverride ?? expIdInput
     const expId = parseInt(expIdRaw, 10)
-    if (!expId) { addToast({ type: 'warning', message: '请输入实验ID' }); return }
-    setLoading(true)
+    if (!expId) { addToast({ type: 'warning', message: t('pages.doe.toastEnterExpId') }); return }
+    setLoading('import')
     ;(async () => {
       try {
         const imp: any = await doeApi.importExperimentRuns(expId, respParamInput ? { response_parameter: respParamInput } : undefined)
         const runs: DOERun[] = imp?.runs ?? []
         if (runs.length === 0) {
-          addToast({ type: 'warning', message: '该实验暂无可导入的运行（数据点为空或无时间戳）' })
+          addToast({ type: 'warning', message: t('pages.doe.toastNoImportableRuns') })
           return
         }
         const factorNames = (imp.factors ?? []).map((f: any) => f.name)
@@ -373,17 +412,17 @@ export default function DoePage() {
         }
         const respCands: string[] = imp.response_candidates ?? []
         setImportedMeta({ expId, totalRuns: runs.length, factors: factorNames, responseCandidates: respCands })
-        // 自动把拟合响应参数指向导入的真实响应
-        if (respCands.length > 0) setFitResponseParam(respCands[0])
-        addToast({ type: 'success', message: `已导入 ${runs.length} 组运行（实验 ${expId}，响应候选 ${respCands.length} 个）` })
+        // 自动把拟合响应参数指向导入的真实响应（尊重用户手选）
+        if (!respParamTouched && respCands.length > 0) setFitResponseParam(respCands[0])
+        addToast({ type: 'success', message: t('pages.doe.importedRuns', { count: runs.length, id: expId, candidates: respCands.length }) })
         setActiveTab('fit')
         if (expIdOverride && searchParams.get('exp')) {
           setSearchParams({}, { replace: true })
         }
       } catch (e: any) {
-        addToast({ type: 'error', message: e?.response?.data?.detail ?? String(e) })
+        addToast({ type: 'error', message: e?.response?.data?.detail ?? t('pages.doe.networkError') })
       } finally {
-        setLoading(false)
+        setLoading(null)
       }
     })()
   }
@@ -391,15 +430,15 @@ export default function DoePage() {
   // 把主动学习推荐写回实验管理（闭环）  // P0-1：支持两种来源 — 实验导入(importedMeta) 或 配方种子(seedMeta.experimentId)
   const closeLoopExpId = importedMeta?.expId ?? seedMeta?.experimentId ?? null
   const handleExportRecommendations = async () => {
-    if (activeLearningResult.length === 0) { addToast({ type: 'warning', message: '暂无可导出的推荐点' }); return }
+    if (activeLearningResult.length === 0) { addToast({ type: 'warning', message: t('pages.doe.toastNoRecommendations') }); return }
     const targetExp = closeLoopExpId
     if (!targetExp) {
       addToast({ type: 'warning', message: importedMeta
-        ? '实验导入来源缺少 expId'
-        : '请先在从实验导入数据，或在配方种子中填写实验ID 再导出推荐点' })
+        ? t('pages.doe.toastMissingExpId')
+        : t('pages.doe.toastNeedExpIdForExport') })
       return
     }
-    setLoading(true)
+    setLoading('export')
     try {
       const body: any = await doeApi.exportToExperiment({
         experiment_id: targetExp,
@@ -407,17 +446,17 @@ export default function DoePage() {
         note: `strategy=${activeStrategy || 'auto'}${seedMeta?.formulaName ? ` seed=${seedMeta.formulaName}` : ''}`,
       })
       const imp = body?.data ?? body
-      addToast({ type: 'success', message: `已写回 ${imp.created_data_points ?? 0} 个数据点到实验 ${targetExp}` })
+      addToast({ type: 'success', message: t('pages.doe.writtenBack', { count: imp.created_data_points ?? 0, id: targetExp }) })
     } catch (e: any) {
-      addToast({ type: 'error', message: e?.response?.data?.detail ?? String(e) })
+      addToast({ type: 'error', message: e?.response?.data?.detail ?? t('pages.doe.networkError') })
     } finally {
-      setLoading(false)
+      setLoading(null)
     }
   }
 
   const handleActiveLearning = async () => {
-    if (fittingRuns.length === 0) { addToast({ type: 'warning', message: '请先在在拟合队列中添加加实验数据' }); return }
-    setLoading(true)
+    if (buildFittingPayload(fitResponseParam).length < 2) { addToast({ type: 'warning', message: t('pages.doe.minRunsToFit', { param: fitResponseParam }) }); return }
+    setLoading('active')
     try {
       const res: any = await doeApi.activeLearning({
         existing_runs: fittingRuns.map(r => ({
@@ -433,11 +472,11 @@ export default function DoePage() {
       const recs = imp.recommendations ?? []
       setActiveLearningResult(recs)
       setActiveStrategy(imp.strategy ?? '')
-      addToast({ type: 'success', message: `已推荐${recs.length} 组新实验验点（策略{imp.strategy ?? 'default'}）` })
+      addToast({ type: 'success', message: t('pages.doe.recommendedPoints', { count: recs.length, strategy: imp.strategy ?? 'default' }) })
     } catch (e: any) {
-      addToast({ type: 'error', message: e?.response?.data?.detail ?? String(e) })
+      addToast({ type: 'error', message: e?.response?.data?.detail ?? t('pages.doe.networkError') })
     } finally {
-      setLoading(false)
+      setLoading(null)
     }
   }
 
@@ -453,21 +492,23 @@ export default function DoePage() {
   }
 
   const handleGenerate = async (type: 'ccd' | 'bbd') => {
-    if (factors.length < 2) { addToast({ type: 'warning', message: '请至少添加 2 个因子' }); return }
-    setLoading(true)
+    if (factors.length < 2) { addToast({ type: 'warning', message: t('pages.doe.toastMinFactors') }); return }
+    setDesignType(type)
+    setLoading('generate')
     try {
-      const res = await doeApi[type === 'ccd' ? 'generateCCD' : 'generateBBD']({ factors, n_center_points: Math.max(6, factors.length * 2) })
+      const res = await doeApi[type === 'ccd' ? 'generateCCD' : 'generateBBD']({ factors, n_center_points: nCenterPoints })
       const data = res.data?.data ?? res.data
       setDesignResult({ type, runs: data.runs ?? [], notes: data.notes ?? '' })
-      setFittingRuns(data.runs ?? []); setResponseValues({}); setShowResponseInput(false); setSearchResult(null)
-      addToast({ type: 'success', message: `已生成${data.total_runs} 组实验设计` })
-    } catch (e: any) { addToast({ type: 'error', message: e?.response?.data?.detail ?? String(e) }) }
-    finally { setLoading(false) }
+      setResponseValues({}); setShowResponseInput(false); setSearchResult(null); setFitResult(null); setActiveFitIdx(0); setActiveLearningResult([])
+      addToast({ type: 'success', message: t('pages.doe.generateAddedHint', { count: data.total_runs }) })
+    } catch (e: any) { addToast({ type: 'error', message: e?.response?.data?.detail ?? t('pages.doe.networkError') }) }
+    finally { setLoading(null) }
   }
 
   const handleGenerateMixture = async () => {
-    if (mixtureComponents.length < 2) { addToast({ type: 'warning', message: '混料设计至少需要 2 个组分' }); return }
-    setLoading(true)
+    if (mixtureComponents.length < 2) { addToast({ type: 'warning', message: t('pages.doe.toastMinComponents') }); return }
+    setDesignType('mixture')
+    setLoading('generate')
     try {
       const res = await doeApi.generateMixture({
         components: mixtureComponents.map(c => ({ name: c.name, lower: Math.min(c.lower, c.upper), upper: Math.max(c.lower, c.upper) })),
@@ -476,12 +517,12 @@ export default function DoePage() {
       })
       const data = res.data?.data ?? res.data
       setDesignResult({ type: `mixture_${mixtureDesignType}`, runs: data.runs ?? [], notes: data.notes ?? '' })
-      setFittingRuns(data.runs ?? []); setResponseValues({}); setShowResponseInput(false); setSearchResult(null)
-      addToast({ type: 'success', message: `已生成${data.total_runs} 组混料设计` })
+      setResponseValues({}); setShowResponseInput(false); setSearchResult(null); setFitResult(null); setActiveFitIdx(0); setActiveLearningResult([])
+      addToast({ type: 'success', message: t('pages.doe.generateAddedHint', { count: data.total_runs }) })
     } catch (e: any) {
-      addToast({ type: 'error', message: e?.response?.data?.detail ?? String(e) })
+      addToast({ type: 'error', message: e?.response?.data?.detail ?? t('pages.doe.networkError') })
     } finally {
-      setLoading(false)
+      setLoading(null)
     }
   }
 
@@ -489,10 +530,10 @@ export default function DoePage() {
     // P0-2 修复：保留真实响应名。后端 /fit 接受任意 response_names，模型 responses/equation/coefficients/r_squared 都会用该真实参数名（不再使用 'y'）
     const runsWithResponses = buildFittingPayload(fitResponseParam)
     if (runsWithResponses.length < 2) {
-    addToast({ type: 'warning', message: `至少需要 2 组带响应值(${fitResponseParam})的实验才能拟合` })
+    addToast({ type: 'warning', message: t('pages.doe.minRunsToFit', { param: fitResponseParam }) })
       return
     }
-    setLoading(true)
+    setLoading('fit')
     try {
       const res = await doeApi.fitResponseSurface({
         runs: runsWithResponses,
@@ -501,15 +542,21 @@ export default function DoePage() {
         include_quadratic: true,
       })
       const models = res.data?.models ?? res.data
-      setFitResult(models); setSearchResult(null)
+      setFitResult(models); setActiveFitIdx(0); setSearchResult(null)
       const r2 = models?.[0]?.r_squared?.[fitResponseParam] ?? 0
-      addToast({ type: 'success', message: `拟合「${fitResponseParam}」完成，R² = ${Number(r2).toFixed(4)}` })
-    } catch (e: any) { addToast({ type: 'error', message: e?.response?.data?.detail ?? String(e) }) }
-    finally { setLoading(false) }
+      addToast({ type: 'success', message: t('pages.doe.fittedDone', { param: fitResponseParam, r2: Number(r2).toFixed(4) }) })
+    } catch (e: any) { addToast({ type: 'error', message: e?.response?.data?.detail ?? t('pages.doe.networkError') }) }
+    finally { setLoading(null) }
   }
   const handleSearch = async () => {
-    if (!fitResult?.length || !fitResult[0]) { addToast({ type: 'warning', message: '请先在「响应面拟合」标签页执行模型拟合' }); return }
-    setLoading(true)
+    if (!fitResult?.length || !fitResult[0]) { addToast({ type: 'warning', message: t('pages.doe.toastFitFirst') }); return }
+    // L5：目标响应值不允许静默回退到 50 — 空/非法时提示并返回
+    const target = parseFloat(targetValue)
+    if (!targetValue || Number.isNaN(target)) {
+      addToast({ type: 'warning', message: t('pages.doe.targetRequired') })
+      return
+    }
+    setLoading('search')
     try {
       // 把因子实际值单位范围(low/high)传给后端 → 反解回实际值
       const factor_bounds: Record<string, [number, number]> = {}
@@ -518,22 +565,28 @@ export default function DoePage() {
       const targetKey = fitResponseParam
       const res: any = await doeApi.inverseSearch({
         model: fitResult[0],
-        target_values: { [targetKey]: parseFloat(targetValue) || 50 },
+        target_values: { [targetKey]: target },
         factor_bounds,
       })
       const data = res.data ?? res
       setSearchResult(data)
-      addToast({ type: 'success', message: data.converged ? '反向搜索已收敛' : '搜索未收敛，结果可能不精确（仅供参考）' })
-    } catch (e: any) { addToast({ type: 'error', message: String(e) }) }
-    finally { setLoading(false) }
+      addToast({ type: data.converged ? 'success' : 'warning', message: t(data.converged ? 'pages.doe.inverseConverged' : 'pages.doe.searchNotConverged') })
+    } catch (e: any) { addToast({ type: 'error', message: e?.response?.data?.detail ?? t('pages.doe.networkError') }) }
+    finally { setLoading(null) }
   }
 
   const handleSaveDesign = () => {
     if (!designResult) return
     const item = { id: Date.now(), type: designResult.type.toUpperCase(), factors: factors.map(f => f.name), runs: designResult.runs.length, date: new Date().toLocaleDateString() }
     const newHistory = [item, ...history].slice(0, 20)
-    setHistory(newHistory); saveHistory(newHistory)
-    addToast({ type: 'success', message: '设计已保存到历史记录' })
+    setHistory(newHistory)
+    try {
+      saveHistory(newHistory)
+      addToast({ type: 'success', message: t('pages.doe.designSaved') })
+    } catch {
+      // L6：localStorage 可能因配额/隐私模式抛错，给出警告而非崩溃
+      addToast({ type: 'warning', message: t('pages.doe.saveDesignFailed') })
+    }
   }
 
   /** 一键把整张设计矩阵加入拟合队列（去重），并跳到拟合标签页 */
@@ -542,42 +595,76 @@ export default function DoePage() {
     const existing = new Set(fittingRuns.map(r => r.run_id))
     const newRuns = designResult.runs.filter(r => !existing.has(r.run_id))
     if (newRuns.length === 0) {
-      addToast({ type: 'info', message: '该设计的所有组均已在拟合队列中' })
+      addToast({ type: 'info', message: t('pages.doe.toastAllInQueue') })
       return
     }
     setFittingRuns(prev => [...prev, ...newRuns])
     setActiveTab('fit')
-    addToast({ type: 'success', message: `已将 ${newRuns.length} 组设计加入拟合队列（跳过 ${designResult.runs.length - newRuns.length} 组已存在）` })
+    addToast({ type: 'success', message: t('pages.doe.addedToFitQueueWithSkip', { added: newRuns.length, skipped: designResult.runs.length - newRuns.length }) })
+  }
+
+  // L1：清空拟合队列 — 同时清掉陈旧的主动学习推荐；队列非空时给出成功提示（空队列不弹提示）
+  const handleClearQueue = () => {
+    setFittingRuns([])
+    setResponseValues({})
+    setFitResult(null)
+    setActiveFitIdx(0)
+    setSearchResult(null)
+    setActiveLearningResult([])
+    if (fittingRuns.length > 0) {
+      addToast({ type: 'success', message: t('pages.doe.queueCleared') })
+    }
+  }
+
+  // L1：从拟合队列移除单个 run — 给成功提示，避免静默失败
+  const handleRemoveRun = (runId: number) => {
+    setFittingRuns(fittingRuns.filter(r => r.run_id !== runId))
+    addToast({ type: 'success', message: t('pages.doe.runRemoved') })
   }
 
   // 当前要展示的响应参数名（用于 fit 结果 R² 标签）
   const displayRespName = fitResponseParam
+  // 实际可参与拟合的运行数（过滤掉无响应值的运行；与 buildFittingPayload 逻辑一致）
+  const fitPayloadCount = (() => { try { return buildFittingPayload(fitResponseParam).length } catch { return 0 } })()
+  // 多响应模型：当前选中的拟合模型下标（越界/空数组时钳制到合法下标，避免 -1）
+  const fitIdx = Math.max(0, Math.min(activeFitIdx, (fitResult?.length ?? 1) - 1))
+  const fitModel = fitResult?.[fitIdx]
+  const modelRespName = fitModel?.responses?.[0] ?? displayRespName
+  // H7：统计卡数值缺失时以 '—' 占位，避免误导性的 0
+  const statVal = (v: number | null | undefined, digits: number) =>
+    v == null ? t('pages.doe.statNotAvail') : Number(v.toFixed(digits))
 
   return (
     <div className="min-h-screen">
+      <style>{`
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: none; }
+        }
+      `}</style>
       <div className="max-w-[1600px] mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-[var(--space-apple-lg)] space-y-[var(--space-apple-md)]">
       {/* 页头横幅 — 对齐 Dashboard 品牌横幅规范 */}
       <div className="surface-primary rounded-[var(--radius-Apple-md)] p-[var(--space-apple-lg)] shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-[var(--space-apple-md)]">
           <div className="flex-1">
             <h1 className="text-xl font-semibold leading-snug tracking-tight flex items-center gap-2">
-              <Beaker size={20} className="text-white/80 shrink-0" />
+              <Beaker size={20} className="text-white shrink-0" />
               {t('pages.doe.title')}
             </h1>
-            <p className="mt-1 text-white/80 text-sm">{t('pages.doe.subtitle')}</p>
+            <p className="mt-1 text-white text-sm">{t('pages.doe.subtitle')}</p>
           </div>
           {history.length > 0 && (
-            <button onClick={() => setShowHistory(!showHistory)}
-              className="flex items-center gap-1.5 px-[var(--space-apple-sm)] py-1.5 min-h-[44px] text-xs font-medium bg-[var(--bg-secondary)]/15 hover:bg-[var(--bg-secondary)]/25 rounded-[var(--radius-pill)] transition-colors">
+            <Button variant="ghost" size="sm" type="button" onClick={() => setShowHistory(!showHistory)}
+              className="gap-1.5 bg-[var(--bg-secondary)]/15 hover:bg-[var(--bg-secondary)]/25 rounded-[var(--radius-pill)] text-xs font-medium transition-colors">
               <ClipboardList size={12} />{t('pages.doe.history', { count: history.length })}
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       {/* 历史记录 */}
       {showHistory && history.length > 0 && (
-        <Card>
+        <Card className="animate-[fadeSlideIn_.2s_ease-out] motion-reduce:animate-none">
           <CardContent className="p-[var(--space-apple-md)]">
               <div className="text-xs font-semibold text-[var(--text-muted)] mb-2 uppercase tracking-wide">{t('pages.doe.recentDesigns')}</div>
             <div className="flex gap-2 flex-wrap">
@@ -596,9 +683,9 @@ export default function DoePage() {
 
       {/* 实验管理 → DOE 导入DOE 导入 */}
       <Card className="border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/60">
-        <CardHeader className="px-5 pt-5 pb-3">
-          <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-            <FolderInput size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />
+        <CardHeader className="pt-5 pb-0">
+          <CardTitle as="h2" className="flex items-center gap-2">
+            <FolderInput size={14} className="text-[var(--color-primary-text)]" />
             <span className="text-[var(--color-primary-text)]">{t('pages.doe.importFromExperiment')}</span>
             <span className="text-xs font-normal text-[var(--text-muted)] ml-1">{t('pages.doe.importFromExperimentDesc')}</span>
           </CardTitle>
@@ -606,10 +693,10 @@ export default function DoePage() {
         <CardContent className="px-5 pb-5 pt-0">
           <div className="flex flex-wrap items-center gap-[var(--space-apple-sm)]">
             <Input value={expIdInput} onChange={e => setExpIdInput(e.target.value)}
-              placeholder={t('pages.doe.expIdPlaceholder')} className="w-32 h-9 text-sm" />
+              placeholder={t('pages.doe.expIdPlaceholder')} className="w-32 text-sm" />
             <Input value={respParamInput} onChange={e => setRespParamInput(e.target.value)}
-                  placeholder={t('pages.doe.respParamPlaceholder')} className="w-48 h-9 text-sm" />
-            <Button onClick={() => handleImportFromExperiment()} disabled={loading}
+                  placeholder={t('pages.doe.respParamPlaceholder')} className="w-48 text-sm" />
+            <Button onClick={() => handleImportFromExperiment()} loading={isLoading('import')}
               icon={<FolderInput size={14} />}>{t('pages.doe.import')}</Button>
             {importedMeta && (
                   <span className="text-xs text-[var(--text-muted)]">{t('pages.doe.importedMeta', { id: importedMeta.expId, runs: importedMeta.totalRuns, candidates: importedMeta.responseCandidates.join(', ') })}</span>
@@ -620,10 +707,10 @@ export default function DoePage() {
 
         {/* 配方 → DOE 种子生成（真实配方成分占比，非模拟） */}
       <Card>
-        <CardHeader className="px-5 pt-5 pb-3">
-          <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-            <FlaskConical size={14} className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]" />
-            <span className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]">{t('pages.doe.seedFromFormula')}</span>
+        <CardHeader className="pt-5 pb-0">
+          <CardTitle as="h2" className="flex items-center gap-2">
+            <FlaskConical size={14} className="text-[var(--color-secondary-text)]" />
+            <span className="text-[var(--color-secondary-text)]">{t('pages.doe.seedFromFormula')}</span>
             <span className="text-xs font-normal text-[var(--text-muted)] ml-1">{t('pages.doe.seedFromFormulaDesc')}</span>
           </CardTitle>
         </CardHeader>
@@ -635,22 +722,26 @@ export default function DoePage() {
       if (import.meta.env.DEV) console.log('[DOE] 重新加载配方', imp?.formulas?.length ?? 0)
             }).catch((e: any) => {
               if (import.meta.env.DEV) console.warn('[DOE] 重新加载配方失败', e?.response?.status, e?.response?.data ?? e)
-              addToast({ type: 'error', message: `重新加载配方失败 ` })
+              addToast({ type: 'error', message: t('pages.doe.toastReloadFailed') })
             })}
               className="text-xs"
               icon={<RefreshCw size={12} />}>{t('pages.doe.reloadFormulas')}</Button>
-            <select value={seedFormulaId} onChange={e => setSeedFormulaId(e.target.value)}
-              className="w-44 h-9 px-[var(--space-apple-sm)] text-sm rounded-[var(--radius-Apple-sm)] border border-input bg-transparent text-[var(--text-primary)] shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
-              <option value="">{t('pages.doe.selectFormula')}</option>
-              {seedFormulas.map(f => (
-                <option key={f.id} value={f.id}>{f.name}（{f.id}）</option>
-              ))}
-            </select>
+            <Select value={seedFormulaId} onValueChange={setSeedFormulaId} disabled={seedFormulasLoading}>
+              <SelectTrigger className="w-44" aria-label={t('pages.doe.selectFormula')}>
+                <SelectValue placeholder={t('pages.doe.selectFormula')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">{t('pages.doe.selectFormula')}</SelectItem>
+                {seedFormulas.map(f => (
+                  <SelectItem key={f.id} value={String(f.id)}>{f.name}（{f.id}）</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input value={seedRespParam} onChange={e => setSeedRespParam(e.target.value)}
-              placeholder={t('pages.doe.respParamDefault')} className="w-48 h-9 text-sm" />
+              placeholder={t('pages.doe.respParamDefault')} className="w-48 text-sm" />
             <Input value={seedExpId} onChange={e => setSeedExpId(e.target.value)}
-              placeholder={t('pages.doe.expIdOptional')} className="w-40 h-9 text-sm" />
-            <Button variant="secondary" onClick={handleSeedFromFormula} disabled={loading || !seedFormulaId}
+              placeholder={t('pages.doe.expIdOptional')} className="w-40 text-sm" />
+            <Button variant="secondary" onClick={handleSeedFromFormula} disabled={!seedFormulaId} loading={isLoading('seed')}
               icon={<FlaskConical size={14} />}>{t('pages.doe.generateSeed')}</Button>
             {seedMeta && (
               <span className="text-xs text-[var(--text-muted)]">
@@ -659,22 +750,39 @@ export default function DoePage() {
               </span>
             )}
           </div>
-          {seedFormulas.length === 0 && (
+          {seedFormulasLoading ? (
+            <div className="mt-2 text-xs text-[var(--text-muted)]">{t('pages.doe.loadingSeedFormulas')}</div>
+          ) : seedFormulas.length === 0 ? (
                 <div className="mt-2 text-xs text-[var(--text-muted)]">{t('pages.doe.noSeedFormulas')}</div>
-          )}
+          ) : null}
         </CardContent>
       </Card>
 
       {/* 标签对齐设计系统 Apple Segmented Control 规范 */}
       <div className="mt-[var(--space-apple-md)]">
-      <div className="tabs-list w-fit">
+      <div className="tabs-list w-full max-w-full" role="tablist" aria-label={t('pages.doe.tabListLabel')}
+        onKeyDown={(e) => {
+          const keys = ['design', 'fit', 'search', 'active']
+          const idx = keys.indexOf(activeTab)
+          if (idx === -1) return
+          let next: string | null = null
+          if (e.key === 'ArrowLeft') next = keys[(idx - 1 + keys.length) % keys.length]
+          else if (e.key === 'ArrowRight') next = keys[(idx + 1) % keys.length]
+          else if (e.key === 'Home') next = keys[0]
+          else if (e.key === 'End') next = keys[keys.length - 1]
+          if (next) {
+            e.preventDefault()
+            setActiveTab(next as 'design' | 'fit' | 'search' | 'active')
+            document.getElementById(`doe-tab-${next}`)?.focus()
+          }
+        }}>
         {[
           { key: 'design' as const, label: t('pages.doe.tabDesign'), icon: Play },
           { key: 'fit' as const, label: t('pages.doe.tabFit'), icon: TrendingUp },
           { key: 'search' as const, label: t('pages.doe.tabSearch'), icon: Search },
           { key: 'active' as const, label: t('pages.doe.tabActive'), icon: Lightbulb },
         ].map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+          <button key={tab.key} role="tab" id={`doe-tab-${tab.key}`} aria-controls={`doe-panel-${tab.key}`} aria-selected={activeTab === tab.key} tabIndex={activeTab === tab.key ? 0 : -1} onClick={() => setActiveTab(tab.key)}
             className={`tabs-trigger ${activeTab === tab.key ? 'tabs-trigger-active' : ''}`}>
             <span className="icon"><tab.icon size={14} /></span>
             {tab.label}
@@ -683,22 +791,22 @@ export default function DoePage() {
       </div>
       </div>
 
-      <div className="mt-6 space-y-6">
+      <div className="mt-[var(--space-apple-lg)] space-y-[var(--space-apple-lg)]">
         {/* 实验设计标签 */}
         {activeTab === 'design' && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-[fadeSlideIn_.2s_ease-out] motion-reduce:animate-none" id="doe-panel-design" role="tabpanel" aria-labelledby="doe-tab-design">
             {/* 因子设置 */}
             <Card>
-              <CardHeader className="px-5 pt-5 pb-3">
+              <CardHeader className="pt-5 pb-0">
                 <div className="flex items-center justify-between">
-                  <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                    <Plus size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />{t('pages.doe.factorSettings')}
+                  <CardTitle as="h2" className="flex items-center gap-2">
+                    <Plus size={14} className="text-[var(--color-primary-text)]" />{t('pages.doe.factorSettings')}
                   </CardTitle>
                   <Button variant="outline" size="sm" onClick={addFactor} icon={<Plus size={12} />} className="text-xs">{t('pages.doe.addFactor')}</Button>
                 </div>
               </CardHeader>
-              <CardContent className="px-5 pb-5 pt-0 space-y-2">
-                <div className="flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-1.5 text-xs text-[var(--text-muted)] uppercase tracking-wider">
+              <CardContent className="px-5 pb-5 pt-0 space-y-[var(--space-apple-sm)]">
+                <div className="flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-1.5 text-xs text-[var(--text-muted)] uppercase tracking-wider flex-wrap">
                   <span className="w-6">#</span><span className="flex-1">{t('pages.doe.factorName')}</span>
                   <span className="w-20 text-center">{t('pages.doe.lowLevel')}</span>
                   <span className="w-20 text-center">{t('pages.doe.highLevel')}</span>
@@ -713,17 +821,17 @@ export default function DoePage() {
 
             {/* 混料设计设置 */}
             <Card className="border-[var(--color-secondary-border)] dark:border-[var(--color-secondary)]/60">
-              <CardHeader className="px-5 pt-5 pb-3">
+              <CardHeader className="pt-5 pb-0">
                 <div className="flex items-center justify-between">
-                  <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                    <PieChart size={14} className="text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)]" />{t('pages.doe.mixtureDesign')}
+                  <CardTitle as="h2" className="flex items-center gap-2">
+                    <PieChart size={14} className="text-[var(--color-secondary-text)]" />{t('pages.doe.mixtureDesign')}
                   </CardTitle>
                   <Button variant="outline" size="sm" onClick={addMixtureComponent} icon={<Plus size={12} />} className="text-xs">{t('pages.doe.addComponent')}</Button>
                 </div>
               </CardHeader>
               <CardContent className="px-5 pb-5 pt-0 space-y-[var(--space-apple-md)]">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-1.5 text-xs text-[var(--text-muted)] uppercase tracking-wider">
+                <div className="space-y-[var(--space-apple-sm)]">
+                  <div className="flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-1.5 text-xs text-[var(--text-muted)] uppercase tracking-wider flex-wrap">
                     <span className="w-6">#</span><span className="flex-1">{t('pages.doe.componentName')}</span>
                     <span className="w-20 text-center">{t('pages.doe.lowerLimit')}</span>
                     <span className="w-20 text-center">{t('pages.doe.upperLimit')}</span>
@@ -733,23 +841,31 @@ export default function DoePage() {
                     <MixtureComponentRow key={i} comp={c} index={i} onChange={v => updateMixtureComponent(i, v)} onRemove={() => removeMixtureComponent(i)} />
                   ))}
                 </div>
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-wrap items-center gap-[var(--space-apple-md)]">
                   <div className="flex items-center gap-2 text-xs">
                     <span className="text-[var(--text-muted)]">{t('pages.doe.designType')}</span>
-                    <select value={mixtureDesignType} onChange={e => setMixtureDesignType(e.target.value as 'lattice'|'centroid')}
-                      className="h-8 px-2 text-xs rounded-[var(--radius-Apple-sm)] border border-input bg-transparent text-[var(--text-primary)] shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
-                      <option value="lattice">{t('pages.doe.lattice')}</option>
-                      <option value="centroid">{t('pages.doe.centroid')}</option>
-                    </select>
+                    <Select value={mixtureDesignType} onValueChange={(v) => setMixtureDesignType(v as 'lattice' | 'centroid')}>
+                      <SelectTrigger className="w-36" aria-label={t('pages.doe.designType')}>
+                        <SelectValue placeholder={t('pages.doe.designType')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="lattice">{t('pages.doe.lattice')}</SelectItem>
+                        <SelectItem value="centroid">{t('pages.doe.centroid')}</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   {mixtureDesignType === 'lattice' && (
                     <div className="flex items-center gap-2 text-xs">
                       <span className="text-[var(--text-muted)]">{t('pages.doe.degree')}</span>
-                      <select value={mixtureDegree} onChange={e => setMixtureDegree(parseInt(e.target.value, 10))}
-                        className="h-8 px-2 text-xs rounded-[var(--radius-Apple-sm)] border border-input bg-transparent text-[var(--text-primary)] shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
-                        <option value={2}>{t('pages.doe.degree2')}</option>
-                        <option value={3}>{t('pages.doe.degree3')}</option>
-                      </select>
+                      <Select value={String(mixtureDegree)} onValueChange={(v) => setMixtureDegree(Number(v))}>
+                        <SelectTrigger className="w-24" aria-label={t('pages.doe.degree')}>
+                          <SelectValue placeholder={t('pages.doe.degree')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="2">{t('pages.doe.degree2')}</SelectItem>
+                          <SelectItem value="3">{t('pages.doe.degree3')}</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   )}
                 </div>
@@ -758,54 +874,74 @@ export default function DoePage() {
 
             {/* 生成按钮 */}
             <div className="flex flex-wrap gap-[var(--space-apple-sm)]">
-              <Button onClick={() => handleGenerate('ccd')} disabled={loading}
+              {(designType === 'ccd' || designType === 'bbd') ? (
+                <div className="flex items-center gap-[var(--space-apple-sm)]">
+                  <label htmlFor="n-center-points" className="text-xs text-[var(--text-muted)]">{t('pages.doe.centerPointsLabel')}</label>
+                  <Input id="n-center-points" type="number" min={0} max={20} step={1}
+                    className="w-20 text-sm text-center tabular-nums"
+                    value={nCenterPoints}
+                    onChange={e => setNCenterPoints(Math.max(0, Math.min(20, parseInt(e.target.value, 10) || 0)))} />
+                </div>
+              ) : (
+                <span className="text-xs text-[var(--text-muted)]">{t('pages.doe.nCenterNotApplicable')}</span>
+              )}
+              <Button onClick={() => handleGenerate('ccd')} loading={isLoading('generate')}
                 icon={<Play size={14} />}>{t('pages.doe.generateCCD')}</Button>
-              <Button variant="secondary" onClick={() => handleGenerate('bbd')} disabled={loading}
+              <Button variant="secondary" onClick={() => handleGenerate('bbd')} loading={isLoading('generate')}
                 icon={<Play size={14} />}>{t('pages.doe.generateBBD')}</Button>
-              <Button variant="outline" onClick={handleGenerateMixture} disabled={loading}
+              <Button variant="outline" onClick={handleGenerateMixture} loading={isLoading('generate')}
                 icon={<PieChart size={14} />}>{t('pages.doe.generateMixture')}</Button>
               {designResult && <Button variant="ghost" onClick={handleSaveDesign}
                 icon={<Save size={14} />}>{t('pages.doe.saveDesign')}</Button>}
             </div>
 
             {/* 设计结果 */}
-            {designResult && (
-              <Card>
-                <CardHeader className="px-5 pt-5 pb-3">
+            <Card>
+                <CardHeader className="pt-5 pb-0">
                   <div className="flex items-center justify-between">
-                    <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                      <Sparkles size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />
-                      {designResult.type.toUpperCase()} 设计矩阵
+                    <CardTitle as="h2" className="flex items-center gap-2">
+                      <Sparkles size={14} className="text-[var(--color-primary-text)]" />
+                      {designResult
+                        ? t('pages.doe.designMatrix', { type: designResult.type.toUpperCase() })
+                        : t('pages.doe.designResultTitle')}
                     </CardTitle>
+                    {designResult && (
                     <div className="flex items-center gap-2">
-                    <Badge variant="neutral" size="sm">{designResult.runs.length} 组</Badge>
+                    <Badge variant="neutral" size="sm">{t('pages.doe.runsCountGroup', { count: designResult.runs.length })}</Badge>
                       <Button size="sm" onClick={handleAddAllToFitting}
                         icon={<TrendingUp size={12} />} className="text-xs">
-                        全部加入拟合
+                        {t('pages.doe.addAllToFit')}
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => setShowResponseInput(!showResponseInput)}
                         icon={showResponseInput ? <EyeOff size={12} /> : <Eye size={12} />} className="text-xs">
-                        {showResponseInput ? '收起响应输入' : '输入响应值'}
+                        {showResponseInput ? t('pages.doe.hideResponseInput') : t('pages.doe.showResponseInput')}
                       </Button>
                     </div>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="px-5 pb-5 pt-0 space-y-[var(--space-apple-md)]">
+                  {!designResult ? (
+                    <div className="text-center py-8 text-[var(--text-muted)] text-sm">
+                      {t('pages.doe.designEmptyHint')}
+                    </div>
+                  ) : (
+                  <>
                   {designResult.notes && <p className="text-xs text-[var(--text-muted)] px-1">{designResult.notes}</p>}
 
                   {/* 响应值输出*/}
                   {showResponseInput && (
-                    <div className="p-[var(--space-apple-sm)] bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/20 rounded-[var(--radius-Apple-sm)] border border-[var(--color-primary-border)] dark:border-primary-900">
-                    <div className="text-xs font-semibold text-[var(--color-primary-text)] mb-2">请输入实验响应值（y）</div>
+                    <div className="p-[var(--space-apple-sm)] bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/20 rounded-[var(--radius-Apple-sm)] border border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/40 animate-[fadeSlideIn_.2s_ease-out] motion-reduce:animate-none">
+                    <div className="text-xs font-semibold text-[var(--color-primary-text)] mb-2">{t('pages.doe.enterResponseValues')}</div>
                       <ResponseInputTable runs={designResult.runs} factors={factors} values={responseValues} onChange={updateResponseValue} />
-                      <div className="text-xs text-[var(--text-muted)] mt-2">{Object.keys(responseValues).length} / {designResult.runs.length} 组响应已填写</div>
+                      <div className="text-xs text-[var(--text-muted)] mt-2">{t('pages.doe.responseFilled', { filled: Object.keys(responseValues).length, total: designResult.runs.length })}</div>
                     </div>
                   )}
 
                 {/* 因子空间可视化 */}
                   {designResult.runs.length >= 2 && factors.length >= 2 && (
                     <div>
-                      <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">因子空间可视化化（前两个因子）</div>
+                      <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">{t('pages.doe.factorSpaceViz')}</div>
                       <ScatterPlot runs={designResult.runs} factors={factors} values={responseValues} />
                     </div>
                   )}
@@ -818,7 +954,7 @@ export default function DoePage() {
                           <th className="pr-3 text-left w-10">#</th>
                           {designResult.runs[0]?.coded_levels &&
                             Object.keys(designResult.runs[0].coded_levels).map(k => <th key={k} className="px-2 text-center">{k}</th>)}
-                          <th className="pl-2 text-center">加入拟合队列</th>
+                          <th className="pl-2 text-center">{t('pages.doe.addToFitQueue')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -828,18 +964,20 @@ export default function DoePage() {
                             {Object.entries(run.coded_levels).map(([k, v]) => (
                               <td key={k} className="px-2 text-center font-mono text-[var(--color-primary-text)] tabular-nums">{(v as number).toFixed(4)}</td>
                             ))}
-                            <td className="pl-2">
+                            <td className="pl-2 text-center">
                               {fittingRuns.some(r => r.run_id === run.run_id) ? (
-                                <span className="text-xs text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]">已在队列</span>
+                                <span className="text-xs text-[var(--color-primary-text)]">{t('pages.doe.alreadyInQueue')}</span>
                               ) : (
-                                <button
+                                <Button variant="ghost" size="icon" type="button"
                                   onClick={() => {
                                     setFittingRuns(prev => [...prev, run])
-                                    addToast({ type: 'success', message: `已将 #${run.run_id} 加入拟合队列` })
+                                    setActiveTab('fit')
+                                    addToast({ type: 'success', message: t('pages.doe.addedToQueue', { id: run.run_id }) })
                                   }}
-                                  className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] dark:hover:text-[var(--color-primary-text)] transition-colors">
-                                  <ChevronRight size={14} />
-                                </button>
+                                  aria-label={t('pages.doe.ariaAddToQueue')}
+                                  className="text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] transition-colors">
+                                  <Plus size={14} />
+                                </Button>
                               )}
                             </td>
                           </tr>
@@ -847,31 +985,35 @@ export default function DoePage() {
                       </tbody>
                     </table>
                   </div>
+                  </>
+                  )}
                 </CardContent>
               </Card>
-            )}
           </div>
         )}
 
         {/* 响应面拟合标签*/}
         {activeTab === 'fit' && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-[fadeSlideIn_.2s_ease-out] motion-reduce:animate-none" id="doe-panel-fit" role="tabpanel" aria-labelledby="doe-tab-fit">
             <Card>
-              <CardHeader className="px-5 pt-5 pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                    <TrendingUp size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />
+              <CardHeader className="pt-5 pb-0">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <CardTitle as="h2" className="flex items-center gap-2">
+                    <TrendingUp size={14} className="text-[var(--color-primary-text)]" />
                     {t('pages.doe.fitQueue', { count: fittingRuns.length })}
                   </CardTitle>
                   {/* 响应参数选选择*/}
                   <div className="flex items-center gap-2">
-                    <label className="text-xs text-[var(--text-muted)]">{t('pages.doe.fitResponse')}</label>
-                    <select value={fitResponseParam}
-                      onChange={e => { setFitResponseParam(e.target.value); setRespParamTouched(true) }}
-                      className="h-8 px-2 text-xs rounded-[var(--radius-Apple-sm)] border border-input bg-transparent text-[var(--text-primary)] shadow-sm focus:outline-none focus:ring-1 focus:ring-ring">
-                      <option value="y">{t('pages.doe.manualY')}</option>
-                      {responseCandidates.map(n => <option key={n} value={n}>{t('pages.doe.realData', { name: n })}</option>)}
-                    </select>
+                    <label htmlFor="doe-fit-response" className="text-xs text-[var(--text-muted)]">{t('pages.doe.fitResponse')}</label>
+                    <Select value={fitResponseParam} onValueChange={(v) => { setFitResponseParam(v); setRespParamTouched(true) }}>
+                      <SelectTrigger id="doe-fit-response" className="w-32" aria-label={t('pages.doe.fitResponse')}>
+                        <SelectValue placeholder={t('pages.doe.fitResponse')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="y">{t('pages.doe.manualY')}</SelectItem>
+                        {responseCandidates.map(n => <SelectItem key={n} value={n}>{t('pages.doe.realData', { name: n })}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </CardHeader>
@@ -879,10 +1021,10 @@ export default function DoePage() {
                 {fittingRuns.length === 0 ? (
                   <div className="text-center py-12 text-[var(--text-muted)]">
                     <FileText size={32} className="mx-auto mb-[var(--space-apple-sm)] opacity-30" />
-                    <p className="text-sm">请通过上方「实验管理导入」或「配方种子」获取真实数据，或在「实验设计」标签页添加</p>
+                    <p className="text-sm">{t('pages.doe.fitEmptyDesc')}</p>
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-80 overflow-y-auto">
+                  <div className="space-y-[var(--space-apple-sm)] max-h-80 overflow-y-auto">
                     {fittingRuns.map(run => (
                       <div key={run.run_id} className="flex items-center gap-[var(--space-apple-sm)] px-[var(--space-apple-sm)] py-2 bg-[var(--bg-tertiary)]/70 dark:bg-[var(--bg-tertiary)]/40 rounded-[var(--radius-Apple-sm)] flex-wrap">
                         <span className="text-xs font-mono text-[var(--text-muted)] w-6">#{run.run_id}</span>
@@ -894,10 +1036,10 @@ export default function DoePage() {
                             {Object.entries(run.response_values).map(([k, v]) => `${k}=${(v as number).toFixed(2)}`).join(' ')}
                           </span>
                         )}
-                        <button onClick={() => setFittingRuns(fittingRuns.filter(r => r.run_id !== run.run_id))}
+                        <Button variant="ghost" size="icon" type="button" onClick={() => handleRemoveRun(run.run_id)} aria-label={t('pages.doe.ariaRemoveFromQueue')}
                           className="ml-auto text-[var(--text-muted)] hover:text-danger-500 transition-colors">
                           <Trash2 size={12} />
-                        </button>
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -905,72 +1047,109 @@ export default function DoePage() {
 
                 {/* 手动输入响应（选择 y（手动输入） 或没有真实响应时） */}
                 {(fitResponseParam === 'y' || responseCandidates.length === 0) && fittingRuns.length > 0 && (
-                  <div className="p-[var(--space-apple-sm)] bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/20 rounded-[var(--radius-Apple-sm)] border border-[var(--color-primary-border)] dark:border-primary-900">
-                    <div className="text-xs font-semibold text-[var(--color-primary-text)] mb-2">手动输入响应值（y组</div>
+                  <div className="p-[var(--space-apple-sm)] bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/20 rounded-[var(--radius-Apple-sm)] border border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/40 animate-[fadeSlideIn_.2s_ease-out] motion-reduce:animate-none">
+                    <div className="text-xs font-semibold text-[var(--color-primary-text)] mb-2">{t('pages.doe.manualResponseValues')}</div>
                     <ResponseInputTable runs={fittingRuns} factors={factors} values={responseValues} onChange={updateResponseValue} />
-                    <div className="text-xs text-[var(--text-muted)] mt-2">{Object.keys(responseValues).length} / {fittingRuns.length} 组已填写</div>
+                    <div className="text-xs text-[var(--text-muted)] mt-2">{t('pages.doe.responseFilledShort', { filled: Object.keys(responseValues).length, total: fittingRuns.length })}</div>
                   </div>
                 )}
 
                 <div className="flex items-center gap-[var(--space-apple-sm)]">
-                  <Button onClick={handleFit} disabled={loading || fittingRuns.length < 2}
-                    icon={loading ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}>
-                    {loading ? '拟合中..' : `拟合「${fitResponseParam}」响应面`}
+                  <Button onClick={handleFit} disabled={fitPayloadCount < 2} loading={isLoading('fit')}
+                    icon={<RefreshCw size={14} />}>
+                    {isLoading('fit') ? t('pages.doe.fitInProgress') : t('pages.doe.fitResponseSurface', { param: fitResponseParam })}
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => { setFittingRuns([]); setResponseValues({}); setFitResult(null); setSearchResult(null) }}
+                  {fitPayloadCount < 2 && (
+                    <span className="text-xs text-[var(--text-muted)]">{t('pages.doe.fitNeedTwoRuns')}</span>
+                  )}
+                  <Button variant="ghost" size="sm" onClick={handleClearQueue}
                     className="text-xs">
-                    清空队列
+                    {t('pages.doe.clearQueue')}
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
             {/* 拟合结果 */}
-            {fitResult && (
-              <Card className="border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/60">
-                <CardHeader className="px-5 pt-5 pb-3">
-                  <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                    <Sparkles size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />
-                    <span className="text-[var(--color-primary-text)]">拟合结果（响应：{displayRespName}）</span>
-                  </CardTitle>
+            <Card className="border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/60">
+                <CardHeader className="pt-5 pb-0">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <CardTitle as="h2" className="flex items-center gap-2">
+                      <Sparkles size={14} className="text-[var(--color-primary-text)]" />
+                      <span className="text-[var(--color-primary-text)]">{t('pages.doe.fitResultTitle', { name: modelRespName })}</span>
+                    </CardTitle>
+                    {/* 多响应模型选择器（仅当有 2+ 个模型时显示） */}
+                    {fitResult && fitResult.length > 1 && (
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="doe-active-fit" className="text-xs text-[var(--text-muted)]">{t('pages.doe.fitModelSelectorLabel')}</label>
+                        <Select value={String(activeFitIdx)} onValueChange={(v) => setActiveFitIdx(Number(v))}>
+                          <SelectTrigger id="doe-active-fit" className="w-32" aria-label={t('pages.doe.fitModelSelectorLabel')}>
+                            <SelectValue placeholder={t('pages.doe.fitModelSelectorLabel')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {fitResult.map((m, i) => (
+                              <SelectItem key={i} value={String(i)}>{m?.responses?.[0] ?? m?.responses?.[0] ?? 'y'}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="px-5 pb-5 pt-0 space-y-[var(--space-apple-md)]">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <StatCard label={`R² (${displayRespName})`} value={Number((fitResult[0]?.r_squared?.y ?? fitResult[0]?.r_squared?.[displayRespName] ?? 0).toFixed(4))} icon={TrendingUp} variant="primary" />
-                    <StatCard label={`Adj R² (${displayRespName})`} value={Number((fitResult[0]?.adjusted_r_squared?.y ?? fitResult[0]?.adjusted_r_squared?.[displayRespName] ?? 0).toFixed(4))} icon={TrendingUp} variant="secondary" />
-                    <StatCard label={`RMSE (${displayRespName})`} value={Number((fitResult[0]?.rmse?.y ?? fitResult[0]?.rmse?.[displayRespName] ?? 0).toFixed(6))} icon={Search} variant="info" />
-                    <StatCard label="显著项数" value={(fitResult[0]?.significant_terms?.length ?? 0)} icon={Sparkles} variant="warning" />
+                  {!fitResult || fitResult.length === 0 ? (
+                    <div className="text-center py-8 text-[var(--text-muted)]">
+                      <FileText size={32} className="mx-auto mb-[var(--space-apple-sm)] opacity-30" />
+                      <p className="text-sm">{t('pages.doe.fitEmptyHint')}</p>
+                    </div>
+                  ) : (
+                  <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-md)]">
+                    <StatCard label={t('pages.doe.statR2', { name: modelRespName })} value={statVal(fitModel?.r_squared?.y ?? fitModel?.r_squared?.[modelRespName], 4)} icon={TrendingUp} variant="primary" />
+                    <StatCard label={t('pages.doe.statAdjR2', { name: modelRespName })} value={statVal(fitModel?.adjusted_r_squared?.y ?? fitModel?.adjusted_r_squared?.[modelRespName], 4)} icon={TrendingUp} variant="secondary" />
+                    <StatCard label={t('pages.doe.statRMSE', { name: modelRespName })} value={statVal(fitModel?.rmse?.y ?? fitModel?.rmse?.[modelRespName], 6)} icon={Search} variant="info" />
+                    <StatCard label={t('pages.doe.statSignificantTerms')} value={fitModel?.significant_terms?.length ?? t('pages.doe.statNotAvail')} icon={Sparkles} variant="warning" />
                   </div>
 
                   {/* 回归方程 */}
                   <div className="bg-[var(--bg-tertiary)]/60 rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-sm)]">
-                    <div className="text-xs text-[var(--text-muted)] mb-1">回归方程</div>
-                    <div className="font-mono text-sm text-[var(--text-primary)] break-all">{fitResult[0]?.equation}</div>
+                    <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.doe.regressionEquation')}</div>
+                    <div className="font-mono text-sm text-[var(--text-primary)] break-all">{fitModel?.equation}</div>
                   </div>
 
                   {/* 模型系数表（完整）*/}
                   <div>
-                    <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">模型系数</div>
+                    <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">{t('pages.doe.modelCoefficients')}</div>
                     <div className="overflow-x-auto">
                       <table className="data-table w-full text-xs">
                         <thead>
                           <tr>
                           <th className="pr-3 text-left">#</th>
-                            <th className="px-2 text-right">系数</th>
-                            <th className="px-2 text-center">显著</th>
+                            <th className="px-2 text-right">{t('pages.doe.coefficientCol')}</th>
+                            <th className="px-2 text-right">{t('pages.doe.statTCol')}</th>
+                            <th className="px-2 text-right">{t('pages.doe.statPCol')}</th>
+                            <th className="px-2 text-center">{t('pages.doe.significantCol')}</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {Object.entries(fitResult[0]?.coefficients?.y ?? fitResult[0]?.coefficients?.[displayRespName] ?? {}).map(([term, coef]) => {
-                            const sig = fitResult[0]?.significant_terms?.includes(term) ?? false
+                          {Object.entries(fitModel?.coefficients?.y ?? fitModel?.coefficients?.[modelRespName] ?? {}).map(([term, coef]) => {
+                            const sig = fitModel?.significant_terms?.includes(term) ?? false
+                            const tval = fitModel?.t_values?.y?.[term] ?? fitModel?.t_values?.[modelRespName]?.[term]
+                            const pval = fitModel?.p_values?.y?.[term] ?? fitModel?.p_values?.[modelRespName]?.[term]
                             return (
                               <tr key={term}>
                                 <td className="pr-3 font-mono text-[var(--text-secondary)]">{term}</td>
                                 <td className="px-2 text-right font-mono text-[var(--text-primary)] tabular-nums">{(coef as number).toFixed(6)}</td>
+                                <td className="px-2 text-right font-mono tabular-nums">
+                                  {tval == null ? t('pages.doe.statNotAvail') : Number(tval).toFixed(3)}
+                                </td>
+                                <td className={`px-2 text-right font-mono tabular-nums ${pval != null && Number(pval) < 0.05 ? 'text-[var(--color-primary-text)]' : 'text-[var(--text-muted)]'}`}>
+                                  {pval == null ? t('pages.doe.statNotAvail') : Number(pval).toFixed(4)}
+                                </td>
                                 <td className="px-2 text-center">
                                   {sig
-                                    ? <span className="inline-block w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-primary-container)]" title="显著" />
-                                    : <span className="inline-block w-2 h-2 rounded-[var(--radius-pill)] bg-neutral-300 dark:bg-[var(--border-color)]" title="不显著" />
+                                    ? <span className="inline-block w-2 h-2 rounded-[var(--radius-pill)] bg-[var(--color-primary)]" role="img" aria-label={t('pages.doe.significant')} />
+                                    : <span className="inline-block w-2 h-2 rounded-[var(--radius-pill)] bg-neutral-500" role="img" aria-label={t('pages.doe.notSignificant')} />
                                   }
                                 </td>
                               </tr>
@@ -981,48 +1160,98 @@ export default function DoePage() {
                     </div>
                   </div>
 
+                  {/* 方差分析 (ANOVA) */}
+                  {(() => {
+                    const anova = fitModel?.anova?.y ?? fitModel?.anova?.[modelRespName]
+                    if (!anova) return null
+                    const fmt = (v: number | null | undefined) => v == null ? t('pages.doe.statNotAvail') : Number(v).toFixed(4)
+                    const pval = anova.p_value
+                    return (
+                      <div>
+                        <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">{t('pages.doe.anovaTitle')}</div>
+                        <div className="overflow-x-auto">
+                          <table className="data-table w-full text-xs">
+                            <thead>
+                              <tr>
+                                <th className="pr-3 text-left">{t('pages.doe.anovaSourceCol')}</th>
+                                <th className="px-2 text-right">{t('pages.doe.anovaSsCol')}</th>
+                                <th className="px-2 text-right">{t('pages.doe.anovaDfCol')}</th>
+                                <th className="px-2 text-right">{t('pages.doe.anovaMsCol')}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td className="pr-3 text-[var(--text-secondary)]">{t('pages.doe.anovaRegression')}</td>
+                                <td className="px-2 text-right font-mono tabular-nums">{fmt(anova.ss_reg)}</td>
+                                <td className="px-2 text-right font-mono tabular-nums">{fmt(anova.df_reg)}</td>
+                                <td className="px-2 text-right font-mono tabular-nums">{fmt(anova.ms_reg)}</td>
+                              </tr>
+                              <tr>
+                                <td className="pr-3 text-[var(--text-secondary)]">{t('pages.doe.anovaResidual')}</td>
+                                <td className="px-2 text-right font-mono tabular-nums">{fmt(anova.ss_res)}</td>
+                                <td className="px-2 text-right font-mono tabular-nums">{fmt(anova.df_res)}</td>
+                                <td className="px-2 text-right font-mono tabular-nums">{fmt(anova.ms_res)}</td>
+                              </tr>
+                              <tr>
+                                <td className="pr-3 text-[var(--text-secondary)]">{t('pages.doe.anovaTotal')}</td>
+                                <td className="px-2 text-right font-mono tabular-nums">{fmt(anova.ss_tot)}</td>
+                                <td className="px-2 text-right font-mono tabular-nums">{fmt(anova.df_tot)}</td>
+                                <td className="px-2 text-right font-mono tabular-nums">{t('pages.doe.statNotAvail')}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        {/* F 值 / p 值 */}
+                        <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-xs">
+                          <span className="text-[var(--text-muted)]">{t('pages.doe.anovaFRow')}: <span className="font-mono tabular-nums text-[var(--text-primary)]">{fmt(anova.F)}</span></span>
+                          <span className="text-[var(--text-muted)]">{t('pages.doe.anovaPRow')}: <span className={`font-mono tabular-nums ${pval != null && Number(pval) < 0.05 ? 'text-[var(--color-primary-text)]' : 'text-[var(--text-primary)]'}`}>{fmt(pval)}</span></span>
+                        </div>
+                      </div>
+                    )
+                  })()}
+
                   {/* 显著项列表*/}
-                  {(fitResult[0]?.significant_terms?.length ?? 0) > 0 && (
+                  {(fitModel?.significant_terms?.length ?? 0) > 0 && (
                     <div>
-                      <div className="text-xs text-[var(--text-muted)] mb-1">显著项列表（|b| &gt; 2·RMSE）</div>
+                      <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.doe.significantTermsList')}</div>
                       <div className="flex flex-wrap gap-1">
-                        {(fitResult[0]?.significant_terms ?? []).map((t: string, i: number) => (
+                        {(fitModel?.significant_terms ?? []).map((t: string, i: number) => (
                           <Badge key={i} variant="success" size="sm" className="font-mono">{t}</Badge>
                         ))}
                       </div>
                     </div>
                   )}
+                  </>
+                  )}
                 </CardContent>
               </Card>
-            )}
           </div>
         )}
 
         {/* 反向搜索标签 */}
         {activeTab === 'search' && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-[fadeSlideIn_.2s_ease-out] motion-reduce:animate-none" id="doe-panel-search" role="tabpanel" aria-labelledby="doe-tab-search">
             <Card>
-              <CardHeader className="px-5 pt-5 pb-3">
-                <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <Target size={14} className="text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]" />
-                  反向参数搜索
+              <CardHeader className="pt-5 pb-0">
+                <CardTitle as="h2" className="flex items-center gap-2">
+                  <Target size={14} className="text-[var(--color-primary-text)]" />
+                  {t('pages.doe.inverseSearch')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-5 pt-0 space-y-[var(--space-apple-md)]">
                 {fitResult ? (
                   <>
                     <div className="max-w-xs">
-                    <label className="text-xs text-[var(--text-muted)] mb-1 block">目标响应值（{displayRespName}）</label>
-                      <Input type="number" value={targetValue} onChange={e => setTargetValue(e.target.value)}
-                        className="mt-1 h-9 text-sm tabular-nums" />
-                      <Input placeholder="例如 85" className="mt-1 h-9 text-sm tabular-nums" />
+                    <label htmlFor="doe-target-value" className="text-xs text-[var(--text-muted)] mb-1 block">{t('pages.doe.targetResponseValue', { name: displayRespName })}</label>
+                      <Input id="doe-target-value" type="number" value={targetValue} onChange={e => setTargetValue(e.target.value)}
+                        className="mt-1 text-sm tabular-nums" />
                     </div>
-                    <Button onClick={handleSearch} disabled={loading}
-                      icon={<Search size={14} />}>执行反向搜索</Button>
+                    <Button onClick={handleSearch} loading={isLoading('search')}
+                      icon={<Search size={14} />}>{t('pages.doe.runInverseSearch')}</Button>
                   </>
                 ) : (
                   <div className="text-center py-8 text-[var(--text-muted)]">
-                  <p className="text-sm">请先在「响应面拟合」标签页完成模型拟合</p>
+                  <p className="text-sm">{t('pages.doe.searchFitFirst')}</p>
                   </div>
                 )}
               </CardContent>
@@ -1033,52 +1262,52 @@ export default function DoePage() {
               <Card className={searchResult.converged
                 ? 'border-[var(--color-primary-border)] dark:border-[var(--color-primary)]/60'
                 : 'border-[var(--color-warning-border)] dark:border-[var(--color-warning)]/60'}>
-                <CardHeader className="px-5 pt-5 pb-3">
-                  <CardTitle as="h3" className={`text-sm font-semibold flex items-center gap-2 ${searchResult.converged ? 'text-[var(--color-primary-text)]' : 'text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]'}`}>
+                <CardHeader className="pt-5 pb-0">
+                  <CardTitle as="h2" className={`flex items-center gap-2 ${searchResult.converged ? 'text-[var(--color-primary-text)]' : 'text-[var(--color-warning-text)]'}`}>
                     <Sparkles size={14} />
-                    搜索结果{!searchResult.converged && '（未收敛，仅供参考）'}
+                    {t('pages.doe.searchResultTitle')}{!searchResult.converged && t('pages.doe.searchResultNotConvergedSuffix')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-5 pb-5 pt-0 space-y-[var(--space-apple-md)]">
                 {/* P2-2 修复：未收敛时强警示，禁用下游操作 */}
                 {!searchResult.converged && (
                   <div className="p-[var(--space-apple-sm)] bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/30 rounded-[var(--radius-Apple-sm)] border border-[var(--color-warning-border)] dark:border-[var(--color-warning)] text-xs text-[var(--color-warning-text)]">
-                    <div>⚠️ 本次搜索未收敛：梯度可能停在局部极小，或目标值超出响应面可达范围。以下数值仅供参考，请勿直接用于生产决策。建议：调整目标值或扩大 factor_bounds，或增加拟合样本后重试。</div>
+                    <div>⚠️ {t('pages.doe.searchNotConvergedWarning')}</div>
                   </div>
                 )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-md)]">
                   <div className={`rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-sm)] ${searchResult.converged ? 'bg-[var(--color-primary-container)] dark:bg-[var(--color-primary-container)]/30' : 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/30'}`}>
-                    <div className="text-xs text-[var(--text-muted)] mb-1">收敛状态</div>
-                    <div className={`text-lg font-bold ${searchResult.converged ? 'text-[var(--color-primary-text)] dark:text-[var(--color-primary-text)]' : 'text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]'}`}>
-                    {searchResult.converged ? '✓ 已收敛' : '✗ 未收敛'}
+                    <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.doe.convergenceStatus')}</div>
+                    <div className={`text-lg font-bold ${searchResult.converged ? 'text-[var(--color-primary-text)]' : 'text-[var(--color-warning-text)]'}`}>
+                    {searchResult.converged ? t('pages.doe.converged') : t('pages.doe.notConverged')}
                     </div>
                   </div>
                   <div className="bg-[var(--color-secondary-container)] dark:bg-[var(--color-secondary-container)]/30 rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-sm)]">
-                    <div className="text-xs text-[var(--text-muted)] mb-1">可行性评分</div>
-                    <div className="text-lg font-bold text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] tabular-nums">{(searchResult.feasibility_score ?? 0).toFixed(3)}</div>
+                    <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.doe.feasibilityScore')}</div>
+                    <div className="text-lg font-bold text-[var(--color-secondary-text)] tabular-nums">{(searchResult.feasibility_score ?? 0).toFixed(3)}</div>
                   </div>
                   {Object.entries(searchResult.predicted_factors ?? {}).map(([k, v]) => {
                     const ci = searchResult.confidence_interval?.[k]
                     const coded = searchResult.predicted_coded?.[k]
                     return (
                     <div key={k} className="bg-[var(--bg-tertiary)]/60 rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-sm)]">
-                        <div className="text-xs text-[var(--text-muted)] mb-1">{k}（实际值）</div>
+                        <div className="text-xs text-[var(--text-muted)] mb-1">{t('pages.doe.actualValue', { name: k })}</div>
                         <div className={`text-lg font-bold tabular-nums ${searchResult.converged ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>
                           {Number(v).toFixed(2)}
-                        {!searchResult.converged && <span className="text-xs text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)] ml-1">≈</span>}
+                        {!searchResult.converged && <span className="text-xs text-[var(--color-warning-text)] ml-1">≈</span>}
                         </div>
-                        {coded != null && <div className="text-xs text-[var(--text-muted)] mt-0.5">编码 {Number(coded).toFixed(2)}</div>}
-                        {ci && <div className="text-xs text-[var(--text-muted)] mt-0.5">范围 [{Number(ci[0]).toFixed(2)}, {Number(ci[1]).toFixed(2)}]</div>}
+                        {coded != null && <div className="text-xs text-[var(--text-muted)] mt-0.5">{t('pages.doe.codedValue', { value: Number(coded).toFixed(2) })}</div>}
+                        {ci && <div className="text-xs text-[var(--text-muted)] mt-0.5">{t('pages.doe.rangeValue', { min: Number(ci[0]).toFixed(2), max: Number(ci[1]).toFixed(2) })}</div>}
                       </div>
                     )
                   })}
                 </div>
                 {searchResult.iteration_count > 0 && (
-                  <div className="text-xs text-[var(--text-muted)]">迭代 {searchResult.iteration_count} 组</div>
+                  <div className="text-xs text-[var(--text-muted)]">{t('pages.doe.iterationsCount', { count: searchResult.iteration_count })}</div>
                 )}
                 {searchResult.converged && (
                   <div className="text-xs text-[var(--color-primary-text)]">
-                    建议：将以上因子组合纳入下一个DOE实验验证                  </div>
+                    {t('pages.doe.suggestNextDoe')}                  </div>
                 )}
               </CardContent>
             </Card>
@@ -1088,39 +1317,41 @@ export default function DoePage() {
 
         {/* 主动学习标签 */}
         {activeTab === 'active' && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-[fadeSlideIn_.2s_ease-out] motion-reduce:animate-none" id="doe-panel-active" role="tabpanel" aria-labelledby="doe-tab-active">
             <Card>
-              <CardHeader className="px-5 pt-5 pb-3">
-                <CardTitle as="h2" className="text-sm font-semibold flex items-center gap-2">
-                  <Lightbulb size={14} className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
-                  主动学习推荐
+              <CardHeader className="pt-5 pb-0">
+                <CardTitle as="h2" className="flex items-center gap-2">
+                  <Lightbulb size={14} className="text-[var(--color-warning-text)]" />
+                  {t('pages.doe.activeLearning')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-5 pb-5 pt-0 space-y-[var(--space-apple-md)]">
                 <p className="text-xs text-[var(--text-muted)]">
-                  基于已有实验数据，使用不确定性采样策略推荐下一批最优实验点，最大化信息增益。
+                  {t('pages.doe.activeLearningDesc')}
                 </p>
                 <div className="flex items-center gap-[var(--space-apple-sm)]">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center">
                     <Button variant="warning" onClick={handleActiveLearning}
-                      disabled={loading || fittingRuns.length === 0}
-                      icon={<Lightbulb size={14} className={loading ? 'animate-pulse' : ''} />}>
-                      {loading ? '计算中...' : '推荐 3 组新实验点'}
+                      disabled={fitPayloadCount < 2} loading={isLoading('active')}
+                      icon={<Lightbulb size={14} />}>
+                      {isLoading('active') ? t('pages.doe.computing') : t('pages.doe.recommendPoints', { count: 3 })}
                     </Button>
                   </div>
                 </div>
-                {fittingRuns.length === 0 && (
-                  <div className="text-xs text-[var(--text-muted)]">请先在「实验设计」标签页将实验组加入拟合队列</div>
+                {fitPayloadCount < 2 && (
+                  <div className="text-xs text-[var(--text-muted)]">
+                    {fittingRuns.length === 0 ? t('pages.doe.activeLearningNeedRuns') : t('pages.doe.fitNeedTwoRuns')}
+                  </div>
                 )}
               </CardContent>
             </Card>
 
             {activeLearningResult.length > 0 && (
               <Card className="border-[var(--color-warning-border)] dark:border-[var(--color-warning)]/60">
-                <CardHeader className="px-5 pt-5 pb-3">
-                  <CardTitle as="h3" className="text-sm font-semibold flex items-center gap-2">
-                    <Sparkles size={14} className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]" />
-                    <span className="text-[var(--color-warning-text)]">推荐实验点</span>
+                <CardHeader className="pt-5 pb-0">
+                  <CardTitle as="h2" className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-[var(--color-warning-text)]" />
+                    <span className="text-[var(--color-warning-text)]">{t('pages.doe.recommendedPointsTitle')}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-5 pb-5 pt-0 space-y-[var(--space-apple-md)]">
@@ -1133,7 +1364,7 @@ export default function DoePage() {
                             <th key={k} className="px-2 text-center">{k}</th>
                           ))}
                           {Object.keys(activeLearningResult[0]?.factor_levels ?? {}).map(k => (
-                            <th key={`fl-${k}`} className="px-2 text-center text-[var(--color-warning-text)]">{k}（实际值）</th>
+                            <th key={`fl-${k}`} className="px-2 text-center text-[var(--color-warning-text)]">{t('pages.doe.actualValue', { name: k })}</th>
                           ))}
                         </tr>
                       </thead>
@@ -1155,23 +1386,26 @@ export default function DoePage() {
                   {activeStrategy && (
                     <div className="text-xs text-[var(--text-muted)] flex items-center gap-2">
                       <Badge variant="warning" size="sm" className="font-mono">{activeStrategy}</Badge>
-                      采样策略
+                      {t('pages.doe.samplingStrategy')}
+                      <Badge variant="info" size="sm" className="font-mono">{t('pages.doe.activeLearningCount', { count: activeLearningResult.length })}</Badge>
                     </div>
                   )}
                   <div className="text-xs text-[var(--text-muted)]">
-                    提示：将以上推荐点加入实验队列，执行实验后回填响应值，可进一步改善响应面模型精度。
+                    {t('pages.doe.activeLearningHint')}
                   </div>
-                  {closeLoopExpId && (
-                    <div className="pt-3 border-t border-[var(--border-color)]">
-                      <Button variant="warning" size="sm" onClick={handleExportRecommendations} disabled={loading}
-                        icon={<Send size={13} />} className="text-xs">
-                        把推荐点写回实验 {closeLoopExpId}（闭环）
-                      </Button>
-                      <div className="mt-1.5 text-xs text-[var(--text-muted)]">
-                        来源：{importedMeta ? `实验导入 #${importedMeta.expId}` : seedMeta ? `配方种子「${seedMeta.formulaName}」→ 实验 ${seedMeta.experimentId}` : '-'}
-                      </div>
+                  <div className="pt-3 border-t border-[var(--border-color)]">
+                    <Button variant="warning" size="sm" onClick={handleExportRecommendations}
+                      disabled={!closeLoopExpId} loading={isLoading('export')}
+                      icon={<Send size={13} />} className="text-xs">
+                      {t('pages.doe.writeBackPoints', { id: closeLoopExpId ?? '—' })}
+                    </Button>
+                    {!closeLoopExpId && (
+                      <div className="mt-1.5 text-xs text-[var(--text-muted)]">{t('pages.doe.exportNeedsSource')}</div>
+                    )}
+                    <div className="mt-1.5 text-xs text-[var(--text-muted)]">
+                      {t('pages.doe.sourceLabel', { source: importedMeta ? t('pages.doe.sourceExperiment', { id: importedMeta.expId }) : seedMeta ? t('pages.doe.sourceSeed', { name: seedMeta.formulaName, id: seedMeta.experimentId }) : '-' })}
                     </div>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             )}

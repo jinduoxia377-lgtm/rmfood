@@ -122,7 +122,8 @@ export function exportSafetyReport(options: ExportOptions): void {
       styles: { cellPadding: 3, lineColor: [226, 232, 240] },
       body: allIssues.map((issue) => [issue.type, issue.ingredient, issue.message]),
     });
-    y = (doc as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY ? (doc as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY! + 10 : y + 10;
+    const finalY = (doc as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY;
+    y = typeof finalY === 'number' ? finalY + 10 : y + 10;
   }
 
   const checkKeys = Object.keys(details);
