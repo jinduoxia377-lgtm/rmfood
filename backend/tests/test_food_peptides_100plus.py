@@ -164,6 +164,29 @@ async def test_deep_fields_backfilled():
 
 
 @pytest.mark.asyncio
+async def test_rice_peptides_expanded():
+    """大米肽补强(pep_b100x)：大米肽 2→16，载体三件套齐全(可被搜索)，新肽全有溯源。"""
+    conn = await _conn()
+    try:
+        n = await conn.fetchval(
+            "SELECT COUNT(*) FROM bioactive_peptides "
+            "WHERE food_material_id=(SELECT id FROM food_materials WHERE name_cn='大米肽')")
+        assert n >= 10, f"大米肽应补强到 >=10，实际 {n}"
+        car = await conn.fetchrow(
+            "SELECT review_status, data_quality, (embedding IS NOT NULL) emb "
+            "FROM food_materials WHERE name_cn='大米肽'")
+        assert car["review_status"] == "approved", "大米肽载体须 approved（否则搜索搜不到）"
+        assert car["emb"], "大米肽载体须有 embedding"
+        assert car["data_quality"] >= 0.3, "大米肽载体 data_quality 须 >=0.3"
+        nosrc = await conn.fetchval(
+            "SELECT COUNT(*) FROM bioactive_peptides WHERE source_version='pep_b100x' "
+            "AND literature_doi IS NULL AND (evidence_note IS NULL OR evidence_note='')")
+        assert nosrc == 0, "pep_b100x 新肽须全有溯源"
+    finally:
+        await conn.close()
+
+
+@pytest.mark.asyncio
 async def test_expansion_idempotent():
     conn = await _conn()
     try:

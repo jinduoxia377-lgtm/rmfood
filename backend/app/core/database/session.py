@@ -117,9 +117,16 @@ def _get_windows_tuned_params() -> Dict[str, Any]:
         # (important because without pre-ping, we rely on periodic recycling)
         params['pool_recycle'] = min(600, _get_settings().database.pool_recycle)  # Max 10 mins
 
-        logger.warning(
-            f"[DB] Windows tuning applied: pool_size={params['pool_size']} "
-            f"(was {base_pool}), pool_recycle={params['pool_recycle']}s"
+        # NOTE: On Windows the engine below uses NullPool (poolclass=NullPool), which
+        # OPENS A FRESH CONNECTION PER CHECKOUT and ignores pool_size/max_overflow/
+        # pool_timeout entirely. So params['pool_size'] here is effectively UNUSED —
+        # logged only for reference. Do NOT misread "pool_size=5" as a finite pool that
+        # can be exhausted: NullPool has no pool. Under high concurrency the real risk is
+        # opening too many simultaneous PG backend connections (PG max_connections), not
+        # pool-queue timeouts. Keep this log at debug to avoid misleading crash triage.
+        logger.debug(
+            f"[DB] Windows tuning: NullPool in use (pool_size param={params['pool_size']} "
+            f"is IGNORED by NullPool), pool_recycle={params['pool_recycle']}s"
         )
 
     return params
