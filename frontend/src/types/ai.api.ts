@@ -52,6 +52,25 @@ export interface RAGEvidence {
  * 与原 types/ai.api.ts 的 AICandidate（配方生成域字段），保留双方字段并集。
  * 配方生成主域字段（id/name/effects）保持必填，模型管理域字段全部可选。
  */
+/** 安全合规三态（前端 UI 呈现口径，ADR-046 L5 可信呈现层） */
+export type SafetyVerdictStatus = 'passed' | 'needs_attention' | 'unverified'
+
+/**
+ * 安全合规裁定（含信任来源）。
+ * 原则「不向用户传递未经证实的信任」：无裁定 = unverified（灰态），禁止由评分反推。
+ */
+export interface SafetyVerdict {
+  status: SafetyVerdictStatus
+  /** 裁定来源：backend_verdict=后端安全闸门；explicit_flag=后端显式 safety_passed；none=无裁定（灰态） */
+  source: 'backend_verdict' | 'explicit_flag' | 'none'
+  /** 人类可读原因（violation/warning 摘要），unverified 时通常为 undefined */
+  reason?: string
+  /** 后端 violations 原文（needs_attention 时非空） */
+  violations?: string[]
+  /** 后端 warnings 原文 */
+  warnings?: string[]
+}
+
 export interface AICandidate {
   id: string;
   name: string;
@@ -92,7 +111,13 @@ export interface AICandidate {
   patent_synergy_scores?: PatentSynergyScores;
   peptide_candidates?: { name: string; sequence: string }[];
   safety_passed?: boolean;
-  /** 归一化层（api/ai.ts normalizeGenerateCandidate）补充的安全性得分（0-1） */
+  /**
+   * 安全合规三态裁定（ADR-046 L5）。由 api/ai.ts deriveSafetyVerdict 唯一推导：
+   * passed（绿）/ needs_attention（黄）/ unverified（灰虚线，未校验）。
+   * UI 必须按此渲染，禁止由 safety_score 反推绿色「安全合规」。
+   */
+  safety_verdict?: SafetyVerdict;
+  /** 归一化层（api/ai.ts normalizeGenerateCandidate）补充的安全性得分（0-1；null/缺失=未校验，不补0） */
   safety_score?: number;
   /** 成本/功效得分（后端 /ai/generate 主端点返回，归一化层透传保留） */
   cost_score?: number;
@@ -106,6 +131,30 @@ export interface AICandidate {
   generated_by?: string;
   generated_at?: string;
   description?: string;
+  /**
+   * 后端 L4 机理阐释（阶段2续 `/ai/generate` 每候选招带，normalizeGenerateCandidate
+   * 经 `...c` spread 透传保留）。含 explanation（方解与机理主文本）、mechanisms
+   * （逐药材成分→靶点网络药理）、synergy（配伍协同）等；degraded=true 表示机理生成降级。
+   * 方解面板应优先消费此字段（后端现成机理），无则回退 interpretFormula / explanation。
+   */
+  mechanism?: {
+    explanation?: string;
+    constitution?: string;
+    mechanisms?: Array<{
+      herb?: string;
+      effects?: string;
+      compounds?: string[];
+      targets?: string[];
+      diseases?: string[];
+      note?: string;
+    }>;
+    synergy?: string;
+    safety?: Record<string, unknown>;
+    usage?: Record<string, unknown>;
+    monitoring?: Array<Record<string, unknown>>;
+    disclaimer?: string;
+    degraded?: boolean;
+  };
   algorithm_info?: {
     strategy: string;
     generation: number;
@@ -189,6 +238,30 @@ export interface GeneticCandidate {
   safety?: number;
   taste?: number;
   cost?: number;
+  /**
+   * 后端 L4 机理阐释（`/ai/generate` 每候选招带，阶段2续接入）。
+   * 含 explanation（方解与机理主文本）、mechanisms（逐药材成分→靶点网络药理）、
+   * synergy（配伍协同）等；degraded=true 表示机理生成降级。
+   * 由 normalizeGeneticCandidate 保留，供方解面板优先消费（无则回退 interpretFormula）。
+   */
+  mechanism?: {
+    explanation?: string;
+    constitution?: string;
+    mechanisms?: Array<{
+      herb?: string;
+      effects?: string;
+      compounds?: string[];
+      targets?: string[];
+      diseases?: string[];
+      note?: string;
+    }>;
+    synergy?: string;
+    safety?: Record<string, unknown>;
+    usage?: Record<string, unknown>;
+    monitoring?: Array<Record<string, unknown>>;
+    disclaimer?: string;
+    degraded?: boolean;
+  };
 }
 
 export interface GeneticGenerateResponse {

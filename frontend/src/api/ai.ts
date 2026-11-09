@@ -35,6 +35,8 @@ import type {
   ComparisonResult,
   TastePredictionResponse,
   StabilityPredictionResponse,
+  SafetyVerdict,
+  SafetyVerdictStatus,
 } from '@/types/ai.api';
 
 export type {
@@ -89,6 +91,13 @@ export interface AdvancedGenerateResponse {
   best_score?: number;
   /** 知识库 RAG 检索证据（响应级；缺失时前端显示「暂无知识库证据」占位） */
   rag_evidence?: RAGEvidence;
+  /**
+   * 降级标志（响应级，ADR-046 L5）：true 表示本次结果由规则引擎兜底、未经 GA 优化，
+   * UI 必须显示降级横幅，不得当作 GA 优化结果呈现。缺失/false = 正常路径。
+   */
+  degraded?: boolean;
+  /** 降级原因（后端 fallback_reason 原文，供降级横幅展示具体原因） */
+  fallback_reason?: string;
 }
 
 // ===== AI 配方校验 / 药材知识检索 =====
@@ -488,6 +497,11 @@ export function normalizeGeneticCandidate(
     safety: typeof c.safety === 'number' ? c.safety : undefined,
     taste: typeof c.taste === 'number' ? c.taste : undefined,
     cost: typeof c.cost === 'number' ? c.cost : undefined,
+    // 保留后端 L4 机理阐释（阶段2续接入），供方解面板优先消费
+    mechanism:
+      typeof c.mechanism === 'object' && c.mechanism !== null
+        ? (c.mechanism as GeneticCandidate['mechanism'])
+        : undefined,
   }
 }
 
@@ -774,18 +788,94 @@ export function normalizeUnifiedOptimizeResponse(rawData: unknown): GeneticGener
   return normalizeGeneticResponse(rawData)
 }
 
+// ═══════════════════════════════════════════════
+// 安全合规三态（ADR-046 L5 可信呈现层）
+//
+// 硬约束原则「不向用户传递未经证实的信任」：
+//   1. 信任必须有来源 —— 禁止由 safety_score 反推 safety_passed；无裁定 = 灰态「未校验」。
+//   2. 后端唯一可信裁定来源：safety_verdict.status（pass/needs_attention/rejected/unverified），
+//      或显式 boolean safety_passed。二者皆无 → unverified。
+// SafetyVerdict / SafetyVerdictStatus 类型定义在 types/ai.api.ts（避免循环导入），此处再导出。
+// ═══════════════════════════════════════════════
+
+export type { SafetyVerdict, SafetyVerdictStatus } from '@/types/ai.api'
+
+/** 安全合规裁定（含来源，供 UI 区分绿/黄/灰三态并标注信任来源） */
+/**
+ * 唯一的安全合规裁定推导函数（全前端禁另有 safety_passed 反推逻辑）。
+ *
+ * 推导优先级（信任必须有来源）：
+ *   1. raw.safety_verdict.status 存在 → 按后端裁定映射三态（source='backend_verdict'）
+ *   2. 否则 raw.safety_passed 为显式 boolean → 采信（source='explicit_flag'）
+ *   3. 皆无 → unverified（source='none'），**绝不**用 safety_score 反推
+ *
+ * 后端 status → 前端三态映射：
+ *   pass            → passed（绿）
+ *   needs_attention → needs_attention（黄）
+ *   rejected        → needs_attention（黄，附 violations 原因）
+ *   unverified      → unverified（灰虚线）
+ */
+export function deriveSafetyVerdict(raw: unknown): SafetyVerdict {
+  const c = asRecord(raw)
+  const verdict = asRecord(c.safety_verdict)
+
+  // 1) 后端安全闸门裁定（最高可信来源）
+  const status = typeof verdict.status === 'string' ? verdict.status : undefined
+  if (status) {
+    const violations = Array.isArray(verdict.violations)
+      ? (verdict.violations as unknown[]).filter((v): v is string => typeof v === 'string')
+      : []
+    const warnings = Array.isArray(verdict.warnings)
+      ? (verdict.warnings as unknown[]).filter((w): w is string => typeof w === 'string')
+      : []
+    const reason =
+      violations[0] ??
+      warnings[0] ??
+      (typeof verdict.summary === 'string' && verdict.summary ? verdict.summary : undefined)
+
+    switch (status) {
+      case 'pass':
+        return { status: 'passed', source: 'backend_verdict', violations, warnings }
+      case 'needs_attention':
+        return { status: 'needs_attention', source: 'backend_verdict', reason, violations, warnings }
+      case 'rejected':
+        return {
+          status: 'needs_attention',
+          source: 'backend_verdict',
+          reason: reason ?? '未通过安全合规校验',
+          violations,
+          warnings,
+        }
+      case 'unverified':
+      default:
+        return { status: 'unverified', source: 'backend_verdict', violations, warnings }
+    }
+  }
+
+  // 2) 后端显式 boolean safety_passed（无 verdict 对象时的次级可信来源）
+  if (typeof c.safety_passed === 'boolean') {
+    return c.safety_passed
+      ? { status: 'passed', source: 'explicit_flag' }
+      : { status: 'needs_attention', source: 'explicit_flag' }
+  }
+
+  // 3) 皆无 → 灰态「未校验」。绝不由 safety_score 反推。
+  return { status: 'unverified', source: 'none' }
+}
+
 /**
  * 归一化 /ai/generate 主端点返回的单个候选。
  *
  * 后端 _format_ga_candidates / _fallback_rule_engine 实际返回：
  *   { id, formula_name, name, herb_combination:[{name,dosage,role}], synergy_score,
- *     taste_score, stability_score, safety_score, cost_score, efficacy_score,
- *     overall_score, effects, generated_by, generated_at }
+ *     taste_score, stability_score, safety_score(null=未校验), cost_score, efficacy_score,
+ *     overall_score, effects, safety_passed, safety_verdict, generated_by, generated_at }
  * 而前端 AICandidate 类型与渲染期望 ingredients/score/safety_passed。
  * 此处补齐：
- *   - score          = overall_score（缺失时回退 0）
- *   - safety_passed  = safety_score >= 0.7
- *   - ingredients    = herb_combination 映射（兼容后端新字段 name_cn / dosage_g）
+ *   - score           = overall_score（缺失时回退 0）
+ *   - safety_passed   = 由 deriveSafetyVerdict 唯一推导（有裁定用裁定；仅显式 boolean 则采信；皆无→undefined）
+ *   - safety_verdict  = deriveSafetyVerdict 结果（三态 + 来源，UI 据此渲染绿/黄/灰）
+ *   - ingredients     = herb_combination 映射（兼容后端新字段 name_cn / dosage_g）
  * 后端原始字段（herb_combination / overall_score / *_score）保留透传，便于调试/导出。
  */
 export function normalizeGenerateCandidate(rawCandidate: unknown, index = 0): AICandidate {
@@ -796,7 +886,18 @@ export function normalizeGenerateCandidate(rawCandidate: unknown, index = 0): AI
     : undefined
 
   const overallScore = toFiniteNumber(c.overall_score, 0)
-  const safetyScore = toFiniteNumber(c.safety_score, 0)
+  // 原则4「缺失即缺失」：safety_score 为 null/缺失表示「未校验」，不补 0（0 会伪装成「已校验且极差」）。
+  const safetyScore =
+    typeof c.safety_score === 'number' && Number.isFinite(c.safety_score) ? c.safety_score : undefined
+  // 安全合规三态：唯一推导入口（禁 safety_score 反推）。safety_passed 同步由裁定推导，
+  // 无裁定（unverified）时为 undefined，UI 显示灰态「未校验」而非绿色「安全合规」。
+  const safetyVerdict = deriveSafetyVerdict(c)
+  const derivedSafetyPassed: boolean | undefined =
+    safetyVerdict.status === 'passed'
+      ? true
+      : safetyVerdict.status === 'needs_attention'
+        ? false
+        : undefined
 
   // 已有 ingredients 直接透传；否则从 herb_combination 映射为 AICandidate.ingredients 形态
   let ingredients: AICandidate['ingredients']
@@ -857,8 +958,8 @@ export function normalizeGenerateCandidate(rawCandidate: unknown, index = 0): AI
     effects,
     formula_name: typeof c.formula_name === 'string' ? c.formula_name : undefined,
     herb_combination: herbCombination,
-    safety_passed:
-      typeof c.safety_passed === 'boolean' ? c.safety_passed : safetyScore >= 0.7,
+    safety_passed: derivedSafetyPassed,
+    safety_verdict: safetyVerdict,
     overall_score: overallScore,
     safety_score: safetyScore,
     synergy_score: typeof c.synergy_score === 'number' ? c.synergy_score : undefined,
@@ -891,6 +992,10 @@ export function normalizeGenerateResponse(rawData: unknown): AdvancedGenerateRes
     strategy: typeof data.strategy === 'string' ? data.strategy : undefined,
     best_score: typeof data.best_score === 'number' ? data.best_score : undefined,
     rag_evidence: ragEvidence,
+    // 原则2「降级必须可见」：degraded/fallback_reason 全链路透传（api→hook→store→UI），
+    // 兜底结果不得被当作 GA 优化结果静默呈现。
+    degraded: typeof data.degraded === 'boolean' ? data.degraded : undefined,
+    fallback_reason: typeof data.fallback_reason === 'string' ? data.fallback_reason : undefined,
   }
 }
 
