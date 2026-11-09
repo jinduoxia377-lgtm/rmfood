@@ -119,14 +119,17 @@ async def test_id7966_ile_pro_ile_doi_corrected():
 
 
 @pytest.mark.asyncio
-async def test_egg_white_carrier_has_no_mismatched_sequence_peptide():
-    """蛋清肽载体应无序列肽：原 egg_white 来源论文经复核为主题错配(海洋无脊椎综述 PMIID28212329)已剔除，
-    宁缺不错配——不硬凑。待核实到真正的蛋清肽论文再补。"""
+async def test_egg_white_carrier_peptides_are_on_topic():
+    """蛋清肽载体肽须来自【真蛋清肽论文】（主题匹配），不得含主题错配的海洋论文(PMID 28212329)。
+    本任务已补 22 条来自真 egg white 论文(PMID 26404361/38540877)的肽，非硬凑、非错配。"""
     conn = await _conn()
     try:
-        n = await conn.fetchval(
-            "SELECT COUNT(*) FROM bioactive_peptides WHERE food_material_id=165")
-        assert n == 0, f"蛋清肽载体应有 0 条序列肽（主题错配来源已剔除，宁缺不错配），实际 {n}"
+        n = await conn.fetchval("SELECT COUNT(*) FROM bioactive_peptides WHERE food_material_id=165")
+        assert n >= 1, "蛋清肽载体应有来自真蛋清肽论文的肽"
+        mm = await conn.fetchval(
+            "SELECT COUNT(*) FROM bioactive_peptides WHERE food_material_id=165 "
+            "AND evidence_note LIKE '%28212329%'")
+        assert mm == 0, f"蛋清肽不得含主题错配的海洋论文肽: {mm}"
     finally:
         await conn.close()
 
