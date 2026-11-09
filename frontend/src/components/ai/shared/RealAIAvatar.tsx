@@ -27,15 +27,9 @@ export interface RealAIAvatarProps {
 }
 
 export function RealAIAvatar({ size = 'sm', className = '' }: RealAIAvatarProps) {
-  const [url, setUrl] = useState<string | null>(cachedAIAvatarUrl);
+  // 直接用模块级缓存初始化（缓存稳定，无需 effect 同步，避免 effect 内 setState 级联渲染）
+  const [url, setUrl] = useState<string | null>(() => cachedAIAvatarUrl);
   const [backendFailed, setBackendFailed] = useState(false);
-
-  // 若其他实例已生成缓存，通过 effect 同步（避免 render 期间 setState 导致无限重渲染）
-  useEffect(() => {
-    if (cachedAIAvatarUrl && !url) {
-      setUrl(cachedAIAvatarUrl);
-    }
-  }, [cachedAIAvatarUrl, url]);
 
   useEffect(() => {
     if (cachedAIAvatarUrl) return;

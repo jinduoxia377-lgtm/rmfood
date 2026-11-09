@@ -135,15 +135,9 @@ export interface AIAvatarFallbackProps {
 }
 
 export function AIAvatarFallback({ size = 'sm', className = '' }: AIAvatarFallbackProps) {
-  const [url, setUrl] = useState<string | null>(cachedFallbackUrl);
+  // 直接用模块级缓存初始化（缓存稳定，无需 effect 同步，避免 effect 内 setState 级联渲染）
+  const [url, setUrl] = useState<string | null>(() => cachedFallbackUrl);
   const [failed, setFailed] = useState(false);
-
-  // 若已有缓存，通过 effect 同步（避免 render 期间 setState 导致无限重渲染）
-  useEffect(() => {
-    if (cachedFallbackUrl && !url) {
-      setUrl(cachedFallbackUrl);
-    }
-  }, [cachedFallbackUrl, url]);
 
   useEffect(() => {
     if (cachedFallbackUrl) return;

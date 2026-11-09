@@ -52,12 +52,12 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, loading, asChild = false, children, disabled, ...props }, ref) => {
+  ({ className, variant, size, loading, asChild = false, children, disabled, fullWidth, ...props }, ref) => {
     // loading 状态下不能使用 asChild，否则 Slot 会收到多个子元素而崩溃
     const Comp = (asChild && !loading) ? Slot : 'button'
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(buttonVariants({ variant, size, className }), fullWidth && 'w-full')}
         ref={ref}
         disabled={disabled || loading}
         aria-disabled={disabled || loading || undefined}
