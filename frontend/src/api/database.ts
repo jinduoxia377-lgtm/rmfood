@@ -67,12 +67,18 @@ export const databaseApi = {
     page_size?: number
   }) => api.get<PaginatedResponse<SymMapHerb>>('/databases/herbs/symmap', { params }).then((r) => r.data),
 
-  /** DFBP 活性肽检索 */
+  /** DFBP 活性肽检索（支持 provenance 溯源过滤 / 按食品原料查肽） */
   searchPeptides: (params: {
     keyword?: string
     activity_type?: string
     page?: number
     page_size?: number
+    /** 'literature_confirmed' 只返回真食源肽（逐条 PMID/DOI 溯源）；默认 all 向后兼容 */
+    provenance?: string
+    /** 按食品原料 ID 查其关联肽 */
+    food_material_id?: number
+    /** 排序字段：sequence | activity_type | molecular_weight */
+    sort?: string
   }) => api.get<PaginatedResponse<BioactivePeptide>>('/databases/peptides', { params }).then((r) => r.data),
 
   /** 活性肽详情 */
@@ -451,3 +457,50 @@ export interface ActivePeptideRankingResponse {
   total: number
   generated_at: string
 }
+
+// ═══════════════════════════════════════════
+// 知识图谱探索面板（KnowledgeGraphPanel）专用接口
+// ═══════════════════════════════════════════
+
+/**
+ * 知识图谱节点联想搜索。
+ * 后端 `/databases/knowledge-graph/nodes/search` 返回 `{ query, total, nodes }`，
+ * 每个节点为 `{ id, type, label, description? }`（id 为 KGNode 主键）。
+ *
+ * @param q        搜索关键词（至少 1 个字符）
+ * @param nodeType 可选的节点类型过滤：herb / compound / target / disease
+ */
+export const searchGraphNodes = (q: string, nodeType?: string) =>
+  api.get<{
+    query: string
+    node_type_filter?: string | null
+    total: number
+    nodes: Array<{ id: number | string; type: string; label: string; description?: string | null }>
+  }>('/databases/knowledge-graph/nodes/search', {
+    params: { q, node_type: nodeType || undefined, limit: 8 },
+  }).then((r) => r.data)
+
+/**
+ * 指定节点的子图（多跳邻居 + 连接边）。
+ *
+ * 注意：后端 `/databases/knowledge-graph/nodes/{node_id}/subgraph` 的 `nodes`
+ * **不包含根节点本身**（`total_nodes = nodes.length + 1`），前端需要按
+ * `root_node_id` 补齐根节点后再渲染。
+ */
+export const getNodeSubgraph = (nodeId: number | string, depth = 2) =>
+  api.get<{
+    root_node_id: number | string
+    depth: number
+    total_nodes: number
+    total_edges: number
+    nodes: Array<{ id: number | string; type: string; label: string; description?: string | null }>
+    edges: Array<{
+      id: number | string
+      source_id: number | string
+      target_id: number | string
+      type: string
+      strength?: number | null
+    }>
+  }>(`/databases/knowledge-graph/nodes/${encodeURIComponent(String(nodeId))}/subgraph`, {
+    params: { depth },
+  }).then((r) => r.data)

@@ -173,6 +173,23 @@ class BioactivePeptide(Base):
     synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped)
 
+    # ── 暴露/质量分层 + 食材关联 + 诚实溯源（迁移 20261109_000002 / 000003）──
+    # provenance: literature_confirmed(文献确证，逐条 PMID/DOI 溯源)
+    #           / synthetic_unverified(合成未确证，默认降权)
+    provenance: Mapped[str | None] = mapped_column(
+        String(40), index=True,
+        comment="数据来源：literature_confirmed/synthetic_unverified",
+    )
+    # food_material_id: 关联食材载体行（可空）；DB 侧 FK ON DELETE SET NULL
+    food_material_id: Mapped[int | None] = mapped_column(
+        BigInteger, index=True,
+        comment="关联食材载体行(可空)；DB 侧 FK→food_materials.id ON DELETE SET NULL",
+    )
+    # evidence_note: 无 DOI 的老文献用此存 PMID / 原文出处 / 序列 accession
+    evidence_note: Mapped[str | None] = mapped_column(
+        Text, comment="溯源说明：来源 PMID / 原文出处 / 序列 accession",
+    )
+
 
 class KnowledgeGraphNode(Base):
     __tablename__ = "knowledge_graph_nodes"

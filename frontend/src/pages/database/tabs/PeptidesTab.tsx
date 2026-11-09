@@ -79,6 +79,8 @@ export default function PeptidesTab({
   const [selectedPeptide, setSelectedPeptide] = useState<BioactivePeptide | null>(null);
   const [exportLoading, setExportLoading] = useState(false);
   const [showStructureAnalyzer, setShowStructureAnalyzer] = useState(false);
+  // 默认只看「文献确证」真食源肽，避免 7887 条合成/未溯源行淹没 232 条真肽
+  const [confirmedOnly, setConfirmedOnly] = useState(true);
 
   // 排序
   const [sortField, setSortField] = useState<SortField>('activity_value');
@@ -103,9 +105,16 @@ export default function PeptidesTab({
   }, [activityTypesQuery.data]);
 
   const peptideQuery = useQuery({
-    queryKey: ['db-peptides', keyword, activityType, page],
+    queryKey: ['db-peptides', keyword, activityType, page, confirmedOnly],
     queryFn: () =>
-      databaseApi.searchPeptides({ keyword, activity_type: activityType || undefined, page, page_size: 20 }),
+      databaseApi.searchPeptides({
+        keyword,
+        activity_type: activityType || undefined,
+        page,
+        page_size: 20,
+        // 默认只拉「文献确证」真食源肽；关掉开关则传 undefined（后端默认 all 向后兼容）
+        provenance: confirmedOnly ? 'literature_confirmed' : undefined,
+      }),
   });
 
   const doSearch = () => {
@@ -222,6 +231,21 @@ export default function PeptidesTab({
             </option>
           ))}
         </select>
+        {/* 仅看已确证食源肽（provenance=literature_confirmed） */}
+        <button
+          type="button"
+          onClick={() => { setConfirmedOnly(!confirmedOnly); setPage(1); }}
+          aria-pressed={confirmedOnly}
+          className={`px-2.5 py-1.5 min-h-[44px] inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] text-xs font-medium transition-all border ${
+            confirmedOnly
+              ? 'bg-secondary-container text-secondary-main border-[var(--color-secondary)]'
+              : 'bg-[var(--bg-secondary)] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] border-[var(--border-subtle,rgba(0,0,0,0.06))] hover:border-[var(--color-secondary-border)] dark:hover:border-[var(--color-secondary)]'
+          }`}
+          title="只显示有 PMID/DOI 文献溯源的真食源肽"
+        >
+          <Dna className="w-3.5 h-3.5" />
+          仅看已确证食源肽
+        </button>
         {/* 长度筛选 */}
         <div className="flex items-center gap-1">
           <Filter className="w-4 h-4 text-[var(--text-muted,#9A9A9F)]" />
@@ -334,6 +358,9 @@ export default function PeptidesTab({
                       <span className="font-mono font-medium text-[var(--color-secondary-text)] dark:text-[var(--color-secondary-text)] group-hover:text-[var(--color-secondary-text)] transition-colors">
                         <Highlight text={item.sequence} keyword={keyword} />
                       </span>
+                      {item.provenance === 'literature_confirmed' && (
+                        <Badge variant="success" size="sm" className="ml-1.5">文献确证</Badge>
+                      )}
                     </td>
                     <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">
                       <Highlight text={item.source_protein || '-'} keyword={keyword} />
