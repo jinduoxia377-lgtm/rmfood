@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { useUserPreferenceStore } from '@/stores/userPreferenceStore';
@@ -225,6 +225,26 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   const effectsHook = useGenerateEffects();
   const algorithmHook = useAlgorithmConfig();
 
+  // P0 可信呈现·原则3：个人约束与回显同源 —— 直接取自 algorithmHook.constraints
+  // （ConstraintPanel 编辑/回显的同一状态），展开为单层键发送后端。空数组/未填项不发送，
+  // 避免用空值覆盖后端默认或伪装个性化。
+  const personalConstraints = useMemo(() => {
+    const c = algorithmHook.constraints;
+    const out: Record<string, unknown> = {};
+    if (c.ageGroup) out.age_group = c.ageGroup;
+    if (c.gender) out.gender = c.gender;
+    if (typeof c.weight === 'number' && c.weight > 0) out.weight = c.weight;
+    if (typeof c.height === 'number' && c.height > 0) out.height = c.height;
+    if (c.allergies?.length) out.allergies = c.allergies;
+    if (c.contraindications?.length) out.contraindications = c.contraindications;
+    if (c.dietaryRestrictions?.length) out.dietary_restrictions = c.dietaryRestrictions;
+    if (c.conditions?.length) out.conditions = c.conditions;
+    if (c.currentMedications?.length) out.current_medications = c.currentMedications;
+    if (c.cookingMethod) out.cooking_method = c.cookingMethod;
+    if (typeof c.cookingTime === 'number' && c.cookingTime > 0) out.cooking_time = c.cookingTime;
+    return out;
+  }, [algorithmHook.constraints]);
+
   // UI State
   const [useLlm, setUseLlm] = usePersistentState<boolean>(STORAGE_KEYS.GENERATE_USE_LLM, false);
   const [advancedMode, setAdvancedMode] = usePersistentState<boolean>(STORAGE_KEYS.GENERATE_ADVANCED_MODE, false);
@@ -234,6 +254,10 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
     selectedEffects: effectsHook.selectedEffects,
     onGenerateSuccess,
     algorithmConfig: algorithmHook.toApiParams,
+    // P0 可信呈现·原则3「个性化必须真实」：把个人约束（过敏原/禁忌/体质/饮食/用药）
+    // 显式传给后端，与 ConstraintPanel 回显同源（同一 algorithmHook.constraints）。
+    // 这些键由 aiApi.generate 合并进单层 constraints（不双层嵌套）。
+    constraints: personalConstraints,
     useLlm,
   });
   const versionsHook = useFormulaVersions();
@@ -632,6 +656,9 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
                   savedHook.handleSaveSuccess(formulaId, candidateId, generationHook.generateResult)
                 }
                 savedFormulas={savedHook.savedFormulas}
+                // 可信呈现·原则2：降级标志/原因透传到结果面板，渲染降级横幅
+                degraded={generationHook.degraded}
+                fallbackReason={generationHook.fallbackReason}
               />
             )}
           </>

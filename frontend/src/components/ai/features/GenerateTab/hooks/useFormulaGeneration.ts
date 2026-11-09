@@ -54,6 +54,13 @@ interface GenerationResult {
   candidates: AICandidate[]
   total: number
   generator: GeneratorType
+  /**
+   * 降级标志（可信呈现·原则2）：true=本次由规则引擎兜底、未经 GA 优化，
+   * 由 api/ai.ts normalizeGenerateResponse 从后端响应级 degraded 字段透传。
+   */
+  degraded?: boolean
+  /** 降级原因（后端 fallback_reason 原文） */
+  fallback_reason?: string
   algorithm_info?: {
     strategy: string
     generation: number
@@ -86,6 +93,10 @@ export function useFormulaGeneration({
   const setErrorMessage = useGenerationStore((s) => s.setErrorMessage)
   const storedIsGenerating = useGenerationStore((s) => s.isGenerating)
   const setIsGenerating = useGenerationStore((s) => s.setIsGenerating)
+  // 可信呈现·原则2：降级标志/原因提升到全局 store（切 tab 后横幅仍在）
+  const degraded = useGenerationStore((s) => s.degraded)
+  const fallbackReason = useGenerationStore((s) => s.fallbackReason)
+  const setDegraded = useGenerationStore((s) => s.setDegraded)
   const abortControllerRef = useRef<AbortController | null>(null)
   const generateTimer = useRef<ReturnType<typeof logger.startTimer> | null>(null)
 
@@ -149,6 +160,9 @@ export function useFormulaGeneration({
           candidates: validatedCandidates,
           total: validatedCandidates.length,
           generator: normalizeGenerator(result.generator),
+          // 可信呈现·原则2：degraded/fallback_reason 从 api 层透传到 store/UI，不丢弃
+          degraded: result.degraded ?? false,
+          fallback_reason: result.fallback_reason,
         }
       } catch (error) {
         const endTime = performance.now()
@@ -174,6 +188,14 @@ export function useFormulaGeneration({
             enhancedError = ErrorFactory.network()
           } else if (errorStr.includes('timeout') || errorStr.includes('Timeout') || errorStr.includes('ETIMEDOUT')) {
             enhancedError = ErrorFactory.timeout()
+          } else if (errorStr.includes('CSRF') || errorStr.includes('csrf')) {
+            // 参考 chatService.handleHTTPError 403 分支：区分 CSRF token 缺失 vs 真正权限不足。
+            // CSRF 失败给出明确自愈提示（重新获取 token 后重试），而非误报「权限不足」。
+            enhancedError = new AppError({
+              code: 'COMMON_CSRF_ERROR',
+              message: '安全令牌（CSRF）已失效，请重试以自动重新获取',
+              originalError: error,
+            })
           } else if (errorStr.includes('401') || errorStr.includes('403') || errorStr.includes('Unauthorized') || errorStr.includes('认证')) {
             enhancedError = ErrorFactory.auth.permissionDenied()
           } else if (errorStr.includes('500') || errorStr.includes('Internal Server Error')) {
@@ -214,6 +236,8 @@ export function useFormulaGeneration({
       setGenerateResult(data.candidates)
       // mutationFn 已对 generator 归一化（如 'ga_optimizer' → 'ga'），这里直接使用，避免双重归一化
       setGenerator(data.generator)
+      // 可信呈现·原则2：降级标志/原因写入 store，供 UI 降级横幅展示（兜底不得伪装成 GA 结果）
+      setDegraded(data.degraded ?? false, data.fallback_reason)
 
       feedback.showSuccess(
         DEFAULTS.PLACEHOLDER_TEXTS.GENERATION_SUCCESS_TITLE,
@@ -242,6 +266,7 @@ export function useFormulaGeneration({
           case 'COMMON':
             if (error.code === 'COMMON_NETWORK_ERROR') recoverySuggestion = '请检查网络后重试'
             else if (error.code === 'COMMON_TIMEOUT') recoverySuggestion = '请稍后重试'
+            else if (error.code === 'COMMON_CSRF_ERROR') recoverySuggestion = '安全令牌已自动刷新，请重新点击生成'
             break
           case 'AUTH':
             recoverySuggestion = '请重新登录后再试'
@@ -326,9 +351,10 @@ export function useFormulaGeneration({
     setGenerateResult(null)
     setErrorMessage(null)
     setIsGenerating(false)
+    setDegraded(false)
     mutation.reset()
     resetProgress()
-  }, [mutation, resetProgress, setGenerateResult, setErrorMessage, setIsGenerating])
+  }, [mutation, resetProgress, setGenerateResult, setErrorMessage, setIsGenerating, setDegraded])
 
   return {
     generateResult,
@@ -337,6 +363,9 @@ export function useFormulaGeneration({
     setGenerator,
     errorMessage,
     setErrorMessage,
+    // 可信呈现·原则2：降级标志/原因对外暴露，供 GenerateTab/结果面板渲染降级横幅
+    degraded,
+    fallbackReason,
     mutation,
     progress,
     handleCancelGeneration,

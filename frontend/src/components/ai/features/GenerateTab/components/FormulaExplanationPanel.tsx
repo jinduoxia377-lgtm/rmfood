@@ -5,11 +5,12 @@
  * @version 1.0.0
  */
 import { useState, useEffect } from 'react'
-import { Loader2, FlaskConical, Shield, Lightbulb, Clock } from 'lucide-react'
+import { Loader2, FlaskConical, Shield, Lightbulb, Clock, RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { aiApi } from '@/api/ai'
 import type { AICandidate } from '@/api/ai'
 import { Card } from '@/components/ui'
+import { MechanismNetworkPanel } from './MechanismNetworkPanel'
 
 interface FormulaExplanationPanelProps {
   candidate: AICandidate
@@ -32,6 +33,8 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
   const [interp, setInterp] = useState<Interpretation | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // 重试计数：递增触发下方 useEffect 重新加载方解（错误态"重试"按钮）
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -39,6 +42,35 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
       setLoading(true)
       setError(null)
       try {
+        // ★ 优先复用后端生成时已产出的 candidate.mechanism（L4 机理阐释，阶段2续接入），
+        //   零额外请求。字段适配：后端 mechanisms[]/compounds:string[] → 面板 mechanism[]/compounds:{name}[]。
+        //   仅当候选无 mechanism 时才回退调用 /ai/interpret。
+        const mech = candidate.mechanism
+        if (mech && (mech.explanation || mech.mechanisms?.length || mech.synergy)) {
+          const adapted: Interpretation = {
+            constitution: mech.constitution,
+            mechanism: (mech.mechanisms || []).map((m) => ({
+              herb: m.herb || '',
+              effects: m.effects ? [m.effects] : [],
+              compounds: (m.compounds || []).map((name) => ({ name })),
+              targets: m.targets || [],
+              diseases: m.diseases || [],
+              note: m.note || '',
+            })),
+            synergy: mech.synergy,
+            safety: undefined,
+            usage: undefined,
+            monitoring: undefined,
+            disclaimer: mech.disclaimer,
+          }
+          if (!cancelled) {
+            setInterp(adapted)
+            setLoading(false)
+          }
+          return
+        }
+
+        // 回退：候选无现成机理，调用 /ai/interpret 按需生成
         const herbs = (candidate.herb_combination || []).map((h: any) => ({
           name: h.name || '',
           dosage_g: Number(h.dosage_g ?? h.dosage ?? h.dose_g ?? 0),
@@ -58,7 +90,7 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
     }
     load()
     return () => { cancelled = true }
-  }, [candidate, targetEffects, t])
+  }, [candidate, targetEffects, t, reloadKey])
 
   return (
     <Card className="p-4 space-y-3">
@@ -77,7 +109,17 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
       )}
 
       {error && (
-        <div className="rounded-lg bg-danger/10 border border-danger/20 p-3 text-caption text-danger">{error}</div>
+        <div className="rounded-lg bg-danger/10 border border-danger/20 p-3 text-caption text-danger flex items-center justify-between gap-3">
+          <span className="flex-1">{error}</span>
+          <button
+            type="button"
+            onClick={() => setReloadKey((k) => k + 1)}
+            className="flex items-center gap-1.5 rounded-md border border-danger/30 px-2.5 py-1.5 text-caption font-medium text-danger hover:bg-danger/10 transition-colors min-h-[36px] shrink-0"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            {t('ai.formula.generateTab.retryExplanation')}
+          </button>
+        </div>
       )}
 
       {!loading && !error && interp && (
@@ -89,7 +131,13 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
             </div>
           )}
 
-          {interp.mechanism && interp.mechanism.length > 0 && (
+          {candidate.mechanism?.mechanisms ? (
+            // 后端 L4 机理（阶段2续）→ 网络药理可视化（突出共享靶点=配伍协同）
+            <div>
+              <h4 className="text-caption font-semibold text-primary mb-1">{t('ai.formula.generateTab.modernMechanism')}</h4>
+              <MechanismNetworkPanel mechanisms={candidate.mechanism.mechanisms} />
+            </div>
+          ) : interp.mechanism && interp.mechanism.length > 0 ? (
             <div>
               <h4 className="text-caption font-semibold text-primary mb-1">{t('ai.formula.generateTab.modernMechanism')}</h4>
               <ul className="space-y-1.5">
@@ -107,7 +155,7 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
                 ))}
               </ul>
             </div>
-          )}
+          ) : null}
 
           {interp.synergy && (
             <div>

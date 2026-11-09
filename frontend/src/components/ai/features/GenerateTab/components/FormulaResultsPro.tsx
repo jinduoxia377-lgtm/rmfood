@@ -14,8 +14,10 @@ import { Badge, Button, useToast } from '@/components/ui'
 import { NeuralResultCard } from '@/components/ai/NeuralResultCard'
 import { MultiCandidateCompare } from '@/components/ai/MultiCandidateCompare'
 import { ResultsViewSwitcher } from './ResultsViewSwitcher'
+import { DegradedBanner } from './DegradedBanner'
 import { FormulaRecommendPanel } from './FormulaRecommendPanel'
 import { FormulaExplanationPanel } from './FormulaExplanationPanel'
+import { FormulaOverviewComparePanel } from './FormulaOverviewComparePanel'
 import { type FormulaCategory } from '../config/generateTabConfig'
 import type { AICandidate } from '@/api/ai'
 import type { GeneratorType, ViewMode } from '../config/generateTabConfig'
@@ -52,6 +54,13 @@ interface FormulaResultsProProps {
   onSaveSuccess?: (formulaId: number, candidateId: string) => void
   /** 已保存候选映射（候选 ID → 配方 ID），用于卡片「已保存」标记（跨 tab 保留） */
   savedFormulas?: Map<string, { formulaId: number; savedAt: number }>
+  /**
+   * 降级标志（可信呈现·原则2）：true=本次结果由规则引擎兜底、未经 GA 优化，
+   * 顶部显示降级横幅。来自 generationStore.degraded（api→hook→store 透传）。
+   */
+  degraded?: boolean
+  /** 降级原因（后端 fallback_reason 原文），供降级横幅展示 */
+  fallbackReason?: string | null
   className?: string
 }
 
@@ -77,6 +86,8 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
   onSaveAll,
   onSaveSuccess,
   savedFormulas = new Map(),
+  degraded = false,
+  fallbackReason,
   className = '',
 }) => {
   const { t } = useTranslation()
@@ -164,6 +175,9 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
 
   return (
     <div className={className}>
+      {/* 可信呈现·原则2：降级横幅 —— degraded=true 时明示本次由规则引擎兜底、未经 GA 优化 */}
+      <DegradedBanner degraded={degraded} fallbackReason={fallbackReason} />
+
       {/* Stats panel */}
       {stats && showStats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 p-4 bg-muted/30 rounded-xl border border-border">
@@ -361,21 +375,25 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
           <button onClick={() => onToggleSort('score')} className="px-3 py-1.5 text-caption bg-muted rounded-lg hover:bg-background">{t('ai.formula.generateTab.reset')}</button>
         </div>
       ) : viewMode === 'card' ? (
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {filteredResults.map((candidate, index) => (
-            <NeuralResultCard
-              key={index}
-              candidate={candidate}
-              index={index}
-              generatorType={generatorType}
-              onViewReport={() => onViewReport(candidate)}
-              onSelect={() => onSelectCandidate(candidate)}
-              isSelected={selectedCompareIndex === index}
-              onSaveSuccess={onSaveSuccess}
-              savedFormulas={savedFormulas}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {filteredResults.map((candidate, index) => (
+              <NeuralResultCard
+                key={index}
+                candidate={candidate}
+                index={index}
+                generatorType={generatorType}
+                onViewReport={() => onViewReport(candidate)}
+                onSelect={() => onSelectCandidate(candidate)}
+                isSelected={selectedCompareIndex === index}
+                onSaveSuccess={onSaveSuccess}
+                savedFormulas={savedFormulas}
+              />
+            ))}
+          </div>
+          {/* 卡片视图：前 N 候选概览对比（药材多样性/总剂量/安全/角色结构） */}
+          {filteredResults.length >= 2 && <FormulaOverviewComparePanel candidates={filteredResults} />}
+        </>
       ) : (
         <MultiCandidateCompare candidates={filteredResults} selectedIndex={selectedCompareIndex} onSelectCandidate={onSelectCandidate} />
       )}
