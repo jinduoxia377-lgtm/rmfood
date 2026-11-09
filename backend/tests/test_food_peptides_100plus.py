@@ -136,6 +136,34 @@ async def test_activities_enriched_from_source():
 
 
 @pytest.mark.asyncio
+async def test_deep_fields_backfilled():
+    """深度补全：molecular_weight(由序列计算)/source_organism/source_protein 填充率显著提升；
+    activity_value 诚实——论文无定量 IC50 的留空（不编造）。既有 batch1/path1 未动。"""
+    conn = await _conn()
+    try:
+        tot = await conn.fetchval("SELECT COUNT(*) FROM bioactive_peptides WHERE provenance='literature_confirmed'")
+        mw = await conn.fetchval(
+            "SELECT COUNT(*) FROM bioactive_peptides WHERE provenance='literature_confirmed' "
+            "AND molecular_weight IS NOT NULL")
+        org = await conn.fetchval(
+            "SELECT COUNT(*) FROM bioactive_peptides WHERE provenance='literature_confirmed' "
+            "AND source_organism IS NOT NULL AND source_organism!=''")
+        prot = await conn.fetchval(
+            "SELECT COUNT(*) FROM bioactive_peptides WHERE provenance='literature_confirmed' "
+            "AND source_protein IS NOT NULL AND source_protein!=''")
+        assert tot >= 150
+        assert mw >= 100, f"molecular_weight 应大量补全(由序列计算)，实际 {mw}"
+        assert org >= 100, f"source_organism 应补全，实际 {org}"
+        assert prot >= 150, f"source_protein 应补全，实际 {prot}"
+        # batch1(126-132) 未被深度补全改动（MW/organism 保持原值，本任务排除守卫）
+        b1 = await conn.fetchval(
+            "SELECT COUNT(*) FROM bioactive_peptides WHERE source_version='pep_cat_b1'")
+        assert b1 == 7, f"batch1 应仍 7 条，实际 {b1}"
+    finally:
+        await conn.close()
+
+
+@pytest.mark.asyncio
 async def test_expansion_idempotent():
     conn = await _conn()
     try:
