@@ -1,8 +1,12 @@
 """ImportEngine 单元测试"""
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
-from app.services.import_engine.engine import ImportEngine, ImportStatus, ImportReport, ImportStats
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.services.import_engine.adapters.base import BaseAdapter, FieldMapper
+from app.services.import_engine.engine import ImportEngine, ImportReport, ImportStatus
+from app.services.import_engine.models import ImportStats
 
 
 @pytest.fixture
@@ -33,7 +37,7 @@ def mock_adapter():
 def mock_mapper():
     """创建模拟的字段映射器"""
     mapper = MagicMock(spec=FieldMapper)
-    mapper.map = AsyncMock(return_value(({ "id": 1, "value": "mapped" }), []))
+    mapper.map = AsyncMock(return_value=({"id": 1, "value": "mapped"}, []))
     mapper.add = MagicMock()
     return mapper
 
@@ -180,7 +184,8 @@ class TestImportReport:
 
     def test_to_dict_method(self):
         """测试 to_dict 方法"""
-        from app.services.import_engine.models import ImportStats as ModelImportStats, ImportStatus
+        from app.services.import_engine.models import ImportStats as ModelImportStats
+        from app.services.import_engine.models import ImportStatus
         stats = ModelImportStats(total_rows=100, valid_rows=90, inserted=80, updated=10)
         report = ImportReport(
             task_id="test-task",

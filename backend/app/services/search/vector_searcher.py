@@ -4,6 +4,7 @@
 基于 pgvector + fastembed (BAAI/bge-small-zh-v1.5) 实现语义搜索。
 用于 Potion AI VFT x RMFOOD 深度融合方案。
 """
+import asyncio
 import logging
 import math
 from typing import Any, Dict, List, Optional
@@ -134,7 +135,9 @@ class VectorSearcher:
         优先使用 pgvector 操作符，回退到 JSON 列 + 客户端余弦相似度。
         filters 会真正应用到两路 SQL 的 WHERE 上 (P1 修复)。
         """
-        query_vec = self.encode_query(query)
+        # encode_query 是同步 CPU 重活（fastembed 本地推理），用 to_thread 卸到线程池，
+        # 避免阻塞 event loop（并发下会把整个 worker 的其它请求卡住）。
+        query_vec = await asyncio.to_thread(self.encode_query, query)
         vec_str = "[" + ",".join(f"{v:.6f}" for v in query_vec) + "]"
 
         # 尝试使用 pgvector 操作符
@@ -242,7 +245,8 @@ class VectorSearcher:
         filters: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
         """零售产品向量语义搜索"""
-        query_vec = self.encode_query(query)
+        # 同 search_food_materials：encode_query 卸到线程池，不阻塞 event loop
+        query_vec = await asyncio.to_thread(self.encode_query, query)
         vec_str = "[" + ",".join(f"{v:.6f}" for v in query_vec) + "]"
 
         try:

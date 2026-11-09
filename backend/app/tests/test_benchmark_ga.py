@@ -41,7 +41,7 @@ class BenchmarkProblem:
     name: str
     target_effects: List[str]
     constraints: Dict[str, Any]
-    expected_ingredients: Optional[List[str]]  # 专家答案（可选）
+    expected_ingredients: Optional[List[str]] = None  # 专家答案（可选）
     difficulty: str = "medium"  # easy/medium/hard
 
 

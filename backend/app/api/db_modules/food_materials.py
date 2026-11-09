@@ -33,6 +33,7 @@ from app.services.search.chinese_nlp import get_nlp_pipeline
 from app.services.search.compliance_engine import ComplianceEngine
 from app.services.search.hybrid_search import HybridSearchService
 from app.services.search.stream_search import StreamSearchService
+from app.services.search.ttl_cache import search_result_cache
 from app.services.search.vector_searcher import VectorSearcher
 
 # 使用共享 router 实例注册到 /databases 前缀
@@ -53,6 +54,19 @@ async def search_food_materials(
 
     对标 Potion AI VFT: POST /search/raw-materials
     """
+    # P0 稳定性：短 TTL 缓存。key 含全部影响结果的参数（query/filters/page/per_page/
+    # search_modes），避免脏读。重复/翻页查询直接命中，降 worker 占用（混合检索单次
+    # 0.1-1.3s，并发下曾占满 --workers 2 致排队/超时）。
+    cache_key = (
+        "fm|" + request.query + "|"
+        + str(sorted((request.filters.model_dump(exclude_none=True) if request.filters else {}).items())) + "|"
+        + f"p{request.page}n{request.per_page}|"
+        + str(sorted(request.search_modes.items()))
+    )
+    cached = search_result_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     start_time = time.time()
 
     nlp = get_nlp_pipeline()
@@ -125,7 +139,7 @@ async def search_food_materials(
 
     elapsed_ms = (time.time() - start_time) * 1000
 
-    return FoodMaterialSearchResponse(
+    response = FoodMaterialSearchResponse(
         query=request.query,
         total=total,  # max(BM25 COUNT, len(fused_results))：覆盖向量额外召回
         page=request.page,
@@ -134,6 +148,8 @@ async def search_food_materials(
         search_time_ms=round(elapsed_ms, 2),
         search_modes_used=request.search_modes,
     )
+    search_result_cache.put(cache_key, response)
+    return response
 
 
 @router.post("/food-materials/stream")

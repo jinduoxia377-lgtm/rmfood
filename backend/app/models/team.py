@@ -22,8 +22,8 @@ class Team(Base):
     owner_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    org_id: Mapped[int | None] = mapped_column(
-        BigInteger, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True
+    org_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
     )
     settings: Mapped[dict | None] = mapped_column(JSON, default=dict)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
