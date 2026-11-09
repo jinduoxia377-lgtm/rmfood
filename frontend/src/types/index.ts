@@ -117,7 +117,7 @@ export interface Formula {
   status: FormulaStatus;
 
   // 配方内容
-  ingredients: { id: number; name: string; name_cn?: string; category?: string; source?: string; is_food_homology?: boolean; properties?: Record<string, any> }[];
+  ingredients: { id: number; name: string; name_cn?: string; category?: string; source?: string; is_food_homology?: boolean; properties?: Record<string, any>; amount?: number; unit?: string; percentage?: number; role?: string; sort_order?: number }[];
   processSteps?: ProcessStep[];
 
   // 目标指标
@@ -805,6 +805,13 @@ export interface BioactivePeptide {
   // Added for compatibility with PeptideDetailContent
   dfbp_id?: string;
   literature_doi?: string;
+  /**
+   * 溯源分级：'literature_confirmed'（真食源肽，逐条 PMID/DOI 溯源）|
+   * 'synthetic_unverified'（程序合成/未溯源）。后端肽检索 API 逐步返回此字段。
+   */
+  provenance?: string | null;
+  /** 该肽挂载的食品原料 ID（后端肽检索 API 返回） */
+  food_material_id?: number | null;
 }
 
 export interface KnowledgeNode {

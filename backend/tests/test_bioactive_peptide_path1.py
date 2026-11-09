@@ -71,7 +71,10 @@ async def test_provenance_layering():
         "SELECT COUNT(*) FROM bioactive_peptides WHERE provenance='literature_confirmed'")
     syn = await _fetchval(
         "SELECT COUNT(*) FROM bioactive_peptides WHERE provenance='synthetic_unverified'")
-    assert lit == 5, f"literature_confirmed 应为 5 条，实际 {lit}"
+    # 路径1 初始 5 条；后经诚实扩量回填至 232 条真食源肽（品类批次/pep_b100v/pep_b100w）。
+    # 断言用下界：至少保留路径1的 5 条，且随回填增长到当前基线 232。
+    assert lit >= 5, f"literature_confirmed 应至少 5 条（路径1），实际 {lit}"
+    assert lit == 232, f"literature_confirmed 当前基线应为 232 条，实际 {lit}"
     assert syn == 7655, f"synthetic_unverified 应为 7655 条，实际 {syn}"
 
 
@@ -82,7 +85,8 @@ async def test_five_lit_peptides_linked_to_carriers():
         "FROM bioactive_peptides b LEFT JOIN food_materials f ON f.id=b.food_material_id "
         "WHERE b.provenance='literature_confirmed' ORDER BY b.id")
     got = {r["id"]: (r["sequence"], r["carrier"]) for r in rows}
-    assert len(got) == 5
+    # 现有 232 条 lit 肽均挂载体；这里只校验路径1的 5 条仍在其中且正确，故用下界。
+    assert len(got) >= 5
     for pid, seq in LIT_EXPECT.items():
         assert pid in got, f"肽 {pid} 未标 literature_confirmed"
         assert got[pid][0] == seq, f"肽 {pid} 序列被改动: {got[pid][0]} != {seq}"
