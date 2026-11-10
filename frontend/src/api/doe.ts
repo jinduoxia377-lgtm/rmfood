@@ -69,6 +69,10 @@ export interface FittedModel {
   adjusted_r_squared: Record<string, number>
   rmse: Record<string, number>
   significant_terms: string[]
+  t_values: Record<string, Record<string, number | null>>
+  p_values: Record<string, Record<string, number | null>>
+  /** 每个响应的方差分析 (ANOVA)：anova[responseName] = { ss_tot, df_tot, ss_reg, df_reg, ms_reg, ss_res, df_res, ms_res, F, p_value, r_squared, adjusted_r_squared } */
+  anova?: Record<string, Record<string, number | null>>
 }
 
 export interface ActiveLearningRequest {
