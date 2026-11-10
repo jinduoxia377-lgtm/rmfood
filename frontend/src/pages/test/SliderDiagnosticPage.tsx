@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { logger } from '@/utils/safeLogger'
 
 export const SliderDiagnosticPage: React.FC = () => {
   const [logs, setLogs] = useState<string[]>([])
@@ -13,7 +14,7 @@ export const SliderDiagnosticPage: React.FC = () => {
   const addLog = (msg: string) => {
     const time = new Date().toLocaleTimeString()
     setLogs(prev => [`[${time}] ${msg}`, ...prev].slice(0, 30))
-    console.log(msg)
+    logger.debug(msg)
   }
 
   const handleChange = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,16 +1,17 @@
 import React from 'react'
+import { logger } from '@/utils/safeLogger'
 
 export const MinSliderTest: React.FC = () => {
   let changeCount = 0
 
   const handleChange = (e: any) => {
     changeCount++
-    console.log('INPUT CHANGE EVENT FIRED!', e.target.value, 'count:', changeCount)
+    logger.log('INPUT CHANGE EVENT FIRED!', e.target.value, 'count:', changeCount)
     alert('滑块事件触发! 值: ' + e.target.value + ', 次数: ' + changeCount)
   }
 
   const handleClick = () => {
-    console.log('BUTTON CLICKED!')
+    logger.debug('BUTTON CLICKED!')
     alert('按钮被点击!')
   }
 
