@@ -116,24 +116,37 @@ def build_tcm_keywords(frontend_labels: list[str]) -> list[str]:
     return result
 
 
-# 阶段0 合规兜底药材池（替代已删除的 _FOOD_HOMOLOGY_HERBS mock 字典）
-# ★ 审计根因修复 ★：原兜底路径从标注 "⚠️ MOCK IMPLEMENTATION" 的
-#   ai_models/formula_gpt.py:_FOOD_HOMOLOGY_HERBS（仅7键，含受保护物种"虫草"）取药，
-#   完全绕过安全合规设施。现改为从权威 106 种药食同源目录取药，
-#   且每味再经 safety_gate.check_herb_admission 二次准入（黑名单 + 目录双保险）。
-# 药材名必须是 formula_compliance.FOOD_HERB_MAX_DOSAGE 的**精确键**（106种，药典正名）。
-# ★ 命名规范化 ★：常见误用名 → 目录正名：大枣→枣 / 桑葚→桑椹 / 陈皮→橘皮 / 枸杞→枸杞子；
-# 白术、玫瑰花不在 106 种目录内，不得进入兜底池。
-_FALLBACK_HERB_POOL: dict[str, list[str]] = {
-    "免疫调节": ["黄芪", "党参", "山药", "枣", "枸杞子", "茯苓", "甘草", "黄精"],
-    "补气": ["黄芪", "党参", "山药", "枣", "茯苓", "甘草", "黄精"],
-    "抗氧化": ["枸杞子", "桑椹", "菊花", "山楂", "山药", "枣", "决明子"],
-    "抗衰老": ["枸杞子", "山药", "枣", "桑椹", "茯苓", "黄精"],
-    "安神": ["酸枣仁", "百合", "茯苓", "枣", "龙眼肉", "莲子"],
-    "健脾": ["山药", "茯苓", "枣", "党参", "橘皮", "薏苡仁"],
-    "补气养阴": ["黄芪", "党参", "山药", "玉竹", "枸杞子", "枣", "麦冬"],
-    "清热": ["菊花", "金银花", "薄荷", "淡竹叶", "栀子", "决明子"],
-}
+# 阶段1 治本（S1-1）：兜底药材池**动态派生自 L1 食品级白名单**（app/services/ai/safety/
+#   herb_whitelist.py），不再硬编码列表。权威源 = 国家卫健委药食同源目录 106 种
+#   （tcmsp_client.FOOD_HOMOLOGY_CATALOG，与 temp/herb_food_herbs_2024.json 106 种 100% 一致）。
+# ★ 治本要点 ★：
+#   1) 每味候选项**强制过滤 through L1_FOOD_GRADE**——非 106 目录内的药材（如白术/玫瑰花/
+#      受保护物种虫草）即使误写进下面的偏好映射，也会被剔除，杜绝目录外/受保护物种入池。
+#   2) 每味均带目录日限量（formula_compliance.FOOD_HERB_MAX_DOSAGE），可被 clamp 约束。
+#   3) 某功效若过滤后 <3 味（极端情况），运行时由 _fallback_rule_engine 用 l1_default_pool()
+#      （全部 106 种 L1）补足，永不硬凑目录外药材。
+# 偏好映射仅为"该功效常用哪些 L1 药材"的软排序；真正准入由 L1 白名单 + check_herb_admission 双保险。
+def _build_fallback_pool() -> dict[str, list[str]]:
+    from .safety.herb_whitelist import L1_FOOD_GRADE
+
+    preferred: dict[str, list[str]] = {
+        "免疫调节": ["黄芪", "党参", "山药", "枣", "枸杞子", "茯苓", "甘草", "黄精"],
+        "补气": ["黄芪", "党参", "山药", "枣", "茯苓", "甘草", "黄精"],
+        "抗氧化": ["枸杞子", "桑椹", "菊花", "山楂", "山药", "枣", "决明子"],
+        "抗衰老": ["枸杞子", "山药", "枣", "桑椹", "茯苓", "黄精"],
+        "安神": ["酸枣仁", "百合", "茯苓", "枣", "龙眼肉", "莲子"],
+        "健脾": ["山药", "茯苓", "枣", "党参", "橘皮", "薏苡仁"],
+        "补气养阴": ["黄芪", "党参", "山药", "玉竹", "枸杞子", "枣", "麦冬"],
+        "清热": ["菊花", "金银花", "薄荷", "淡竹叶", "栀子", "决明子"],
+    }
+    pool: dict[str, list[str]] = {}
+    for effect, names in preferred.items():
+        # ★ 强制过滤：仅保留 L1 食品级（106 目录内）药材，剔除目录外/受保护物种
+        pool[effect] = [n for n in names if n in L1_FOOD_GRADE]
+    return pool
+
+
+_FALLBACK_HERB_POOL: dict[str, list[str]] = _build_fallback_pool()
 
 
 def _fallback_rule_engine(
