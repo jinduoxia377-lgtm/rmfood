@@ -37,7 +37,7 @@ export function getModelMeta(modelId: string): ModelMeta {
   const known = MODEL_META[modelId]
   if (known) return { id: modelId, ...known }
   // 尝试从 provider 默认值中匹配
-  for (const [provider, defaults] of Object.entries(PROVIDER_DEFAULTS)) {
+  for (const defaults of Object.values(PROVIDER_DEFAULTS)) {
     if (defaults.model === modelId) {
       const label = modelId.split('-').pop() || modelId
       return { id: modelId, label, color: 'text-success-500' }
