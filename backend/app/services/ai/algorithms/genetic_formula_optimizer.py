@@ -74,8 +74,8 @@ def _translate_effect_ids(effect_ids: list[str]) -> list[str]:
 @dataclass
 class GAConfig:
     """遗传算法配置"""
-    population_size: int = 50       # 种群大小
-    generations: int = 40           # 进化代数
+    population_size: int = 40       # 种群大小（S1-6 性能：80/50→40，减半评估开销）
+    generations: int = 20           # 进化代数（S1-6 性能：40→20，配合早停保收敛起点）
     mutation_rate: float = 0.15     # 变异概率
     crossover_rate: float = 0.85    # 交叉概率
     elite_ratio: float = 0.15       # 精英保留比例
@@ -83,7 +83,7 @@ class GAConfig:
     target_effects: List[str] = None
     adaptive_mutation: bool = True  # 是否启用自适应变异率
     seed: Optional[int] = None      # 随机种子（可重复性）
-    early_stop_patience: int = 15   # 连续N代无改进则早停(0=不启用)
+    early_stop_patience: int = 8    # 连续N代无改进则早停(S1-6: 15→8,更快止损;0=不启用)
     early_stop_threshold: float = 0.95  # 达到此fitness阈值则停止(0=不启用)
     # 自定义综合适应度权重（键：efficacy/safety/taste/cost/synergy/stability）。
     # None 表示使用 Individual.DEFAULT_OBJECTIVE_WEIGHTS（与 NSGA-II 一致的内置权重）。
@@ -347,7 +347,10 @@ class Individual:
         self.stability = sum(stability_factors) / max(len(stability_factors), 1) if stability_factors else 0
 
         # ── 君臣佐使结构合规度 ──
-        self.structural_compliance = 0.7  # 默认合规度，由调用方（优化器）注入
+        # 阶段1 治本：0.7 仅为占位默认值。真实值由优化器在评估循环中调用
+        # _evaluate_structural_compliance() 注入（替代旧的"从未调用"缺陷），
+        # 注入后通过 _base_weighted_fitness 重算 fitness。
+        self.structural_compliance = 0.7  # 占位；由优化器覆盖为真实计算值
 
         # 综合适应度（7 维加权；权重可由 GAConfig.objective_weights 覆盖）
         # 先归一化再加权，前端传来的权重不需要预先归一；
@@ -358,15 +361,17 @@ class Individual:
         if total_w <= 0:
             w = self.DEFAULT_OBJECTIVE_WEIGHTS
             total_w = sum(w.values())
-        self.fitness = (
-            (self.efficacy * w.get("efficacy", 0.0)
-             + self.safety * w.get("safety", 0.0)
-             + self.taste * w.get("taste", 0.0)
-             + self.cost * w.get("cost", 0.0)
-             + self.synergy * w.get("synergy", 0.0)
-             + self.stability * w.get("stability", 0.0))
-            / total_w
-        ) * (0.5 + 0.5 * self.structural_compliance)
+        # 基座加权适应度（不含结构合规乘子）。缓存以便优化器注入真实
+        # 结构合规度后按 base * (0.5 + 0.5 * sc) 重算，避免浮点误差累积。
+        self._base_weighted_fitness = (
+            self.efficacy * w.get("efficacy", 0.0)
+            + self.safety * w.get("safety", 0.0)
+            + self.taste * w.get("taste", 0.0)
+            + self.cost * w.get("cost", 0.0)
+            + self.synergy * w.get("synergy", 0.0)
+            + self.stability * w.get("stability", 0.0)
+        ) / total_w
+        self.fitness = self._base_weighted_fitness * (0.5 + 0.5 * self.structural_compliance)
 
 
 class GeneticFormulaOptimizer:
@@ -558,6 +563,42 @@ class GeneticFormulaOptimizer:
         # Step 1: 选择候选药材（支持排除药材 + 特殊人群硬排除）
         candidates = self._select_herbs(target_effects, exclude_herbs=population_exclude,
                                          include_herbs=include_herbs)
+
+        # 阶段1 治本：L0 药材准入网关 —— GA 候选池只保留通过准入的药食同源药材。
+        # 根治审计缺陷：旧 GA 池含非目录药用药材（连翘/人参/大枣等），下游安全
+        # 闸门被迫整候选拒绝，导致 0 候选。现源头约束候选池到 106 种药食同源目录，
+        # 与兜底路径共用同一准入判定（safety_gate.check_herb_admission）。
+        #
+        # ★ 命名规范化（2026-11-09 深化）★：check_herb_admission 用 name_cn **精确匹配**
+        # FOOD_HERB_MAX_DOSAGE（106 目录键=药典正名），但 GA 药材库 name_cn 常用俗名/异名
+        # （大枣/桑葚/陈皮/枸杞…）。精确匹配失败 → 真药食同源药材被误剔除。
+        # 修法：准入前先 canonicalize_herb_name 归一（俗名→正名），再准入判定。
+        #   - 大枣→枣、桑葚→桑椹、陈皮→橘皮、枸杞→枸杞子、红枣→枣 等保留在池中 ✅
+        #   - 虫草系歧义按最严处置（canonical 归一到「冬虫夏草」=黑名单）→ 准入失败 ✅
+        #   - 连翘/人参等非目录药 canonical 后仍不在 106 目录 → 照旧剔除 ✅
+        try:
+            from app.services.ai.safety.safety_gate import check_herb_admission
+            from app.services.ai.safety.canonical_names import canonicalize_herb_name
+            admitted_candidates = []
+            rejected_names = []
+            for hid in candidates:
+                herb = self._herbs.get(hid)
+                name_cn = (getattr(herb, "name_cn", "") or hid) if herb else hid
+                # 命名规范化：俗名/异名 → 106 目录药典正名后再准入
+                canonical_name = canonicalize_herb_name(name_cn)
+                if check_herb_admission(canonical_name).admitted:
+                    admitted_candidates.append(hid)
+                else:
+                    rejected_names.append(f"{name_cn}(→{canonical_name})")
+            if rejected_names:
+                logger.info(
+                    f"[GeneticAlgorithm] L0 准入过滤：剔除 {len(rejected_names)} 味非目录药材 "
+                    f"{rejected_names[:10]}（受保护物种/药用/超目录；括号内为 canonical 正名）"
+                )
+            candidates = admitted_candidates
+        except Exception as _adm_err:  # pragma: no cover - 防御性，准入服务异常时不阻塞
+            logger.warning(f"[GeneticAlgorithm] L0 准入过滤异常，跳过（使用原候选池）: {_adm_err}")
+
         if len(candidates) < 3:
             logger.warning(f"候选药材不足 ({len(candidates)})")
             return [], []
@@ -575,6 +616,8 @@ class GeneticFormulaOptimizer:
             scoring_herbs["__target_group__"] = special_population
         for ind in population:
             ind.evaluate(target_effects, herb_dict=scoring_herbs)
+            # 阶段1：注入真实君臣佐使结构合规度并重算适应度
+            self._apply_structural_compliance(ind, scoring_herbs)
 
         # 按适应度排序
         population.sort(key=lambda x: x.fitness, reverse=True)
@@ -592,6 +635,12 @@ class GeneticFormulaOptimizer:
         for gen in range(self.config.generations):
             # 计算本代多样性（必须在取消检查之前，供取消处理器使用）
             diversity = self._compute_diversity(population)
+            # ★ 候选多样性深化（2026-11-09）★
+            # _compute_diversity 基于剂量欧氏距离：同组合、不同剂量会被误判为"多样"，
+            # 无法察觉"top-N 药材组合雷同"的收敛。补充组合签名多样性，并取二者较小值
+            # 作为有效多样性 —— 一旦组合收敛即触发多样化重启/移民与提高变异率。
+            combo_diversity = self._compute_combination_diversity(population)
+            effective_diversity = min(diversity, combo_diversity)
 
             # ── 取消信号检查 ──
             if _cancel_signal is not None and _cancel_signal.is_set():
@@ -613,15 +662,19 @@ class GeneticFormulaOptimizer:
                 return self._deduplicate(population)[:count], history
             new_population = []
 
-            # 精英保留
+            # 精英保留（★ 组合签名去重：避免同一组合多份精英挤压种群多样性 ★）
             n_elite = max(1, int(self.config.population_size * self.config.elite_ratio))
-            new_population.extend(population[:n_elite])
+            new_population.extend(self._dedup_elites_by_signature(population, n_elite))
 
             # ── 种群恢复机制（院士级修复[P1-A3]）──
             # 当多样性持续低于阈值时，注入随机个体打破收敛
-            if diversity < 0.15:
+            # ★ 深化：改用有效多样性（剂量∧组合），组合收敛同样触发移民 ★
+            if effective_diversity < 0.15:
                 recovery_count = max(1, int(self.config.population_size * 0.2))
-                logger.info(f"[GeneticAlgorithm] 多样性过低 ({diversity:.4f})，注入 {recovery_count} 个随机个体")
+                logger.info(
+                    f"[GeneticAlgorithm] 有效多样性过低 (剂量={diversity:.4f}, 组合={combo_diversity:.4f})，"
+                    f"注入 {recovery_count} 个随机个体"
+                )
                 for _ in range(recovery_count):
                     genes = {}
                     for hid in candidates:
@@ -633,15 +686,16 @@ class GeneticFormulaOptimizer:
                     if len(genes) >= 3:
                         ind = self._new_individual(genes)
                         ind.evaluate(target_effects, herb_dict=scoring_herbs)
+                        self._apply_structural_compliance(ind, scoring_herbs)
                         new_population.append(ind)
 
-            # 自适应变异率：根据种群多样性动态调整实际变异概率
+            # 自适应变异率：根据种群有效多样性（剂量∧组合）动态调整实际变异概率
             if self.config.adaptive_mutation:
-                if diversity < 0.2:
+                if effective_diversity < 0.2:
                     actual_mutation_rate = self.config.mutation_rate * 2.5   # 低多样性强扰动
-                elif diversity < 0.4:
+                elif effective_diversity < 0.4:
                     actual_mutation_rate = self.config.mutation_rate * 1.5   # 中等偏低加强扰动
-                elif diversity < 0.6:
+                elif effective_diversity < 0.6:
                     actual_mutation_rate = self.config.mutation_rate * 1.0   # 正常
                 else:
                     actual_mutation_rate = self.config.mutation_rate * 0.7   # 高多样性可降低扰动
@@ -651,9 +705,13 @@ class GeneticFormulaOptimizer:
                 actual_mutation_rate = self.config.mutation_rate
 
             # 生成后代（使用自适应变异率）
+            # ★ niching/拥挤度（适应度共享）★：按当前种群各组合签名出现次数对锦标赛
+            # 选择做降权 —— 高频组合的个体被压低选择概率，维持种群药材组合多样性，
+            # 直接缓解"选择压力+精英保留"导致的组合收敛。
+            combo_counts = self._combo_signature_counts(population)
             while len(new_population) < self.config.population_size:
-                parent1 = self._tournament_select(population)
-                parent2 = self._tournament_select(population)
+                parent1 = self._tournament_select(population, combo_counts)
+                parent2 = self._tournament_select(population, combo_counts)
 
                 if random.random() < self.config.crossover_rate:
                     child1, child2 = self._crossover(parent1, parent2)
@@ -667,6 +725,9 @@ class GeneticFormulaOptimizer:
 
                 child1.evaluate(target_effects, herb_dict=scoring_herbs)
                 child2.evaluate(target_effects, herb_dict=scoring_herbs)
+                # 阶段1：注入真实君臣佐使结构合规度并重算适应度
+                self._apply_structural_compliance(child1, scoring_herbs)
+                self._apply_structural_compliance(child2, scoring_herbs)
                 new_population.append(child1)
                 if len(new_population) < self.config.population_size:
                     new_population.append(child2)
@@ -692,6 +753,7 @@ class GeneticFormulaOptimizer:
                 "avg_fitness": round(avg_fitness, 6),
                 "min_fitness": round(min_fitness, 6),
                 "diversity": round(diversity, 6),
+                "combination_diversity": round(combo_diversity, 6),
                 "adaptive_mutation_rate": round(actual_mutation_rate, 6),
             })
 
@@ -741,19 +803,95 @@ class GeneticFormulaOptimizer:
             history[-1]["stop_reason"] = stop_reason
 
         # 返回 Top-N (去重) 和进化历史
-        # 修复：去重基于整个种群再截断 Top-N，避免因 top-N 高度相似而只返回 1 个候选。
-        # 保底：若去重后候选数 < count，则按适应度从高到低补充（即使相似），
-        # 确保用户总能拿到足够数量的差异化/可比较候选。
-        deduped = self._deduplicate(population)
-        if len(deduped) < count and population:
-            seen_ids = {id(ind) for ind in deduped}
-            for ind in sorted(population, key=lambda x: x.fitness, reverse=True):
-                if len(deduped) >= count:
-                    break
-                if id(ind) not in seen_ids:
-                    deduped.append(ind)
-                    seen_ids.add(id(ind))
+        # ★ 候选多样性硬保证（2026-11-09 深化）★
+        # 审计复现：cand 0/3/4 完全一致（选择压力+精英保留收敛）。
+        # 修法：最终候选按「药材组合签名」严格去重，确保返回的 top-N 药材组合互不相同；
+        # 若同组合候选不足 count，放宽到「不同剂量分布」（量化到 dosage_step 粒度）补足。
+        # 彻底废弃旧的「相似也补充」回填逻辑（它会重新引入结构相同的候选）。
+        deduped = self._dedup_by_combination_signature(population, count)
         return deduped[:count], history
+
+    def _dedup_by_combination_signature(self, individuals: List[Individual],
+                                         count: int) -> List[Individual]:
+        """按药材组合签名严格去重 — 保证返回候选的药材组合互不相同。
+
+        两级策略：
+          Tier 1（组合签名）：签名 = frozenset(genes.keys())。同组合只保留 fitness
+            最高者 → 保证返回的药材组合**互不相同**。
+          Tier 2（剂量分布放宽）：若 Tier 1 不足 count，在同组合内按「量化剂量指纹」
+            补充剂量分布明显不同的个体（每味剂量按 dosage_step 量化后取整指纹），
+            确保补进来的候选不是原候选的剂量复制品。
+
+        个体按 fitness 降序处理，输出保持 fitness 降序。
+
+        Args:
+            individuals: 候选个体（通常为整个种群，fitness 已排序或未排序均可）
+            count: 期望的候选数量
+
+        Returns:
+            去重后的候选列表（≤ count，fitness 降序；组合互不相同或剂量分布不同）
+        """
+        # fitness 降序处理，确保同签名保留最优个体
+        ordered = sorted(individuals, key=lambda x: x.fitness, reverse=True)
+
+        # ── Tier 1：药材组合签名去重（互不相同）──
+        seen_combos: set = set()
+        tier1: List[Individual] = []
+        for ind in ordered:
+            if not ind.genes:
+                continue
+            combo_sig = frozenset(ind.genes.keys())
+            if combo_sig in seen_combos:
+                continue
+            seen_combos.add(combo_sig)
+            tier1.append(ind)
+            if len(tier1) >= count:
+                return tier1[:count]
+
+        # ── Tier 2：同组合剂量分布放宽（量化指纹去重）──
+        # 仅当 Tier1 不足 count 时执行；补充「同组合但剂量分布不同」的个体。
+        seen_dosage_sigs: set = set()
+        # 预填 Tier1 已选个体的剂量指纹，避免 Tier2 重复
+        for ind in tier1:
+            seen_dosage_sigs.add(self._dosage_signature(ind))
+
+        result: List[Individual] = list(tier1)
+        result_ids: set = {id(ind) for ind in tier1}
+        for ind in ordered:
+            if len(result) >= count:
+                break
+            if id(ind) in result_ids:
+                continue
+            combo_sig = frozenset(ind.genes.keys())
+            if combo_sig not in seen_combos:
+                # 新组合理论已在 Tier1 收录，防御性跳过
+                continue
+            dos_sig = self._dosage_signature(ind)
+            if dos_sig in seen_dosage_sigs:
+                continue
+            seen_dosage_sigs.add(dos_sig)
+            result.append(ind)
+            result_ids.add(id(ind))
+
+        return result[:count]
+
+    def _dosage_signature(self, ind: Individual) -> tuple:
+        """生成个体的量化剂量指纹（每味剂量按 dosage_step 量化后取整）。
+
+        用于 Tier2 判断「同组合的不同剂量分布」是否真的不同。
+        量化粒度 = 该药材的 dosage_step；缺失 herbs 时退化为原值。
+        """
+        sig = []
+        for hid in sorted(ind.genes.keys()):
+            dosage = ind.genes[hid]
+            herb = self._herbs.get(hid)
+            if herb and herb.dosage_step:
+                step = max(herb.dosage_step, 0.01)
+                quantized = int(round(dosage / step))
+            else:
+                quantized = int(round(dosage * 10))  # 退化为 0.1g 粒度
+            sig.append((hid, quantized))
+        return tuple(sig)
 
     def _compute_diversity(self, population: List[Individual]) -> float:
         """计算种群多样性 — 院士级修复[P0]: 剂量感知欧氏距离
@@ -803,6 +941,77 @@ class GeneticFormulaOptimizer:
         # 归一化到 [0, 1] 区间
         max_possible = math.sqrt(n_herbs) * count if count > 0 else 1
         return total_dist / max_possible
+
+    def _combo_signature_counts(self, population: List[Individual]) -> Dict[frozenset, int]:
+        """统计种群中各药材组合签名（frozenset(genes.keys())）的出现次数。
+
+        供 niching/适应度共享使用：同组合个体越多，该组合在选择时被降权越多。
+        """
+        counts: Dict[frozenset, int] = {}
+        for ind in population:
+            sig = frozenset(ind.genes.keys())
+            counts[sig] = counts.get(sig, 0) + 1
+        return counts
+
+    def _compute_combination_diversity(self, population: List[Individual]) -> float:
+        """组合多样性 = 种群中互异药材组合签名占比 (0~1)。
+
+        _compute_diversity 基于剂量欧氏距离，"同组合不同剂量"会被判为多样，
+        无法反映"top-N 组合雷同"的收敛。本指标直接统计组合签名去重率，
+        用于触发多样化重启/移民与提高变异率。
+        """
+        if not population:
+            return 1.0
+        sigs = {frozenset(ind.genes.keys()) for ind in population if ind.genes}
+        if not sigs:
+            return 1.0
+        return len(sigs) / len(population)
+
+    def _dedup_elites_by_signature(self, population: List[Individual],
+                                   n_elite: int) -> List[Individual]:
+        """精英保留按组合签名去重 — 避免同一组合多份精英挤压种群多样性。
+
+        population 已按 fitness 降序。先按组合签名 (frozenset(genes.keys())) 去重，
+        同组合只保留 fitness 最高的一份精英；若去重后不足 n_elite，再按剂量指纹
+        放宽补足（同组合不同剂量分布），确保精英既优质又互异，为后代提供多样的
+        亲本，而不是把同一个优势组合复制多份塞进下一代。
+
+        Returns:
+            ≤ n_elite 个互异精英（组合签名互不相同或剂量分布不同），fitness 降序。
+        """
+        selected: List[Individual] = []
+        selected_ids: set = set()
+        seen_combos: set = set()
+
+        # 第一轮：组合签名去重，同组合取最优
+        for ind in population:
+            if len(selected) >= n_elite:
+                break
+            if not ind.genes or id(ind) in selected_ids:
+                continue
+            sig = frozenset(ind.genes.keys())
+            if sig in seen_combos:
+                continue
+            seen_combos.add(sig)
+            selected.append(ind)
+            selected_ids.add(id(ind))
+
+        # 第二轮：不足则按剂量指纹放宽补足（同组合不同剂量分布）
+        if len(selected) < n_elite:
+            seen_dos = {self._dosage_signature(ind) for ind in selected}
+            for ind in population:
+                if len(selected) >= n_elite:
+                    break
+                if id(ind) in selected_ids or not ind.genes:
+                    continue
+                dos = self._dosage_signature(ind)
+                if dos in seen_dos:
+                    continue
+                seen_dos.add(dos)
+                selected.append(ind)
+                selected_ids.add(id(ind))
+
+        return selected
 
     def _select_herbs(self, target_effects: List[str], exclude_herbs: Optional[set] = None,
                       include_herbs: Optional[List[str]] = None) -> List[str]:
@@ -919,9 +1128,21 @@ class GeneticFormulaOptimizer:
 
         return population[:self.config.population_size]
 
-    def _tournament_select(self, population: List[Individual]) -> Individual:
-        """锦标赛选择"""
+    def _tournament_select(self, population: List[Individual],
+                           combo_counts: Optional[Dict[frozenset, int]] = None) -> Individual:
+        """锦标赛选择（★ 可选 niching/适应度共享 ★）
+
+        当传入 combo_counts（种群中各药材组合签名的出现次数）时，采用适应度共享：
+        个体以 fitness / sqrt(1 + 同组合个体数) 参与竞争，使高频组合被降权，
+        维持种群药材组合多样性，缓解选择压力导致的收敛。
+        不传 combo_counts 时退化为原始锦标赛（向后兼容）。
+        """
         contestants = random.sample(population, min(self.config.tournament_size, len(population)))
+        if combo_counts:
+            def _shared_fitness(ind: Individual) -> float:
+                niche = combo_counts.get(frozenset(ind.genes.keys()), 1)
+                return ind.fitness / math.sqrt(1.0 + max(0, niche - 1))
+            return max(contestants, key=_shared_fitness)
         return max(contestants, key=lambda x: x.fitness)
 
     def _crossover(self, p1: Individual, p2: Individual) -> Tuple[Individual, Individual]:
@@ -1034,6 +1255,23 @@ class GeneticFormulaOptimizer:
     # 君臣佐使结构评估
     # ═════════════════════════════════════════
 
+    def _apply_structural_compliance(self, individual: Individual, herbs: Dict) -> float:
+        """
+        阶段1 治本：计算真实的君臣佐使结构合规度并注入 Individual，重算 fitness。
+
+        根治审计缺陷——旧代码 `Individual.structural_compliance = 0.7` 硬编码，
+        真正的 `_evaluate_structural_compliance`（下方）从未被调用。本方法在每个
+        评估点被调用，确保结构合规度真实进入适应度乘法因子。
+
+        Returns:
+            注入的真实结构合规度 (0~1)
+        """
+        real_sc = self._evaluate_structural_compliance(individual, herbs)
+        individual.structural_compliance = real_sc
+        # 用缓存的基座加权适应度按真实结构合规度重算（避免浮点误差累积）
+        individual.fitness = individual._base_weighted_fitness * (0.5 + 0.5 * real_sc)
+        return real_sc
+
     def _evaluate_structural_compliance(self, individual: Individual, herbs: Dict) -> float:
         """
         评估配方的君臣佐使结构合规度 (0~1)。
@@ -1080,8 +1318,14 @@ class GeneticFormulaOptimizer:
                 group_medians.append((name, sorted(dosages)[len(dosages) // 2]))
 
         for i in range(len(group_medians) - 1):
-            if group_medians[i][1] >= group_medians[i + 1][1]:
-                score += 0.25
+            hi_d = group_medians[i][1]
+            lo_d = group_medians[i + 1][1]
+            if hi_d > lo_d * 1.2:
+                score += 0.25      # 严格递减（梯度明显）满分
+            elif hi_d > lo_d:
+                score += 0.15      # 弱递减
+            elif hi_d == lo_d:
+                score += 0.05      # 相等（扁平）仅少量分，抑制均分结构
             parts += 0.25
 
         # 2. 数量合理性: 君药1-2, 臣药2-3, 佐药1-2, 使药0-1
@@ -1094,12 +1338,20 @@ class GeneticFormulaOptimizer:
                 score += 0.08
             parts += 0.15
 
-        # 3. 剂量跨度: 君药最高剂量不应超过使药的10倍(过于极端)
+        # 3. 剂量梯度: 君药/使药比应有实质梯度（>=2 满分），扁平结构（~1）不得分
         if sorted_herbs:
             max_dose = sorted_herbs[0][1]
             min_dose = sorted_herbs[-1][1]
-            if min_dose > 0 and max_dose / min_dose <= 10:
-                score += 0.15
+            if min_dose > 0:
+                ratio = max_dose / min_dose
+                if ratio >= 2.0:
+                    score += 0.15   # 君使比 >=2，梯度清晰
+                elif ratio >= 1.5:
+                    score += 0.08   # 弱梯度
+                elif ratio <= 1.05:
+                    pass            # 完全扁平（均分）不得分
+                else:
+                    score += 0.04
             parts += 0.15
 
         return score / max(parts, 1) if parts > 0 else 0.0
@@ -1215,8 +1467,8 @@ def bridge_to_multi_objective(target_effects: List[str], constraints: Dict = Non
         ],
         mode="weighted",
         constraints=constraints or {},
-        population_size=50,
-        generations=40,
+        population_size=40,
+        generations=20,
     )
     # 使用自定义配置创建临时优化器执行
     mo_optimizer = NSGAIIMoBridgeOptimizer(config)
