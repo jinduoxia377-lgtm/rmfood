@@ -116,58 +116,188 @@ def build_tcm_keywords(frontend_labels: list[str]) -> list[str]:
     return result
 
 
+# 阶段0 合规兜底药材池（替代已删除的 _FOOD_HOMOLOGY_HERBS mock 字典）
+# ★ 审计根因修复 ★：原兜底路径从标注 "⚠️ MOCK IMPLEMENTATION" 的
+#   ai_models/formula_gpt.py:_FOOD_HOMOLOGY_HERBS（仅7键，含受保护物种"虫草"）取药，
+#   完全绕过安全合规设施。现改为从权威 106 种药食同源目录取药，
+#   且每味再经 safety_gate.check_herb_admission 二次准入（黑名单 + 目录双保险）。
+# 药材名必须是 formula_compliance.FOOD_HERB_MAX_DOSAGE 的**精确键**（106种，药典正名）。
+# ★ 命名规范化 ★：常见误用名 → 目录正名：大枣→枣 / 桑葚→桑椹 / 陈皮→橘皮 / 枸杞→枸杞子；
+# 白术、玫瑰花不在 106 种目录内，不得进入兜底池。
+_FALLBACK_HERB_POOL: dict[str, list[str]] = {
+    "免疫调节": ["黄芪", "党参", "山药", "枣", "枸杞子", "茯苓", "甘草", "黄精"],
+    "补气": ["黄芪", "党参", "山药", "枣", "茯苓", "甘草", "黄精"],
+    "抗氧化": ["枸杞子", "桑椹", "菊花", "山楂", "山药", "枣", "决明子"],
+    "抗衰老": ["枸杞子", "山药", "枣", "桑椹", "茯苓", "黄精"],
+    "安神": ["酸枣仁", "百合", "茯苓", "枣", "龙眼肉", "莲子"],
+    "健脾": ["山药", "茯苓", "枣", "党参", "橘皮", "薏苡仁"],
+    "补气养阴": ["黄芪", "党参", "山药", "玉竹", "枸杞子", "枣", "麦冬"],
+    "清热": ["菊花", "金银花", "薄荷", "淡竹叶", "栀子", "决明子"],
+}
+
+
 def _fallback_rule_engine(
     target_effects: list[str],
     max_candidates: int,
     total_dosage_g: float,
     tcm_keywords: list[str],
+    constraints: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
-    """回退规则引擎：基于功效-药材字典随机组合"""
-    from app.services.ai_models.formula_gpt import _FOOD_HOMOLOGY_HERBS
+    """
+    回退规则引擎（阶段0 合规加固版）
 
-    # 收集候选药材池
-    herb_pool: set[str] = set()
+    ★ 阶段0 三道闸（结构性修复 P0 合规红线）★
+    本引擎不再是"跳过合规的兜底"，其输出与 GA 路径走同一套安全合规闸门：
+      闸1 药材准入：仅使用 106 种药食同源目录内、且非禁用级黑名单的药材
+                   （经 safety_gate.check_herb_admission 二次准入，虫草在此现形淘汰）
+      闸2 剂量上限：每味剂量 ≤ 目录日限量（food_herb_max_dosage）
+      闸3 真实安全裁定：safety_passed 由 check_compliance 得出，杜绝硬编码 0.85
+
+    多样性修复：原实现固定切片 herb_list[:6] 导致 5 套候选完全相同；
+    现按候选序号轮转 + 无放回抽样，保证候选间药材组合不同。
+    若合格药材不足 3 味，返回显式降级响应（不硬凑）。
+    """
+    from .safety.canonical_names import canonicalize_herb_name
+    from .safety.safety_gate import (
+        check_formula_safety,
+        check_herb_admission,
+        clamp_dosage_to_catalog,
+    )
+
+    # ── 闸1：药材准入 —— 按功效关键词收集候选，仅保留通过 L0 准入者 ──
+    herb_pool: list[str] = []
+    seen: set[str] = set()
     for effect in tcm_keywords:
-        herbs = _FOOD_HOMOLOGY_HERBS.get(effect, [])
-        herb_pool.update(herbs)
+        for name in _FALLBACK_HERB_POOL.get(effect, []):
+            if name in seen:
+                continue
+            seen.add(name)
+            # 二次准入（黑名单 + 106 目录双保险）
+            if check_herb_admission(name).admitted:
+                herb_pool.append(name)
+            else:
+                logger.warning(f"[FallbackGate] 药材 '{name}' 未通过准入，已剔除")
 
-    if not herb_pool:
-        herb_pool = set(_FOOD_HOMOLOGY_HERBS.get("增强免疫", []) + _FOOD_HOMOLOGY_HERBS.get("抗氧化", []))
+    # 兜底：若关键词全无命中，用一个安全的默认池（全部为 106 目录内药材）
+    if len(herb_pool) < 3:
+        for name in ["山药", "枣", "枸杞子", "茯苓", "党参", "菊花"]:
+            if name not in seen and check_herb_admission(name).admitted:
+                seen.add(name)
+                herb_pool.append(name)
 
-    herb_list = list(herb_pool)
+    # ── S0-6：个人约束过滤（过敏原/禁忌/硬排除）—— 兜底路径也要尊重用户 constraints ──
+    # GA 路径在 generate() L634-643 已处理 exclude_herbs+allergies；兜底路径此前忽略，
+    # 会对过敏用户产出含过敏原的配方。此处对齐：把 allergies/exclude_herbs 归一后从候选池剔除。
+    constraints = constraints or {}
+    exclude_raw: set[str] = set(constraints.get("exclude_herbs") or [])
+    allergies = constraints.get("allergies") or []
+    if isinstance(allergies, list):
+        exclude_raw.update(str(a) for a in allergies if a)
+    elif isinstance(allergies, str):
+        exclude_raw.update(a.strip() for a in allergies.split(",") if a.strip())
+    # 归一到药典正名（过敏原可能写俗名/别名，如"大枣"→"枣"），再与候选池比对
+    exclude_canonical: set[str] = set()
+    for raw in exclude_raw:
+        try:
+            exclude_canonical.add(canonicalize_herb_name(str(raw).strip()))
+        except Exception:
+            exclude_canonical.add(str(raw).strip())
+    if exclude_canonical:
+        before = len(herb_pool)
+        herb_pool = [n for n in herb_pool if n not in exclude_canonical]
+        removed = before - len(herb_pool)
+        if removed:
+            logger.info(
+                f"[FallbackGate] 个人约束剔除 {removed} 味（过敏原/禁忌/硬排除）: "
+                f"{sorted(exclude_canonical)}"
+            )
+
+    # ── 合格药材不足 3 味 → 返回显式降级（不硬凑）──
+    if len(herb_pool) < 3:
+        logger.error(
+            f"[FallbackGate] 关键词 {tcm_keywords} 经准入后合格药材仅 {len(herb_pool)} 味（<3），返回无匹配"
+        )
+        return {
+            "candidates": [],
+            "total": 0,
+            "generator": "rule_engine_fallback",
+            "execution_time_ms": 0.0,
+            "strategy": "rule_fallback",
+            "best_score": 0.0,
+            "degraded": True,
+            "fallback_reason": f"目标功效 {target_effects} 经药材准入后合格药材不足，无法生成配方",
+        }
+
     roles = ["君", "臣", "臣", "佐", "佐", "使"]
     formatted: list[dict[str, Any]] = []
 
+    # 每个候选使用不同的起始偏移 + 味数，保证候选间药材组合不同（修复零多样性）
+    pool_size = len(herb_pool)
     for i in range(min(max_candidates, 5)):
-        num_herbs = min(6, max(3, len(herb_list) - 1))
-        selected = herb_list[:num_herbs] if len(herb_list) >= num_herbs else herb_list
-        dose_per_herb = round(total_dosage_g / len(selected), 1) if selected else 10.0
+        # 味数在 4~6 间随候选变化，起始位置轮转，实现无放回的多样化抽样
+        num_herbs = min(6, max(4, min(pool_size, 4 + (i % 3))))
+        selected: list[str] = []
+        for k in range(num_herbs):
+            selected.append(herb_pool[(i * 2 + k) % pool_size])
+        # 去重保序（轮转可能重复）
+        selected = list(dict.fromkeys(selected))
+        if len(selected) < 3:
+            continue
 
+        # ── 闸2：剂量上限 —— 按君臣佐使梯度分配后截断到目录限量 ──
+        # 梯度权重：君 0.30 / 臣 0.20 / 佐 0.12 / 使 0.06（对齐中医方剂学剂量学）
+        role_weights = {"君": 0.30, "臣": 0.20, "佐": 0.12, "使": 0.06}
         herb_combo: list[dict[str, Any]] = []
         for j, name in enumerate(selected):
+            role = roles[j] if j < len(roles) else "佐"
+            raw_g = total_dosage_g * role_weights.get(role, 0.10)
+            clamped_g, _was_clamped, _max_g = clamp_dosage_to_catalog(name, raw_g)
             herb_combo.append({
                 "name": name,
-                "dosage": f"{dose_per_herb}g",
-                "role": roles[j] if j < len(roles) else "佐",
+                "dosage": f"{round(clamped_g, 1)}g",
+                "role": role,
             })
 
-        formatted.append({
+        # ── 闸3：真实安全裁定 —— 由 check_compliance 得出，杜绝硬编码 ──
+        verdict = check_formula_safety(herb_combo, population="adults", auto_clamp=False)
+        safety_passed = verdict.is_safe_for_display  # 仅 status == "PASS" 为 True
+        safety_score = round(verdict.score / 100.0, 4) if verdict.is_verified else None
+
+        candidate: dict[str, Any] = {
             "id": f"rule_candidate_{int(time.time())}_{i}",
-            "formula_name": f"规则配方-{i+1}",
+            "formula_name": f"规则配方-{i + 1}",
             "name": f"配方方案{i + 1}",
             "herb_combination": herb_combo,
             "peptide_candidates": [],
             "synergy_score": round(0.5 + 0.15 * (i % 3), 4),
             "taste_score": 0.65,
             "stability_score": 0.70,
-            "safety_score": 0.85,
+            # ★ 真实安全分：来自 check_compliance，未校验时为 None（前端显示"未校验"）★
+            "safety_score": safety_score,
             "cost_score": 0.70,
             "efficacy_score": 0.60,
             "overall_score": round(0.6 + 0.08 * (i % 3), 4),
             "effects": target_effects,
             "generated_by": "rule_engine_fallback",
             "generated_at": datetime.datetime.now().isoformat(),
-        })
+            # ★ 新增：三态安全裁定 + 降级标记（前端必须透传展示）★
+            "safety_passed": safety_passed,
+            "safety_verdict": {
+                "status": verdict.status.lower(),  # pass / needs_attention / rejected / unverified
+                "is_compliant": verdict.is_compliant,
+                "violations": verdict.violations,
+                "warnings": verdict.warnings,
+            },
+            "degraded": True,  # 兜底引擎产物，始终标记为降级
+        }
+        # 被闸门淘汰（REJECTED）的候选不返回前端
+        if verdict.is_rejected:
+            logger.warning(
+                f"[FallbackGate] 候选 {i + 1} 被安全闸门淘汰: "
+                f"{[v.get('message') for v in verdict.violations]}"
+            )
+            continue
+        formatted.append(candidate)
 
     return {
         "candidates": formatted,
@@ -176,7 +306,106 @@ def _fallback_rule_engine(
         "execution_time_ms": 0.0,
         "strategy": "rule_fallback",
         "best_score": max((c["overall_score"] for c in formatted), default=0),
+        # ★ 降级标记：前端必须展示「本次由规则引擎兜底，未经 GA 优化」★
+        "degraded": True,
+        "fallback_reason": "GA 引擎不可用，本次由规则引擎兜底生成，结果未经多目标优化，仅供参考",
     }
+
+
+def _parse_dosage_g(dosage: Any) -> float:
+    """从候选剂量字段解析出克数（兼容 "10.0g" 字符串 / 数值 / None）。"""
+    if dosage is None:
+        return 0.0
+    if isinstance(dosage, (int, float)):
+        return max(0.0, float(dosage))
+    try:
+        return max(0.0, float(str(dosage).replace("g", "").strip()))
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _milp_refine_combo(
+    herb_combo: list[dict[str, Any]],
+    total_dosage_g: float,
+) -> list[dict[str, Any]]:
+    """对单个 GA 候选的药材组合做 MILP 剂量精算（仅更新剂量，不改 name/role）。
+
+    ★ 防御式 ★：MILP 仅在 status=="optimal" 且无「严重违规」（超目录限量/
+    负剂量/梯度倒挂）时覆盖 GA 剂量；fallback 或异常一律回退 GA 原剂量，
+    绝不阻断/破坏候选生成。
+    """
+    try:
+        from .algorithms.milp_dose_refiner import refine_dosages
+
+        herbs = [
+            {
+                "name": h.get("name"),
+                "role": h.get("role"),
+                "dosage_g": _parse_dosage_g(h.get("dosage")),
+            }
+            for h in herb_combo
+        ]
+        if not herbs:
+            return herb_combo
+
+        result = refine_dosages(herbs, total_dosage_g=total_dosage_g)
+        status = result.get("status")
+        refined = result.get("refined") or []
+
+        # 仅可信结果才覆盖：optimal + 长度一致 + 无严重违规
+        if status != "optimal" or len(refined) != len(herb_combo):
+            logger.info(
+                "[MILP] 候选精算不可信（status=%s, refined=%d/%d），保留 GA 剂量",
+                status, len(refined), len(herb_combo),
+            )
+            return herb_combo
+
+        severe = [
+            v for v in (result.get("violations") or [])
+            if ("超目录限量" in v or "负剂量" in v or "梯度违反" in v)
+        ]
+        if severe:
+            logger.info(
+                "[MILP] 候选精算存在严重违规 %s，保留 GA 剂量", severe
+            )
+            return herb_combo
+
+        # 用 refined 剂量替换（保持 name/role 不变，只更新剂量；仍以 "x.xg" 字符串呈现）
+        refined_map = {r.get("name"): r.get("dosage_g") for r in refined}
+        new_combo: list[dict[str, Any]] = []
+        for h in herb_combo:
+            new_h = dict(h)
+            g = refined_map.get(h.get("name"))
+            if g is not None:
+                new_h["dosage"] = f"{round(float(g), 1)}g"
+            new_combo.append(new_h)
+
+        # ★ 过滤近零剂量项 ★：MILP 在容量受限（可达上限 << 目标总剂量）时会把部分
+        # 药材压到 ~0g，输出"某某 0.0g"会让用户困惑、像 bug。此处剔除 <0.5g 的药材项，
+        # 保留有实质剂量的君臣佐使。保护：过滤后至少保留 2 味（配方需君臣），否则保留原组合。
+        MEANINGFUL_G = 0.5
+        filtered = [h for h in new_combo if _parse_dosage_g(h.get("dosage")) >= MEANINGFUL_G]
+        if len(filtered) >= 2:
+            if len(filtered) < len(new_combo):
+                logger.info(
+                    "[MILP] 过滤近零剂量项：%d -> %d 味（剔除 %s）",
+                    len(new_combo), len(filtered),
+                    [h["name"] for h in new_combo if h not in filtered],
+                )
+            new_combo = filtered
+        else:
+            logger.info("[MILP] 过滤后不足 2 味，保留原组合（%d 味）", len(new_combo))
+
+        logger.info(
+            "[MILP] 候选精算生效（solver=%s）：before=%s after=%s",
+            result.get("solver"),
+            [(h["name"], h["dosage"]) for h in herb_combo],
+            [(h["name"], h["dosage"]) for h in new_combo],
+        )
+        return new_combo
+    except Exception as e:  # 绝不阻断候选生成
+        logger.warning("[MILP] 剂量精算异常，回退 GA 原剂量: %s", e)
+        return herb_combo
 
 
 def _format_ga_candidates(
@@ -185,8 +414,18 @@ def _format_ga_candidates(
     target_effects: list[str],
     max_candidates: int,
     start_ts: float,
+    total_dosage_g: float = 100.0,
 ) -> dict[str, Any]:
-    """将 GA 输出的 Individual 列表格式化为前端 AICandidate 结构"""
+    """将 GA 输出的 Individual 列表格式化为前端 AICandidate 结构
+
+    ★ 阶段0 合规加固 ★：GA 候选出口经统一安全闸门（safety_gate）校验，
+    与兜底路径走同一套 L0准入+剂量上限+配伍禁忌+真实check_compliance。
+    替换旧的 `safety_passed = safety >= 0.7` 伪判定——GA 内部 safety 维度
+    仅反映优化目标，不代表真实合规；现由闸门得出三态裁定。
+    被闸门淘汰（REJECTED，如含虫草/超剂量/十八反）的候选不返回前端。
+    """
+    from .safety.safety_gate import check_formula_safety
+
     elapsed_ms = (time.perf_counter() - start_ts) * 1000
 
     # 使用优化器实际加载的药材字典做 herb_id → 中文名映射。
@@ -218,6 +457,11 @@ def _format_ga_candidates(
                 "role": role,
             })
 
+        # ★ MILP 剂量精算（阶段2）：GA 初值 → 安全约束下精算剂量后处理 ★
+        # 仅在可信时覆盖 GA 剂量（optimal + 无严重违规），否则保留 GA 原值；
+        # 防御式包裹，任何异常回退，绝不阻断候选生成。
+        herb_combo = _milp_refine_combo(herb_combo, total_dosage_g)
+
         # 多维度评分（直接从 Individual 对象读取）
         efficacy = getattr(ind, "efficacy", 0.7)
         safety = getattr(ind, "safety", 0.8)
@@ -232,6 +476,21 @@ def _format_ga_candidates(
         )
 
         formula_name_base = "+".join(target_effects[:2]) if target_effects else "配方"
+
+        # ★ 统一安全闸门：GA 候选出口强制校验（与兜底路径同一套）★
+        # auto_clamp=True：GA 按 herb.dosage_max 优化剂量可能超目录限量，
+        # 此处自动截断到目录限量（NEEDS_ATTENTION）而非整体拒绝——GA 是善意
+        # 优化器，闸门自动降量修复；仅虫草/配伍禁忌等硬违规才 REJECTED。
+        verdict = check_formula_safety(herb_combo, population="adults", auto_clamp=True)
+        if verdict.is_rejected:
+            logger.warning(
+                f"[GAGate] GA 候选 {i + 1} 被安全闸门淘汰: "
+                f"{[v.get('message') for v in verdict.violations]}"
+            )
+            continue
+        safety_passed = verdict.is_safe_for_display  # 仅 status == "PASS" 为 True
+        compliance_score = round(verdict.score / 100.0, 4) if verdict.is_verified else None
+
         formatted_candidates.append({
             "id": f"ga_candidate_{int(time.time())}_{i}",
             "formula_name": f"优化配方-{i+1}（{formula_name_base}）",
@@ -241,12 +500,21 @@ def _format_ga_candidates(
             "synergy_score": round(synergy, 4),
             "taste_score": round(taste, 4),
             "stability_score": round(stability, 4),
-            "safety_score": round(safety, 4),
+            # ★ 真实合规安全分：来自 check_compliance，未校验为 None（前端显"未校验"）★
+            # GA 内部 safety 维度仍计入 overall_score，但对外安全分以合规闸门为准。
+            "safety_score": compliance_score,
             "cost_score": round(cost, 4),
             "efficacy_score": round(efficacy, 4),
             "overall_score": round(overall, 4),
             "score": round(overall, 4),
-            "safety_passed": safety >= 0.7,
+            # ★ 三态安全裁定（替换旧 safety >= 0.7 伪判定）★
+            "safety_passed": safety_passed,
+            "safety_verdict": {
+                "status": verdict.status.lower(),  # pass / needs_attention / rejected / unverified
+                "is_compliant": verdict.is_compliant,
+                "violations": verdict.violations,
+                "warnings": verdict.warnings,
+            },
             "effects": target_effects,
             "generated_by": "ga_optimizer",
             "generated_at": datetime.datetime.now().isoformat(),
@@ -415,6 +683,66 @@ async def run_ga_generation(
         if age_group not in {"adult", "pregnant", "children", "elderly"}:
             age_group = "adult"
 
+        # ── 阶段1 L1→L2 治法驱动集成（方案B：骨架偏置）──
+        # L1 辨证归纳（syndrome_induction.SyndromeInductionEngine.induce）产出 TreatmentIntent：
+        # 主证型 → 治法 → 经典骨架（君臣佐使 RoleSlot）。
+        # 本块只做软偏置：把骨架药材（含目录内替代品）经 canonical 归一 + L0 准入后
+        # 通过 herb_names_to_ids 映射为 herb_id，合并进 include_herbs 白名单。
+        # ★ 绝不修改 tcm_keywords —— 治法级术语不在 GA 功效索引内，会致空池。
+        # ★ 防御式：任何异常降级为原有关键词继续，绝不阻断生成。
+        l1_bias_ids: list[str] = []
+        try:
+            from .safety.canonical_names import canonicalize_herb_name
+            from .safety.safety_gate import check_herb_admission
+            from .syndrome.syndrome_induction import SyndromeInductionEngine
+
+            intent = SyndromeInductionEngine().induce(
+                efficacy_labels=target_effects,
+                symptoms=constraints.get("symptoms"),
+                constitution=constraints.get("constitution"),
+                objective_markers=constraints.get("objective_markers"),
+            )
+
+            # 收集骨架各角色药材 + 替代品（保序去重）
+            bias_names: list[str] = []
+            skeleton = getattr(intent, "skeleton", None)
+            if skeleton is not None:
+                for slot in getattr(skeleton, "roles", {}).values():
+                    for name in (list(getattr(slot, "herbs", ()) or [])
+                                 + list(getattr(slot, "substitutes", ()) or [])):
+                        if name and name not in bias_names:
+                            bias_names.append(name)
+
+            # canonical 归一 → L0 准入过滤（仅保留 106 目录内药材）
+            admissible: list[str] = []
+            for name in bias_names:
+                try:
+                    if check_herb_admission(canonicalize_herb_name(name)).admitted:
+                        if name not in admissible:
+                            admissible.append(name)
+                except Exception:
+                    continue
+
+            # 优化器 herb_db 惰性注入：ensure _herbs 非空，herb_names_to_ids 才能映射
+            try:
+                optimizer._try_load_herb_knowledge()
+            except Exception:
+                pass
+            l1_bias_ids = herb_names_to_ids(admissible, optimizer)
+            whitelist_ids = list(dict.fromkeys((whitelist_ids or []) + l1_bias_ids))
+
+            logger.info(
+                "[L1→L2] 证型=%s 治法=%s 骨架=%s 偏置药材=%s",
+                getattr(getattr(intent, "primary_syndrome", None), "name", None),
+                [getattr(m, "name", None) for m in getattr(intent, "treatment_methods", ())],
+                getattr(skeleton, "name", None),
+                admissible,
+            )
+        except Exception as e:
+            logger.warning(
+                "[L1→L2] 辨证归纳/骨架偏置失败（降级为原有关键词继续）: %s", e
+            )
+
         candidates, history = optimizer.optimize(
             target_effects=tcm_keywords,
             exclude_herbs=combined_exclude,
@@ -472,13 +800,29 @@ async def run_ga_generation(
 
         if not candidates:
             logger.error("[FormulaGenerationService] GA 引擎未返回候选，返回显式降级响应")
-            fallback = _fallback_rule_engine(target_effects, max_candidates, total_dosage_g, tcm_keywords)
+            fallback = _fallback_rule_engine(target_effects, max_candidates, total_dosage_g, tcm_keywords, constraints)
             fallback["degraded"] = True
             fallback["fallback_reason"] = "GA 引擎未返回候选"
             fallback["rag_evidence"] = rag_signals
             return fallback
 
-        result = _format_ga_candidates(candidates, optimizer, target_effects, max_candidates, start_ts)
+        result = _format_ga_candidates(candidates, optimizer, target_effects, max_candidates, start_ts, total_dosage_g)
+
+        # ★ 健壮性兜底（阶段2）：GA 产出了候选但全部被 L3 安全闸门拒绝（result.total==0）
+        # 时，绝不能静默返回空配方（用户看不到任何东西，比降级更糟）。
+        # 此时诚实降级到规则引擎（RULE_DEGRADED，仍穿越 L3），保证用户至少拿到一个
+        # 可用且安全的配方，并通过 degraded + fallback_reason 透传原因供前端展示。
+        if int(result.get("total", 0) or 0) <= 0:
+            logger.warning(
+                "[FormulaGenerationService] GA 候选全部被安全闸门拒绝（格式化后 0 个），"
+                "诚实降级到规则引擎兜底"
+            )
+            fallback = _fallback_rule_engine(target_effects, max_candidates, total_dosage_g, tcm_keywords, constraints)
+            fallback["degraded"] = True
+            fallback["fallback_reason"] = "GA 候选未通过安全合规闸门，已降级为规则引擎配方"
+            fallback["rag_evidence"] = rag_signals
+            return fallback
+
         result["rag_evidence"] = rag_signals
         return result
 
@@ -488,7 +832,7 @@ async def run_ga_generation(
         logger.error(f"[FormulaGenerationService] GA 引擎失败: {e}", exc_info=True)
         # 不再静默返回硬编码随机配方：显式标记 degraded + fallback_reason，供前端展示
         try:
-            fallback = _fallback_rule_engine(target_effects, max_candidates, total_dosage_g, tcm_keywords)
+            fallback = _fallback_rule_engine(target_effects, max_candidates, total_dosage_g, tcm_keywords, constraints)
             fallback["degraded"] = True
             fallback["fallback_reason"] = f"GA 引擎失败: {str(e)[:200]}"
             fallback["rag_evidence"] = {
