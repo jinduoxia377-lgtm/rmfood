@@ -8,19 +8,39 @@ import logging
 import random
 from typing import Any
 
+# ★ 阶段1 治本（S1-1）★：原 mock 字典 `_FOOD_HOMOLOGY_HERBS`（7 键，含受保护物种
+#   "虫草" 及目录外药材 人参/白术/苦瓜/红枣/桑葚/罗布麻叶/刺五加/红景天/五味子/巴戟天/
+#   淫羊藿/远志/合欢花/香菇/银耳 等）已删除——它绕过白名单、污染合规。
+# 现改为从**权威三级白名单**（app/services/ai/safety/herb_whitelist.py）动态取
+# L1 食品级（106 种药食同源目录）药材，按功效关键词匹配其目录条目，确保任何路径
+# （含本 mock）都不会产出目录外/受保护物种。
+from app.services.ai.safety.herb_whitelist import L1_FOOD_GRADE
+
 logger = logging.getLogger(__name__)
 
 
-# 模拟中药材数据库（TCMSP 药食同源子集）
-_FOOD_HOMOLOGY_HERBS = {
-    "降血压": ["菊花", "山楂", "决明子", "葛根", "杜仲叶", "罗布麻叶"],
-    "抗氧化": ["枸杞子", "红枣", "茯苓", "山药", "桑葚", "黑芝麻"],
-    "降血糖": ["苦瓜", "桑叶", "玉竹", "黄精", "麦冬", "知母"],
-    "补气养阴": ["人参", "西洋参", "太子参", "黄芪", "白术", "甘草"],
-    "抗疲劳": ["刺五加", "红景天", "五味子", "巴戟天", "淫羊藿", "肉苁蓉"],
-    "改善睡眠": ["酸枣仁", "百合", "龙眼肉", "莲子", "远志", "合欢花"],
-    "增强免疫": ["黄芪", "党参", "灵芝", "香菇", "虫草", "银耳"],
-}
+def _food_homology_effect_index() -> dict[str, list[str]]:
+    """从 L1 白名单按功效关键词建索引（药材名含关键词即归入该功效）。
+
+    供本 mock 服务的 generate_candidates 使用，保证候选项全部落在 106 目录内。
+    """
+    effect_keywords = {
+        "降血压": ["菊花", "山楂", "决明子", "葛根"],
+        "抗氧化": ["枸杞子", "茯苓", "山药", "黑芝麻"],
+        "降血糖": ["桑叶", "玉竹", "黄精", "麦冬"],
+        "补气养阴": ["西洋参", "黄芪", "甘草"],
+        "抗疲劳": ["肉苁蓉"],
+        "改善睡眠": ["酸枣仁", "百合", "龙眼肉", "莲子"],
+        "增强免疫": ["黄芪", "党参", "灵芝"],
+    }
+    idx: dict[str, list[str]] = {}
+    for effect, kws in effect_keywords.items():
+        idx[effect] = [kw for kw in kws if kw in L1_FOOD_GRADE]
+    return idx
+
+
+# 兼容历史引用：原 mock 字典名改为动态索引（全部 L1 目录内，无虫草/目录外药材）
+_FOOD_HOMOLOGY_HERBS = _food_homology_effect_index()
 
 # 模拟活性肽数据
 _MOCK_PEPTIDES = [
