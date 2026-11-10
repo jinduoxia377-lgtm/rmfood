@@ -1279,6 +1279,25 @@ export default function DataManagementTab() {
 
   const renderMonitorPanel = () => (
     <div className="space-y-6">
+      {/* 诚实空态：性能指标 API（/databases/dashboard/performance）尚未接入，
+          perfMetrics 恒为 0 占位。此时不渲染 0 值卡片 + 虚构趋势（"+12.5%"、"-128ms"），
+          改为"暂无数据"占位，避免误导性 0（可信呈现）。接入真实 API 后 perfMetrics 非全 0，
+          本守卫自动放行，正常渲染卡片。 */}
+      {perfMetrics.avgResponseTime === 0 &&
+       perfMetrics.apiCallsToday === 0 &&
+       perfMetrics.cacheHitRate === 0 &&
+       perfMetrics.memoryUsage === 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="p-[var(--space-apple-md)] sm:col-span-2 lg:col-span-4">
+            <div className="text-center py-10">
+              <p className="text-sm text-[var(--text-secondary)] font-medium">暂无数据</p>
+              <p className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
+                性能监控接口尚未接入，接入后此处展示真实查询响应 / API 调用 / 缓存命中率 / 内存指标
+              </p>
+            </div>
+          </Card>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {performanceCards.map((m) => (
           <Card key={m.label} className="p-[var(--space-apple-md)] space-y-2">
@@ -1308,6 +1327,7 @@ export default function DataManagementTab() {
           </Card>
         ))}
       </div>
+      )}
 
       <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-sm)]">
         <h4 className="font-semibold text-sm mb-0 flex items-center gap-2">
