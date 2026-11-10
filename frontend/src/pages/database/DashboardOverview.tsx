@@ -619,14 +619,29 @@ QuickActions.displayName = 'QuickActions';
 // ============================================================
 
 const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics | null }) => {
-  const displayMetrics = metrics || {
-    avgQueryTimeMs: 42,
-    cacheHitRate: 94.5,
-    apiCallsToday: 1287,
-    connectionPoolActive: 3,
-    connectionPoolIdle: 7,
-    connectionPoolSize: 10,
-  };
+  // 诚实空态：性能监控 API 未接入（performanceMetrics 恒为 null）时，不再回落到
+  // 硬编码假数据（42ms / 94.5% / 1287 调用 / 连接池 3+7/10），改为"暂无数据"占位，
+  // 避免向用户展示看似真实实则虚构的性能指标（可信呈现·不显示误导性数字）。
+  if (!metrics) {
+    return (
+      <Card>
+        <CardHeader className="px-6 pt-6 pb-[var(--space-apple-md)]">
+          <CardTitle as="h3" className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-[var(--space-apple-sm)]">
+            <Gauge size={18} className="text-[var(--text-muted)]" />
+            性能指标
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-6 pb-6 pt-0">
+          <div className="text-center py-10">
+            <p className="text-sm text-[var(--text-secondary)] font-medium">暂无数据</p>
+            <p className="text-xs text-[var(--text-muted)] mt-1">性能监控接口尚未接入</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const displayMetrics = metrics;
 
   const poolUsagePercent = ((displayMetrics.connectionPoolActive / displayMetrics.connectionPoolSize) * 100).toFixed(0);
 
