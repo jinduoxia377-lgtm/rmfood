@@ -62,6 +62,7 @@ export default {
     toastScore: 'Overall score: {{score}}',
     toastFixed: 'Fixed {{count}} items. Score: {{from}} → {{to}}',
     toastRunCheckFirst: 'Please run a compliance check first',
+    toastAlreadyCompliant: 'Formula is already compliant — no fixes needed',
     toastFormulaSaved: 'Formula "{{name}}" saved',
   },
 }
