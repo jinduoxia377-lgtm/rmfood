@@ -587,6 +587,7 @@ export default function MainLayout() {
           >
             v{envConfig.app.version}
           </span>
+          <span className="text-neutral-400 dark:text-neutral-600">闽ICP备2025096032号</span>
         </span>
         <span>© {new Date().getFullYear()} 莱茵分子</span>
       </footer>
