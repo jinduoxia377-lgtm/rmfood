@@ -36,7 +36,6 @@ import type {
   TastePredictionResponse,
   StabilityPredictionResponse,
   SafetyVerdict,
-  SafetyVerdictStatus,
 } from '@/types/ai.api';
 
 export type {

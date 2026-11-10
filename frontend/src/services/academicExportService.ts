@@ -29,40 +29,6 @@ export interface ExportResult {
   error?: string;
 }
 
-const CHINESE_FONT_NAME = 'SimSun';
-
-interface ChinesePdfConfig {
-  titleFontSize: number;
-  headingFontSize: number;
-  bodyFontSize: number;
-  smallFontSize: number;
-  margins: {
-    top: number;
-    right: number;
-    bottom: number;
-    left: number;
-  };
-  primaryColor: [number, number, number];
-  textColor: [number, number, number];
-  secondaryColor: [number, number, number];
-}
-
-const DEFAULT_CHINESE_PDF_CONFIG: ChinesePdfConfig = {
-  titleFontSize: 20,
-  headingFontSize: 14,
-  bodyFontSize: 10,
-  smallFontSize: 8,
-  margins: {
-    top: 25,
-    right: 20,
-    bottom: 25,
-    left: 25,
-  },
-  primaryColor: [30, 64, 175],
-  textColor: [40, 40, 40],
-  secondaryColor: [100, 100, 100],
-};
-
 /**
  * HTML模板样式
  */

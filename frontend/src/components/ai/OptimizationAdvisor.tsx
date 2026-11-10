@@ -11,16 +11,6 @@ import {
   Eye, Undo2, Clock, X, Check, ArrowRight, AlertCircle,
 } from 'lucide-react'
 
-/** 颜色名 → Tailwind 静态类名映射（JIT 无法解析动态类名） */
-const COLOR_CLASSES: Record<string, { bg100: string; bgDark: string; text500: string; bg500: string }> = {
-  rose: { bg100: 'bg-rose-100', bgDark: 'dark:bg-rose-900/20', text500: 'text-rose-500', bg500: 'bg-rose-500' },
-  pink: { bg100: 'bg-pink-100', bgDark: 'dark:bg-pink-900/20', text500: 'text-pink-500', bg500: 'bg-pink-500' },
-  amber: { bg100: 'bg-amber-100', bgDark: 'dark:bg-amber-900/20', text500: 'text-amber-500', bg500: 'bg-amber-500' },
-  red: { bg100: 'bg-red-100', bgDark: 'dark:bg-red-900/20', text500: 'text-red-500', bg500: 'bg-red-500' },
-  green: { bg100: 'bg-green-100', bgDark: 'dark:bg-green-900/20', text500: 'text-green-500', bg500: 'bg-green-500' },
-  primary: { bg100: 'bg-primary-100', bgDark: 'dark:bg-primary-900/20', text500: 'text-primary-500', bg500: 'bg-primary-500' },
-}
-
 export interface OptimizationSuggestion {
   id: string
   type: 'ingredient' | 'dosage' | 'taste' | 'stability' | 'cost' | 'safety'
