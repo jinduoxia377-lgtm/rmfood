@@ -40,6 +40,13 @@ interface GenerationStoreState {
   savedFormulas: Map<string, { formulaId: number; savedAt: number }>
   /** 保存成功提示（切 tab 后保留，与 generateResult 同生命周期） */
   saveSuccess: { formulaId: number; formulaName: string } | null
+  /**
+   * 降级标志（ADR-046 L5 可信呈现·原则2）：true=本次结果由规则引擎兜底、未经 GA 优化，
+   * UI 须显示降级横幅。与 generateResult 同生命周期。
+   */
+  degraded: boolean
+  /** 降级原因（后端 fallback_reason 原文），供降级横幅展示。 */
+  fallbackReason: string | null
 
   // ═══════════════ GeneticAlgorithmPanel（遗传算法） ═══════════════
   /** 遗传算法结果（候选列表 + 运行元信息，切 tab 后保留） */
@@ -72,7 +79,9 @@ interface GenerationStoreState {
   setSavedFormulas: (savedFormulas: Map<string, { formulaId: number; savedAt: number }>) => void
   setSaveSuccess: (saveSuccess: { formulaId: number; formulaName: string } | null) => void
   resetSavedFormulas: () => void
-  /** 重置生成结果/错误/生成中状态/已处理标记/已保存映射（保留版本历史） */
+  /** 设置降级标志与原因（可信呈现·原则2：降级必须可见） */
+  setDegraded: (degraded: boolean, fallbackReason?: string | null) => void
+  /** 重置生成结果/错误/生成中状态/已处理标记/已保存映射/降级标记（保留版本历史） */
   resetGeneration: () => void
 
   // ── GeneticAlgorithmPanel actions ──
@@ -103,6 +112,8 @@ export const useGenerationStore = create<GenerationStoreState>((set) => ({
   lastProcessedResultId: null,
   savedFormulas: new Map(),
   saveSuccess: null,
+  degraded: false,
+  fallbackReason: null,
 
   geneticResult: null,
   geneticLiveHistory: [],
@@ -127,6 +138,8 @@ export const useGenerationStore = create<GenerationStoreState>((set) => ({
   setSavedFormulas: (savedFormulas) => set({ savedFormulas }),
   setSaveSuccess: (saveSuccess) => set({ saveSuccess }),
   resetSavedFormulas: () => set({ savedFormulas: new Map(), saveSuccess: null }),
+  setDegraded: (degraded, fallbackReason) =>
+    set({ degraded, fallbackReason: degraded ? (fallbackReason ?? null) : null }),
   resetGeneration: () =>
     set({
       generateResult: null,
@@ -135,6 +148,8 @@ export const useGenerationStore = create<GenerationStoreState>((set) => ({
       lastProcessedResultId: null,
       savedFormulas: new Map(),
       saveSuccess: null,
+      degraded: false,
+      fallbackReason: null,
     }),
 
   setGeneticResult: (geneticResult) => set({ geneticResult }),
@@ -177,6 +192,8 @@ export function resetGenerationStoreForTest(): void {
     lastProcessedResultId: null,
     savedFormulas: new Map(),
     saveSuccess: null,
+    degraded: false,
+    fallbackReason: null,
     geneticResult: null,
     geneticLiveHistory: [],
     geneticIsRunning: false,
