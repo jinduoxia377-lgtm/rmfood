@@ -8,6 +8,7 @@ import { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
+import { logger } from '@/utils/safeLogger';
 
 // ─── CPK 配色方案（科学可视化标准） ──────────────────────────
 const CPK: Record<string, string> = {
@@ -252,7 +253,7 @@ export function MoleculeViewer3D({
             console.warn('[MoleculeViewer3D] WebGL context lost, attempting restore...');
           },
           contextRestoredEventHandler: () => {
-            console.log('[MoleculeViewer3D] WebGL context restored');
+            logger.info('[MoleculeViewer3D] WebGL context restored');
           },
           dpr: [1, 2],
         })}

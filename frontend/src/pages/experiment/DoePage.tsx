@@ -18,6 +18,7 @@ import {
   Legend,
 } from 'recharts'
 import { doeApi, type DOEFactor, type DOERun, type FittedModel } from '@/api/doe'
+import { logger } from '@/utils/safeLogger'
 import { useToast } from '@/components/ui/Toast'
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge, StatCard, Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui'
 
@@ -281,7 +282,7 @@ export default function DoePage() {
       const imp = body?.data ?? body
       const list = Array.isArray(imp?.formulas) ? imp.formulas : []
       setSeedFormulas(list)
-      if (import.meta.env.DEV) console.log('[DOE] listSeedFormulas total', imp?.total, 'recipes', list.length)
+      if (import.meta.env.DEV) logger.log('[DOE] listSeedFormulas total', imp?.total, 'recipes', list.length)
       if (list.length === 0) {
         addToast({ type: 'warning', message: t('pages.doe.toastFormulaListEmpty', { total: imp?.total ?? '?' }) })
       }
@@ -719,7 +720,7 @@ export default function DoePage() {
             <Button variant="outline" onClick={() => doeApi.listSeedFormulas().then((body: any) => {
               const imp = body?.data ?? body
               setSeedFormulas(Array.isArray(imp?.formulas) ? imp.formulas : [])
-      if (import.meta.env.DEV) console.log('[DOE] 重新加载配方', imp?.formulas?.length ?? 0)
+      if (import.meta.env.DEV) logger.debug('[DOE] 重新加载配方', imp?.formulas?.length ?? 0)
             }).catch((e: any) => {
               if (import.meta.env.DEV) console.warn('[DOE] 重新加载配方失败', e?.response?.status, e?.response?.data ?? e)
               addToast({ type: 'error', message: t('pages.doe.toastReloadFailed') })

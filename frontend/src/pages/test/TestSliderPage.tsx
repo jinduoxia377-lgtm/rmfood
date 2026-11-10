@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
+import { logger } from '@/utils/safeLogger'
 
 export const TestSliderPage: React.FC = () => {
   const [value, setValue] = useState(50)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('Test slider changed:', e.target.value)
+    logger.debug('Test slider changed:', e.target.value)
     setValue(parseInt(e.target.value, 10))
   }
 
