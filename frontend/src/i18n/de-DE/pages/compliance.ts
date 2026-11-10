@@ -62,6 +62,7 @@ export default {
     toastScore: 'Gesamtpunktzahl: {{score}}',
     toastFixed: '{{count}} Punkte korrigiert. Punktzahl: {{from}} → {{to}}',
     toastRunCheckFirst: 'Bitte zuerst eine Compliance-Prüfung ausführen',
+    toastAlreadyCompliant: 'Formel ist bereits konform — keine Korrekturen erforderlich',
     toastFormulaSaved: 'Formel „{{name}}" gespeichert',
   },
 }

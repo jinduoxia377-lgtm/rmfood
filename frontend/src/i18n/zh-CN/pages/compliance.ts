@@ -62,6 +62,7 @@ export default {
     toastScore: '综合评分：{{score}}',
     toastFixed: '已修正 {{count}} 项。评分：{{from}} → {{to}}',
     toastRunCheckFirst: '请先执行合规检查',
+    toastAlreadyCompliant: '配方已合规，无需修复',
     toastFormulaSaved: '配方「{{name}}」已保存',
   },
 }

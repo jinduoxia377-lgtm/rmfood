@@ -1,18 +1,34 @@
 """
-合规前置约束引擎 (v1.0)
+合规前置约束引擎 (v2.0 — 单一真值源)
 
 将合规规则转化为优化器的硬约束，使AI生成的配方天然合规。
 
 核心功能：
 1. 硬约束注入：将药食同源目录限量转化为优化器约束
 2. 禁忌搭配检测：在生成阶段排除禁忌组合
-3. 动态约束更新：支持运行时添加/修改约束规则
+3. 毒性药安全护栏：目录外毒性/管控药材一律主动排除（forbidden_ingredient）
+4. 动态约束更新：支持运行时添加/修改约束规则
+
+数据来源（单一真值源）：
+  本模块不再手工维护第二份限量表。所有 max_dosage / prohibited_combo 约束
+  均在导入期从权威真值源 `formula_compliance.py` 的
+  FOOD_HERB_MAX_DOSAGE（106 种）与 PROHIBITED_COMBINATIONS（28 对）派生，
+  从根本上消除两份数据漂移（审计 P0-2/3/4）。
+
+  权威表未收录的处方/毒性药材（朱砂、雄黄、麝香等）不再以"限量放行"的
+  形式混入食品配方白名单，而是单独建 FORBIDDEN_INGREDIENTS 硬约束，
+  由优化器主动排除。
 """
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+from app.services.compliance.formula_compliance import (
+    FOOD_HERB_MAX_DOSAGE,
+    PROHIBITED_COMBINATIONS,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -26,426 +42,111 @@ class PresetConstraint:
     severity: str = "hard"  # "hard" | "soft"
 
 
-# 内置约束规则（与 formula_compliance.py 保持同步）
-# 从 FOOD_HERB_MAX_DOSAGE 和 PROHIBITED_COMBINATIONS 同步
-_BUILTIN_CONSTRAINTS: List[PresetConstraint] = [
-    # 最大用量约束（与 formula_compliance.py FOOD_HERB_MAX_DOSAGE 同步）
-    PresetConstraint(
-        name="max_dosage_ginseng",
-        constraint_type="max_dosage",
-        params={"ingredient": "人参", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_astragalus",
-        constraint_type="max_dosage",
-        params={"ingredient": "黄芪", "max_mg": 9000},
-    ),
-    PresetConstraint(
-        name="max_dosage_angelica",
-        constraint_type="max_dosage",
-        params={"ingredient": "当归", "max_mg": 6000},
-    ),
-    PresetConstraint(
-        name="max_dosage_goji",
-        constraint_type="max_dosage",
-        params={"ingredient": "枸杞", "max_mg": 12000},
-    ),
-    PresetConstraint(
-        name="max_dosage_licorice",
-        constraint_type="max_dosage",
-        params={"ingredient": "甘草", "max_mg": 6000},
-    ),
-    PresetConstraint(
-        name="max_dosage_poria",
-        constraint_type="max_dosage",
-        params={"ingredient": "茯苓", "max_mg": 12000},
-    ),
-    PresetConstraint(
-        name="max_dosage_chenpi",
-        constraint_type="max_dosage",
-        params={"ingredient": "陈皮", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_mint",
-        constraint_type="max_dosage",
-        params={"ingredient": "薄荷", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_chrysanthemum",
-        constraint_type="max_dosage",
-        params={"ingredient": "菊花", "max_mg": 5000},
-    ),
-    PresetConstraint(
-        name="max_dosage_honeysuckle",
-        constraint_type="max_dosage",
-        params={"ingredient": "金银花", "max_mg": 6000},
-    ),
-    PresetConstraint(
-        name="max_dosage_dating",
-        constraint_type="max_dosage",
-        params={"ingredient": "大枣", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_schizonepeta",
-        constraint_type="max_dosage",
-        params={"ingredient": "荆芥", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_bamboo",
-        constraint_type="max_dosage",
-        params={"ingredient": "竹茹", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_trichosanthes",
-        constraint_type="max_dosage",
-        params={"ingredient": "瓜蒌", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_bletilla",
-        constraint_type="max_dosage",
-        params={"ingredient": "白及", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_aurantium",
-        constraint_type="max_dosage",
-        params={"ingredient": "枳实", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_coptis",
-        constraint_type="max_dosage",
-        params={"ingredient": "黄连", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_cnidium",
-        constraint_type="max_dosage",
-        params={"ingredient": "川芎", "max_mg": 6000},
-    ),
-    PresetConstraint(
-        name="max_dosage_caulis",
-        constraint_type="max_dosage",
-        params={"ingredient": "桂枝", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_paeonia",
-        constraint_type="max_dosage",
-        params={"ingredient": "白芍", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_rehmannia",
-        constraint_type="max_dosage",
-        params={"ingredient": "熟地黄", "max_mg": 12000},
-    ),
-    PresetConstraint(
-        name="max_dosage_bupleurum",
-        constraint_type="max_dosage",
-        params={"ingredient": "柴胡", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_codonopsis",
-        constraint_type="max_dosage",
-        params={"ingredient": "党参", "max_mg": 9000},
-    ),
-    PresetConstraint(
-        name="max_dosage_amomum",
-        constraint_type="max_dosage",
-        params={"ingredient": "砂仁", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_cassia",
-        constraint_type="max_dosage",
-        params={"ingredient": "决明子", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_elatine",
-        constraint_type="max_dosage",
-        params={"ingredient": "车前子", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_lysimachia",
-        constraint_type="max_dosage",
-        params={"ingredient": "金钱草", "max_mg": 15000},
-    ),
-    PresetConstraint(
-        name="max_dosage_scutellaria",
-        constraint_type="max_dosage",
-        params={"ingredient": "黄芩", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_coptis",
-        constraint_type="max_dosage",
-        params={"ingredient": "黄连", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_gastrodia",
-        constraint_type="max_dosage",
-        params={"ingredient": "天麻", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_gynura",
-        constraint_type="max_dosage",
-        params={"ingredient": "三七", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_notoginseng",
-        constraint_type="max_dosage",
-        params={"ingredient": "三七", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_safflower",
-        constraint_type="max_dosage",
-        params={"ingredient": "红花", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_corydalis",
-        constraint_type="max_dosage",
-        params={"ingredient": "延胡索", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_donggui",
-        constraint_type="max_dosage",
-        params={"ingredient": "当归", "max_mg": 6000},
-    ),
-    PresetConstraint(
-        name="max_dosage_sophora",
-        constraint_type="max_dosage",
-        params={"ingredient": "槐花", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_polygala",
-        constraint_type="max_dosage",
-        params={"ingredient": "远志", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_zizyphus",
-        constraint_type="max_dosage",
-        params={"ingredient": "酸枣仁", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_longan",
-        constraint_type="max_dosage",
-        params={"ingredient": "龙眼肉", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_lotus",
-        constraint_type="max_dosage",
-        params={"ingredient": "莲子", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_coix",
-        constraint_type="max_dosage",
-        params={"ingredient": "薏苡仁", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_poria_cocos",
-        constraint_type="max_dosage",
-        params={"ingredient": "猪苓", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_alisma",
-        constraint_type="max_dosage",
-        params={"ingredient": "泽泻", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_smilax",
-        constraint_type="max_dosage",
-        params={"ingredient": "土茯苓", "max_mg": 15000},
-    ),
-    PresetConstraint(
-        name="max_dosage_clerodendrum",
-        constraint_type="max_dosage",
-        params={"ingredient": "鬼箭羽", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_cistanche",
-        constraint_type="max_dosage",
-        params={"ingredient": "肉苁蓉", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_epimedium",
-        constraint_type="max_dosage",
-        params={"ingredient": "淫羊藿", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_cudrania",
-        constraint_type="max_dosage",
-        params={"ingredient": "柘木", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_ginkgo",
-        constraint_type="max_dosage",
-        params={"ingredient": "银杏", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_hawthorn",
-        constraint_type="max_dosage",
-        params={"ingredient": "山楂", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_medlar",
-        constraint_type="max_dosage",
-        params={"ingredient": "木瓜", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_cornus",
-        constraint_type="max_dosage",
-        params={"ingredient": "山茱萸", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_dogwood",
-        constraint_type="max_dosage",
-        params={"ingredient": "吴茱萸", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_zanthoxylum",
-        constraint_type="max_dosage",
-        params={"ingredient": "花椒", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_amomum_villar",
-        constraint_type="max_dosage",
-        params={"ingredient": "白豆蔻", "max_mg": 6000},
-    ),
-    PresetConstraint(
-        name="max_dosage_illicium",
-        constraint_type="max_dosage",
-        params={"ingredient": "八角", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_cinnamon",
-        constraint_type="max_dosage",
-        params={"ingredient": "肉桂", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_fennel",
-        constraint_type="max_dosage",
-        params={"ingredient": "小茴香", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_anise",
-        constraint_type="max_dosage",
-        params={"ingredient": "八角", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_clove",
-        constraint_type="max_dosage",
-        params={"ingredient": "丁香", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_saffron",
-        constraint_type="max_dosage",
-        params={"ingredient": "藏红花", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_crocus",
-        constraint_type="max_dosage",
-        params={"ingredient": "西红花", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_carthamus",
-        constraint_type="max_dosage",
-        params={"ingredient": "红花", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_borneol",
-        constraint_type="max_dosage",
-        params={"ingredient": "冰片", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_musk",
-        constraint_type="max_dosage",
-        params={"ingredient": "麝香", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_cinnabar",
-        constraint_type="max_dosage",
-        params={"ingredient": "朱砂", "max_mg": 1500},
-    ),
-    PresetConstraint(
-        name="max_dosage_realgar",
-        constraint_type="max_dosage",
-        params={"ingredient": "雄黄", "max_mg": 1500},
-    ),
-    PresetConstraint(
-        name="max_dosage_gypsum",
-        constraint_type="max_dosage",
-        params={"ingredient": "石膏", "max_mg": 15000},
-    ),
-    PresetConstraint(
-        name="max_dosage_magnesia",
-        constraint_type="max_dosage",
-        params={"ingredient": " Magnesia", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_cinnabar",
-        constraint_type="max_dosage",
-        params={"ingredient": "赭石", "max_mg": 15000},
-    ),
-    PresetConstraint(
-        name="max_dosage_shells",
-        constraint_type="max_dosage",
-        params={"ingredient": "牡蛎", "max_mg": 15000},
-    ),
-    PresetConstraint(
-        name="max_dosage_oyster",
-        constraint_type="max_dosage",
-        params={"ingredient": "牡蛎", "max_mg": 15000},
-    ),
-    PresetConstraint(
-        name="max_dosage_shell",
-        constraint_type="max_dosage",
-        params={"ingredient": "瓦楞子", "max_mg": 15000},
-    ),
-    PresetConstraint(
-        name="max_dosage_eggshell",
-        constraint_type="max_dosage",
-        params={"ingredient": "鸡蛋壳", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_bone",
-        constraint_type="max_dosage",
-        params={"ingredient": "骨碎补", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_antler",
-        constraint_type="max_dosage",
-        params={"ingredient": "鹿茸", "max_mg": 3000},
-    ),
-    PresetConstraint(
-        name="max_dosage_cordyceps",
-        constraint_type="max_dosage",
-        params={"ingredient": "冬虫夏草", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_cordyceps_militaris",
-        constraint_type="max_dosage",
-        params={"ingredient": "虫草", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_ganoderma",
-        constraint_type="max_dosage",
-        params={"ingredient": "灵芝", "max_mg": 15000},
-    ),
-    PresetConstraint(
-        name="max_dosage_tremella",
-        constraint_type="max_dosage",
-        params={"ingredient": "银耳", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_dendrobium",
-        constraint_type="max_dosage",
-        params={"ingredient": "石斛", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_oviduct",
-        constraint_type="max_dosage",
-        params={"ingredient": "鸡内金", "max_mg": 10000},
-    ),
-    PresetConstraint(
-        name="max_dosage_gizzard",
-        constraint_type="max_dosage",
-        params={"ingredient": "鸡肫", "max_mg": 10000},
-    ),
-]
+# ══════════════════════════════════════════════════════════════════════
+# 毒性/管控药材安全护栏（FORBIDDEN_INGREDIENTS）
+# ══════════════════════════════════════════════════════════════════════
+# 这些药材均 **不在** FOOD_HERB_MAX_DOSAGE（药食同源 106 种目录）之内，
+# 即国家目录本就不允许其作为普通食品原料。旧版将其列为 max_dosage
+# "限量放行" 约束，等于给食品级优化器注入一份"非法药材可用清单"
+# （审计 P0-3）。正确做法是硬约束 forbidden_ingredient：主动排除，
+# 而非设一个看似安全的上限。
+#
+# 每条附判断依据。severity 统一为 hard（优化器不可放行）。
+FORBIDDEN_INGREDIENTS: Tuple[Dict[str, str], ...] = (
+    {"ingredient": "朱砂", "reason": "含汞矿物药（HgS），毒性蓄积，严禁作为食品原料；曾误置 max_dosage 1500mg 放行"},
+    {"ingredient": "雄黄", "reason": "含砷矿物药（As2S2），砷毒性，严禁食品化；曾误置 max_dosage 1500mg 放行"},
+    {"ingredient": "赭石", "reason": "矿物药（赤铁矿），非食品级，且旧版与朱砂共用重复名 max_dosage_cinnabar"},
+    {"ingredient": "石膏", "reason": "矿物药，非药食同源目录品种，不作普通食品原料"},
+    {"ingredient": "麝香", "reason": "野生动物制品（国家一级保护），法规严禁用于食品；曾误置 max_dosage 3000mg 放行"},
+    {"ingredient": "鹿茸", "reason": "动物源药材，非药食同源食品目录品种，不作普通食品原料"},
+    {"ingredient": " Magnesia", "reason": "带前导空格的英文残留脏键，非任何药材正名，纯数据污染（P0-3）"},
+    {"ingredient": "黄连", "reason": "处方药级苦寒药材，非106目录品种，旧版 max_dosage_coptis 重复2次"},
+    {"ingredient": "黄芩", "reason": "处方药级药材，非106目录品种（目录仅有黄芩叶/花之外的黄芪、黄精等）"},
+    {"ingredient": "柴胡", "reason": "处方药级药材，非106目录品种，旧版误置 max_dosage 10000mg 放行"},
+    {"ingredient": "三七", "reason": "处方/保健品原料，非药食同源食品目录品种，旧版重复2次（gynura/notoginseng）"},
+    {"ingredient": "瓦楞子", "reason": "矿物/贝壳类药材，非106目录品种"},
+    {"ingredient": "鸡蛋壳", "reason": "非药材正名脏键，非106目录品种"},
+    {"ingredient": "骨碎补", "reason": "处方药级药材，非106目录品种"},
+    {"ingredient": "冬虫夏草", "reason": "非药食同源食品目录品种（属保健原料管控）"},
+    {"ingredient": "虫草", "reason": "冬虫夏草别名脏键，非目录正名"},
+    {"ingredient": "银耳", "reason": "普通食材，非106种药材目录品种，不纳入药材限量约束（非毒性，仅去噪）"},
+    {"ingredient": "鸡肫", "reason": "普通食材脏键，非106目录品种（目录收录的是鸡内金）"},
+    {"ingredient": "猪苓", "reason": "处方药级利水药材，非106目录品种（目录为茯苓）"},
+    {"ingredient": "泽泻", "reason": "处方药级药材，非106目录品种"},
+    {"ingredient": "土茯苓", "reason": "处方药级药材，非106目录品种（目录为茯苓）"},
+    {"ingredient": "鬼箭羽", "reason": "处方药级药材，非106目录品种"},
+    {"ingredient": "淫羊藿", "reason": "处方/保健原料，非药食同源食品目录品种"},
+    {"ingredient": "柘木", "reason": "非目录正名脏键，非106品种"},
+    {"ingredient": "吴茱萸", "reason": "处方药级药材（小毒），非106目录品种（目录为山茱萸）"},
+    {"ingredient": "远志", "reason": "处方药级药材，非106目录品种"},
+    {"ingredient": "延胡索", "reason": "处方药级药材（需炮制），非106目录品种"},
+    {"ingredient": "车前子", "reason": "处方药级药材，非106目录品种"},
+    {"ingredient": "金钱草", "reason": "处方药级药材，非106目录品种"},
+    {"ingredient": "熟地黄", "reason": "处方炮制品，非106目录品种（目录为地黄）"},
+    {"ingredient": "白芍", "reason": "处方药级药材，非106目录品种"},
+    {"ingredient": "桂枝", "reason": "处方药级药材，非106目录品种（目录为肉桂）"},
+    {"ingredient": "川芎", "reason": "处方药级药材，非106目录品种"},
+    {"ingredient": "枳实", "reason": "处方药级药材，非106目录品种（目录为枳椇子/化橘红）"},
+    {"ingredient": "白及", "reason": "处方药级药材（十八反主角之一），非106目录品种"},
+    {"ingredient": "瓜蒌", "reason": "处方药级药材（十八反主角之一），非106目录品种"},
+    {"ingredient": "竹茹", "reason": "处方药级药材，非106目录品种"},
+    {"ingredient": "荆芥", "reason": "处方药级药材，非106目录品种"},
+    {"ingredient": "冰片", "reason": "处方药级开窍药，非106目录品种"},
+)
+
+
+# ══════════════════════════════════════════════════════════════════════
+# 从权威真值源派生内置约束（导入期执行，杜绝手工第二份数据）
+# ══════════════════════════════════════════════════════════════════════
+
+def _derive_builtin_constraints() -> List[PresetConstraint]:
+    """从 formula_compliance 权威表派生 max_dosage / prohibited_combo 约束。
+
+    - max_dosage：逐项遍历 FOOD_HERB_MAX_DOSAGE，键名/限量与权威表完全一致。
+      约束名用 ``max_dosage_{序号}_{药材名}`` 保证全局唯一，避免旧版
+      ASCII 别名冲突（max_dosage_coptis 重复、八角/当归各2次等）。
+    - prohibited_combo：逐对遍历 PROHIBITED_COMBINATIONS 派生。
+    """
+    constraints: List[PresetConstraint] = []
+
+    for idx, (ingredient, max_mg) in enumerate(FOOD_HERB_MAX_DOSAGE.items(), start=1):
+        constraints.append(
+            PresetConstraint(
+                name=f"max_dosage_{idx:03d}_{ingredient}",
+                constraint_type="max_dosage",
+                params={"ingredient": ingredient, "max_mg": float(max_mg)},
+                severity="hard",
+            )
+        )
+
+    for idx, pair in enumerate(PROHIBITED_COMBINATIONS, start=1):
+        constraints.append(
+            PresetConstraint(
+                name=f"prohibited_combo_{idx:02d}",
+                constraint_type="prohibited_combo",
+                params={"ingredients": list(pair)},
+                severity="hard",
+            )
+        )
+
+    # 毒性/管控药材护栏：主动排除，而非限量放行
+    for item in FORBIDDEN_INGREDIENTS:
+        constraints.append(
+            PresetConstraint(
+                name=f"forbidden_ingredient_{item['ingredient'].strip()}",
+                constraint_type="forbidden_ingredient",
+                params={"ingredient": item["ingredient"]},
+                severity="hard",
+            )
+        )
+
+    return constraints
+
+
+_BUILTIN_CONSTRAINTS: List[PresetConstraint] = _derive_builtin_constraints()
+
+# 目录外毒性/管控药材集合（供快速校验）
+_FORBIDDEN_INGREDIENT_SET: Set[str] = {item["ingredient"] for item in FORBIDDEN_INGREDIENTS}
 
 
 class PresetConstraintEngine:
@@ -457,7 +158,7 @@ class PresetConstraintEngine:
         constrained_params = engine.apply_constraints({
             "ingredients": [{"name": "人参", "dosage_mg": 5000}],
         })
-        # 返回: {"ingredients": [{"name": "人参", "dosage_mg": 3000}], "_constraint_violations": [...]}
+        # 返回: {"ingredients": [{"name": "人参", "dosage_mg": 5000}], "_constraint_violations": [...]}
     """
 
     def __init__(self, constraints: Optional[List[PresetConstraint]] = None):
@@ -511,6 +212,13 @@ class PresetConstraintEngine:
                     if constraint.severity == "hard":
                         result = self._apply_prohibited_combo_fix(constraint, result)
 
+            elif constraint.constraint_type == "forbidden_ingredient":
+                violation = self._check_forbidden_ingredient(constraint, result)
+                if violation:
+                    violations.append(violation)
+                    if constraint.severity == "hard":
+                        result = self._apply_forbidden_ingredient_fix(constraint, result)
+
         result["_constraint_violations"] = violations
         return result
 
@@ -534,6 +242,10 @@ class PresetConstraintEngine:
                     violations.append(v)
             elif constraint.constraint_type == "prohibited_combo":
                 v = self._check_prohibited_combo(constraint, params)
+                if v:
+                    violations.append(v)
+            elif constraint.constraint_type == "forbidden_ingredient":
+                v = self._check_forbidden_ingredient(constraint, params)
                 if v:
                     violations.append(v)
 
@@ -602,6 +314,21 @@ class PresetConstraintEngine:
             }
         return None
 
+    def _check_forbidden_ingredient(
+        self, constraint: PresetConstraint, params: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
+        """检查毒性/管控药材禁用约束"""
+        ingredient = constraint.params["ingredient"]
+        for ing in params.get("ingredients", []):
+            if ing.get("name") == ingredient:
+                return {
+                    "constraint": constraint.name,
+                    "type": "forbidden_ingredient",
+                    "ingredient": ingredient,
+                    "severity": constraint.severity,
+                }
+        return None
+
     def _apply_max_dosage_fix(
         self, constraint: PresetConstraint, params: Dict[str, Any]
     ) -> Dict[str, Any]:
@@ -637,6 +364,28 @@ class PresetConstraintEngine:
         """
         # 禁忌搭配不做自动移除，仅记录警告
         return params
+
+    def _apply_forbidden_ingredient_fix(
+        self, constraint: PresetConstraint, params: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """应用毒性/管控药材排除修正：从配方中剔除该成分"""
+        ingredient = constraint.params["ingredient"]
+        result = dict(params)
+
+        if "ingredients" in result:
+            fixed_ings = [
+                ing for ing in result["ingredients"]
+                if ing.get("name") != ingredient
+            ]
+            removed = len(result["ingredients"]) - len(fixed_ings)
+            if removed:
+                logger.warning(
+                    "[PresetConstraint] 安全护栏排除毒性/管控药材: %s（移除 %d 处）",
+                    ingredient, removed,
+                )
+            result["ingredients"] = fixed_ings
+
+        return result
 
 
 # ── 全局单例 ───────────────────────────────────────────────────────────
