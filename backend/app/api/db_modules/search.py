@@ -103,8 +103,8 @@ async def get_herb_interactions(
 async def get_graph_stats(
     current_user: User = Depends(get_current_user),
 ):
-    """获取知识图谱整体统计"""
-    return await graph_service.get_graph_stats()
+    """获取知识图谱整体统计（混合口径：herb/compound/target/disease 走B表，与图谱分析对齐）"""
+    return await graph_service.get_graph_stats(db)
 
 
 @router.get("/knowledge-graph/path", summary="节点间路径发现")
@@ -301,6 +301,8 @@ async def sync_tcmsp_herbs(
     current_user: User = Depends(get_current_user),
 ):
     """从知识库同步 TCMSP 中药材数据到本地数据库"""
+    if current_user is None:  # P1-8: 匿名访问 → 401（原为 None.role → 500）
+        raise HTTPException(401, detail="认证失败，请先登录")
     if current_user.role not in ("admin", "formulator", "reviewer"):
         raise HTTPException(403, detail="权限不足，需要管理员或配方师权限")
     return await tcmsp_service.sync_herbs(db)
@@ -312,6 +314,8 @@ async def sync_dfbp_peptides(
     current_user: User = Depends(get_current_user),
 ):
     """从知识库同步 DFBP 活性肽数据到本地数据库"""
+    if current_user is None:  # P1-8: 匿名访问 → 401（原为 None.role → 500）
+        raise HTTPException(401, detail="认证失败，请先登录")
     if current_user.role not in ("admin", "formulator", "reviewer"):
         raise HTTPException(403, detail="权限不足，需要管理员或配方师权限")
     return await dfbp_service.sync_peptides(db)
