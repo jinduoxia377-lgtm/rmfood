@@ -1442,10 +1442,33 @@ class KnowledgeGraphService:
 
         return {"nodes": nodes, "edges": edges, "herb_count": len(herb_names), "interaction_count": len(edges)}
 
-    async def get_graph_stats(self) -> dict[str, Any]:
-        """获取知识图谱整体统计（7种节点类型全覆盖）"""
+    async def get_graph_stats(self, db: Any = None) -> dict[str, Any]:
+        """获取知识图谱整体统计（混合口径，消除"统计小图 vs 分析全谱"矛盾）。
+
+        口径裁决（方案B，与方向A图谱割裂分析对齐）：
+        - herb/compound/target/disease → B表 knowledge_graph_nodes 实计数（与分析/centrality 14741 同源，更准）
+        - peptide/protein/food → 保留源C数据类目计数（B表未物化这些，peptide 只回填9节点，
+          直接切B表会 7540→9 / protein·food→0，比289矛盾更困惑）
+        - 每字段标注口径来源 source: "btable"（B表实计）/ "catalog"（源C数据类目）
+        db: 可选 AsyncSession，传入则 herb/compound/target/disease 走 B表；否则回落源C。
+        """
         from .dfbp_client import DFBP_PEPTIDE_DATABASE
         from .tcmsp_client import TCMSP_HERB_DATABASE
+
+        # ── B表实计数（herb/compound/target/disease，与分析口径对齐）──
+        btable_counts: dict[str, int] | None = None
+        if db is not None:
+            try:
+                from sqlalchemy import text as _text
+                res = await db.execute(_text(
+                    "SELECT node_type, count(*) FROM knowledge_graph_nodes "
+                    "WHERE node_type IN ('herb','compound','target','disease') "
+                    "GROUP BY node_type"
+                ))
+                btable_counts = {row[0]: int(row[1]) for row in res.all()}
+            except Exception as e:  # B表不可用则回落源C，不崩
+                logger.warning(f"[get_graph_stats] B表计数失败，回落源C: {e}")
+                btable_counts = None
 
         all_targets: set[str] = set()
         all_diseases: set[str] = set()
@@ -1472,27 +1495,36 @@ class KnowledgeGraphService:
         synergy_count = sum(1 for i in HERB_INTERACTIONS if i["type"] == "synergy")
         antagonism_count = sum(1 for i in HERB_INTERACTIONS if i["type"] == "antagonism")
 
-        # 活性肽统计
+        # 活性肽统计（源C数据类目，B表未物化）
         total_peptides = len(DFBP_PEPTIDE_DATABASE)
         peptide_types: set[str] = set()
         for pep in DFBP_PEPTIDE_DATABASE:
             if pep.get("activity_type"):
                 peptide_types.add(pep["activity_type"])
 
-        # 蛋白质统计（来自活性肽的 source_protein）
+        # 蛋白质统计（来自活性肽的 source_protein，源C数据类目）
         proteins: set[str] = set()
         for pep in DFBP_PEPTIDE_DATABASE:
             sp = pep.get("source_protein", "")
             if sp:
                 proteins.add(sp)
 
-        # 食物统计（药食同源药材中 is_food_homology 的）
+        # 食物统计（药食同源药材中 is_food_homology 的，源C数据类目）
         food_items: set[str] = set()
         for herb in TCMSP_HERB_DATABASE:
             if herb.get("is_food_homology"):
                 food_items.add(herb["name_cn"])
 
-        total_herbs = len(TCMSP_HERB_DATABASE)
+        # ── 混合口径组装（B表优先，回落源C）──
+        def _pick(node_type: str, catalog_value: int) -> tuple[int, str]:
+            if btable_counts is not None and node_type in btable_counts:
+                return btable_counts[node_type], "btable"
+            return catalog_value, "catalog"
+
+        total_herbs, src_herb = _pick("herb", len(TCMSP_HERB_DATABASE))
+        total_compounds, src_comp = _pick("compound", len(all_compounds))
+        total_targets, src_tgt = _pick("target", len(all_targets))
+        total_diseases, src_dis = _pick("disease", len(all_diseases))
 
         # ── 图渲染口径 ─────────────────────────────────────────────
         # 与 /relations?node_label=__full__ 返回的是同一份数据，所以这里直接
@@ -1509,9 +1541,9 @@ class KnowledgeGraphService:
 
         return {
             "total_herbs": total_herbs,
-            "total_compounds": len(all_compounds),
-            "total_targets": len(all_targets),
-            "total_diseases": len(all_diseases),
+            "total_compounds": total_compounds,
+            "total_targets": total_targets,
+            "total_diseases": total_diseases,
             "total_peptides": total_peptides,
             "total_proteins": len(proteins),
             "total_foods": len(food_items),
@@ -1526,19 +1558,26 @@ class KnowledgeGraphService:
             # 便捷汇总（供前端统计卡片直接使用）
             "node_type_breakdown": {
                 "herb": total_herbs,
-                "compound": len(all_compounds),
-                "target": len(all_targets),
-                "disease": len(all_diseases),
+                "compound": total_compounds,
+                "target": total_targets,
+                "disease": total_diseases,
                 "peptide": total_peptides,
                 "protein": len(proteins),
                 "food": len(food_items),
             },
-            "total_nodes": (total_herbs + len(all_compounds) + len(all_targets)
-                           + len(all_diseases) + total_peptides + len(proteins) + len(food_items)),
+            "total_nodes": (total_herbs + total_compounds + total_targets
+                           + total_diseases + total_peptides + len(proteins) + len(food_items)),
             # 图谱渲染口径：前端统计卡片"总节点数"应使用此值，与 /relations 实际返回一致
             "graph_node_count": graph_node_count,
             "graph_edge_count": graph_edge_count,
             "node_count_scope": "total_nodes=全部数据项计数(含肽/蛋白质/食物)；graph_node_count=图谱实际渲染节点数",
+            # 口径来源标注（方案B混合口径，消除"统计小图 vs 分析全谱"矛盾）
+            "count_source": {
+                "herb": src_herb, "compound": src_comp, "target": src_tgt, "disease": src_dis,
+                "peptide": "catalog", "protein": "catalog", "food": "catalog",
+                "_note": ("herb/compound/target/disease=B表实计(与分析/centrality同源)；"
+                          "peptide/protein/food=源C数据类目(B表未物化)"),
+            },
         }
 
 
