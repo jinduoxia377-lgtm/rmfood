@@ -134,6 +134,22 @@ export const databaseApi = {
   getCentrality: (mode: 'pageRank' | 'betweenness' | 'closeness' = 'pageRank', limit = 20) =>
     api.get('/databases/knowledge-graph/analytics/centrality', { params: { mode, limit } }).then((r) => r.data),
 
+  /** 介数中心性(异步) — 提交任务返回 task_id（B表全谱 ~161s，同步会超时） */
+  submitBetweennessAsync: (limit = 20) =>
+    api.post<{ success: boolean; cached: boolean; task_id: string | null; status: string; result?: any }>('/databases/knowledge-graph/analytics/betweenness/async', null, { params: { limit } }).then((r) => r.data),
+
+  /** 轮询异步任务状态/结果（复用 /core/tasks） */
+  getTaskResult: (taskId: string) =>
+    api.get<{ success: boolean; data: { task_id: string; status: string; result?: any; error?: string; processing_time_ms?: number } }>(`/core/tasks/${taskId}`).then((r) => r.data),
+
+  /** Louvain社区检测(异步) — 提交任务返回 task_id */
+  submitCommunitiesAsync: (limitPerCommunity = 10) =>
+    api.post<{ success: boolean; cached: boolean; task_id: string | null; status: string; result?: any }>('/databases/knowledge-graph/analytics/communities/async', null, { params: { limit_per_community: limitPerCommunity } }).then((r) => r.data),
+
+  /** K-Core分解(异步) — 提交任务返回 task_id */
+  submitKCoreAsync: () =>
+    api.post<{ success: boolean; cached: boolean; task_id: string | null; status: string; result?: any }>('/databases/knowledge-graph/analytics/kcore/async').then((r) => r.data),
+
   /** Louvain社区检测 */
   getCommunities: () =>
     api.get('/databases/knowledge-graph/analytics/communities').then((r) => r.data),
