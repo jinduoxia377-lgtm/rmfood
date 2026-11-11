@@ -28,6 +28,9 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ...models.external_data import (
+    KnowledgeGraphNode,  # B表(knowledge_graph_nodes, tcm_knowledge_base)
+)
 from ...models.knowledge_graph import KGEdge, KGNode
 
 # A-27：下面 3 个方法引用的 KnowledgeGraphService 定义在这里；原先根本没导入，
@@ -43,6 +46,13 @@ class KnowledgeGraphEngine:
     提供图谱构建、图论算法分析、智能推荐等核心能力。
     所有算法基于纯Python实现，不依赖networkx等外部库。
     """
+
+    # ── B表(knowledge_graph_nodes/edges, tcm_knowledge_base)全图进程内 TTL 缓存 ──
+    # 240143 边每次现算太重(~2s 加载)，缓存后命中亚毫秒。key 固定 "btable"，
+    # node_types/edge_types/limit 在缓存后过滤(不进 key，避免组合爆炸)。
+    # 类比 graph_service.get_full_graph 的按 depth LRU。
+    _btable_cache: Optional[Dict[str, Any]] = None  # {"nodes":..., "edges":..., "ts":...}
+    _BTABLE_CACHE_TTL = 600.0  # 秒
 
     # ═══════════════════════════════════════════
     # 图谱构建
@@ -571,6 +581,104 @@ class KnowledgeGraphEngine:
 
         return nodes, edges
 
+    async def load_graph_from_btable(
+        self,
+        db: AsyncSession,
+        node_types: Optional[List[str]] = None,
+        edge_types: Optional[List[str]] = None,
+        limit: Optional[int] = None,
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """从 B 表（knowledge_graph_nodes/edges，tcm_knowledge_base）加载全谱为算法格式。
+
+        数据源切换（图谱割裂修复②a）：分析端点原走 source="memory"（源C 内存小图，
+        ~289 药材），触达不到 B 表 14728 全谱。本方法切到 B 表，让 PageRank/closeness/
+        kcore/recommend 覆盖质变（含步骤①回填的肽/配伍维度）。
+
+        列映射（B表 schema 与 KGNode/KGEdge 不同）：
+            knowledge_graph_nodes.name        → node_label
+            knowledge_graph_edges.source_node_id/target_node_id → source/target
+            knowledge_graph_edges.relation_type → type
+            strength：B表 edges 无 strength 列，从 properties.strength 取（配伍边），
+                      缺省 1.0（targets/contains_compound/related_to 等无强度边）。
+
+        edges 无 ORM 模型（已确认），用 raw SQL（text()）查询；nodes 用 ORM。
+
+        进程内 TTL 缓存：全图（14728节点/240143边）加载 ~2s，缓存后命中亚毫秒。
+        node_types/edge_types/limit 在缓存后过滤，不进 cache key。
+
+        返回形状与 load_graph_from_memory()/load_graph_from_db() 完全一致。
+        """
+        import time as _time
+
+        now = _time.monotonic()
+        cache = self._btable_cache
+        if (
+            cache is None
+            or (now - cache.get("ts", 0)) > self._BTABLE_CACHE_TTL
+        ):
+            # 全图加载（缓存未命中/过期）
+            result = await db.execute(
+                select(KnowledgeGraphNode.id, KnowledgeGraphNode.node_type, KnowledgeGraphNode.name)
+            )
+            all_nodes = [
+                {"id": row[0], "node_type": row[1], "node_label": row[2]}
+                for row in result.all()
+            ]
+            edge_result = await db.execute(text(
+                "SELECT source_node_id, target_node_id, relation_type, properties "
+                "FROM knowledge_graph_edges"
+            ))
+            all_edges: List[Dict[str, Any]] = []
+            for row in edge_result.all():
+                src, tgt, rtype, props = row[0], row[1], row[2], row[3]
+                # strength 从 properties.strength 取（配伍边），缺省 1.0
+                strength = 1.0
+                if props:
+                    try:
+                        p = props if isinstance(props, dict) else json.loads(props)
+                        if isinstance(p, dict) and p.get("strength") is not None:
+                            strength = float(p["strength"])
+                    except (ValueError, TypeError):
+                        pass
+                all_edges.append({
+                    "source": src, "target": tgt, "type": rtype, "strength": strength,
+                })
+            cache = {"nodes": all_nodes, "edges": all_edges, "ts": now}
+            self._btable_cache = cache
+            logger.info(
+                "B表全图加载并缓存: %d 节点 / %d 边", len(all_nodes), len(all_edges)
+            )
+
+        all_nodes = cache["nodes"]
+        all_edges = cache["edges"]
+
+        # 缓存后过滤（不进 cache key）
+        if node_types:
+            ntset = set(node_types)
+            keep_ids = {n["id"] for n in all_nodes if n["node_type"] in ntset}
+        else:
+            keep_ids = {n["id"] for n in all_nodes}
+        nodes = [n for n in all_nodes if n["id"] in keep_ids]
+
+        if edge_types:
+            etset = set(edge_types)
+            edges = [
+                e for e in all_edges
+                if e["source"] in keep_ids and e["target"] in keep_ids and e["type"] in etset
+            ]
+        else:
+            edges = [
+                e for e in all_edges
+                if e["source"] in keep_ids and e["target"] in keep_ids
+            ]
+
+        if limit and len(nodes) > limit:
+            lim_ids = {n["id"] for n in nodes[:limit]}
+            nodes = [n for n in nodes if n["id"] in lim_ids]
+            edges = [e for e in edges if e["source"] in lim_ids and e["target"] in lim_ids]
+
+        return nodes, edges
+
     async def load_graph(
         self,
         db: AsyncSession,
@@ -585,8 +693,13 @@ class KnowledgeGraphEngine:
         source:
           - "memory": 内存知识图谱（默认）。与前端展示的数据同源，保证分析口径一致。
           - "db":     数据库图谱（/build 构建的持久化结果）。
+          - "btable": B表全谱（knowledge_graph_nodes/edges, tcm_knowledge_base, 14728节点）。
+                      图谱割裂修复②a：同步扛得住的算法(PageRank/closeness/kcore/recommend)
+                      切此源，覆盖质变。betweenness/社区(6-12min)不切，留②b异步。
           - "auto":   优先 DB，DB 为空时回退内存。
         """
+        if source == "btable":
+            return await self.load_graph_from_btable(db, node_types, edge_types, limit)
         if source == "memory":
             return await self.load_graph_from_memory(node_types, edge_types, limit, depth)
         if source == "db":
