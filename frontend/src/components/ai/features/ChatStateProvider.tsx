@@ -164,6 +164,7 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
       .then(async sessions => {
         const mapped: HistorySession[] = sessions.map(s => ({
           id: s.id, title: s.title, messageCount: s.messageCount, lastMessage: '', timestamp: s.updatedAt,
+          tags: [], pinned: false,
         }))
         setHistorySessions(mapped)
         if (mapped.length > 0) {
@@ -177,6 +178,7 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
             const refreshed = await sessionCapability.listSessions()
             const remapped: HistorySession[] = refreshed.map(s => ({
               id: s.id, title: s.title, messageCount: s.messageCount, lastMessage: '', timestamp: s.updatedAt,
+              tags: [], pinned: false,
             }))
             setHistorySessions(remapped)
             if (remapped.length > 0) {
@@ -194,6 +196,7 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
           setActiveSessionIdState(newId)
           setHistorySessions(prev => [{
             id: newId, title: '新对话', messageCount: 0, lastMessage: '', timestamp: Date.now(),
+            tags: [], pinned: false,
           }, ...prev])
           logger.info('[ChatStateProvider] 无历史会话，已自动创建新会话:', newId)
         } catch (createErr) {
@@ -235,6 +238,7 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
       const refreshed = await sessionCapability.listSessions()
       setHistorySessions(refreshed.map(s => ({
         id: s.id, title: s.title, messageCount: s.messageCount, lastMessage: '', timestamp: s.updatedAt,
+        tags: [], pinned: false,
       })))
       logger.info(`[ChatStateProvider] 已分支至新会话: ${childId}`)
     } catch (e) {
