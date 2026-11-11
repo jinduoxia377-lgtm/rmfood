@@ -787,7 +787,7 @@ class SafetyKnowledgeService:
 
     def get_herb_safety_profile(self, herb_name: str) -> Optional[HerbSafetyProfile]:
         """获取药材的安全档案"""
-        from ..data_sources.herb_dosage_database import (
+        from ...data_sources.herb_dosage_database import (
             get_dosage_by_name,
         )
 
