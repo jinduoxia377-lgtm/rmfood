@@ -214,6 +214,7 @@ async def generate_formula_v2(
         elapsed_ms = (time.perf_counter() - start_time) * 1000
 
         # 格式化返回
+        from ...services.ai.formula_generation_service import _parse_dosage_g
         candidates = []
         for i, item in enumerate(result.get("data", [])):
             candidates.append({
@@ -221,7 +222,8 @@ async def generate_formula_v2(
                 "role": item.get("role", ""),
                 "name": item.get("name", ""),
                 "dosage": item.get("dosage", ""),
-                "dosage_g": float(item.get("dosage") or 0),  # 前端 FormulaComparePanel 标准字段
+                # 剂量带单位（"22g"/"5-10g/天"/"500mg"）安全解析为克数，不崩
+                "dosage_g": _parse_dosage_g(item.get("dosage")),  # 前端 FormulaComparePanel 标准字段
                 "purpose": item.get("purpose", ""),
                 "score": item.get("score", 0),
             })
