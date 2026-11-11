@@ -17,6 +17,8 @@ from pydantic import BaseModel, Field
 from app.services.label_check.label_check_service import (
     check_ingredient_names,
     check_label_text,
+    get_label_check_templates,
+    get_directory_stats,
 )
 
 logger = logging.getLogger(__name__)
@@ -93,3 +95,19 @@ async def check_label_ingredients_api(req: LabelCheckListRequest, current_user: 
 @router.get("/health", summary="配料表核查服务健康检查")
 async def health_check():
     return {"status": "healthy", "service": "label-check"}
+
+
+@router.get("/templates", summary="示例配料表模板（v2）")
+async def get_templates():
+    """返回内置示例配料表模板数组，供前端一键填入。"""
+    return get_label_check_templates()
+
+
+@router.get("/directory-stats", summary="内置目录规模统计（v2）")
+async def get_directory_stats_api():
+    """返回内置比对目录各条目数量。"""
+    try:
+        return get_directory_stats()
+    except Exception as e:
+        logger.error(f"[LabelCheck] 目录统计失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="目录统计获取失败，请稍后重试")
