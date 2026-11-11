@@ -40,7 +40,6 @@ interface UseChatMessagesReturn {
   /** 暂停流式输出 */
   isPaused: boolean
   pauseStreaming: () => void
-  resumeStreaming: () => void
   editMessage: (id: string, newContent: string) => void
   retractMessage: (id: string) => void
   /** 设置当前会话 ID（用于持久化到 IndexedDB） */
@@ -111,6 +110,9 @@ export function useChatMessages(): UseChatMessagesReturn {
   const [isStreaming, setIsStreaming] = useState(false)
   // ── 实时进度条状态 ──
   const [streamProgress, setStreamProgressState] = useState<number>(0)
+  // P0-6 修复：记录后端已上报的真实进度峰值。时间兜底定时器只能在真实进度以下做平滑填充，
+  // 不得用 Math.max 把假进度顶到真进度之上（旧逻辑会让「后端 5%」被「时间 60%」压制，进度条造假）。
+  const realProgressRef = useRef(0)
   const [streamStageKey, setStreamStageKey] = useState('')
   const [streamChars, setStreamChars] = useState(0)
   const [streamStatus, setStreamStatus] = useState<'idle' | 'active' | 'indeterminate' | 'done' | 'error'>('idle')
@@ -124,8 +126,10 @@ export function useChatMessages(): UseChatMessagesReturn {
   const [isPaused, setIsPaused] = useState(false)
   // 用户是否【主动】暂停（区别于自然结束/错误）。主动暂停时 finally 不清除 isPaused。
   const userPausedRef = useRef(false)
-  // 暂停时正在生成的 assistant 消息 id，恢复时精确移除半成品（避免重复回复）
-  const abortedAssistantIdRef = useRef<string | null>(null)
+  // P1 并发锁（交叉评审补）：同步标记「是否有发送/流式正在进行」。isStreaming 是 state、
+  // 由状态机监听器异步驱动，同一 tick 内可能尚未翻转，无法防住「流式中再起一路」的竞态；
+  // streamingRef 同步置位/复位，配合下方 sendMessage 入口守卫做第一道防线。
+  const streamingRef = useRef(false)
   const messagesRef = useRef(messages)
   const lastQuestionRef = useRef<string>('')
   const activeSessionIdRef = useRef<string | null>(null)
@@ -153,8 +157,10 @@ export function useChatMessages(): UseChatMessagesReturn {
   const PROGRESS_STEP_ORDER = ['retrieval', 'dialectics', 'generating', 'safety']
 
   const applyProgress = useCallback((p: number, stage?: string, chars?: number) => {
-    // 进度只进不退（max 合并）
-    setStreamProgressState(prev => Math.max(prev, Math.max(0, Math.min(100, p))))
+    // 进度只进不退（max 合并）；同时记录真实进度峰值，供时间兜底定时器作为上限
+    const clamped = Math.max(0, Math.min(100, p))
+    realProgressRef.current = Math.max(realProgressRef.current, clamped)
+    setStreamProgressState(prev => Math.max(prev, clamped))
     if (stage) {
       if (stage === 'done') {
         // done 阶段：所有步骤一次性置为完成，避免 safety 停留在 active（脉冲）永不收尾
@@ -209,6 +215,9 @@ export function useChatMessages(): UseChatMessagesReturn {
   }, [])
 
   // ── 实时进度：本地兜底平滑推进（后端不发 progress 事件时，按时间目标爬升）──
+  // P0-6 修复：时间兜底不得覆盖后端真进度。有真进度时以真进度为上限（只在其下平滑填充），
+  // 完全无真进度时才允许时间爬升兜底（封顶 90）。旧逻辑 `Math.max(prev, target)` 会让假进度
+  // 压制后端真进度（后端报 5% 却被时间 60% 顶掉），现以 realProgressRef 为硬上限消除压制。
   useEffect(() => {
     if (!isStreaming) return
     const start = Date.now()
@@ -220,7 +229,11 @@ export function useChatMessages(): UseChatMessagesReturn {
       else if (elapsed >= 10) target = 60
       else if (elapsed >= 4) target = 45
       else if (elapsed >= 1.5) target = 15
-      setStreamProgressState(prev => Math.max(prev, target))
+      const real = realProgressRef.current
+      // 有真进度：兜底上限 = 真进度（不覆盖）；无真进度：兜底上限 = 90（保留时间爬升）
+      const cap = real > 0 ? real : 90
+      const effective = Math.min(target, cap)
+      setStreamProgressState(prev => Math.max(prev, effective))
     }, 800)
     return () => clearInterval(timer)
   }, [isStreaming])
@@ -298,6 +311,18 @@ export function useChatMessages(): UseChatMessagesReturn {
     })
   }, [])
 
+  // P0 修复（会话串写）：会话切换前冲刷挂起的防抖保存。清掉旧会话的防抖定时器，
+  // 并把当前内存消息同步落库到指定会话 id，确保旧流尾部内容归属正确会话，
+  // 且切换后不再有旧定时器以新会话 id 触发串写。由 setActiveSessionId 在切 ref 前调用。
+  const flushPendingSavesForSession = useCallback((sid: string | null) => {
+    if (syncTimerRef.current) { clearTimeout(syncTimerRef.current); syncTimerRef.current = null }
+    if (eventLogSyncTimerRef.current) { clearTimeout(eventLogSyncTimerRef.current); eventLogSyncTimerRef.current = null }
+    if (sid && messagesRef.current.length > 0) {
+      chatStorageService.saveMessages(sid, messagesRef.current).catch(e =>
+        logger.warn('[useChatMessages] 切换会话前冲刷保存失败:', e))
+    }
+  }, [])
+
   const updateMessages = useCallback((updater: (prev: ChatMessage[]) => ChatMessage[]) => {
     setMessages(prev => {
       const newMessages = updater(prev)
@@ -358,6 +383,13 @@ export function useChatMessages(): UseChatMessagesReturn {
       return
     }
 
+    // P1 并发锁（交叉评审补）：流式进行中拒绝再起一路，防止「重新生成/删除」等路径
+    // 在流式中并发触发第二路流（双回复/状态竞态/摘掉正在写的占位）。
+    if (streamingRef.current || isStreaming) {
+      logger.warn('[useChatMessages] 🚫 已有发送/流式正在进行，忽略并发发送请求')
+      return
+    }
+
     if (isPaused) {
       // 用户主动发起新消息 = 取消暂停，继续对话（而不是拒绝发送导致卡死）
       logger.info('[useChatMessages] 用户发送新消息，取消暂停状态')
@@ -377,6 +409,7 @@ export function useChatMessages(): UseChatMessagesReturn {
     setChatError(null)
     // ── 实时进度：新发送开始，重置进度条状态 ──
     setStreamProgressState(0)
+    realProgressRef.current = 0 // P0-6：同步重置真实进度峰值，避免上一轮真进度成为本轮兜底上限
     setStreamChars(0)
     setStreamStageKey('ai.chat.progress.preparing')
     setStreamStatus('active')
@@ -402,8 +435,13 @@ export function useChatMessages(): UseChatMessagesReturn {
     logger.info('[useChatMessages] ✅ User message added to UI (status=sending):', { messageId: userMessage.id })
 
     // ── P1 修复：sendStatus 超时兜底 — 4 分钟仍未完成则强制标记失败 ──
+    // P2 修复（240s 超时与正常完成竞态）：sendSettled 在流正常结束（chunk.done）/
+    // 非流式降级成功时同步置 true；超时回调先检查该标志，避免「已收到真实回复却仍追加超时错误」。
+    let sendSettled = false
     const sendStatusTimerId = setTimeout(() => {
       logger.warn('[useChatMessages] ⏰ sendStatus timeout fallback triggered (240s)')
+      // 流已正常结束（或降级成功）→ 不再注入超时错误，防止超时错误与真实回复并存
+      if (sendSettled) return
       const currentMsg = messagesRef.current.find(m => m.id === userMessage.id)
       if (currentMsg && currentMsg.sendStatus === 'sending') {
         updateMessage(userMessage.id, { sendStatus: 'failed' })
@@ -416,6 +454,9 @@ export function useChatMessages(): UseChatMessagesReturn {
         })
       }
     }, 240_000)
+
+    // P1 并发锁：进入流式主体前置位，finally 复位（保证任何退出路径都释放）
+    streamingRef.current = true
 
     try {
       logger.info('[useChatMessages] 📡 Calling chatService (streaming mode)...')
@@ -447,6 +488,10 @@ export function useChatMessages(): UseChatMessagesReturn {
           clientSessionId: activeSessionIdRef.current || undefined,
         })) {
           if (chunk.done) {
+            // P2 修复：流正常结束即视为已落定，立刻清除超时兜底，避免结构化解析期间
+            // 240s 定时器误触发，导致「超时错误气泡 + 真实回复」同时出现。
+            sendSettled = true
+            clearTimeout(sendStatusTimerId)
             applyProgress(100, 'done')
             setStreamStatus('done')
             break
@@ -518,6 +563,8 @@ export function useChatMessages(): UseChatMessagesReturn {
             model: response.model,
           })
           // 实时进度：非流式响应返回，视为完成
+          sendSettled = true
+          clearTimeout(sendStatusTimerId)
           applyProgress(100, 'done')
           setStreamStatus('done')
         } catch (fallbackError) {
@@ -660,41 +707,28 @@ export function useChatMessages(): UseChatMessagesReturn {
         setIsPaused(false)
       }
       logger.debug('[useChatMessages] Streaming state reset to false (via state machine)')
+      // P1 并发锁：任何退出路径（成功/失败/认证提前返回）都释放并发标记
+      streamingRef.current = false
     }
   }, [addMessage, isPaused])
 
   const pauseStreaming = useCallback(() => {
     // 真正中止 SSE 连接（不再只改标志位），停止消耗 LLM quota 与带宽
     chatService.abortCurrentStream()
-    // 记录被中止的半成品 assistant 消息，供 resume 精确移除（避免重复回复）
-    const lastAssistant = [...messagesRef.current].reverse().find(m => m.role === 'assistant')
-    abortedAssistantIdRef.current = lastAssistant?.id ?? null
+    // P1-6 修复（暂停→恢复假续传）：暂停后**保留**半成品 assistant 消息，不再静默删除。
+    // 真正续传不可行（LLM 无法从半截回复 resume），旧 resumeStreaming 实为「删除已生成部分 +
+    // 整段重发」却对外呈现为「恢复」，属于假续传。故移除该路径：半成品留屏供阅读，
+    // 用户可用消息上的「重新生成」按钮重新生成完整回复，或直接发送新消息（sendMessage 会自动取消暂停）。
     // P0-1 修复：通过状态机过渡到 Idle（Streaming→Idle 已加入合法迁移），由监听器统一设置 isStreaming=false
     const machine = chatService.getStateMachine()
     machine.transition(ChatState.Idle)
     userPausedRef.current = true
     setIsPaused(true)
-    logger.info('[useChatMessages] Streaming paused (SSE aborted, state machine → Idle)')
+    logger.info('[useChatMessages] Streaming paused (SSE aborted, state machine → Idle); partial reply kept, regenerate via message action')
   }, [])
 
-  const resumeStreaming = useCallback(() => {
-    if (!isPaused) return
-    userPausedRef.current = false
-    setIsPaused(false)
-    const lastQuestion = lastQuestionRef.current
-    if (lastQuestion) {
-      // P1-1 修复：精确移除被暂停中断的半成品 assistant 消息，再重新生成，避免重复回复
-      if (abortedAssistantIdRef.current) {
-        removeMessage(abortedAssistantIdRef.current)
-        abortedAssistantIdRef.current = null
-        logger.info('[useChatMessages] Removed aborted assistant message before regeneration')
-      }
-      logger.info('[useChatMessages] Regenerating with last question:', { lastQuestionPreview: lastQuestion.substring(0, 50) })
-      sendMessage(lastQuestion)
-    } else {
-      logger.warn('[useChatMessages] No last question to resume')
-    }
-  }, [isPaused, sendMessage, removeMessage])
+  // P1-13 修复：移除死代码 resumeStreaming（原「恢复」实为整段重发，且无任何 UI 消费）。
+  // 暂停后的重新生成改由 messageEditing.handleRegenerateMessage 承担（见 ChatTab onRegenerate）。
 
   const retryLastMessage = useCallback(async () => {
     const lastUserMessage = [...messagesRef.current].reverse().find(m => m.role === 'user')
@@ -825,7 +859,6 @@ export function useChatMessages(): UseChatMessagesReturn {
     clearError,
     isPaused,
     pauseStreaming,
-    resumeStreaming,
     editMessage,
     retractMessage,
     /** 实时进度条状态（由 ChatProgressBar 消费） */
@@ -835,8 +868,19 @@ export function useChatMessages(): UseChatMessagesReturn {
     streamStatus,
     streamSteps,
     setStreamProgress: applyProgress,
-    /** 设置当前会话 ID（用于持久化） */
-    setActiveSessionId: (id: string | null) => { activeSessionIdRef.current = id },
+    /** 设置当前会话 ID（用于持久化）— P0：切换是所有路径的底层收口，切 ref 前先 abort 旧流并冲刷保存 */
+    setActiveSessionId: (id: string | null) => {
+      const prevId = activeSessionIdRef.current
+      if (prevId === id) { activeSessionIdRef.current = id; return }
+      // P0 修复：流式进行中切换会话，先真正 abort 旧 SSE 流（否则旧流继续以旧 ref 产出 chunk），
+      // 再把旧会话挂起的防抖保存冲刷到旧会话 id（尾部内容归属正确会话），最后才切 ref。
+      // 顺序关键：冲刷必须在切 ref 之前，否则 flush 会把旧内容 save 进新会话。
+      if (streamingRef.current) {
+        chatService.abortCurrentStream()
+      }
+      flushPendingSavesForSession(prevId)
+      activeSessionIdRef.current = id
+    },
     /** 检查并执行上下文压缩 */
     checkCompaction: async () => {
       const tokens = tokenBudgetManager.estimateHistory(messagesRef.current)

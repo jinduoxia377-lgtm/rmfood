@@ -22,7 +22,6 @@ export { detectMessageType, parseChartData, renderMessageContent } from './utils
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ChatMessagesProps extends MessageListProps {}
 export type { HistorySession } from './ChatHistory'
-export { saveSessions, loadSessions, formatTime } from './ChatHistory'
 
 // 导出子组件工具函数
 export { LinkMessageCard, CodeMessageBlock, ImageMessageCard, FileMessageCard } from './utils'

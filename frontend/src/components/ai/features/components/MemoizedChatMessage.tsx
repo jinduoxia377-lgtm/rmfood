@@ -49,6 +49,7 @@
  */
 
 import React, { memo, useEffect, useCallback, useRef, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Copy,
   FileText,
@@ -99,10 +100,10 @@ interface TypingSpeedConfig {
 
 /** 可用的打字机速度选项 */
 const TYPING_SPEEDS: TypingSpeedConfig[] = [
-  { label: '慢速', delayMs: 50, description: '适合阅读长文本', icon: <Zap className="w-3 h-3" /> },
-  { label: '中速', delayMs: 25, description: '默认推荐速度' },
-  { label: '快速', delayMs: 10, description: '快速预览内容' },
-  { label: '即时', delayMs: 0, description: '立即显示全部内容', icon: <Monitor className="w-3 h-3" /> },
+  { label: 'ai.chat.message.typing.speedSlow', delayMs: 50, description: 'ai.chat.message.typing.descSlow', icon: <Zap className="w-3 h-3" /> },
+  { label: 'ai.chat.message.typing.speedMedium', delayMs: 25, description: 'ai.chat.message.typing.descMedium' },
+  { label: 'ai.chat.message.typing.speedFast', delayMs: 10, description: 'ai.chat.message.typing.descFast' },
+  { label: 'ai.chat.message.typing.speedInstant', delayMs: 0, description: 'ai.chat.message.typing.descInstant', icon: <Monitor className="w-3 h-3" /> },
 ];
 
 /** localStorage 键名 */
@@ -225,6 +226,7 @@ const CodeBlockRenderer: React.FC<{
   children: React.ReactNode;
   theme?: CodeHighlightTheme;
 }> = memo(({ language, children, theme = 'github' }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [showLineNumbers, setShowLineNumbers] = useState(true);
   const codeString = String(children).replace(/\n$/, '');
@@ -301,7 +303,7 @@ const CodeBlockRenderer: React.FC<{
           >
             {language || 'plaintext'}
           </span>
-          <span className={`text-xs ${theme === 'github' ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>{lines.length} 行</span>
+          <span className={`text-xs ${theme === 'github' ? 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]' : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'}`}>{t('ai.chat.message.code.lines', { count: lines.length })}</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -312,7 +314,7 @@ const CodeBlockRenderer: React.FC<{
                 ? 'hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-500'
                 : 'hover:bg-neutral-700 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]'
             }`}
-            title={showLineNumbers ? '隐藏行号' : '显示行号'}
+            title={showLineNumbers ? t('ai.chat.message.code.hideLineNumbers') : t('ai.chat.message.code.showLineNumbers')}
           >
             <Keyboard className="w-3.5 h-3.5" />
           </button>
@@ -330,12 +332,12 @@ const CodeBlockRenderer: React.FC<{
             {copied ? (
               <>
                 <CheckCircle className="w-3.5 h-3.5" />
-                <span>已复制</span>
+                <span>{t('ai.chat.message.code.copied')}</span>
               </>
             ) : (
               <>
                 <Copy className="w-3.5 h-3.5" />
-                <span>复制</span>
+                <span>{t('ai.chat.message.code.copy')}</span>
               </>
             )}
           </button>
@@ -407,6 +409,7 @@ const TypingSpeedController: React.FC<{
   customDelay?: number;
   onCustomDelayChange?: (delay: number) => void;
 }> = memo(({ currentSpeedIndex, onSpeedChange, customDelay, onCustomDelayChange }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<'preset' | 'custom'>('preset');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -442,7 +445,7 @@ const TypingSpeedController: React.FC<{
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1.5 px-2 py-1 text-xs rounded-md bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
-        aria-label="调整打字机速度 (↑↓ 快捷键)"
+        aria-label={t('ai.chat.message.typing.aria')}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
@@ -457,10 +460,10 @@ const TypingSpeedController: React.FC<{
           <div
             className="absolute bottom-full left-0 mb-2 w-56 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 p-3 z-20 animate-in fade-in slide-in-from-bottom-2"
             role="listbox"
-            aria-label="打字机速度选项"
+            aria-label={t('ai.chat.message.typing.listboxAria')}
           >
             <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 px-2 pb-2 border-b border-neutral-200 dark:border-neutral-700">
-              打字机速度控制
+              {t('ai.chat.message.typing.title')}
             </div>
 
             {/* 模式切换 */}
@@ -473,7 +476,7 @@ const TypingSpeedController: React.FC<{
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700'
                 }`}
               >
-                预设
+                {t('ai.chat.message.typing.preset')}
               </button>
               <button
                 onClick={() => setMode('custom')}
@@ -483,7 +486,7 @@ const TypingSpeedController: React.FC<{
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700'
                 }`}
               >
-                自定义
+                {t('ai.chat.message.typing.custom')}
               </button>
             </div>
 
@@ -491,7 +494,7 @@ const TypingSpeedController: React.FC<{
               <div className="space-y-1">
                 {TYPING_SPEEDS.map((speed, index) => (
                   <button
-                    key={speed.label}
+                    key={speed.delayMs}
                     onClick={() => {
                       onSpeedChange(index);
                       setIsOpen(false);
@@ -506,7 +509,7 @@ const TypingSpeedController: React.FC<{
                   >
                     <div className="flex items-center gap-2">
                       {speed.icon}
-                      <span>{speed.label}</span>
+                      <span>{t(speed.label)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{speed.delayMs}ms/字</span>
@@ -518,7 +521,7 @@ const TypingSpeedController: React.FC<{
             ) : (
               <div className="px-2 py-2">
                 <label className="block text-xs text-neutral-600 dark:text-neutral-400 mb-2">
-                  自定义延迟 (毫秒): {customDelay || 25}
+                  {t('ai.chat.message.typing.customDelay', { value: customDelay || 25 })}
                 </label>
                 <input
                   type="range"
@@ -526,10 +529,10 @@ const TypingSpeedController: React.FC<{
                   max="100"
                   value={customDelay || 25}
                   onChange={(e) => onCustomDelayChange?.(parseInt(e.target.value))}
-                  className="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-primary-500" aria-label="滑块" />
+                  className="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-primary-500" aria-label={t('ai.chat.message.typing.sliderAria')} />
                 <div className="flex justify-between text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">
-                  <span>即时 (0ms)</span>
-                  <span>慢速 (100ms)</span>
+                  <span>{t('ai.chat.message.typing.instant')}</span>
+                  <span>{t('ai.chat.message.typing.slow')}</span>
                 </div>
               </div>
             )}
@@ -537,11 +540,11 @@ const TypingSpeedController: React.FC<{
             <div className="border-t border-neutral-200 dark:border-neutral-700 mt-2 pt-2 px-2">
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-start gap-1">
                 <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
-                <span>{TYPING_SPEEDS[currentSpeedIndex].description}</span>
+                <span>{t(TYPING_SPEEDS[currentSpeedIndex].description)}</span>
               </div>
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1 flex items-center gap-1">
                 <Keyboard className="w-3 h-3" />
-                <span>使用 ↑↓ 键快速切换</span>
+                <span>{t('ai.chat.message.typing.hint')}</span>
               </div>
             </div>
           </div>
@@ -570,6 +573,7 @@ const PerformanceMonitorPanel: React.FC<{
   isVisible: boolean;
   onToggle: () => void;
 }> = memo(({ metrics, isVisible, onToggle }) => {
+  const { t } = useTranslation();
   const getHealthColor = (score: number) => {
     if (score >= 80) return 'text-success-500';
     if (score >= 60) return 'text-warning-500';
@@ -578,10 +582,10 @@ const PerformanceMonitorPanel: React.FC<{
   };
 
   const getHealthLabel = (score: number) => {
-    if (score >= 80) return '优秀';
-    if (score >= 60) return '良好';
-    if (score >= 40) return '可接受';
-    return '需优化';
+    if (score >= 80) return t('ai.chat.message.perf.excellent');
+    if (score >= 60) return t('ai.chat.message.perf.good');
+    if (score >= 40) return t('ai.chat.message.perf.acceptable');
+    return t('ai.chat.message.perf.needsWork');
   };
 
   if (!isVisible) {
@@ -589,7 +593,7 @@ const PerformanceMonitorPanel: React.FC<{
       <button
         onClick={onToggle}
         className="p-1.5 rounded-md bg-neutral-100 dark:bg-neutral-700 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
-        aria-label="切换性能监控面板"
+        aria-label={t('ai.chat.message.perf.toggleAria')}
       >
         <Cpu className="w-3.5 h-3.5" />
       </button>
@@ -601,12 +605,12 @@ const PerformanceMonitorPanel: React.FC<{
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
           <Monitor className="w-4 h-4" />
-          渲染性能监控
+          {t('ai.chat.message.perf.title')}
         </h3>
         <button
           onClick={onToggle}
           className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
-          aria-label="关闭性能监控"
+          aria-label={t('ai.chat.message.perf.closeAria')}
         >
           <ChevronDown className="w-3.5 h-3.5" />
         </button>
@@ -616,11 +620,11 @@ const PerformanceMonitorPanel: React.FC<{
         {/* FPS 指标 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-2">
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">当前 FPS</div>
+            <div className="text-xs text-neutral-500 dark:text-neutral-400">{t('ai.chat.message.perf.currentFps')}</div>
             <div className={`text-lg font-bold ${getHealthColor(metrics.healthScore)}`}>{metrics.currentFps}</div>
           </div>
           <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-2">
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">平均 FPS</div>
+            <div className="text-xs text-neutral-500 dark:text-neutral-400">{t('ai.chat.message.perf.averageFps')}</div>
             <div className="text-lg font-bold text-neutral-700 dark:text-neutral-300">{metrics.averageFps}</div>
           </div>
         </div>
@@ -628,7 +632,7 @@ const PerformanceMonitorPanel: React.FC<{
         {/* 健康度评分 */}
         <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-2">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">渲染健康度</span>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">{t('ai.chat.message.perf.health')}</span>
             <span className={`text-xs font-semibold ${getHealthColor(metrics.healthScore)}`}>
               {getHealthLabel(metrics.healthScore)} ({metrics.healthScore})
             </span>
@@ -652,28 +656,28 @@ const PerformanceMonitorPanel: React.FC<{
         {/* 详细指标 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           <div className="flex justify-between">
-            <span className="text-neutral-500 dark:text-neutral-400">帧时间:</span>
+            <span className="text-neutral-500 dark:text-neutral-400">{t('ai.chat.message.perf.frameTime')}</span>
             <span className="font-mono text-neutral-700 dark:text-neutral-300">{metrics.frameTimeMs.toFixed(1)}ms</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-neutral-500 dark:text-neutral-400">内存:</span>
+            <span className="text-neutral-500 dark:text-neutral-400">{t('ai.chat.message.perf.memory')}</span>
             <span className="font-mono text-neutral-700 dark:text-neutral-300">
               {formatBytes(metrics.memoryUsageMB * 1024 * 1024)}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-neutral-500 dark:text-neutral-400">渲染次数:</span>
+            <span className="text-neutral-500 dark:text-neutral-400">{t('ai.chat.message.perf.renderCount')}</span>
             <span className="font-mono text-neutral-700 dark:text-neutral-300">{metrics.renderCount}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-neutral-500 dark:text-neutral-400">处理 chunks:</span>
+            <span className="text-neutral-500 dark:text-neutral-400">{t('ai.chat.message.perf.chunks')}</span>
             <span className="font-mono text-neutral-700 dark:text-neutral-300">{metrics.totalChunksProcessed}</span>
           </div>
         </div>
 
         {/* 最后 chunk 信息 */}
         <div className="text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900 rounded p-1.5">
-          最后处理: {metrics.lastChunkSize} 字符 | 总计: {metrics.totalChunksProcessed} 次
+          {t('ai.chat.message.perf.lastProcessed', { last: metrics.lastChunkSize, total: metrics.totalChunksProcessed })}
         </div>
       </div>
     </div>
@@ -726,6 +730,7 @@ const MemoizedChatMessage = memo(
     className = '',
     enableKeyboardShortcuts = true,
   }: MemoizedChatMessageProps) => {
+    const { t } = useTranslation();
     const isEmptyAssistantMsg = message.role === 'assistant' && (!message.content || message.content.trim() === '');
 
     const shouldUseStreamingEffect =
@@ -1092,7 +1097,7 @@ const MemoizedChatMessage = memo(
           >
             {/* 加载骨架屏（AI 正在思考） */}
             {isEmptyAssistantMsg && !shouldUseStreamingEffect && isStreaming ? (
-              <div className="space-y-3 py-2" aria-label="AI正在生成回复" role="status">
+              <div className="space-y-3 py-2" aria-label={t('ai.chat.message.generatingAria')} role="status">
                 <div className="skeleton-shimmer h-4 rounded-lg w-full max-w-[90%]" />
                 <div className="skeleton-shimmer h-4 rounded-lg w-[85%] max-w-[80%]" />
                 <div className="skeleton-shimmer h-4 rounded-lg w-[70%] max-w-[65%]" />
@@ -1103,7 +1108,7 @@ const MemoizedChatMessage = memo(
 
                 <div className="flex items-center gap-2 pt-2 text-xs text-neutral-400 dark:text-neutral-400 font-medium animate-pulse">
                   <span className="w-2 h-2 rounded-full bg-secondary-500 animate-pulse" />
-                  <span>AI 正在思考...</span>
+                  <span>{t('ai.chat.message.thinking')}</span>
                 </div>
               </div>
             ) : (
@@ -1151,10 +1156,10 @@ const MemoizedChatMessage = memo(
                             <button
                               onClick={handleInterruptClick}
                               className="interrupt-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-error-50 dark:bg-error-300/20 text-error-700 dark:text-error-600 hover:bg-error-100 dark:hover:bg-error-900/30 transition-colors focus:outline-none focus:ring-2 focus:ring-error-500 focus:ring-offset-2"
-                              aria-label="停止 AI 生成"
+                              aria-label={t('ai.chat.message.stopGenAria')}
                             >
                               <Square className="w-3 h-3" />
-                              <span>停止</span>
+                              <span>{t('ai.chat.message.stop')}</span>
                             </button>
                           )}
                         </div>
@@ -1164,7 +1169,7 @@ const MemoizedChatMessage = memo(
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs text-success-600 dark:text-success-600 font-medium flex items-center gap-1">
                           <CheckCircle className="w-3.5 h-3.5" />
-                          生成完成
+                          {t('ai.chat.message.done')}
                         </span>
 
                         <div className="flex items-center gap-1.5 ml-auto">
@@ -1173,11 +1178,11 @@ const MemoizedChatMessage = memo(
                             <button
                               onClick={handleResumeClick}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-secondary-50 dark:bg-secondary-300/25 text-secondary-700 dark:text-secondary-700 hover:bg-secondary-100 dark:hover:bg-secondary-900/50 transition-colors focus:outline-none focus:ring-2 focus:ring-secondary-500"
-                              aria-label="重新发送（将从开头重新生成）"
-                              title="将从开头重新生成当前回复"
+                              aria-label={t('ai.chat.message.resendAria')}
+                              title={t('ai.chat.message.resendTitle')}
                             >
                               <Play className="w-3.5 h-3.5" />
-                              <span>重新发送</span>
+                              <span>{t('ai.chat.message.resend')}</span>
                             </button>
                           )}
 
@@ -1186,10 +1191,10 @@ const MemoizedChatMessage = memo(
                             <button
                               onClick={handleRegenerateClick}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-500"
-                              aria-label="重新生成"
+                              aria-label={t('ai.chat.regenerate')}
                             >
                               <Loader2 className="w-3.5 h-3.5" />
-                              <span>重新生成</span>
+                              <span>{t('ai.chat.regenerate')}</span>
                             </button>
                           )}
                         </div>
@@ -1213,7 +1218,7 @@ const MemoizedChatMessage = memo(
             <button
               onClick={() => navigator.clipboard.writeText(displayContent || '')}
               className="p-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 transition-colors duration-150"
-              aria-label="复制此条消息内容"
+              aria-label={t('ai.chat.message.copyContentAria')}
             >
               <Copy className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-500 dark:text-neutral-400 hover:text-primary-700 dark:hover:text-primary-600 transition-colors" />
             </button>
@@ -1223,7 +1228,7 @@ const MemoizedChatMessage = memo(
               <button
                 onClick={onGenerateReport}
                 className="p-2.5 rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-900/20 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 transition-colors duration-150"
-                aria-label="生成专业报告"
+                aria-label={t('ai.chat.message.reportAria')}
               >
                 <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-secondary-500 hover:text-secondary-600 dark:hover:text-secondary-400 transition-colors" />
               </button>
@@ -1250,24 +1255,24 @@ const MemoizedChatMessage = memo(
           {message.role === 'user' && !message.content && (
             <span className="inline-flex items-center gap-1 text-xs sm:text-xs font-medium text-warning-500 dark:text-warning-700 animate-pulse">
               <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" />
-              <span>发送中</span>
+              <span>{t('ai.chat.message.sending')}</span>
             </span>
           )}
           {message.role === 'user' && message.content && !isStreaming && (
-            <CheckCircle className="w-4 h-4 text-success-500 dark:text-success-600" aria-label="已发送成功" />
+            <CheckCircle className="w-4 h-4 text-success-500 dark:text-success-600" aria-label={t('ai.chat.message.sentSuccessAria')} />
           )}
           {message.role === 'assistant' && isEmptyAssistantMsg && !shouldUseStreamingEffect && isStreaming && (
             <span className="inline-flex items-center gap-1 text-xs sm:text-xs font-medium text-secondary-500 dark:text-secondary-700">
               <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" />
-              <span>思考中</span>
+              <span>{t('ai.chat.message.thinkingStatus')}</span>
             </span>
           )}
           {shouldUseStreamingEffect && !isStreamingComplete && (
             <span className="inline-flex items-center gap-1 text-xs sm:text-xs font-medium text-secondary-500 dark:text-secondary-700">
               <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" />
-              <span>生成中 {streamingProgress}%</span>
+              <span>{t('ai.chat.message.generatingProgress', { progress: streamingProgress })}</span>
               {performanceMetrics.currentFps < 30 && (
-                <AlertCircle className="w-3 h-3 text-warning-500" aria-label="渲染性能较低" />
+                <AlertCircle className="w-3 h-3 text-warning-500" aria-label={t('ai.chat.message.lowPerfAria')} />
               )}
             </span>
           )}
@@ -1298,7 +1303,7 @@ const MemoizedChatMessage = memo(
                   shareData={{
                     text: displayContent,
                     url: window.location.href,
-                    title: message.role === 'assistant' ? 'AI 助手回复' : '我的提问',
+                    title: message.role === 'assistant' ? t('ai.chat.message.shareTitleAssistant') : t('ai.chat.message.shareTitleUser'),
                     messageId: message.id,
                   }}
                   isOpen={showSharePanel}

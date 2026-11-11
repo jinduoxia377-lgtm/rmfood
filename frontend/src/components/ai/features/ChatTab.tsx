@@ -18,6 +18,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useChatContext } from './ChatStateContext'
+import { useExpandChatA11y } from './hooks/useExpandChatA11y'
 import { logger } from '@/utils/safeLogger'
 
 // ===== Pro 组件 =====
@@ -57,7 +58,7 @@ import type { ToolCall } from './components/pro/DetailsPanel'
 const FeedbackModal = React.lazy(() => import('./components/FeedbackModal').then(m => ({ default: m.FeedbackModal })))
 
 // ===== 图标库 =====
-import { AlertTriangle, Pause, Leaf, Wand2 } from 'lucide-react'
+import { AlertTriangle, Pause, Leaf, Wand2, X } from 'lucide-react'
 
 // ===== 配置 =====
 import { QUICK_QUESTIONS } from '@/config/ai'
@@ -110,12 +111,12 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
     // 消息
     messages, input, setInput, isStreaming,
     chatError, clearError, pauseStreaming,
-    editMessage, retractMessage,
+    editMessage, retractMessage, deleteMessage, regenerateMessage, retryMessage,
     // 会话
     historySessions, activeSessionId, historyVisible,
     // UI
     highlightedMessageId,
-    detailsCall, detailsOpen,
+    detailsCall, detailsOpen, setDetailsCall, setDetailsOpen,
     // 引擎
     llmAvailable, llmModel, scenarioMode,
     assistantCount, elapsedSeconds,
@@ -136,17 +137,40 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
     handleNewSession, handleSelectSession, handleDeleteSession,
     handleRenameSession, handleClearChat, handleRetry, handleSend, handleForkMessage,
     handleGenerateReport,
+    handlePinSession,
+    handleSetTags,
+    handleExportSession,
+    handleForkSession,
+    historyLoading, historyError, retryLoadHistory,
     toggleHistory,
   } = ctx
 
-  // ===== 本地 UI 状态 =====
-  const [detailsCallLocal, setDetailsCall] = React.useState<typeof detailsCall>(null)
-  const [detailsOpenLocal, setDetailsOpen] = React.useState(false)
+  // P0-7 修复：移除 detailsCallLocal/detailsOpenLocal 本地镜像。此前 onDetailsMessage 只更新
+  // 本地镜像，而 context 的 detailsCall/detailsOpen 因无 setter 恒为初值（死 UI）。
+  // 现直接读写 context（setter 已暴露），触发链 MessageBubble→onDetails→context 真正连通。
 
   // ===== 新功能：设置/分享/搜索 =====
   const [showUserProfileSettings, setShowUserProfileSettings] = React.useState(false)
   const [shareModalContent, setShareModalContent] = React.useState<{ messageId: string; content: string } | null>(null)
   const [searchOpen, setSearchOpen] = React.useState(false)
+
+  // ===== 放大对话窗口（全视口覆盖层，同一 DOM 子树原地切 class，不 remount/portal）=====
+  // 对齐 searchOpen 先例：纯视图态用本地 useState，不进 ChatStateContext。
+  // 注意：不再从 localStorage 惰性初始化展开态——否则 chat 是 /ai 默认 tab，
+  // 上次残留的 expanded=1 会让页面一加载就直接进入最大化，违背「落地页默认收起」预期。
+  // 展开态仅活在本次会话内存中：点按钮放大、Esc/还原退出，刷新/重进一律从收起开始。
+  const [isExpanded, setIsExpanded] = React.useState(false)
+  const stageRef = React.useRef<HTMLDivElement>(null)
+  const expandTriggerRef = React.useRef<HTMLButtonElement>(null)
+  useExpandChatA11y({
+    isExpanded,
+    stageRef,
+    triggerRef: expandTriggerRef,
+    onCollapse: () => setIsExpanded(false),
+  })
+  const toggleExpand = React.useCallback(() => {
+    setIsExpanded(v => !v)
+  }, [])
   // 轻量提示条：后端未提供端点的按钮点下去必须给出明确反馈，不能静默无响应。
   // 成功提示可附带一个动作按钮（如「提交效果反馈」），通过 onAction 触发。
   const [notice, setNotice] = React.useState<{
@@ -168,6 +192,21 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
   }, [])
   React.useEffect(() => () => { if (noticeTimer.current) clearTimeout(noticeTimer.current) }, [])
 
+  // ── P1-F3 会话级降级横幅：本会话出现 rule_engine_fallback 辨证时提示一次 ──
+  // 关闭后本次会话不再重复显示；切换会话（activeSessionId 变化）时重置。
+  const [fallbackBannerDismissed, setFallbackBannerDismissed] = React.useState(false)
+  const fallbackBannerSessionRef = React.useRef<string | null>(null)
+  React.useEffect(() => {
+    if (fallbackBannerSessionRef.current !== activeSessionId) {
+      fallbackBannerSessionRef.current = activeSessionId
+      setFallbackBannerDismissed(false)
+    }
+  }, [activeSessionId])
+  const hasDialecticsFallback = React.useMemo(
+    () => messages.some(m => m.dialectics?.engine === 'rule_engine_fallback'),
+    [messages],
+  )
+
   // ── 反馈闭环：保存成功后记录配方 ID，供「提交效果反馈」打开模态框 ──
   const [feedbackTarget, setFeedbackTarget] = React.useState<{ formulaId: number; formulaName?: string } | null>(null)
 
@@ -177,16 +216,6 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
     formulaName: string
     payload: FormulaCreatePayload
   } | null>(null)
-
-  // ── 同步 Context 状态到本地（用于回调）──
-  React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 镜像 Context 状态到本地，保持现有同步逻辑不变
-    if (detailsCall !== detailsCallLocal) setDetailsCall(detailsCall)
-  }, [detailsCall])
-  React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 镜像 Context 状态到本地，保持现有同步逻辑不变
-    if (detailsOpen !== detailsOpenLocal) setDetailsOpen(detailsOpen)
-  }, [detailsOpen])
 
   // ── 从结构化内容提取配方并真正保存到后端 /formulas ──
   // 保存前调用 AI 配方校验（/ai/formula/validate）：
@@ -400,7 +429,16 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
   }, [ragIsSeeded, onToggleRAG, handleTriggerSeed])
 
   return (
-    <div className={`flex h-full relative chat-unified chat-area`}>
+    <div
+      ref={stageRef}
+      id="chat-stage"
+      role={isExpanded ? 'dialog' : undefined}
+      aria-modal={isExpanded ? true : undefined}
+      aria-label={isExpanded ? t('ai.chat.chatTab.title', '智能对话') : undefined}
+      className={`flex h-full chat-unified chat-area ${
+        isExpanded ? 'fixed inset-0 z-[600] bg-[var(--bg-canvas)]' : 'relative'
+      }`}
+    >
       {/* 对话历史侧栏 */}
       <ChatHistory
         sessions={historySessions}
@@ -409,18 +447,13 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
         onSelectSession={handleSelectSession}
         onDeleteSession={handleDeleteSession}
         onRenameSession={handleRenameSession}
-        onForkSession={async (sessionId, title) => {
-          try {
-            const newId = await sessionCapability.fork(sessionId, {
-              title: title || `分支-${sessionId.slice(-6)}`,
-            })
-            handleSelectSession(newId)
-            return newId
-          } catch (e) {
-            logger.warn('[ChatTab] Fork failed:', e)
-            return ''
-          }
-        }}
+        onPinSession={handlePinSession}
+        onSetTags={handleSetTags}
+        onExportSession={handleExportSession}
+        onForkSession={handleForkSession}
+        isLoading={historyLoading}
+        error={historyError}
+        onRetry={retryLoadHistory}
         isVisible={historyVisible}
         onToggle={toggleHistory}
       />
@@ -454,6 +487,10 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
           onOpenUserProfile={() => setShowUserProfileSettings(true)}
           onToggleSearch={() => setSearchOpen(v => !v)}
           searchOpen={searchOpen}
+          // 放大对话窗口：展开态 + 切换 + 触发按钮 ref（折叠时焦点还原）
+          expanded={isExpanded}
+          onToggleExpand={toggleExpand}
+          expandTriggerRef={expandTriggerRef}
           // 传入真实翻译函数，确保 TopBar 文案随全局语言切换
           t={t}
         />
@@ -524,6 +561,11 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
               }}
               onEditMessage={editMessage}
               onRetractMessage={retractMessage}
+              // P1-5 修复：接线消息删除/重新生成，消除 MessageList 死按钮（此前默认 ()=>{}）
+              onDeleteMessage={deleteMessage}
+              onRegenerate={regenerateMessage}
+              // P1-13 修复：接线失败消息重试，使 MessageList 网络恢复自动重试队列生效
+              onRetryMessage={retryMessage}
               onForkMessage={handleForkMessage}
               onDetailsMessage={(call) => { setDetailsCall(call); setDetailsOpen(true) }}
               thinkingSteps={thinkingSteps}
@@ -549,6 +591,7 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
                 }}
                 messages={messages}
                 isVisible={!isStreaming && messages.length > 0}
+                ragChunks={ragChunks}
               />
             )}
 
@@ -572,6 +615,27 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
 
         {/* ③ 输入区：主题令牌（--bg-secondary/--border-color） */}
         <div className="border-t border-[var(--border-color)] bg-[var(--bg-secondary)] flex-shrink-0">
+          {/* P1-F3 会话级降级横幅：AI 辨证服务降级为模板参考时显示一次（可关闭） */}
+          {hasDialecticsFallback && !fallbackBannerDismissed && (
+            <div
+              role="note"
+              className="flex items-start gap-2 px-4 py-2 bg-warning-50 dark:bg-warning-500/10 border-b border-warning-200 dark:border-warning-500/30"
+            >
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-warning-600 dark:text-warning-500" />
+              <div className="flex-1 min-w-0 text-xs leading-relaxed text-warning-800 dark:text-warning-200">
+                <span className="font-semibold">{t('ai.chat.chatTab.dialecticsFallbackBannerTitle')}：</span>
+                <span>{t('ai.chat.chatTab.dialecticsFallbackBannerDesc')}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFallbackBannerDismissed(true)}
+                className="shrink-0 rounded p-1 text-warning-600 dark:text-warning-500 hover:bg-warning-100 dark:hover:bg-warning-500/20 transition-colors"
+                aria-label={t('ai.chat.chatTab.close')}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
           {/* 暂停条 */}
           {isStreaming && (
             <div className="flex items-center justify-between px-4 py-1.5 bg-[var(--bg-tertiary)]/50 dark:bg-[var(--bg-tertiary)]/40">
@@ -617,10 +681,10 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
         </div>
 
         {/* Details 面板 — 移动端为全屏抽屉，sm+ 恢复为右侧内嵌列 */}
-        {detailsOpenLocal && detailsCallLocal && (
+        {detailsOpen && detailsCall && (
           <div className="fixed inset-y-0 right-0 z-50 w-full max-w-[320px] flex-shrink-0 border-l border-[var(--border-color)] overflow-hidden sm:static sm:z-auto sm:w-[320px] sm:max-w-none">
             <DetailsPanel
-              selectedCall={{ ...detailsCallLocal, arguments: detailsCallLocal.args } as unknown as ToolCall}
+              selectedCall={{ ...detailsCall, arguments: detailsCall.args } as unknown as ToolCall}
               onClose={() => setDetailsOpen(false)}
               title={t('ai.chat.toolCallDetail')}
             />
@@ -726,8 +790,10 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
         {notice && (
           <div
             role="status"
-            className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full
+            className={`fixed bottom-20 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full
               text-xs font-medium shadow-lg animate-fade-in text-white flex items-center gap-3 ${
+                isExpanded ? 'z-[650]' : 'z-50'
+              } ${
                 notice.kind === 'success'
                   ? 'bg-success-500'
                   : notice.kind === 'error'
