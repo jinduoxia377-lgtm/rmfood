@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 # ════════════════════════════════════════════
-# 药食同源目录（2025版）硬约束 - 共106种
+# 药食同源目录（2024版）硬约束 - 共106种
 # ════════════════════════════════════════════
 
 FOOD_HERB_MAX_DOSAGE: Dict[str, float] = {
@@ -44,7 +44,7 @@ FOOD_HERB_MAX_DOSAGE: Dict[str, float] = {
 }
 
 # 禁忌搭配（十八反 + 十九畏 = 官方 28 对）
-# 依据：《中国药典》2020 版（藜芦组含党参）+ 十九畏歌诀（川乌/草乌、赤石脂/白石脂分别计数）
+# 依据：《中国药典》2025 版（藜芦组含党参）+ 十九畏歌诀（川乌/草乌、赤石脂/白石脂分别计数）
 # 与 safety_checker._CONTRAINDICATION_PAIRS / compliance_tool.PROHIBITED_COMBINATIONS 保持一致。
 PROHIBITED_COMBINATIONS: List[List[str]] = [
     # ── 十八反（17 对）──
@@ -62,6 +62,46 @@ PROHIBITED_COMBINATIONS: List[List[str]] = [
 
 # 特殊人群禁忌
 CHILD_FORBIDDEN: set = {"人参", "藜芦", "附子", "川乌", "草乌"}
+
+# ══════════════════════════════════════════════════════════════════════
+# 十八反乌头组别名展开（修复 D-3）
+# ══════════════════════════════════════════════════════════════════════
+# 原始 PROHIBITED_COMBINATIONS 中"乌头"只按字面建键，未展开为其具体药材。
+# 依据《中国药典》十八反歌诀："半蒌贝蔹及攻乌"——乌头类（川乌/草乌/附子）
+# 反 半夏、瓜蒌、贝母、白蔹、白及。
+# 字面"乌头"在真实配方中几乎不出现，实际入方的是川乌/草乌/附子；
+# 不展开会导致"川乌+半夏"等因字面不等而漏检。
+# 此处把含"乌头"的 5 对展开为 川乌/草乌/附子 × 5 = 15 对，
+# 其余 23 对原样保留（不含乌头，不重复）。
+_WUTOU_ALIASES: List[str] = ["川乌", "草乌", "附子"]
+
+
+def _expand_prohibited_combinations(
+    pairs: List[List[str]],
+) -> List[List[str]]:
+    """把禁忌对中字面"乌头"展开为川乌/草乌/附子，其余对原样保留。"""
+    expanded: List[List[str]] = []
+    seen: set = set()
+    for a, b in pairs:
+        if a == "乌头" or b == "乌头":
+            other = b if a == "乌头" else a
+            for alias in _WUTOU_ALIASES:
+                pair = tuple(sorted((alias, other)))
+                if pair not in seen:
+                    seen.add(pair)
+                    expanded.append(list(pair))
+        else:
+            pair = tuple(sorted((a, b)))
+            if pair not in seen:
+                seen.add(pair)
+                expanded.append(list(pair))
+    return expanded
+
+
+# 展开后的禁忌搭配（供合规检查使用；原始 28 对仍保留在上面作为权威记录）
+PROHIBITED_COMBINATIONS_EXPANDED: List[List[str]] = _expand_prohibited_combinations(
+    PROHIBITED_COMBINATIONS
+)
 
 
 @dataclass
@@ -141,12 +181,23 @@ class ComplianceAwareFormulaService:
             name = ing.get("name", "")
             dosage = ing.get("dosage_mg", 0)
 
+            # 儿童禁忌检查（先于目录判断）
+            # 修复 L-1：CHILD_FORBIDDEN 的 5 味（人参/藜芦/附子/川乌/草乌）全部不在
+            # 106 目录内，若放在目录判断之后，命中 not_in_directory 即 continue 会
+            # 跳过儿童禁忌，导致儿童禁忌对全部成员失效。故前移到此处。
+            if population == "children" and name in CHILD_FORBIDDEN:
+                violations.append(ComplianceViolation(
+                    ingredient=name,
+                    violation_type="child_forbidden",
+                    message=f"'{name}' 禁止用于儿童配方",
+                ))
+
             # 检查是否在药食同源目录
             if name not in FOOD_HERB_MAX_DOSAGE:
                 violations.append(ComplianceViolation(
                     ingredient=name,
                     violation_type="not_in_directory",
-                    message=f"'{name}' 不在药食同源目录（2025版）中，需确认是否可用",
+                    message=f"'{name}' 不在药食同源目录（2024版）中，需确认是否可用",
                     actual_value=dosage,
                 ))
                 continue
@@ -173,16 +224,8 @@ class ComplianceAwareFormulaService:
                     f"'{name}' 用量 {dosage}mg 接近限量 {max_dosage}mg/天（80%阈值）"
                 )
 
-            # 儿童禁忌检查
-            if population == "children" and name in CHILD_FORBIDDEN:
-                violations.append(ComplianceViolation(
-                    ingredient=name,
-                    violation_type="child_forbidden",
-                    message=f"'{name}' 禁止用于儿童配方",
-                ))
-
-        # 检查禁忌搭配
-        for combo in PROHIBITED_COMBINATIONS:
+        # 检查禁忌搭配（使用乌头组展开后的禁忌表，见 PROHIBITED_COMBINATIONS_EXPANDED）
+        for combo in PROHIBITED_COMBINATIONS_EXPANDED:
             matched = [h for h in combo if h in herb_names]
             if len(matched) == 2:
                 violations.append(ComplianceViolation(
