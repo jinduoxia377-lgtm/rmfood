@@ -24,6 +24,7 @@
 import { useState, useEffect, useMemo, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { databaseApi } from '@/api/database';
+import { useKgAsyncAnalysis } from '@/components/database/graph/hooks/useKgAsyncAnalysis';
 import KnowledgeGraph from '@/components/database/KnowledgeGraph';
 import { Input, Button, Badge, Card } from '@/components/ui';
 import {
@@ -241,21 +242,24 @@ export default function GraphTab() {
   const centralityQuery = useQuery({
     queryKey: ['kg-analytics-centrality', centralityMode],
     queryFn: () => databaseApi.getCentrality(centralityMode, 20),
-    enabled: showAnalytics && analyticsTab === 'centrality',
+    enabled: showAnalytics && analyticsTab === 'centrality' && centralityMode !== 'betweenness',
     staleTime: 300_000,
   });
-  const communitiesQuery = useQuery({
-    queryKey: ['kg-analytics-communities'],
-    queryFn: () => databaseApi.getCommunities(),
-    enabled: showAnalytics && analyticsTab === 'communities',
-    staleTime: 300_000,
-  });
-  const kcoreQuery = useQuery({
-    queryKey: ['kg-analytics-kcore', kCoreValue],
-    queryFn: () => databaseApi.getKCore(kCoreValue),
-    enabled: showAnalytics && analyticsTab === 'kcore',
-    staleTime: 300_000,
-  });
+
+  // ── 异步分析（②b：betweenness/communities/kcore 在 B表全谱同步会超时，走 AsyncTaskQueue）──
+  const betweennessAsync = useKgAsyncAnalysis('betweenness', showAnalytics && analyticsTab === 'centrality' && centralityMode === 'betweenness');
+  const communitiesAsync = useKgAsyncAnalysis('communities', showAnalytics && analyticsTab === 'communities', (r) => ({
+    ...r,
+    // 后端返回 nodes；渲染层期望 members（兼容原 GraphCommunity 形状）
+    communities: (r?.communities ?? []).map((c: any) => ({ ...c, members: c.nodes ?? c.members ?? [] })),
+  }));
+  const kcoreAsync = useKgAsyncAnalysis('kcore', showAnalytics && analyticsTab === 'kcore');
+  // K-Core 按 K 值过滤（渲染期过滤，K 变化即时生效，无需重跑任务）
+  const kcoreFiltered = useMemo(
+    () => ({ ...kcoreAsync.data, results: (kcoreAsync.data?.results ?? []).filter((n: any) => (n.coreness ?? 0) >= kCoreValue) }),
+    [kcoreAsync.data, kCoreValue],
+  );
+
   const bridgesQuery = useQuery({
     queryKey: ['kg-analytics-bridges'],
     queryFn: () => databaseApi.getBridges(),
@@ -696,7 +700,57 @@ export default function GraphTab() {
                   </button>
                 ))}
               </div>
-              {centralityQuery.isLoading ? (
+              {centralityMode === 'betweenness' ? (
+                betweennessAsync.isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary-text)]" />
+                    <span className="ml-2 text-xs">
+                      {betweennessAsync.running ? '介数中心性计算中（全谱约2-4分钟，后台运行）...' : '提交计算任务...'}
+                    </span>
+                  </div>
+                ) : betweennessAsync.isError ? (
+                  <p className="text-center text-xs text-[var(--color-error-text)] py-[var(--space-apple-lg)]">{betweennessAsync.error}</p>
+                ) : betweennessAsync.data?.results?.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-[var(--border-color)]">
+                          <th className="text-left py-2 px-[var(--space-apple-sm)] font-medium text-[var(--text-secondary,#6E6E73)]">#</th>
+                          <th className="text-left py-2 px-[var(--space-apple-sm)] font-medium text-[var(--text-secondary,#6E6E73)]">节点</th>
+                          <th className="text-left py-2 px-[var(--space-apple-sm)] font-medium text-[var(--text-secondary,#6E6E73)]">类型</th>
+                          <th className="text-right py-2 px-[var(--space-apple-sm)] font-medium text-[var(--text-secondary,#6E6E73)]">介数</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {betweennessAsync.data?.results?.slice(0, 15).map((r: any, i: number) => (
+                          <tr
+                            key={r.node_id || i}
+                            className="hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/50 border-b border-[var(--border-color)]/50"
+                          >
+                            <td className="py-1.5 px-[var(--space-apple-sm)] text-[var(--text-muted,#9A9A9F)]">{i + 1}</td>
+                            <td
+                              className="py-1.5 px-[var(--space-apple-sm)] font-medium cursor-pointer hover:text-[var(--color-primary-text)]"
+                              onClick={() => setSelectedNode(r.node_label)}
+                            >
+                              {r.node_label}
+                            </td>
+                            <td className="py-1.5 px-[var(--space-apple-sm)]">
+                              <Badge variant={NODE_TYPE_BADGE[r.node_type as keyof typeof NODE_TYPE_BADGE] || 'neutral'} size="sm">
+                                {NODE_TYPE_LABEL[r.node_type] || r.node_type}
+                              </Badge>
+                            </td>
+                            <td className="text-right py-1.5 px-[var(--space-apple-sm)] font-mono">
+                              {(r.betweenness_score ?? 0).toFixed(6)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-center text-xs text-[var(--text-muted,#9A9A9F)] py-[var(--space-apple-lg)]">暂无数据，请先构建知识图谱</p>
+                )
+              ) : centralityQuery.isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary-text)]" />
                   <span className="ml-2 text-xs">计算中...</span>
@@ -712,11 +766,7 @@ export default function GraphTab() {
                         <th className="text-left py-2 px-[var(--space-apple-sm)] font-medium text-[var(--text-secondary,#6E6E73)]">节点</th>
                         <th className="text-left py-2 px-[var(--space-apple-sm)] font-medium text-[var(--text-secondary,#6E6E73)]">类型</th>
                         <th className="text-right py-2 px-[var(--space-apple-sm)] font-medium text-[var(--text-secondary,#6E6E73)]">
-                          {centralityMode === 'pageRank'
-                            ? 'PR值'
-                            : centralityMode === 'betweenness'
-                              ? '介数'
-                              : '接近度'}
+                          {centralityMode === 'pageRank' ? 'PR值' : '接近度'}
                         </th>
                       </tr>
                     </thead>
@@ -739,7 +789,7 @@ export default function GraphTab() {
                             </Badge>
                           </td>
                           <td className="text-right py-1.5 px-[var(--space-apple-sm)] font-mono">
-                            {(r.pagerank_score ?? r.betweenness_score ?? r.closeness_score ?? r.score ?? 0).toFixed(6)}
+                            {(r.pagerank_score ?? r.closeness_score ?? r.score ?? 0).toFixed(6)}
                           </td>
                         </tr>
                       ))}
@@ -755,15 +805,16 @@ export default function GraphTab() {
           {/* 社区检测面板 */}
           {analyticsTab === 'communities' && (
             <div>
-              {communitiesQuery.isLoading ? (
+              {communitiesAsync.isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary-text)]" />
+                  <span className="ml-2 text-xs">{communitiesAsync.running ? '社区检测计算中（全谱较慢，后台运行）...' : '提交计算任务...'}</span>
                 </div>
-              ) : communitiesQuery.isError ? (
-                <p className="text-center text-xs text-[var(--color-error-text)] py-[var(--space-apple-lg)]">社区检测请求失败，请重试</p>
-              ) : communitiesQuery.data?.total_communities > 0 ? (
+              ) : communitiesAsync.isError ? (
+                <p className="text-center text-xs text-[var(--color-error-text)] py-[var(--space-apple-lg)]">社区检测失败：{communitiesAsync.error}</p>
+              ) : communitiesAsync.data?.total_communities > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-apple-sm)]">
-                  {((communitiesQuery.data?.communities ?? []) as GraphCommunity[]).slice(0, 12).map((c, i) => (
+                  {((communitiesAsync.data?.communities ?? []) as GraphCommunity[]).slice(0, 12).map((c, i) => (
                     <div
                       key={i}
                       className="rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] p-[var(--space-apple-sm)] bg-[var(--bg-secondary)]/50"
@@ -814,17 +865,20 @@ export default function GraphTab() {
                   </button>
                 ))}
               </div>
-              {kcoreQuery.isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin mx-auto my-4" />
-              ) : kcoreQuery.isError ? (
-                <p className="text-center text-xs text-[var(--color-error-text)] py-[var(--space-apple-lg)]">K-Core分析请求失败，请重试</p>
-              ) : ((kcoreQuery.data?.results ?? []) as unknown[])?.length > 0 ? (
+              {kcoreAsync.isLoading ? (
+                <div className="flex items-center justify-center my-4">
+                  <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary-text)]" />
+                  <span className="ml-2 text-xs">{kcoreAsync.running ? 'K-Core 计算中（后台运行）...' : '提交计算任务...'}</span>
+                </div>
+              ) : kcoreAsync.isError ? (
+                <p className="text-center text-xs text-[var(--color-error-text)] py-[var(--space-apple-lg)]">K-Core分析失败：{kcoreAsync.error}</p>
+              ) : ((kcoreFiltered?.results ?? []) as unknown[])?.length > 0 ? (
                 <div className="max-h-60 overflow-y-auto space-y-1">
                   <p className="text-xs text-[var(--text-secondary,#6E6E73)] mb-2">
-                    {kcoreQuery.data.results.length} 个节点属于 {kCoreValue}-Core（连接度 ≥ {kCoreValue}）
+                    {kcoreFiltered.results.length} 个节点属于 {kCoreValue}-Core（连接度 ≥ {kCoreValue}）
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {kcoreQuery.data.results.map((n: GraphKCoreNode, i: number) => (
+                    {kcoreFiltered.results.map((n: GraphKCoreNode, i: number) => (
                       <span
                         key={i}
                         className="text-xs px-2 py-1 bg-[var(--color-accent-container)] dark:bg-[var(--color-accent-container)]/30 text-[var(--color-accent-text)] dark:text-[var(--color-accent-text)] rounded-[var(--radius-pill)] cursor-pointer hover:ring-2 ring-[var(--color-accent-container)]"

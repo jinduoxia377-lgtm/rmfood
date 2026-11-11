@@ -74,7 +74,7 @@ export default function GraphTab() {
   return (
     <div className="flex h-full">
       {/* 搜索栏 */}
-      <div className="w-full px-[var(--space-apple-sm)] py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--color-neutral-50, #fafbfc)' }}>
+      <div className="w-full px-[var(--space-apple-sm)] py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--bg-surface-container)' }}>
         <div className="relative">
           <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-neutral-400, #94a3b8)' }} />
           <input
@@ -82,13 +82,13 @@ export default function GraphTab() {
             placeholder="搜索药材 / 成分 / 靶点…"
             aria-label="搜索知识图谱节点"
             className="w-full min-h-[36px] pl-7 pr-2 text-[12px] rounded-[var(--radius-Apple-sm)] border outline-none transition-all focus:ring-1 focus:ring-[var(--color-primary)]"
-            style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: '#fff', color: 'var(--color-neutral-700, #334155)' }}
+            style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--bg-surface-container)', color: 'var(--text-primary)' }}
           />
         </div>
       </div>
 
       {/* SVG 图谱区 */}
-      <div className="flex-1 relative overflow-hidden" style={{ background: '#fff' }}>
+      <div className="flex-1 relative overflow-hidden" style={{ background: 'var(--bg-surface-container)' }}>
         <svg viewBox="0 0 280 180" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
           {/* 连线 */}
           {KG_LINKS.filter(l => {
@@ -137,7 +137,7 @@ export default function GraphTab() {
         </svg>
 
         {/* 图例 */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-2 px-2 py-1 rounded-[var(--radius-Apple-sm)]" style={{ background: 'color-mix(in srgb, var(--color-neutral-50, #f8fafc) 95%, transparent)', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
+        <div className="absolute bottom-2 left-2 flex items-center gap-2 px-2 py-1 rounded-[var(--radius-Apple-sm)]" style={{ background: 'color-mix(in srgb, var(--bg-surface-container, #f8fafc) 95%, transparent)', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
           {(['herb','compound','target','disease'] as const).map(t => (
             <div key={t} className="flex items-center gap-1">
               <div className="w-1.5 h-1.5 rounded-[var(--radius-pill)]" style={{ background: KG_TYPE_STYLE[t].color }} />
@@ -149,7 +149,7 @@ export default function GraphTab() {
 
       {/* 右侧详情面板 */}
       {selectedNode && (
-        <div className="w-32 flex-shrink-0 border-l p-[var(--space-apple-sm)] overflow-y-auto" style={{ background: 'var(--color-neutral-50, #fafbfc)', borderColor: 'var(--color-neutral-200, #e2e8f0)' }}>
+        <div className="w-32 flex-shrink-0 border-l p-[var(--space-apple-sm)] overflow-y-auto" style={{ background: 'var(--bg-surface-container)', borderColor: 'var(--color-neutral-200, #e2e8f0)' }}>
           <div className="flex items-center gap-1.5 mb-2">
             <div className="w-2 h-2 rounded-[var(--radius-pill)]" style={{ background: KG_TYPE_STYLE[selectedNode.type].color }} />
             <span className="lp-tiny font-semibold text-neutral-800">{selectedNode.name}</span>

@@ -18,7 +18,7 @@
 
 import React, { useRef, useEffect, useState, useCallback, memo } from 'react'
 import * as d3 from 'd3'
-import { ZoomIn, ZoomOut, RotateCcw, Info } from 'lucide-react'
+import { ZoomIn, ZoomOut, RotateCcw, Info, Maximize2 } from 'lucide-react'
 import { Tooltip } from '@/components/ui'
 import { logger } from '@/utils/safeLogger'
 
@@ -56,6 +56,10 @@ interface KnowledgeGraphProps {
   height?: number
   onNodeClick?: (node: GraphNode) => void
   onNodeHover?: (node: GraphNode | null) => void
+  /** 传入后，选中面板底部出现「以此节点为中心展开」按钮，双击节点同样触发 */
+  onExpandNode?: (node: GraphNode) => void
+  /** 展开按钮文案（由调用方提供，便于 i18n；未提供时不渲染按钮） */
+  expandNodeLabel?: string
   showControls?: boolean
   className?: string
 }
@@ -80,6 +84,34 @@ const DEFAULT_CONFIG = {
   },
 }
 
+// 节点类型 → 固定配色（与 KnowledgeGraphPanel 图例保持一致）
+const CATEGORY_COLORS: Record<string, string> = {
+  herb: '#10b981',
+  compound: '#3b82f6',
+  target: '#8b5cf6',
+  disease: '#f59e0b',
+}
+
+/** 按 category 取色；未识别的 category 回退到原有色阶（保持向后兼容） */
+function nodeColor(node: GraphNode, index: number): string {
+  const category = node.category?.toLowerCase()
+  if (category && CATEGORY_COLORS[category]) return CATEGORY_COLORS[category]
+  return DEFAULT_CONFIG.colors.node[index % DEFAULT_CONFIG.colors.node.length]
+}
+
+/**
+ * 节点半径：按 `value`（通常为连接度）取对数缩放。
+ * 修复点：单节点图 log(1) = 0 会导致除零 → NaN；此处守卫并夹取到 [min, max]。
+ */
+function nodeRadius(node: GraphNode, totalNodes: number): number {
+  const { min, max } = DEFAULT_CONFIG.nodeRadius
+  const value = node.value && node.value > 0 ? node.value : 1
+  if (totalNodes <= 1) return (min + max) / 2
+  const ratio = Math.log(value) / Math.log(totalNodes)
+  const clamped = Number.isFinite(ratio) ? Math.max(0, Math.min(1, ratio)) : 0
+  return min + clamped * (max - min)
+}
+
 // ===== 主组件实现 =====
 
 const KnowledgeGraph = memo(({
@@ -89,6 +121,8 @@ const KnowledgeGraph = memo(({
   height = DEFAULT_CONFIG.height,
   onNodeClick,
   onNodeHover,
+  onExpandNode,
+  expandNodeLabel,
   showControls = true,
   className = '',
 }: KnowledgeGraphProps) => {
@@ -160,15 +194,8 @@ const KnowledgeGraph = memo(({
       .selectAll('circle')
       .data(nodes)
       .enter().append('circle')
-      .attr('r', (d: any) => {
-        const value = d.value || 1
-        const minR = DEFAULT_CONFIG.nodeRadius.min
-        const maxR = DEFAULT_CONFIG.nodeRadius.max
-        return minR + (Math.log(value) / Math.log(nodes.length)) * (maxR - minR)
-      })
-      .attr('fill', (_: any, i: number) =>
-        DEFAULT_CONFIG.colors.node[i % DEFAULT_CONFIG.colors.node.length],
-      )
+      .attr('r', (d: any) => nodeRadius(d, nodes.length))
+      .attr('fill', (d: GraphNode, i: number) => nodeColor(d, i))
       .attr('stroke', 'var(--color-white, #FFFFFF)')
       .attr('stroke-width', 2)
       .style('cursor', 'pointer')
@@ -197,13 +224,7 @@ const KnowledgeGraph = memo(({
       onNodeHover?.(d)
       d3.select(this)
         .transition().duration(200)
-        .attr('r', (n: any) => {
-          const value = n.value || 1
-          const baseR = DEFAULT_CONFIG.nodeRadius.min +
-            (Math.log(value) / Math.log(nodes.length)) *
-            (DEFAULT_CONFIG.nodeRadius.max - DEFAULT_CONFIG.nodeRadius.min)
-          return baseR * 1.2
-        })
+        .attr('r', (n: unknown) => nodeRadius(n as GraphNode, nodes.length) * 1.2)
         .attr('stroke-width', 3)
         .attr('stroke', 'var(--color-secondary, #0A84FF)')
 
@@ -223,12 +244,7 @@ const KnowledgeGraph = memo(({
       onNodeHover?.(null)
       d3.select(this)
         .transition().duration(200)
-        .attr('r', (n: any) => {
-          const value = n.value || 1
-          return DEFAULT_CONFIG.nodeRadius.min +
-            (Math.log(value) / Math.log(nodes.length)) *
-            (DEFAULT_CONFIG.nodeRadius.max - DEFAULT_CONFIG.nodeRadius.min)
-        })
+        .attr('r', (n: unknown) => nodeRadius(n as GraphNode, nodes.length))
         .attr('stroke-width', 2)
         .attr('stroke', 'var(--color-white, #FFFFFF)')
 
@@ -242,6 +258,12 @@ const KnowledgeGraph = memo(({
       setSelectedNode(d)
       onNodeClick?.(d)
       logger.info(`[KnowledgeGraph] 节点点击: ${d.label} (${d.id})`)
+    })
+
+    // 节点双击：以该节点为中心展开（仅在调用方提供 onExpandNode 时生效）
+    node.on('dblclick', (event: MouseEvent, d: GraphNode) => {
+      event.stopPropagation()
+      onExpandNode?.(d)
     })
 
     // 更新位置
@@ -265,7 +287,7 @@ const KnowledgeGraph = memo(({
     svg.on('click', () => {
       setSelectedNode(null)
     })
-  }, [nodes, links, width, height, onNodeClick, onNodeHover])
+  }, [nodes, links, width, height, onNodeClick, onNodeHover, onExpandNode])
 
   /**
    * 拖拽事件处理函数
@@ -426,6 +448,19 @@ const KnowledgeGraph = memo(({
                 ))}
               </div>
             </div>
+          )}
+
+          {/* 以此节点为中心展开（由调用方注入回调与 i18n 文案；未注入时不渲染，保持向后兼容） */}
+          {onExpandNode && expandNodeLabel && (
+            <button
+              type="button"
+              onClick={() => onExpandNode(selectedNode)}
+              data-testid="knowledge-graph-expand"
+              className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-primary-700 hover:bg-primary-600 text-white transition-colors"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+              {expandNodeLabel}
+            </button>
           )}
         </div>
       )}
