@@ -248,7 +248,7 @@ async def load_config_from_db() -> "LLMConfig | None":
                     api_key=_decrypt_api_key(v.get("api_key", "")) if isinstance(v, dict) else "",
                     base_url=v.get("base_url", "") if isinstance(v, dict) else "",
                     model=v.get("model", "") if isinstance(v, dict) else "",
-                    max_tokens=v.get("max_tokens", 16000) if isinstance(v, dict) else 16000,
+                    max_tokens=v.get("max_tokens", 32000) if isinstance(v, dict) else 32000,
                     temperature=v.get("temperature", 0.7) if isinstance(v, dict) else 0.7,
                     key_from_db=True,  # 数据库持久化来源
                 )
@@ -309,7 +309,7 @@ class LLMConfig:
     api_key: str = ""
     base_url: str = ""
     model: str = ""
-    max_tokens: int = 16000
+    max_tokens: int = 32000
     temperature: float = 0.7
     top_p: float = 1.0
     # 读超时（秒）：两次数据读取之间的最大间隔，容忍慢速流式上游；
@@ -482,7 +482,7 @@ class LLMService:
         if not model:
             model = "gpt-4o-mini"
 
-        # 获取 max_tokens（支持多种配置方式；专业配方设计卡输出较长，默认 16000 避免截断）
+        # 获取 max_tokens（支持多种配置方式；专业配方设计卡输出较长，默认 32000 避免截断）
         # P1-3 修复（2026-10-26）：原 getattr(settings, "ai_max_tokens", 0) 是死分支 ——
         # Settings 没有 ai_max_tokens 字段，真实字段路径是 settings.ai_service.max_tokens
         # （见 app/core/config.py 的 AIServiceConfig.max_tokens 与 Settings.ai_service），
@@ -492,7 +492,7 @@ class LLMService:
         max_tokens = int(os.environ.get("AI_MAX_TOKENS", "0")) or \
                      getattr(ai_service_cfg, "max_tokens", 0) or \
                      (ai_service.max_tokens if ai_service else 0) or \
-                     16000
+                     32000
 
         # 获取 temperature（支持多种配置方式）
         # P1-3 修复（2026-10-26）：原 getattr(settings, "ai_temperature", 0.0) 同款死分支，
@@ -520,9 +520,13 @@ class LLMService:
 
     @property
     def is_available(self) -> bool:
-        """LLM 服务是否可用（基于运行时配置判断）"""
+        """LLM 服务是否可用（基于运行时配置判断）
+
+        同时要求 api_key 与 model 非空：仅凭 api_key 会漏判"model 空配置"为可用
+        （如 provider=agnes 但 model='' → agnes API 400，整个 AI 对话瘫痪）。
+        """
         try:
-            return bool(self.config.api_key)
+            return bool(self.config.api_key) and bool(self.config.model)
         except Exception as e:
             logger.error(f"检查LLM服务可用性失败: {e}")
             return False
@@ -593,7 +597,7 @@ class LLMService:
                 api_key=_decrypt_api_key(v.get("api_key", "")),
                 base_url=v.get("base_url", "") or getattr(_fb, "base_url", ""),
                 model=v.get("model", "") or getattr(_fb, "model", ""),
-                max_tokens=v.get("max_tokens", 16000),
+                max_tokens=v.get("max_tokens", 32000),
                 temperature=v.get("temperature", 0.7),
                 key_from_db=True,
                 user_id=user_id,
@@ -1166,7 +1170,7 @@ def get_mock_response(question: str) -> str:
 - 《保健食品注册与备案管理办法》
 
 **药食同源目录管理：**
-- 2023版目录包含114种药材
+- 2024版目录包含106种药材
 - 仅限目录内药材用于食品
 - 严格遵守用量规定
 
