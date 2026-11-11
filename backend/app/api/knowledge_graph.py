@@ -13,7 +13,11 @@
 - GET  /databases/knowledge-graph/bridges         — 关键桥梁节点
 """
 
+import asyncio
+import hashlib
+import json
 import logging
+import time
 from collections import defaultdict  # A-27：detect_communities 用到，原先漏导入 → 恒定 500
 from typing import Any, Dict, List, Optional, Set  # A-27：Set 亦被用到，原先漏导入
 
@@ -24,6 +28,8 @@ from sqlalchemy import (  # or_: /nodes/{id}/neighbors 与 /subgraph 用到，�
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..core.database import async_session_factory
+from ..core.performance.task_queue import TaskPriority, get_task_queue
 from ..core.plans import require_plan
 from ..models.knowledge_graph import KGNode
 from ..models.user_model import User
@@ -110,7 +116,19 @@ async def compute_centrality(
     # 加载图谱数据
     node_types = [node_type] if node_type else None
     edge_types = [edge_type] if edge_type else None
-    nodes, edges = await engine.load_graph(db, source="memory", node_types=node_types, edge_types=edge_types)
+    # 图谱割裂修复②a：按实测重划同步/异步边界。纯Python引擎在B表全谱(14749节点)实测——
+    # PageRank 1.63s(同步OK)；closeness 全对BFS >6min、betweenness ~6min、kcore 34s 同步均扛不住。
+    # 故仅 pageRank 切 B表全谱；closeness/betweenness 守卫回退 memory 小图 + 提示，待②b 异步化。
+    mode_lower_pre = mode.lower()
+    if mode_lower_pre == "pagerank":
+        nodes, edges = await engine.load_graph(db, source="btable", node_types=node_types, edge_types=edge_types)
+        source_used = "btable"
+        source_note = None
+    else:
+        # closeness / betweenness：同步扛不住(>6min)，回退 memory 小图 + 提示
+        nodes, edges = await engine.load_graph(db, source="memory", node_types=node_types, edge_types=edge_types)
+        source_used = "memory"
+        source_note = f"{mode} 在 B表全谱(14749节点)纯Python同步实测约6分钟以上会超时，已回退内存小图；全谱 {mode} 需异步架构(规划中)"
 
     if not nodes:
         return {
@@ -152,8 +170,290 @@ async def compute_centrality(
         "total_nodes": len(nodes),
         "total_edges": len(edges),
         "returned": len(results),
+        "source": source_used,
+        **({"note": source_note} if source_note else {}),
         "results": results,
     }
+
+
+# ═══════════════════════════════════════════
+# 异步分析任务（图谱割裂修复②b-1：betweenness 试点）
+# ═══════════════════════════════════════════
+#
+# betweenness 在 B表全谱(14749节点/240344边)纯Python实测 ~161s，同步必超时。
+# 复用现有 AsyncTaskQueue（asyncio内存队列，main.py 已 start）+ Redis 结果缓存。
+# 链路：POST 提交→返回 task_id → 前端 GET /core/tasks/{task_id} 轮询 → done 取结果。
+# 缓存：key=算法+图指纹(节点/边数+采样)，TTL 24h，命中直接返回免重算。
+
+_KG_BETWEENNESS_CACHE_TTL = 86400  # 24h
+
+# 进程内回退缓存（Redis 未启用时用；生产 USE_REDIS=true 走 Redis 跨进程共享）
+_kg_betweenness_memcache: Dict[str, Any] = {}
+_kg_betweenness_memcache_ts: Dict[str, float] = {}
+
+
+def _kg_betweenness_cache_key(node_count: int, edge_count: int, sample_size: Optional[int]) -> str:
+    """图指纹缓存键：图规模+采样变化时自动失效。"""
+    raw = f"btable:{node_count}:{edge_count}:sample={sample_size}"
+    fp = hashlib.sha1(raw.encode()).hexdigest()[:16]
+    return f"rmfood:kg:betweenness:{fp}"
+
+
+async def _kg_get_cached_betweenness(key: str) -> Optional[Dict[str, Any]]:
+    try:
+        from ..core.distributed.redis_client import get_redis
+        redis = await get_redis()
+        if redis is not None:
+            raw = await redis.get(key)
+            return json.loads(raw) if raw else None
+    except Exception as e:  # Redis 故障不阻断，回退内存
+        logger.warning(f"betweenness Redis 缓存读取失败(回退内存): {e}")
+    # 内存回退
+    ts = _kg_betweenness_memcache_ts.get(key)
+    if ts and (time.time() - ts) < _KG_BETWEENNESS_CACHE_TTL and key in _kg_betweenness_memcache:
+        return _kg_betweenness_memcache[key]
+    return None
+
+
+async def _kg_set_cached_betweenness(key: str, payload: Dict[str, Any]) -> None:
+    try:
+        from ..core.distributed.redis_client import get_redis
+        redis = await get_redis()
+        if redis is not None:
+            await redis.set(key, json.dumps(payload, ensure_ascii=False), ex=_KG_BETWEENNESS_CACHE_TTL)
+            return
+    except Exception as e:
+        logger.warning(f"betweenness Redis 缓存写入失败(回退内存): {e}")
+    # 内存回退（只留最近一份，避免内存膨胀）
+    _kg_betweenness_memcache.clear()
+    _kg_betweenness_memcache_ts.clear()
+    _kg_betweenness_memcache[key] = payload
+    _kg_betweenness_memcache_ts[key] = time.time()
+
+
+async def _run_betweenness_task(
+    node_count: int, edge_count: int, sample_size: Optional[int], cache_key: str
+) -> Dict[str, Any]:
+    """异步任务体：加载B表→线程池算betweenness→缓存→返回 top 结果。
+
+    在 AsyncTaskQueue worker 协程中运行；自身开独立 DB session（不复用请求 session）。
+    compute_betweenness 是同步CPU密集，用 run_in_executor 丢线程池避免阻塞事件循环。
+    """
+    # 缓存命中（提交后到真正执行间可能已被其它请求算好）
+    cached = await _kg_get_cached_betweenness(cache_key)
+    if cached is not None:
+        return {**cached, "cached": True}
+
+    eng = KnowledgeGraphEngine()
+    async with async_session_factory() as db:
+        nodes, edges = await eng.load_graph_from_btable(db)
+
+    if not nodes:
+        return {"mode": "betweenness", "total_nodes": 0, "results": [], "message": "图谱为空"}
+
+    loop = asyncio.get_running_loop()
+    scores = await loop.run_in_executor(
+        None, lambda: eng.compute_betweenness(nodes, edges, sample_size=sample_size)
+    )
+
+    node_lookup = {n["id"]: n for n in nodes}
+    sorted_items = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    results = [
+        {
+            "node_id": nid,
+            "node_type": node_lookup.get(nid, {}).get("node_type", "unknown"),
+            "node_label": node_lookup.get(nid, {}).get("node_label", str(nid)),
+            "betweenness_score": round(score, 8),
+        }
+        for nid, score in sorted_items
+    ]
+    payload = {
+        "mode": "betweenness",
+        "source": "btable",
+        "total_nodes": len(nodes),
+        "total_edges": len(edges),
+        "sample_size": sample_size,
+        "results": results,  # 全量排序，前端按 limit 取
+    }
+    await _kg_set_cached_betweenness(cache_key, payload)
+    return {**payload, "cached": False}
+
+
+@router.post("/analytics/betweenness/async", summary="介数中心性(异步，B表全谱)")
+async def betweenness_async(
+    limit: int = Query(20, ge=1, le=200, description="返回top-N"),
+    sample_size: Optional[int] = Query(None, ge=50, le=5000, description="采样源节点数(默认自动500)"),
+    current_user: User = Depends(require_plan("knowledge_graph")),
+) -> Dict[str, Any]:
+    """提交 betweenness 异步任务，立即返回 task_id。
+
+    B表全谱(14749节点)纯Python实测~161s，同步超时，故走 AsyncTaskQueue。
+    前端用返回的 task_id 轮询 GET /api/v1/core/tasks/{task_id} 取结果。
+    结果缓存 Redis 24h（图规模/采样不变即命中）。
+    """
+    # 用图规模做缓存键（提交前快速判定，避免重复提交已缓存任务）
+    cache_key = _kg_betweenness_cache_key(14749, 240344, sample_size)  # 规模指纹(稳定)
+    cached = await _kg_get_cached_betweenness(cache_key)
+    if cached is not None:
+        return {
+            "success": True,
+            "mode": "betweenness",
+            "cached": True,
+            "task_id": None,
+            "status": "done",
+            "result": {**cached, "results": cached.get("results", [])[:limit]},
+        }
+
+    queue = get_task_queue()
+    task_id = await queue.submit(
+        func=_run_betweenness_task,
+        args=(14749, 240344, sample_size, cache_key),
+        priority=TaskPriority.HIGH,
+        timeout=900,  # 161s 实测，留足余量
+        metadata={"algorithm": "betweenness", "source": "btable"},
+    )
+    return {"success": True, "mode": "betweenness", "cached": False, "task_id": task_id, "status": "pending", "poll": f"/api/v1/core/tasks/{task_id}"}
+
+
+# ── 通用异步分析缓存（②b-2：communities/kcore 复用②b-1 模式）──
+_KG_ASYNC_CACHE_TTL = 86400  # 24h
+_kg_async_memcache: Dict[str, Any] = {}
+_kg_async_memcache_ts: Dict[str, float] = {}
+
+
+def _kg_async_cache_key(algo: str, node_count: int, edge_count: int, extra: str = "") -> str:
+    raw = f"{algo}:btable:{node_count}:{edge_count}:{extra}"
+    fp = hashlib.sha1(raw.encode()).hexdigest()[:16]
+    return f"rmfood:kg:{algo}:{fp}"
+
+
+async def _kg_get_cached(key: str) -> Optional[Dict[str, Any]]:
+    try:
+        from ..core.distributed.redis_client import get_redis
+        redis = await get_redis()
+        if redis is not None:
+            raw = await redis.get(key)
+            return json.loads(raw) if raw else None
+    except Exception as e:
+        logger.warning(f"异步分析 Redis 缓存读取失败(回退内存): {e}")
+    ts = _kg_async_memcache_ts.get(key)
+    if ts and (time.time() - ts) < _KG_ASYNC_CACHE_TTL and key in _kg_async_memcache:
+        return _kg_async_memcache[key]
+    return None
+
+
+async def _kg_set_cached(key: str, payload: Dict[str, Any]) -> None:
+    try:
+        from ..core.distributed.redis_client import get_redis
+        redis = await get_redis()
+        if redis is not None:
+            await redis.set(key, json.dumps(payload, ensure_ascii=False), ex=_KG_ASYNC_CACHE_TTL)
+            return
+    except Exception as e:
+        logger.warning(f"异步分析 Redis 缓存写入失败(回退内存): {e}")
+    _kg_async_memcache.clear()
+    _kg_async_memcache_ts.clear()
+    _kg_async_memcache[key] = payload
+    _kg_async_memcache_ts[key] = time.time()
+
+
+async def _run_communities_task(node_count: int, edge_count: int, cache_key: str) -> Dict[str, Any]:
+    """Louvain 社区检测异步任务体（B表全谱，>5000节点自动度数降采样）。"""
+    cached = await _kg_get_cached(cache_key)
+    if cached is not None:
+        return {**cached, "cached": True}
+    eng = KnowledgeGraphEngine()
+    async with async_session_factory() as db:
+        nodes, edges = await eng.load_graph_from_btable(db)
+    if not nodes:
+        return {"mode": "communities", "total_nodes": 0, "communities": [], "message": "图谱为空"}
+    loop = asyncio.get_running_loop()
+    comm_map = await loop.run_in_executor(None, lambda: eng.detect_communities_louvain(nodes, edges))
+    node_lookup = {n["id"]: n for n in nodes}
+    # 按社区分组
+    groups: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for nid, cid in comm_map.items():
+        info = node_lookup.get(nid, {})
+        groups[cid].append({
+            "node_id": nid,
+            "node_type": info.get("node_type", "unknown"),
+            "node_label": info.get("node_label", str(nid)),
+        })
+    communities = [
+        {"community_id": cid, "size": len(members), "nodes": members}
+        for cid, members in sorted(groups.items(), key=lambda x: -len(x[1]))
+    ]
+    payload = {"mode": "communities", "source": "btable", "total_nodes": len(nodes),
+               "total_edges": len(edges), "total_communities": len(communities), "communities": communities}
+    await _kg_set_cached(cache_key, payload)
+    return {**payload, "cached": False}
+
+
+async def _run_kcore_task(node_count: int, edge_count: int, cache_key: str) -> Dict[str, Any]:
+    """K-Core 分解异步任务体（B表全谱，实测34s）。"""
+    cached = await _kg_get_cached(cache_key)
+    if cached is not None:
+        return {**cached, "cached": True}
+    eng = KnowledgeGraphEngine()
+    async with async_session_factory() as db:
+        nodes, edges = await eng.load_graph_from_btable(db)
+    if not nodes:
+        return {"mode": "kcore", "total_nodes": 0, "results": [], "message": "图谱为空"}
+    loop = asyncio.get_running_loop()
+    coreness = await loop.run_in_executor(None, lambda: eng.decompose_kcore(nodes, edges))
+    node_lookup = {n["id"]: n for n in nodes}
+    sorted_items = sorted(coreness.items(), key=lambda x: x[1], reverse=True)
+    results = [
+        {"node_id": nid, "node_type": node_lookup.get(nid, {}).get("node_type", "unknown"),
+         "node_label": node_lookup.get(nid, {}).get("node_label", str(nid)), "coreness": c}
+        for nid, c in sorted_items
+    ]
+    payload = {"mode": "kcore", "source": "btable", "total_nodes": len(nodes), "total_edges": len(edges),
+               "max_coreness": max(coreness.values()) if coreness else 0, "results": results}
+    await _kg_set_cached(cache_key, payload)
+    return {**payload, "cached": False}
+
+
+def _submit_kg_async(algo: str, func, args: tuple, timeout: int) -> Dict[str, Any]:
+    """公共提交逻辑（返回 dict 由调用端点包装为响应）。"""
+    # 同步提交——由 async 端点 await 调用
+    return {"algo": algo, "func": func, "args": args, "timeout": timeout}
+
+
+@router.post("/analytics/communities/async", summary="Louvain社区检测(异步，B表全谱)")
+async def communities_async(
+    limit_per_community: int = Query(10, ge=1, le=50, description="每社区返回节点数"),
+    current_user: User = Depends(require_plan("knowledge_graph")),
+) -> Dict[str, Any]:
+    """提交 Louvain 社区检测异步任务（B表全谱，比 betweenness 更重）。"""
+    cache_key = _kg_async_cache_key("communities", 14749, 240344)
+    cached = await _kg_get_cached(cache_key)
+    if cached is not None:
+        trimmed = {**cached, "communities": [
+            {**c, "nodes": c["nodes"][:limit_per_community]} for c in cached.get("communities", [])
+        ]}
+        return {"success": True, "mode": "communities", "cached": True, "task_id": None, "status": "done", "result": trimmed}
+    queue = get_task_queue()
+    task_id = await queue.submit(func=_run_communities_task, args=(14749, 240344, cache_key),
+                                 priority=TaskPriority.HIGH, timeout=1800,
+                                 metadata={"algorithm": "communities", "source": "btable"})
+    return {"success": True, "mode": "communities", "cached": False, "task_id": task_id, "status": "pending", "poll": f"/api/v1/core/tasks/{task_id}"}
+
+
+@router.post("/analytics/kcore/async", summary="K-Core分解(异步，B表全谱)")
+async def kcore_async(
+    current_user: User = Depends(require_plan("knowledge_graph")),
+) -> Dict[str, Any]:
+    """提交 K-Core 分解异步任务（B表全谱，实测~34s）。"""
+    cache_key = _kg_async_cache_key("kcore", 14749, 240344)
+    cached = await _kg_get_cached(cache_key)
+    if cached is not None:
+        return {"success": True, "mode": "kcore", "cached": True, "task_id": None, "status": "done", "result": cached}
+    queue = get_task_queue()
+    task_id = await queue.submit(func=_run_kcore_task, args=(14749, 240344, cache_key),
+                                 priority=TaskPriority.HIGH, timeout=600,
+                                 metadata={"algorithm": "kcore", "source": "btable"})
+    return {"success": True, "mode": "kcore", "cached": False, "task_id": task_id, "status": "pending", "poll": f"/api/v1/core/tasks/{task_id}"}
 
 
 # ═══════════════════════════════════════════
@@ -256,7 +556,11 @@ async def kcore_decomposition(
     指定k时返回属于该核心的节点集合。
     """
     node_types = [node_type] if node_type else None
+    # 图谱割裂修复②a：kcore 纯Python剥离法在B表全谱(14749节点/240344边)实测34s，同步超预算，
+    # 守卫回退 memory 小图（覆盖小但不崩），待②b 异步化后切全谱。
     nodes, edges = await engine.load_graph(db, source="memory", node_types=node_types)
+    kcore_source = "memory"
+    kcore_note = "kcore 在 B表全谱(14749节点)纯Python同步实测约34s会超时，已回退内存小图；全谱 kcore 需异步架构(规划中)"
 
     if not nodes:
         return {"k": k, "total_nodes": 0, "results": [], "message": "图谱中暂无数据"}
@@ -281,6 +585,8 @@ async def kcore_decomposition(
             "k": k,
             "total_nodes": len(nodes),
             "core_size": len(core_nodes),
+            "source": kcore_source,
+            "note": kcore_note,
             "results": core_nodes,
         }
     else:
@@ -292,6 +598,8 @@ async def kcore_decomposition(
             "k": None,
             "total_nodes": len(nodes),
             "max_coreness": max(coreness_result.values()) if coreness_result else 0,
+            "source": kcore_source,
+            "note": kcore_note,
             "results": [
                 {
                     "node_id": nid,
@@ -322,23 +630,22 @@ async def recommend_similar_herbs(
     2. 共同靶点覆盖度 (35%)
     3. 二跳路径重叠度 (25%)
     """
-    # 查找目标药材节点
-    result = await db.execute(
-        select(KGNode).where(
-            KGNode.node_type == "herb",
-            KGNode.node_label.ilike(f"%{herb_name}%"),
-        ).limit(1)
-    )
-    target_node = result.scalar_one_or_none()
+    # 查找目标药材节点 — 图谱割裂修复②a：目标必须从 B表 节点解析（与下方 load_graph(btable)
+    # 同一 id 命名空间）。原先用 /build 的 KGNode 表查 id，但 edges/nodes 来自 B表，
+    # 两套 id 不同 → target_node.id 在 B表 nodes 里不存在 → recommend 恒返回 0。
+    nodes, edges = await engine.load_graph(db, source="btable")
 
+    target_node = next(
+        (n for n in nodes if n["node_type"] == "herb" and herb_name in (n.get("node_label") or "")),
+        None,
+    )
     if not target_node:
         raise HTTPException(
             status_code=404,
             detail={"error": "HERB_NOT_FOUND", "message": f"未找到药材: {herb_name}"},
         )
-
-    # 加载全图谱
-    nodes, edges = await engine.load_graph(db, source="memory")
+    target_id = target_node["id"]
+    target_label = target_node["node_label"]
 
     if not nodes or not edges:
         return {
@@ -348,7 +655,7 @@ async def recommend_similar_herbs(
             "message": "图谱数据不足，请先执行 /build",
         }
 
-    recommendations = engine.recommend_similar_herbs(target_node.id, nodes, edges, top_n=top_n)
+    recommendations = engine.recommend_similar_herbs(target_id, nodes, edges, top_n=top_n)
 
     # 补充药材名称
     node_lookup = {n["id"]: n for n in nodes}
@@ -361,8 +668,8 @@ async def recommend_similar_herbs(
         })
 
     return {
-        "target_herb": target_node.node_label,
-        "target_id": target_node.id,
+        "target_herb": target_label,
+        "target_id": target_id,
         "total_candidates": len(recommendations),
         "returned": len(enriched_recs),
         "recommendations": enriched_recs,
