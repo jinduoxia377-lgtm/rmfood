@@ -111,9 +111,19 @@ services:
       # 数据库连接池优化
       DATABASE__POOL_SIZE: "${DATABASE__POOL_SIZE:-20}"
       DATABASE__MAX_OVERFLOW: "${DATABASE__MAX_OVERFLOW:-10}"
+      # ===== RAG 本地向量检索（本草古籍知识库）=====
+      # DeepSeek 无 embedding 端点，复用其配置会降级；改用本地 fastembed(bge-small-zh, 512维)
+      EMBEDDING_PROVIDER: local
+      # 强制离线：只用镜像内预置的 ONNX 模型缓存，绝不联网（服务器直连 HuggingFace 被墙）
+      HF_HUB_OFFLINE: "1"
+      # 镜像内预置的 fastembed ONNX 模型缓存（由 Dockerfile COPY backend/data/ 带入）
+      FASTEMBED_CACHE_PATH: /app/data/fastembed_cache
+      # 预构建的本草古籍向量库（16087 向量，含《本草纲目》《神农本草经》等）
+      CHROMA_PERSIST_DIR: /app/data/chromadb_v2
     volumes:
       - uploads_data:/app/uploads
       - ./temp_files:/app/temp_files
+      - chromadb_v2_data:/app/data/chromadb_v2
     depends_on:
       postgres:
         condition: service_healthy
@@ -193,6 +203,8 @@ volumes:
   redis_data:
     driver: local
   uploads_data:
+    driver: local
+  chromadb_v2_data:
     driver: local
   chroma_data:
     driver: local
