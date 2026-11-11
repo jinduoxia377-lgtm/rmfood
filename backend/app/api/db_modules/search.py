@@ -101,6 +101,7 @@ async def get_herb_interactions(
 
 @router.get("/knowledge-graph/stats", summary="知识图谱统计")
 async def get_graph_stats(
+    db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
     """获取知识图谱整体统计（混合口径：herb/compound/target/disease 走B表，与图谱分析对齐）"""
