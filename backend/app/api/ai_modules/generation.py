@@ -213,19 +213,57 @@ async def generate_formula_v2(
         result = await designer.design(intent, {})
         elapsed_ms = (time.perf_counter() - start_time) * 1000
 
-        # 格式化返回
+        # 格式化返回 + ★ 合规加固（方案A）：v2 候选出口套统一安全闸门 safety_gate，
+        # 与主路径 /generate 走同一套 L0准入 + 剂量上限 + 真实 check_compliance 三态。
+        # 根因：原 v2 药材池 select(TCMHerb) 整表、候选出口无任何合规闸 → 可产出
+        # 目录外/非食品级/受保护物种（虫草等）配方，是在线可达端点的医疗合规红线。
+        from ...services.ai.safety.safety_gate import check_formula_safety
         from ...services.ai.formula_generation_service import _parse_dosage_g
         candidates = []
         for i, item in enumerate(result.get("data", [])):
+            name = str(item.get("name", "")).strip()
+            dosage_raw = item.get("dosage", "")
+            # 复用 safety_gate 原逻辑（不重写闸、不绕过剂量上限/白名单）：
+            # 闸1 L0准入（虫草等目录外/受保护物种在此被拒）+ 闸2 剂量上限(auto_clamp) + 闸3 真三态 check_compliance
+            herb_combination = [{"name": name, "dosage": dosage_raw}]
+            verdict = check_formula_safety(
+                herb_combination,
+                population="adults",
+                auto_clamp=True,
+            )
+            # 剔除 L0 准入被拒的候选（目录外/非食品级/受保护物种不进配方）
+            herb_verdict = verdict.herb_verdicts[0] if verdict.herb_verdicts else None
+            if herb_verdict is not None and not herb_verdict.admitted:
+                logger.info(f"[GenerateV2] 候选 '{name}' 未通过 L0 目录准入，已剔除: {herb_verdict.reason}")
+                continue
+            # 被整体拒绝（如配伍禁忌/超限且不可截断）也剔除
+            if verdict.status == "REJECTED":
+                logger.info(f"[GenerateV2] 候选 '{name}' safety REJECTED，已剔除")
+                continue
+            # 剂量：auto_clamp=True 已原地截断 herb_combination[0]["dosage"] 到目录限量
+            # （safety_gate :230），回读截断后值作为最终 dosage（复用闸的原逻辑，不自行重算）
+            final_dosage = str(herb_combination[0].get("dosage", dosage_raw))
+            # 真实安全分：来自 check_compliance，未校验为 None（前端显示"未校验"，不用ML自评冒充）
+            safety_score = round(verdict.score / 100.0, 4) if verdict.is_verified else None
+            safety_passed = verdict.is_safe_for_display  # 仅 status == "PASS" 为 True
             candidates.append({
-                "id": f"v2_candidate_{i}",
+                "id": f"v2_candidate_{len(candidates)}",
                 "role": item.get("role", ""),
-                "name": item.get("name", ""),
-                "dosage": item.get("dosage", ""),
+                "name": name,
+                "dosage": final_dosage,
                 # 剂量带单位（"22g"/"5-10g/天"/"500mg"）安全解析为克数，不崩
-                "dosage_g": _parse_dosage_g(item.get("dosage")),  # 前端 FormulaComparePanel 标准字段
+                "dosage_g": _parse_dosage_g(final_dosage),  # 前端 FormulaComparePanel 标准字段
                 "purpose": item.get("purpose", ""),
                 "score": item.get("score", 0),
+                # ★ 三态安全裁定 + 降级标记（与主路径 /generate 对齐，前端透传展示）★
+                "safety_score": safety_score,
+                "safety_passed": safety_passed,
+                "safety_verdict": {
+                    "status": verdict.status.lower(),  # pass / needs_attention / rejected / unverified
+                    "is_compliant": verdict.is_compliant,
+                    "violations": verdict.violations,
+                    "warnings": verdict.warnings,
+                },
             })
 
         return {
@@ -238,6 +276,9 @@ async def generate_formula_v2(
             "template_used": result.get("template_used"),
             "execution_time_ms": round(elapsed_ms, 2),
             "generator": "rule_engine",  # 统一引擎仍使用遗传算法
+            # ★ 合规加固透传：v2 经统一安全闸门，与主路径一致；空候选=全部被合规闸剔除
+            "compliance_gated": True,
+            "fallback_reason": None if candidates else "所有候选未通过 106 目录准入/安全闸，无合规配方",
         }
 
     except Exception as e:
