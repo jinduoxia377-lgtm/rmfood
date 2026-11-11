@@ -9,10 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Database,
-  Trash2,
   FileText,
-  FileSpreadsheet,
-  File,
   Loader2,
   RefreshCw,
   Search,
@@ -20,27 +17,31 @@ import {
   ChevronDown,
   ChevronUp,
   Network,
+  BookOpen,
   CheckCircle,
   AlertCircle,
   X,
 } from 'lucide-react';
 import {
-  listDocuments,
+  listDocumentsWithSummary,
   deleteDocument,
   getRAGStats,
   searchChunks,
   type RAGStats,
+  type RAGDocumentsSummary,
   type SearchChunkResult,
 } from '@/api/rag';
-import { databaseApi } from '@/api/database';
 import { useRAGContext } from '@/hooks/useRAGContext';
 import { logger } from '@/utils/safeLogger';
 import { DocumentUploader } from './DocumentUploader';
 import { TerminologyLookup } from './TerminologyLookup';
+import { DocumentListView } from './DocumentListView';
+import { KnowledgeGraphPanel } from './KnowledgeGraphPanel';
+import { getRelevanceLabel, getRankBadge } from './relevance';
+import { getSourceDisplayName } from './sourceDisplay';
 import { Card, Button } from '@/components/ui';
-import { KnowledgeGraph } from '../features/components/KnowledgeGraph';
+import { AncientBooksPanel } from './AncientBooksPanel';
 import { clsx } from 'clsx';
-import type { GraphNode, GraphLink } from '../features/components/KnowledgeGraph';
 
 // ═══════════════════════════════════════════
 // 命名常量（替换魔法数字）
@@ -53,18 +54,6 @@ const STATS_REFETCH_INTERVAL_MS = 30000;
 
 interface KnowledgeBasePanelProps {
   isEmbedded?: boolean;
-}
-
-const FILE_ICONS: Record<string, React.ReactNode> = {
-  pdf: <FileText className="w-4 h-4 text-error-500" />,
-  txt: <FileText className="w-4 h-4 text-secondary-500" />,
-  csv: <FileSpreadsheet className="w-4 h-4 text-success-500" />,
-  md: <FileText className="w-4 h-4 text-accent-500" />,
-};
-
-function getFileIcon(filename: string): React.ReactNode {
-  const ext = filename.split('.').pop()?.toLowerCase() || '';
-  return FILE_ICONS[ext] || <File className="w-4 h-4 text-[var(--text-muted)]" />;
 }
 
 type TFunc = ReturnType<typeof useTranslation>['t'];
@@ -305,10 +294,14 @@ function SearchTester() {
             results.map((r, i) => (
               <div key={i} className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-primary-700 dark:text-primary-700">
-                    {t('ai.knowledge.similarity', { value: `${(r.similarity * 100).toFixed(1)}%` })}
+                  {/* P1-9：similarity 实为 RRF 融合分，不再渲染为百分比；改为排序徽标 + 相对强弱 */}
+                  <span className="flex items-center gap-1.5 font-semibold text-primary-700 dark:text-primary-700">
+                    <span className="px-1 py-0.5 text-[10px] font-semibold leading-none bg-primary-100 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 rounded">
+                      {getRankBadge(i)}
+                    </span>
+                    {getRelevanceLabel(i, t)}
                   </span>
-                  <span className="text-[var(--text-muted)]">{r.doc_filename}</span>
+                  <span className="text-[var(--text-muted)]">{getSourceDisplayName(r.doc_filename, r.display_name)}</span>
                 </div>
                 <p className="text-sm text-[var(--text-secondary)] line-clamp-2">{r.content}</p>
               </div>
@@ -320,72 +313,6 @@ function SearchTester() {
   );
 }
 
-/* ─── {t('ai.knowledge.knowledgeGraph')}视图 ─── */
-function KnowledgeGraphView() {
-  const { t } = useTranslation()
-  const [graphData, setGraphData] = useState<{ nodes: GraphNode[]; links: GraphLink[] } | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [centerNode, setCenterNode] = useState('')
-  const [error, setError] = useState<string | null>(null)
-
-  const handleLoadGraph = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const center = centerNode.trim() || '黄芪'
-      const data = await databaseApi.findSubgraph(center, 2)
-      const nodes: GraphNode[] = (data.nodes || []).map((n: any) => ({
-        id: n.id ?? n.node_id ?? String(n.node_label),
-        label: n.node_label ?? n.label ?? n.id,
-        category: n.node_type ?? n.group ?? 'herb',
-        value: n.importance ?? 10,
-        description: n.description ?? '',
-        metadata: n.metadata ?? {},
-      }))
-      const links: GraphLink[] = (data.edges || []).map((e: any) => ({
-        source: e.source ?? e.from,
-        target: e.target ?? e.to,
-        label: e.relation ?? e.type ?? '',
-        type: e.relation_type ?? 'related',
-        value: e.strength ?? 1,
-      }))
-      setGraphData({ nodes, links })
-    } catch (err) {
-      setError((err as Error).message || t('ai.knowledge.loadGraphFailed'))
-    } finally {
-      setLoading(false)
-    }
-  }, [centerNode, t])
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <input
-          value={centerNode}
-          onChange={(e) => setCenterNode(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleLoadGraph()}
-          placeholder={t('ai.knowledge.nodePlaceholder')}
-          className="flex-1 px-3 py-1.5 text-sm border border-[var(--border-color)] rounded-lg bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        />
-        <Button onClick={handleLoadGraph} disabled={loading || !centerNode.trim()} size="sm">
-          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : t('ai.knowledge.loadGraph')}
-        </Button>
-      </div>
-      {error && <p className="text-xs text-error-500">{error}</p>}
-      {graphData && (
-        <div className="rounded-xl border border-[var(--border-color)] overflow-hidden" style={{ height: 520 }}>
-          <KnowledgeGraph nodes={graphData.nodes} links={graphData.links} />
-        </div>
-      )}
-      {!graphData && !loading && !error && (
-        <div className="text-center py-12 text-sm text-[var(--text-muted)]">
-          {t('ai.knowledge.graphHint')}
-        </div>
-      )}
-    </div>
-  )
-}
-
 export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelProps) {
   const { t } = useTranslation()
   // P1-3/P1-4: 接入共享 useRAGContext —— 知识库「是否已就绪/总块数」这一顶层状态
@@ -393,18 +320,28 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
   const rag = useRAGContext()
   const queryClient = useQueryClient();
   const [deletingFile, setDeletingFile] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'graph'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'graph' | 'books'>('list');
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats } = useQuery({
     queryKey: ['rag-stats'],
     queryFn: getRAGStats,
     refetchInterval: STATS_REFETCH_INTERVAL_MS,
   });
 
-  const { data: documents, isLoading: docsLoading } = useQuery({
+  // 文档列表：返回全量字段（display_name/category/dynasty/author/is_protected）+ 顶层 summary
+  // 不传 page_size → 后端 page_size=0 返回全部，供 DocumentListView 客户端过滤/排序/分页
+  const {
+    data: documentsResponse,
+    isLoading: docsLoading,
+    error: docsErrorObj,
+    refetch: refetchDocuments,
+  } = useQuery({
     queryKey: ['rag-documents'],
-    queryFn: listDocuments,
+    queryFn: () => listDocumentsWithSummary(),
   });
+  const documentsError = docsErrorObj
+    ? ((docsErrorObj as Error)?.message ?? t('ai.knowledge.docLoadError'))
+    : null;
 
   const deleteMutation = useMutation({
     mutationFn: deleteDocument,
@@ -414,6 +351,9 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
       // P1-3/P1-4: 删除后刷新共享 Context（isSeeded/totalChunks），
       // 使 TopBar 与本面板保持同步。
       void rag.refreshSeedStatus();
+      // P2-1: 删除文档后清空聊天区残留的 rag.chunks，
+      // 避免「知识库参考」横幅仍引用已删除文档的来源。
+      rag.clearChunks();
     },
   });
 
@@ -436,8 +376,8 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
     void rag.refreshSeedStatus();
   }, [queryClient, rag.refreshSeedStatus]);
 
-  const docs = documents || [];
-  const isLoading = statsLoading || docsLoading;
+  const docs = documentsResponse?.documents ?? [];
+  const summary = documentsResponse?.summary;
 
   return (
     <div className={clsx('space-y-4', isEmbedded ? '' : 'p-4')}>
@@ -480,6 +420,17 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
             <Network className="w-3.5 h-3.5" />
             {t('ai.knowledge.knowledgeGraph')}
           </button>
+          <button
+            onClick={() => setViewMode('books')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-normal transition-all ${
+              viewMode === 'books'
+                ? 'bg-white dark:bg-neutral-700 shadow-sm text-[var(--text-primary)] dark:text-white'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-secondary)]'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            {t('ai.knowledge.ancientBooks')}
+          </button>
         </div>
         <button
           onClick={() => queryClient.invalidateQueries({ queryKey: ['rag-stats'] })}
@@ -491,7 +442,9 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
       </div>
 
       {viewMode === 'graph' ? (
-        <KnowledgeGraphView />
+        <KnowledgeGraphPanel />
+      ) : viewMode === 'books' ? (
+        <AncientBooksPanel />
       ) : (
         <>
           {/* 种子初始化（P1-4 合并：统一知识库入口，吸收原 RAGKnowledgePanel 的种子注入能力） */}
@@ -509,48 +462,16 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
           {/* Terminology Lookup（本地术语词典 terminology-dict.json） */}
           <TerminologyLookup />
 
-          {/* Document list */}
-      <div className="space-y-1">
-        <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
-          {t('ai.knowledge.importedDocs', { count: docs.length })}
-        </h3>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 text-[var(--text-muted)] animate-spin" />
-          </div>
-        ) : docs.length === 0 ? (
-          <div className="text-center py-8 text-sm text-[var(--text-muted)]">
-            {t('ai.knowledge.noDocsHint')}
-          </div>
-        ) : (
-          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-            {docs.map((doc) => (
-              <div key={doc.filename} className="flex items-center justify-between py-2.5 group">
-                <div className="flex items-center gap-2 min-w-0">
-                  {getFileIcon(doc.filename)}
-                  <div className="min-w-0">
-                    <div className="text-sm text-[var(--text-secondary)] truncate">{doc.filename}</div>
-                    <div className="text-xs text-[var(--text-muted)]">{t('ai.knowledge.chunksCount', { count: doc.chunks })}</div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleDelete(doc.filename)}
-                  disabled={deletingFile === doc.filename}
-                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-error-50 dark:hover:bg-error-950/30 transition-all"
-                  title={t('ai.knowledge.deleteDoc', { filename: doc.filename })}
-                >
-                  {deletingFile === doc.filename ? (
-                    <Loader2 className="w-3.5 h-3.5 text-error-500 animate-spin" />
-                  ) : (
-                    <Trash2 className="w-3.5 h-3.5 text-error-400 hover:text-error-600" />
-                  )}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-        </div>
+          {/* Document list（专业文档管理视图：分类/搜索/排序/版本历史/分页） */}
+          <DocumentListView
+            documents={docs}
+            summary={summary as RAGDocumentsSummary | undefined}
+            isLoading={docsLoading}
+            error={documentsError}
+            onRetry={() => void refetchDocuments()}
+            onDelete={handleDelete}
+            deletingFile={deletingFile}
+          />
         </>
       )}
     </div>

@@ -1,7 +1,8 @@
 /**
  * DocumentUploader - RAG 知识库文档上传组件
  *
- * 支持拖拽/点击上传 PDF、TXT、CSV、MD 文件
+ * 支持拖拽/点击上传 PDF、TXT、CSV、MD、HTML、DOCX、XLSX、PPTX 文件
+ * （P2-2：与后端 rag_router.ALLOWED_CONTENT_TYPES 对齐，大小限制 50MB）
  * 实时显示上传进度和解析结果
  */
 
@@ -16,10 +17,13 @@ interface DocumentUploaderProps {
   maxSizeMB?: number
 }
 
-const ACCEPTED_TYPES = '.pdf,.txt,.csv,.md'
-const ACCEPTED_TYPES_LABEL = 'PDF, TXT, CSV, MD'
+// P2-2: 与后端 rag_router.ALLOWED_CONTENT_TYPES 一致（8 种文档类型）
+const ACCEPTED_TYPES = '.pdf,.txt,.csv,.md,.html,.docx,.xlsx,.pptx'
+const ACCEPTED_TYPES_LABEL = 'PDF, TXT, CSV, MD, HTML, DOCX, XLSX, PPTX'
+/** 与后端 MAX_FILE_SIZE（50MB）对齐 */
+const DEFAULT_MAX_SIZE_MB = 50
 
-export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUploaderProps) {
+export function DocumentUploader({ onUploadSuccess, maxSizeMB = DEFAULT_MAX_SIZE_MB }: DocumentUploaderProps) {
   const { t } = useTranslation()
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
@@ -50,12 +54,36 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
       setUploadResult({ type: 'success', message: t('ai.knowledge.uploadSuccess', { filename: doc.filename, count: doc.chunk_count }) })
       onUploadSuccess?.(doc)
     } catch (err: any) {
-      const msg = err?.response?.data?.detail || err?.message || t('ai.knowledge.uploadFailed')
-      setUploadResult({ type: 'error', message: msg })
+      // P2-3: 后端 detail 为中文原文，en/de 界面直接展示会泄露原始文案；
+      // 按 HTTP 状态码映射为本地化文案，不再透传后端中文 detail。
+      const status = err?.response?.status as number | undefined
+      let message: string
+      if (status === 413) {
+        message = t('ai.knowledge.fileTooLarge', { maxSize: maxSizeMB })
+      } else if (status === 400) {
+        message = t('ai.knowledge.uploadParseFailed')
+      } else if (status === 401) {
+        message = t('ai.knowledge.uploadAuthFailed')
+      } else if (status === 403) {
+        message = t('ai.knowledge.uploadForbidden')
+      } else if (status && status >= 500) {
+        message = t('ai.knowledge.uploadServerError')
+      } else if (
+        !status ||
+        err?.code === 'ECONNABORTED' ||
+        err?.code === 'ETIMEDOUT' ||
+        err?.code === 'ECONNRESET' ||
+        err?.code === 'ERR_NETWORK'
+      ) {
+        message = t('ai.knowledge.uploadNetworkError')
+      } else {
+        message = t('ai.knowledge.uploadFailed')
+      }
+      setUploadResult({ type: 'error', message })
     } finally {
       setIsUploading(false)
     }
-  }, [maxSizeMB, onUploadSuccess])
+  }, [maxSizeMB, onUploadSuccess, t])
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()

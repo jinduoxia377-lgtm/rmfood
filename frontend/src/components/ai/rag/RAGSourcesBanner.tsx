@@ -6,7 +6,7 @@
  * 
  * 增强功能（Phase 3）：
  * - 可展开的引用卡片（显示前 3 条 chunk 预览）
- * - 相关度分数可视化（进度条）
+ * - 相关度展示为「排序徽标 + 相对强弱」（P1-9：RRF 融合分不是百分比，不再渲染进度条）
  * - 点击卡片展开完整内容
  * - 快速关闭功能
  */
@@ -17,6 +17,8 @@ import { Database, FileText, ChevronDown, ChevronUp, X, Eye, Target } from 'luci
 import type { RAGChunkResult } from '@/api/rag'
 import { clsx } from 'clsx'
 import MarkdownRenderer from '../features/components/pro/MarkdownRenderer'
+import { getRelevanceLabel, getRankBadge } from './relevance'
+import { getSourceDisplayName } from './sourceDisplay'
 
 interface RAGSourcesBannerProps {
   /** 是否已启用 RAG */
@@ -42,10 +44,9 @@ export function RAGSourcesBanner({
   // RAG 未启用或无数据时不显示
   if (! isEnabled || chunks.length === 0) return null
 
-  // 按相关度分数排序
+  // 按相关度分数排序（score 为 RRF 融合分，仅用于排序，不直接展示为百分比）
   const sortedChunks = [...chunks].sort((a, b) => b.score - a.score)
   const previewChunks = sortedChunks.slice(0, 3)
-  const avgScore = chunks.reduce((sum, c) => sum + c.score, 0) / chunks.length
 
   return (
     <div className="mx-4 mt-2">
@@ -68,10 +69,10 @@ export function RAGSourcesBanner({
                 {t('ai.knowledge.ragFromDocs', { count: sources.length })}
               </span>
             )}
-            {/* 平均相关度指示 */}
+            {/* 相关度排序指示（P1-9：RRF 融合分不是百分比，改为排序语义） */}
             <span className="flex items-center gap-1 px-1.5 py-0.5 text-xs bg-primary-100 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 rounded">
               <Target className="w-3 h-3" />
-              {(avgScore * 100).toFixed(0)}%
+              {t('ai.knowledge.relevanceRank')}
             </span>
           </div>
 
@@ -113,16 +114,15 @@ export function RAGSourcesBanner({
                 <FileText className="w-3.5 h-3.5 text-primary-500 shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-primary-700 dark:text-primary-700 truncate">{chunk.source}</span>
-                    <span className="flex items-center gap-1 shrink-0">
-                      <div className="w-12 h-1 bg-primary-200 dark:bg-primary-900/30 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary-500 rounded-full"
-                          style={{ width: `${chunk.score * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-primary-500 dark:text-primary-700 text-xs w-8 text-right">
-                        {(chunk.score * 100).toFixed(0)}%
+                    <span className="text-primary-700 dark:text-primary-700 truncate">
+                      {getSourceDisplayName(chunk.source, chunk.display_name)}
+                    </span>
+                    <span className="flex items-center gap-1.5 shrink-0">
+                      <span className="px-1 py-0.5 text-[10px] font-semibold leading-none bg-primary-100 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 rounded">
+                        {getRankBadge(idx)}
+                      </span>
+                      <span className="text-primary-500 dark:text-primary-700 text-xs">
+                        {getRelevanceLabel(idx, t)}
                       </span>
                     </span>
                   </div>
@@ -164,17 +164,14 @@ export function RAGSourcesBanner({
                   >
                     <FileText className="w-3.5 h-3.5 text-primary-500 shrink-0" />
                     <span className="text-primary-700 dark:text-primary-700 font-medium flex-1 truncate">
-                      {chunk.source}
+                      {getSourceDisplayName(chunk.source, chunk.display_name)}
                     </span>
-                    <span className="flex items-center gap-1 shrink-0">
-                      <div className="w-16 h-1.5 bg-primary-200 dark:bg-primary-900/30 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary-500 rounded-full transition-all"
-                          style={{ width: `${chunk.score * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-primary-600 dark:text-primary-700 font-semibold w-8 text-right">
-                        {(chunk.score * 100).toFixed(0)}%
+                    <span className="flex items-center gap-1.5 shrink-0">
+                      <span className="px-1 py-0.5 text-[10px] font-semibold leading-none bg-primary-100 dark:bg-primary-300/20 text-primary-700 dark:text-primary-700 rounded">
+                        {getRankBadge(idx)}
+                      </span>
+                      <span className="text-primary-600 dark:text-primary-700 text-xs font-medium">
+                        {getRelevanceLabel(idx, t)}
                       </span>
                     </span>
                     {isActive ? (
