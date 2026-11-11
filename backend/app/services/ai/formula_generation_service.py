@@ -326,15 +326,32 @@ def _fallback_rule_engine(
 
 
 def _parse_dosage_g(dosage: Any) -> float:
-    """从候选剂量字段解析出克数（兼容 "10.0g" 字符串 / 数值 / None）。"""
+    """从候选剂量字段解析出克数（兼容 "10.0g" / "5-10g/天" / "500mg" / 数值 / None）。
+
+    鲁棒解析（配方生成剂量带单位崩溃修复）：
+    - 数值直接返回；None/空 → 0.0
+    - 字符串用正则提取首个数字（"5-10g/天" 取下限 5.0），支持 g/克/mg 单位
+    - mg → g 换算（/1000）；无法解析时异常安全返回 0.0（不崩）
+    注意：本函数只做单位换算，不涉及剂量上限/安全闸（合规在 safety_gate 另行执行）。
+    """
+    import re as _re
+
     if dosage is None:
         return 0.0
     if isinstance(dosage, (int, float)):
         return max(0.0, float(dosage))
-    try:
-        return max(0.0, float(str(dosage).replace("g", "").strip()))
-    except (TypeError, ValueError):
+    text = str(dosage).strip()
+    if not text:
         return 0.0
+    # mg 显式优先（避免 "500mg" 被 g 替换误判）
+    is_mg = "mg" in text.lower()
+    match = _re.search(r"\d+(?:\.\d+)?", text)
+    if not match:
+        return 0.0
+    value = float(match.group())
+    if is_mg:
+        value = value / 1000.0
+    return max(0.0, value)
 
 
 def _milp_refine_combo(
