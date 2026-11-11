@@ -54,7 +54,7 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
   const {
     messages, input, setInput, isStreaming, setIsStreaming,
     chatError, setChatError, clearMessages, addMessage, updateMessage,
-    retryLastMessage, clearError, isPaused, pauseStreaming, resumeStreaming,
+    retryLastMessage, clearError, isPaused, pauseStreaming,
     setActiveSessionId, checkCompaction,
     streamProgress, streamStageKey, streamChars, streamStatus, streamSteps,
   } = chatMessages
@@ -309,7 +309,7 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     // 消息
     messages, input, setInput, isStreaming, setIsStreaming,
     chatError, setChatError, clearMessages, addMessage, updateMessage,
-    retryLastMessage, clearError, isPaused, pauseStreaming, resumeStreaming,
+    retryLastMessage, clearError, isPaused, pauseStreaming,
     editMessage: messageEditing.handleEditMessage,
     retractMessage: messageEditing.handleRetractMessage,
     setActiveSessionId, checkCompaction,

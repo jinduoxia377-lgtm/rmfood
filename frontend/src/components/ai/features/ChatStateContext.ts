@@ -39,7 +39,6 @@ export interface ChatState {
   clearError: () => void
   isPaused: boolean
   pauseStreaming: () => void
-  resumeStreaming: () => void
   editMessage: (id: string, newContent: string) => void
   retractMessage: (id: string) => void
   setActiveSessionId: (id: string | null) => void
