@@ -11,29 +11,37 @@ logger = logging.getLogger(__name__)
 
 # ⚠️ DEPRECATED：以下硬编码目录仅作为数据库不可用时的兜底。
 # 正式运行时 _FOOD_HOMOLOGY_CATALOG 会从 hf_enriched_herbs 表加载官方 106 种药食同源。
-# 本兜底已移除明确不在目录中的品种（罂粟壳/海藻等），但可能滞后于最新公告。
+# 本兜底已与 2024 版国家卫健委目录（106 种）对齐，含常用别名匹配项。
 _FOOD_HOMOLOGY_CATALOG_FALLBACK: Set[str] = {
-    # 87种基础药食同源物品（2014 目录）
-    "丁香", "八角茴香", "刀豆", "小茴香", "小蓟", "山药", "山楂", "马齿苋",
-    "乌梢蛇", "乌梅", "木瓜", "火麻仁", "代代花", "玉竹", "甘草", "白芷",
-    "白果", "白扁豆", "白扁豆花", "龙眼肉", "决明子", "百合", "肉桂",
-    "余甘子", "佛手", "沙参", "诃子", "阿胶", "鸡内金", "青果", "枳椇子",
-    "栀子", "砂仁", "胖大海", "茯苓", "香橼", "香薷", "桑叶", "桑葚",
-    "桔红", "桔梗", "益智仁", "荷叶", "莱菔子", "莲子", "高良姜", "淡竹叶",
-    "淡豆豉", "紫苏", "紫苏子", "黄芥子", "黄精", "菊花", "菊苣", "野菊花",
-    "山银花", "葛根", "黑芝麻", "蒲公英", "蜂蜜", "榧子", "酸枣仁", "鲜白茅根",
-    "鲜芦根", "蝮蛇", "橘红", "薄荷", "薏苡仁", "薤白", "覆盆子", "藿香",
-    "牡蛎", "蛤蚧", "龟甲", "鳖甲",
-    # 后续新增品种
-    "槐米", "槐花", "西红花", "积雪草", "杜仲叶", "地榆", "铁皮石斛",
-    "山柰", "荜茇", "升麻", "北沙参", "明党参", "红参", "太子参",
-    "红芪", "竹茹", "郁李仁", "苦杏仁", "甜杏仁", "桃仁",
-    "罗汉果", "金荞麦", "红曲米",
-    "橘皮", "化橘红", "玫瑰花", "绿萼梅", "九里香", "迷迭香", "甘松",
-    "草豆蔻", "肉豆蔻", "青皮", "陈皮", "枳壳", "枳实",
-    "黄芪", "党参", "人参", "西洋参", "白术", "大枣", "枸杞子", "芡实",
-    "麦芽", "谷芽", "神曲", "金银花", "夏枯草", "鱼腥草",
-    "山茱萸", "金樱子", "天麻", "灵芝", "肉苁蓉", "姜黄", "草果", "当归",
+    # 卫法监发〔2002〕第51号公告（87种）
+    "阿胶", "八角茴香", "白扁豆", "白扁豆花", "白果",
+    "白芷", "百合", "薄荷", "赤小豆", "代代花",
+    "淡豆豉", "淡竹叶", "刀豆", "丁香", "榧子",
+    "蜂蜜", "佛手", "茯苓", "蝮蛇", "覆盆子",
+    "甘草", "高良姜", "葛根", "枸杞子", "荷叶",
+    "黑胡椒", "黑芝麻", "花椒", "槐花", "槐米",
+    "黄芥子", "黄精", "火麻仁", "藿香", "鸡内金",
+    "姜", "金银花", "桔梗", "桔红", "菊花",
+    "菊苣", "橘皮", "决明子", "昆布", "莱菔子",
+    "莲子", "龙眼肉", "罗汉果", "马齿苋", "麦芽",
+    "牡蛎", "木瓜", "胖大海", "蒲公英", "芡实",
+    "青果", "肉豆蔻", "肉桂", "桑椹", "桑叶",
+    "沙棘", "砂仁", "山药", "山楂", "酸枣仁",
+    "桃仁", "乌梅", "乌梢蛇", "鲜白茅根", "鲜芦根",
+    "香薷", "香橼", "小茴香", "小蓟", "薤白",
+    "杏仁", "益智仁", "薏苡仁", "余甘子", "鱼腥草",
+    "玉竹", "郁李仁", "枣", "栀子", "枳椇子",
+    "紫苏", "紫苏籽",
+    # 2019年第8号公告（6种）
+    "当归", "姜黄", "荜茇", "草果", "山柰", "西红花",
+    # 2023年第9号公告（9种）
+    "党参", "杜仲叶", "黄芪", "灵芝", "肉苁蓉",
+    "山茱萸", "天麻", "铁皮石斛", "西洋参",
+    # 2024年第4号公告（4种）
+    "地黄", "化橘红", "麦冬", "天冬",
+    # 常用别名（匹配项）
+    "生姜", "干姜", "大枣", "陈皮", "桑葚",
+    "桂圆", "桂圆肉", "橘红", "山奈", "藏红花",
 }
 
 # 运行时从 hf_enriched_herbs 表加载的官方药食同源目录（懒加载 + 缓存）
@@ -41,7 +49,7 @@ _FOOD_HOMOLOGY_CATALOG: Set[str] = set()
 _FOOD_HOMOLOGY_CATALOG_LOADED = False
 _FOOD_HOMOLOGY_CATALOG_FROM_DB = False
 
-# 十八反（依据《中国药典》2020 版，含现代增补的党参）— 17 对
+# 十八反（依据《中国药典》2025 版，含现代增补的党参）— 17 对
 _EIGHTEEN_CONTRAINDICATIONS: Set[tuple[str, str]] = {
     ("甘草", "甘遂"), ("甘草", "大戟"), ("甘草", "海藻"), ("甘草", "芫花"),
     ("乌头", "半夏"), ("乌头", "瓜蒌"), ("乌头", "贝母"), ("乌头", "白蔹"), ("乌头", "白及"),
@@ -101,6 +109,36 @@ _PEPTIDE_SAFE_LENGTH = (2, 50)  # 2-50个氨基酸为安全范围
 
 # 人群禁忌关键词（用于 extra_knowledge.contraindication 文本匹配）
 _SPECIAL_POPULATION_KEYWORDS = ("孕妇", "妊娠", "哺乳期", "儿童", "小儿", "婴幼儿")
+
+# ── 剧毒成分黑名单（固有毒性分级，独立于剂量）─────────────────────────
+# 依据《中国药典》2025 版"毒性药材"分级 + 国家卫健委《按照传统既是食品又是中药材的
+# 物质目录》排除项 + 毒理活性成分。药食同源配方**严禁**使用，无论剂量多少均判 fail。
+# 含：乌头类(乌头碱)、马钱子类(士的宁)、雷公藤、钩吻(断肠草)、含砷/汞矿物药等。
+# 命中任一 → toxicity.passed=False, level="高"，先于剂量循环执行（无剂量也拦）。
+_SEVERELY_TOXIC: Set[str] = {
+    # 乌头类（乌头碱 aconitine，剧毒，治疗窗极窄）
+    "川乌", "制川乌", "生川乌", "草乌", "制草乌", "生草乌",
+    "附子", "制附子", "生附子", "炮附子", "熟附子", "黑附子", "白附片",
+    "乌头", "草乌头", "铁棒锤", "雪上一支蒿", "落地金钱",
+    # 马钱子类（士的宁 strychnine，剧毒）
+    "马钱子", "制马钱子", "生马钱子", "番木鳖", "士的宁", "马钱子碱", "士的宁碱",
+    # 雷公藤类（雷公藤甲素，肾/肝/生殖毒性）
+    "雷公藤", "昆明山海棠", "东北雷公藤",
+    # 钩吻/断肠草（钩吻碱，剧毒）
+    "钩吻", "断肠草", "胡蔓藤", "大茶药",
+    # 天仙子/洋金花（莨菪碱/东莨菪碱，抗胆碱毒性）
+    "天仙子", "洋金花", "曼陀罗", "曼陀罗叶", "白花曼陀罗", "南洋金花",
+    # 矿物/动物剧毒药（砷/汞/蟾酥/斑蝥）
+    "雄黄", "砒霜", "砒石", "水银", "轻粉", "朱砂", "红粉",
+    "斑蝥", "红娘子", "青娘子", "蟾酥", "蟾皮", "蜈蚣毒",
+    # 其他药典毒性药材（大毒）
+    "巴豆", "生巴豆", "甘遂", "生甘遂", "大戟", "京大戟", "芫花", "生芫花",
+    "商陆", "生商陆", "牵牛子", "生牵牛子", "千金子", "生千金子",
+    "苦楝皮", "川楝子", "蓖麻子", "狼毒", "生狼毒", "白降丹", "红升丹",
+    # 活性毒物单体（直接命中化合物名）
+    "乌头碱", "中乌头碱", "次乌头碱", "新乌头碱", "雷公藤甲素", "钩吻碱",
+    "莨菪碱", "东莨菪碱", "山莨菪碱", "毒扁豆碱", "河豚毒素", "石房蛤毒素",
+}
 
 
 async def load_food_homology_catalog_from_db(force_reload: bool = False) -> Set[str]:
@@ -283,10 +321,29 @@ class SafetyCheckerService:
         if pregnancy_caution:
             warnings.append(f"以下成分孕妇慎用: {', '.join(sorted(pregnancy_caution))}")
 
-        # 5. 毒性检查（接入 DB 药材 dosage_min/max 与 extra_knowledge.contraindication）
+        # 5. 毒性检查（固有毒性分级 + DB 剂量超量 + extra_knowledge.contraindication）
         toxicity_errors: List[str] = []
         toxicity_warnings: List[str] = []
         overdose_ingredients: List[Dict[str, Any]] = []
+
+        # 5a. 固有毒性分级（先于剂量循环，独立于剂量）——
+        #     剧毒成分（乌头碱/士的宁等）无论有无剂量、剂量是否"安全范围"，一律判 fail。
+        #     药食同源配方严禁使用剧毒药材，这是医疗红线，不能因缺剂量而空转放行。
+        toxic_hit = sorted(ingredient_set & _SEVERELY_TOXIC)
+        if toxic_hit:
+            for t in toxic_hit:
+                toxicity_errors.append(
+                    f"{t} 为剧毒成分（含乌头碱/士的宁等剧毒生物碱），"
+                    f"药食同源配方严禁使用，禁止口服"
+                )
+                overdose_ingredients.append({
+                    "name": t,
+                    "actual_mg": None,
+                    "max_mg": 0,
+                    "message": "剧毒成分，禁止使用（固有毒性，与剂量无关）",
+                })
+
+        # 5b. DB 剂量超量校验（仅当提供了剂量时触发）
         dose_info = await self._load_herb_dosage_info(list(ingredient_set))
         for name, amount_mg in dosage_map.items():
             info = dose_info.get(name)
@@ -307,19 +364,29 @@ class SafetyCheckerService:
             contraindication = info.get("contraindication", "")
             if contraindication and any(kw in contraindication for kw in _SPECIAL_POPULATION_KEYWORDS):
                 toxicity_warnings.append(f"{name} 存在人群禁忌提示: {contraindication}")
-        if not toxicity_errors:
-            toxicity_level = "低"
-            toxicity_details = "所有成分均在 DB 安全用量范围内"
-        else:
+        dosage_checked_count = len([n for n in dosage_map if n in dose_info])
+        if toxicity_errors:
             toxicity_level = "高"
             toxicity_details = "；".join(toxicity_errors)
             errors.extend(toxicity_errors)
+        elif dosage_checked_count == 0 and ingredient_set:
+            # 无剂量输入 → 剂量超量校验未执行，不得报"安全/低"。
+            # 固有毒性已筛查（无毒），但剂量维度未校验，降级为"未校验"。
+            toxicity_level = "未校验"
+            toxicity_details = (
+                "无剂量输入，未做剂量超量校验（已完成固有毒性筛查，"
+                f"{len(ingredient_set)} 种成分均非剧毒黑名单成分）"
+            )
+        else:
+            toxicity_level = "低"
+            toxicity_details = "所有成分均在 DB 安全用量范围内"
         checks["toxicity"] = {
             "passed": len(toxicity_errors) == 0,
             "toxicity_level": toxicity_level,
             "details": toxicity_details,
             "overdose_ingredients": overdose_ingredients,
-            "dosage_checked_count": len([n for n in dosage_map if n in dose_info]),
+            "dosage_checked_count": dosage_checked_count,
+            "severely_toxic_ingredients": toxic_hit,
         }
         warnings.extend(toxicity_warnings)
 

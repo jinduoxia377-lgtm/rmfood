@@ -46,6 +46,9 @@ class SafetyCheckRequest(BaseModel):
     """安全合规检查请求"""
     ingredient_names: list[str] = Field(..., min_length=1, description="成分名称列表")
     peptide_sequences: list[str] | None = Field(None, description="活性肽序列列表")
+    dosages_mg: dict[str, float] | None = Field(
+        None, description="成分用量(毫克)，键为成分名；提供时额外做剂量超量校验"
+    )
 
 
 class SynergyAnalysisRequest(BaseModel):
@@ -367,6 +370,7 @@ async def safety_check(
     result = await ai_service.check_safety(
         ingredient_names=req.ingredient_names,
         peptide_sequences=req.peptide_sequences,
+        dosages_mg=req.dosages_mg,
     )
     return result
 
