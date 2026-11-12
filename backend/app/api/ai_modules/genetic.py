@@ -783,6 +783,34 @@ async def generate_genetic(
 
     best_score = round(max((c["fitness"] for c in candidate_list), default=0), 6)
     run_id = f"ga-{int(time.time())}-{uuid.uuid4().hex[:6]}"
+    # 持久化本次 GA 运行（此前 _save_ga_run 定义后从未调用 → ga_run_records 恒空 → 历史端点永远空）
+    await _save_ga_run(
+        db=db,
+        user_id=current_user.id,
+        algorithm_type="genetic",
+        mode="single",
+        run_id=run_id,
+        target_effects=req.target_effects,
+        algorithm_params={
+            "population_size": req.population_size,
+            "generations": req.generations,
+            "mutation_rate": req.mutation_rate,
+            "crossover_rate": req.crossover_rate,
+            "elite_ratio": req.elite_ratio,
+            "tournament_size": req.tournament_size,
+            "objective_weights": req.objective_weights,
+            "seed": req.seed,
+        },
+        objectives_config=None,
+        constraints=req.constraints,
+        candidates=candidate_list,
+        history=history,
+        total_generations=len(history),
+        best_fitness=best_score,
+        execution_time_ms=round(elapsed_ms, 2),
+        convergence_generation=_estimate_convergence_generation(history, best_score),
+        stop_reason=history[-1].get("stop_reason", "completed") if history else "completed",
+    )
     return {
         "run_id": run_id,
         "candidates": candidate_list,
@@ -909,7 +937,38 @@ async def generate_genetic_hybrid(
 
     best_score = round(max((c["fitness"] for c in candidate_list), default=0), 6)
     elapsed_ms = (time.perf_counter() - start) * 1000
+    run_id = f"gahybrid-{int(time.time())}-{uuid.uuid4().hex[:6]}"
+    # 持久化混合运行（GA 全局探索 + NSGA-II 精修），此前从未落库
+    await _save_ga_run(
+        db=db,
+        user_id=current_user.id,
+        algorithm_type="genetic",
+        mode="hybrid",
+        run_id=run_id,
+        target_effects=req.target_effects,
+        algorithm_params={
+            "population_size": req.population_size,
+            "generations": req.generations,
+            "mutation_rate": req.mutation_rate,
+            "crossover_rate": req.crossover_rate,
+            "elite_ratio": req.elite_ratio,
+            "tournament_size": req.tournament_size,
+            "objective_weights": req.objective_weights,
+            "seed": req.seed,
+            "hybrid_mode": req.hybrid_mode,
+        },
+        objectives_config=None,
+        constraints=req.constraints,
+        candidates=candidate_list,
+        history=combined_history,
+        total_generations=len(combined_history),
+        best_fitness=best_score,
+        execution_time_ms=round(elapsed_ms, 2),
+        convergence_generation=_estimate_convergence_generation(mo_history, best_score),
+        stop_reason="completed",
+    )
     return {
+        "run_id": run_id,
         "ga_candidates": len(ga_candidates),
         "ga_history_length": len(ga_history),
         "mo_candidates": len(mo_candidates),
@@ -1307,6 +1366,45 @@ async def generate_multi_objective(
 
     best_score = round(max((c["fitness"] for c in candidate_list), default=0), 6)
     run_id = f"mo-{int(time.time())}-{uuid.uuid4().hex[:6]}"
+    # 持久化本次 NSGA-II 多目标运行（此前从未落库 → 历史端点永远空）
+    await _save_ga_run(
+        db=db,
+        user_id=current_user.id,
+        algorithm_type="nsga2",
+        mode=mode,
+        run_id=run_id,
+        target_effects=req.target_effects,
+        algorithm_params={
+            "population_size": req.population_size,
+            "generations": req.generations,
+            "mutation_rate": req.mutation_rate,
+            "crossover_rate": req.crossover_rate,
+            "objective_weights": req.objective_weights,
+            "seed": getattr(req, "seed", None),
+        },
+        objectives_config=[
+            {"name": o.name, "key": o.key, "direction": o.direction, "weight": o.weight}
+            for o in objectives
+        ],
+        constraints=getattr(req, "constraints", None),
+        candidates=candidate_list,
+        history=history,
+        total_generations=len(history),
+        best_fitness=best_score,
+        execution_time_ms=round(elapsed_ms, 2),
+        convergence_generation=_estimate_convergence_generation(history, best_score),
+        stop_reason=history[-1].get("stop_reason", "completed") if history else "completed",
+        pareto_front=[
+            {
+                "objective_values": {k: round(v, 4) for k, v in ind.objectives.items()},
+                "rank": getattr(ind, "rank", 1),
+                "crowding_distance": round(_safe_float(getattr(ind, "crowding_distance", 0.0)), 4),
+                "fitness": round(ind.fitness, 6),
+            }
+            for ind in candidates[:req.count]
+        ],
+        best_by_objective=_build_best_by_objective(candidates, objectives, herb_id_to_name),
+    )
     return {
         "run_id": run_id,
         "candidates": candidate_list,
