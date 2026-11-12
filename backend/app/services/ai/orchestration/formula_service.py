@@ -275,11 +275,13 @@ class AIService:
         self,
         ingredient_names: list[str],
         peptide_sequences: list[str] | None = None,
+        dosages_mg: dict[str, float] | None = None,
     ) -> dict[str, Any]:
         """独立调用安全合规检查"""
         return await self.safety_checker.check(
             ingredients=ingredient_names,
             peptides=peptide_sequences or [],
+            dosages_mg=dosages_mg,
         )
 
     async def analyze_synergy(

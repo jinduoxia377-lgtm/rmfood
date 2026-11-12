@@ -670,6 +670,46 @@ export function SafetyTab({
             />
           </div>
 
+          {/* 剧毒成分红硬告警（固有毒性，与剂量无关） */}
+          {(() => {
+            const tox = (safetyResult?.checks as Record<string, any> | undefined)?.toxicity as
+              | { toxicity_level?: string; severely_toxic_ingredients?: string[]; overdose_ingredients?: { name: string; message?: string }[] }
+              | undefined
+            const toxicNames = tox?.severely_toxic_ingredients ?? []
+            const level = tox?.toxicity_level
+            if (toxicNames.length > 0 || level === '高') {
+              return (
+                <div className="mt-4 border border-danger-400 bg-danger-100 dark:bg-danger-500/20 rounded-lg p-4">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-5 h-5 text-danger-700 dark:text-danger-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-danger-800 dark:text-danger-300">
+                        ⚠️ 检出剧毒成分，严禁使用（医疗红线）
+                      </p>
+                      <p className="text-sm text-danger-700 dark:text-danger-400 mt-1">
+                        以下成分含剧毒生物碱（乌头碱/士的宁等），药食同源配方禁止口服，无论剂量多少均不安全：
+                        <span className="font-semibold"> {toxicNames.join('、')}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+            if (level === '未校验') {
+              return (
+                <div className="mt-4 border border-warning-300 bg-warning-50 dark:bg-warning-500/10 rounded-lg p-4">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-warning-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-warning-700 dark:text-warning-400">
+                      毒性：未校验 — 未提供剂量，仅完成固有毒性筛查（成分均非剧毒黑名单），剂量超量维度未校验。
+                    </p>
+                  </div>
+                </div>
+              )
+            }
+            return null
+          })()}
+
           {/* 风险矩阵 */}
           {(() => {
             const ingredientWarnings = safetyResult?.warnings?.filter(
