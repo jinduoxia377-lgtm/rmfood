@@ -15,6 +15,7 @@ import { aiApi } from '@/api/ai';
 import type { SynergyResult } from '@/types';
 import { Input, Button, Card } from '@/components/ui';
 import { logger } from '@/utils/safeLogger';
+import { toFriendlyErrorMessage } from './utils/friendlyError';
 import { GitMerge, History, Trash2, AlertTriangle, Star, Plus } from 'lucide-react';
 
 // ── 类型定义 ──────────────────────────────────────────────────────────────────
@@ -28,7 +29,7 @@ interface SynergyHistoryEntry {
   antagonismCount: number;
 }
 
-// ── 十八反十九畏 禁忌组合（依据《中国药典》2020版）──────────────────────────
+// ── 十八反十九畏 禁忌组合（依据《中国药典》2025版）──────────────────────────
 interface ContraindicatedPair {
   herbA: string
   herbB: string
@@ -129,6 +130,7 @@ export function SynergyTab() {
   const { t } = useTranslation();
   const [synergyInput, setSynergyInput] = useState('');
   const [synergyResult, setSynergyResult] = useState<SynergyResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [history, setHistory] = useState<SynergyHistoryEntry[]>(loadHistory);
   const [showHistory, setShowHistory] = useState(false);
   const [hoveredCell, setHoveredCell] = useState<string | null>(null);
@@ -142,6 +144,7 @@ export function SynergyTab() {
   const mutation = useMutation({
     mutationFn: (names: string[]) => aiApi.synergyAnalysis(names),
     onSuccess: (data) => {
+      setErrorMessage(null);
       setSynergyResult(data);
       // 保存历史记录
       const entry: SynergyHistoryEntry = {
@@ -162,6 +165,10 @@ export function SynergyTab() {
       });
     },
     onError: (error: unknown) => {
+      // 未登录/权限不足(403)等此前仅 logger 无 UI 反馈，用户点"分析"看似没反应。
+      // 用 toFriendlyErrorMessage 转译（含 403→权限不足请重登），落到 errorMessage UI。
+      const friendly = toFriendlyErrorMessage(error);
+      setErrorMessage(friendly);
       logger.error('协同分析失败:', error);
     },
   });
@@ -299,20 +306,20 @@ export function SynergyTab() {
             <AlertTriangle className="w-5 h-5 text-warning-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-warning-700 dark:text-warning-700 text-sm">
-                发现十八反禁忌组合
+                {t('ai.synergy.synergyTab.contraindicationFound')}
               </p>
               <ul className="mt-2 space-y-1 text-sm text-warning-600 dark:text-warning-700">
                 {contraindicationWarnings.map((w, i) => (
-                  <li key={i}>⚠ {w.a} + {w.b}：{w.type}</li>
+                  <li key={i}>⚠ {w.a} + {w.b}：{t(`ai.synergy.synergyTab.type.${w.type}`)}</li>
                 ))}
               </ul>
             </div>
           </div>
         )}
 
-        {mutation.isError && (
+        {mutation.isError && errorMessage && (
           <div className="bg-danger-50 dark:bg-danger-500/10 border border-danger-200 dark:border-danger-500/20 rounded-xl p-5 text-sm text-danger-600 dark:text-danger-600">
-            {t('ai.synergy.synergyTab.analyzeFailed')}
+            {errorMessage}
           </div>
         )}
       </Card>
@@ -343,7 +350,7 @@ export function SynergyTab() {
           {/* 交互热力图 */}
           <div>
             <h4 className="font-semibold text-neutral-900 dark:text-white mb-4">
-              配伍关系矩阵
+              {t('ai.synergy.synergyTab.matrixTitle')}
             </h4>
             <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-700">
               <table className="border-collapse text-sm w-full">
@@ -411,18 +418,18 @@ export function SynergyTab() {
               return (
                 <div className="mt-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                   {cell.type === 'synergy'
-                    ? `✓ ${h1} + ${h2}：协同评分 ${cell.value.toFixed(2)}`
-                    : `⚠ ${h1} + ${h2}：存在配伍禁忌`
+                    ? t('ai.synergy.synergyTab.cellSynergy', { h1, h2, value: cell.value.toFixed(2) })
+                    : t('ai.synergy.synergyTab.cellAntagonism', { h1, h2 })
                   }
                 </div>
               );
             })()}
             <div className="flex gap-4 mt-3 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
               <span className="flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded bg-primary-200 dark:bg-primary-800/40" /> 协同（颜色越深评分越高）
+                <span className="inline-block w-3 h-3 rounded bg-primary-200 dark:bg-primary-800/40" /> {t('ai.synergy.synergyTab.synergy')}（{t('ai.synergy.synergyTab.synergyColorHint')}）
               </span>
               <span className="flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded bg-danger-200 dark:bg-danger-500/30" /> 配伍禁忌
+                <span className="inline-block w-3 h-3 rounded bg-danger-200 dark:bg-danger-500/30" /> {t('ai.synergy.synergyTab.antagonism')}
               </span>
             </div>
           </div>
@@ -431,7 +438,7 @@ export function SynergyTab() {
           {synergyResult.synergy_pairs && synergyResult.synergy_pairs.length > 0 && (
             <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-5 bg-primary-50/30 dark:bg-primary-300/15">
               <h4 className="font-semibold text-primary-700 dark:text-primary-700 mb-3">
-                协同配对列表
+                {t('ai.synergy.synergyTab.synergyPairsList')}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {synergyResult.synergy_pairs.map((p, i) => (
@@ -454,7 +461,7 @@ export function SynergyTab() {
             <div className="border border-danger-200 dark:border-danger-800 rounded-xl p-5 bg-danger-50/30 dark:bg-danger-300/15">
               <h4 className="font-semibold text-danger-700 dark:text-danger-600 mb-3 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
-                配伍禁忌警告
+                {t('ai.synergy.synergyTab.antagonismWarning')}
               </h4>
               <div className="space-y-2">
                 {synergyResult.antagonism_warnings.map((w, i) => (
@@ -493,7 +500,7 @@ export function SynergyTab() {
                 onClick={handleClearHistory}
                 className="text-xs text-danger-500 hover:text-danger-700 flex items-center gap-1"
               >
-                <Trash2 className="w-3 h-3" /> 清空
+                <Trash2 className="w-3 h-3" /> {t('ai.synergy.synergyTab.clear')}
               </button>
             </div>
             <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -509,9 +516,9 @@ export function SynergyTab() {
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
                     <span>{t('ai.synergy.synergyTab.score', { value: entry.score.toFixed(2) })}</span>
-                    <span className="text-success-500">{entry.synergyCount} 协同</span>
+                    <span className="text-success-500">{t('ai.synergy.synergyTab.synergyCount', { count: entry.synergyCount })}</span>
                     {entry.antagonismCount > 0 && (
-                      <span className="text-danger-500">{entry.antagonismCount} 禁忌</span>
+                      <span className="text-danger-500">{t('ai.synergy.synergyTab.antagonismCount', { count: entry.antagonismCount })}</span>
                     )}
                     <span className="ml-auto">
                       {new Date(entry.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}

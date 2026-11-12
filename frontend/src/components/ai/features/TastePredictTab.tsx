@@ -70,12 +70,16 @@ export function TastePredictTab() {
       const names = tasteInput.split(/[,，\n]/).map((s) => s.trim()).filter(Boolean);
       const mapped: TastePrediction = {
         score: data.overall_score,
+        // 全 0（无口感数据）时主味设为"淡"(BLAND)，不误判为甜：
+        // 旧逻辑 sweetness>=bitterness && sweetness>=astringency 在全 0 时恒真 → 误判 SWEET
         dominantTaste:
-          data.sweetness >= data.bitterness && data.sweetness >= data.astringency
-            ? FiveTastes.SWEET
-            : data.bitterness >= data.astringency
-              ? FiveTastes.BITTER
-              : FiveTastes.SOUR,
+          data.sweetness === 0 && data.bitterness === 0 && data.astringency === 0
+            ? FiveTastes.BLAND
+            : data.sweetness >= data.bitterness && data.sweetness >= data.astringency
+              ? FiveTastes.SWEET
+              : data.bitterness >= data.astringency
+                ? FiveTastes.BITTER
+                : FiveTastes.SOUR,
         dominantIntensity: Math.max(data.sweetness, data.bitterness, data.astringency),
         profile: {
           sweet: data.sweetness,

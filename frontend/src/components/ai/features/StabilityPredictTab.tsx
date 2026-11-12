@@ -74,7 +74,8 @@ export function StabilityPredictTab() {
         .map((r) => r.description ?? `${DEGRADATION_TYPE_LABELS[r.type] ?? r.type}（严重度 ${(r.severity ?? 0).toFixed(2)}）`);
 
       const mapped: StabilityAssessment = {
-        score: data.stability_score,
+        // 后端 stability_score 为 0-1；展示层/阈值/进度条全按 0-100 刻度，需 ×100 对齐
+        score: data.stability_score * 100,
         shelfLifeDays: data.estimated_shelf_life_months * 30,
         degradationPathway: pathways,
         criticalFactors: critical,
