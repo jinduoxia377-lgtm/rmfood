@@ -205,14 +205,14 @@ export default function DoePage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<'design' | 'fit' | 'search' | 'active'>('design')
   const [factors, setFactors] = useState<DOEFactor[]>([
-    { name: '温度', low: 60, high: 100, center: 80 },
-    { name: '时间', low: 10, high: 60, center: 35 },
+    { name: t('pages.doe.defaultFactorNameTemperature'), low: 60, high: 100, center: 80 },
+    { name: t('pages.doe.defaultFactorNameTime'), low: 10, high: 60, center: 35 },
   ])
   // 混料组分
   const [mixtureComponents, setMixtureComponents] = useState<Array<{ name: string; lower: number; upper: number }>>([
-    { name: '组分A', lower: 0, upper: 1 },
-    { name: '组分B', lower: 0, upper: 1 },
-    { name: '组分C', lower: 0, upper: 1 },
+    { name: t('pages.doe.defaultComponentLetter', { letter: 'A' }), lower: 0, upper: 1 },
+    { name: t('pages.doe.defaultComponentLetter', { letter: 'B' }), lower: 0, upper: 1 },
+    { name: t('pages.doe.defaultComponentLetter', { letter: 'C' }), lower: 0, upper: 1 },
   ])
   const [mixtureDesignType, setMixtureDesignType] = useState<'lattice' | 'centroid'>('lattice')
   const [mixtureDegree, setMixtureDegree] = useState(2)
@@ -346,7 +346,7 @@ export default function DoePage() {
           formulaId: fid,
           formulaName: imp.formula?.name ?? t('pages.doe.seedFormulaFallback', { id: fid }),
           totalRuns: runs.length,
-          responseParam: imp.response_parameter ?? '感官评分',
+          responseParam: imp.response_parameter ?? t('pages.doe.defaultResponseParam'),
           experimentId: imp.experiment_id ?? expId ?? null,
           responsePool: imp.response_pool ?? [],
         })
@@ -362,7 +362,7 @@ export default function DoePage() {
             duration: 10000,
             title: t('pages.doe.seedDegenerateTitle'),
             message: t('pages.doe.seedDegenerateDetail', {
-              resp: imp.response_parameter ?? '感官评分',
+              resp: imp.response_parameter ?? t('pages.doe.defaultResponseParam'),
               count: di.n_distinct_real_values ?? 1,
               cand: cands.length ? cands.join(t('pages.doe.listSeparator')) : t('pages.doe.seedDegenerateNoCand'),
             }),
@@ -486,7 +486,7 @@ export default function DoePage() {
   const updateFactor = (i: number, f: DOEFactor) => { const n = [...factors]; n[i] = f; setFactors(n) }
   const updateResponseValue = (runId: number, v: number) => setResponseValues(prev => ({ ...prev, [runId]: v }))
 
-  const addMixtureComponent = () => setMixtureComponents([...mixtureComponents, { name: `组分${String.fromCharCode(65 + mixtureComponents.length)}`, lower: 0, upper: 1 }])
+  const addMixtureComponent = () => setMixtureComponents([...mixtureComponents, { name: t('pages.doe.defaultComponentLetter', { letter: String.fromCharCode(65 + mixtureComponents.length) }), lower: 0, upper: 1 }])
   const removeMixtureComponent = (i: number) => setMixtureComponents(mixtureComponents.filter((_, idx) => idx !== i))
   const updateMixtureComponent = (i: number, c: { name: string; lower: number; upper: number }) => {
     const n = [...mixtureComponents]; n[i] = c; setMixtureComponents(n)
