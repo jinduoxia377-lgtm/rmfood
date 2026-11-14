@@ -265,6 +265,13 @@
   --color-accent-container: var(--color-accent-container);
   --color-accent-hover: var(--color-accent-hover);
   --color-accent-dark: var(--color-accent-dark);
+  /* D-68：-surface 语义令牌只登记了 primary，漏了 secondary/accent/warning/danger
+     （base.css 均有定义），导致 bg-secondary-surface / bg-accent-surface /
+     bg-warning-surface / bg-danger-surface 等工具类零产物、色块透明。补齐桥接。 */
+  --color-secondary-surface: var(--color-secondary-surface);
+  --color-accent-surface: var(--color-accent-surface);
+  --color-warning-surface: var(--color-warning-surface);
+  --color-danger-surface: var(--color-danger-surface);
   --color-success-main: var(--color-success-main);
   --color-warning-main: var(--color-warning-main);
   --color-error-main: var(--color-error-main);
@@ -273,6 +280,16 @@
   --color-success-foreground: var(--success-foreground, #ffffff);
   --color-warning: var(--warning, #b45309);
   --color-warning-foreground: var(--warning-foreground, #ffffff);
+  /* D-69：info / info-foreground 未登记（success/warning 均已登记），
+     导致 GenerateTab 缓存面板/批量提示条的 text-info-foreground 零产物、文字回落继承色。
+     info 主色取 base.css 的 --color-info（→ secondary-500 蓝），前景色取可读深蓝 --info-foreground。 */
+  --color-info: var(--info, #2563eb);
+  --color-info-foreground: var(--info-foreground, #1d4ed8);
+  /* D-70：danger 裸名此前未登记（success/warning/info 均已登记），
+     导致 GenerateTab 结果区 text-danger / bg-danger / border-danger 等工具类零产物、错误态语义丢失。
+     danger 主色取 base.css 的 --danger（→ red-600），前景色取可读白 --danger-foreground。 */
+  --color-danger: var(--danger, #dc2626);
+  --color-danger-foreground: var(--danger-foreground, #ffffff);
   --color-muted: var(--muted, #e2e8f0);
   --color-muted-foreground: var(--muted-foreground, #334155);
   --color-background: var(--background, #f8fafc);
@@ -287,6 +304,39 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
+
+  /* ── 字号（D-67 桥接）──────────────────────────────────────────────
+     原状：base.css/dark.css 在 :root/.dark 定义了 --text-h1..h6 / --text-body(-lg/-sm) /
+     --text-caption / --text-overline / --text-tiny 及其 -line-height，但本 @theme 从未
+     登记 --text-*，故 Tailwind v4 不生成任何 text-h1..h6 / text-body* / text-caption /
+     text-overline 字号工具类。而 GenerateTab「配方生成」等模块大量使用这些类，
+     它们此前静默失效 → 字号层级塌陷成继承值（排版混乱根因之一）。
+     此处按 Tailwind v4 字号命名空间桥接：--text-<name> 生成 font-size 工具类，
+     --text-<name>--line-height 提供配对行高（值引用 :root 中已定义的变量）。 */
+  --text-h1: var(--text-h1);
+  --text-h1--line-height: var(--text-h1-line-height);
+  --text-h2: var(--text-h2);
+  --text-h2--line-height: var(--text-h2-line-height);
+  --text-h3: var(--text-h3);
+  --text-h3--line-height: var(--text-h3-line-height);
+  --text-h4: var(--text-h4);
+  --text-h4--line-height: var(--text-h4-line-height);
+  --text-h5: var(--text-h5);
+  --text-h5--line-height: var(--text-h5-line-height);
+  --text-h6: var(--text-h6);
+  --text-h6--line-height: var(--text-h6-line-height);
+  --text-body-lg: var(--text-body-lg);
+  --text-body-lg--line-height: var(--text-body-lg-line-height);
+  --text-body: var(--text-body);
+  --text-body--line-height: var(--text-body-line-height);
+  --text-body-sm: var(--text-body-sm);
+  --text-body-sm--line-height: var(--text-body-sm-line-height);
+  --text-caption: var(--text-caption);
+  --text-caption--line-height: var(--text-caption-line-height);
+  --text-overline: var(--text-overline);
+  --text-overline--line-height: var(--text-overline-line-height);
+  --text-tiny: var(--text-tiny);
+  --text-tiny--line-height: var(--text-tiny-line-height);
 }
 
 /* ═══════════════════════════════════════════════════════════════
