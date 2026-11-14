@@ -72,6 +72,11 @@
      实底必须回落到最暗的 accent-200(#5b21b6)，白字 8.98:1 ✅（同 D-50 的
      --color-primary-surface 处理手法）。 */
   --color-accent-surface: var(--color-accent-200, #5b21b6);
+  /* D-50 / GATE-14：accent 实底配白字语义类（.surface-accent）暗色档。
+     base=accent-200(白字 8.98:1)，hover 取略亮的 accent-300 #6d28d9(白字 7.10:1)，
+     两者均不参与色阶反转，与 --color-primary-surface-hover 同手法。 */
+  --color-on-accent-surface: #ffffff;
+  --color-accent-surface-hover: var(--color-accent-300, #6d28d9);
 
   /* ═══ Semantic Colors (dark mode) ═══ */
   --color-success: var(--color-success-600);
@@ -85,11 +90,26 @@
   --color-error-text: var(--color-danger-600);
   --color-info: var(--color-info-100);
   --color-info-bg: #1e1b4b;
+  /* ── 语义边框/次级文本别名（H1：消除「幻影令牌」，与 base.css 同源）── */
+  --color-primary-border: var(--color-primary);
+  --color-warning-border: var(--color-warning);
+  --color-secondary-text: var(--color-secondary);
+  /* GATE-08 补全（暗色对应 base.css 同名块）：暗色色阶反转，border 取较亮档、text 取浅色档。 */
+  --color-success-border: var(--color-success);
+  --color-error-border: var(--color-error);
+  --color-secondary-border: var(--color-secondary);
+  --color-accent-border: var(--color-accent);
+  --color-accent-text: var(--color-accent-300, #c084fc);
   /* ═══ A-28：品牌族「实底配白字」令牌（暗色）═══
      暗色色阶反转：700/800 是最亮的一档，白字压上去只有 1.4~1.75:1。
      实底必须回落到最暗的 200/100 两档（同 base.css 的说明）。 */
   --color-secondary-surface: var(--color-secondary-200, #1e40af);
   --color-secondary-surface-deep: var(--color-secondary-100, #1e3a8a);
+  /* D-50 / GATE-14：secondary 实底配白字语义类（.surface-secondary）暗色档。
+     base=secondary-200(白字 8.72:1)，hover 取略亮的 secondary-300 #1d4ed8(白字 6.70:1)，
+     均不参与色阶反转，白字两态 ≥ AA。 */
+  --color-on-secondary-surface: #ffffff;
+  --color-secondary-surface-hover: var(--color-secondary-300, #1d4ed8);
   --color-success-surface: var(--color-success-200, #065f46);
   --color-success-surface-deep: var(--color-success-100, #064e3b);
   --color-warning-surface: var(--color-warning-200, #92400e);
@@ -374,10 +394,9 @@
   --color-purple-600: #9333ea;
   --color-cyan-600: #0891b2;
   --color-cyan-700: #0e7490;
-  --color-info-600: #2563eb;
-  /* D-66 配套：info 族在暗色下同样需要反转的 700 档（原缺失 →
-     text-info-700 解析为「无效变量」而回退到继承色）。 */
-  --color-info-700: #93c5fd;
+  /* info-600 / info-700 原先散落在此（#2563eb / #93c5fd），已并入下方
+     「暗色 Info 色阶（10 阶补全）」统一块 —— info-600 在彼处校正为 #60a5fa，
+     故此处不再重复声明，避免残留与校正值冲突的 #2563eb。 */
 
   /* ── 暗色模式渐变背景 ── */
   /* P0-C 回归修复（D-74）：这两档原本写 var(--color-neutral-50)，在暗色色阶
@@ -401,8 +420,28 @@
   /* ── 暗色边框默认 token ── */
   --border-default: #334155;
 
-  /* ── 暗色 Info 色阶补充 ── */
-  --color-info-100: #1e3a8a;
+  /* ── 暗色 Info 色阶（10 阶补全）──
+     base.css 把 info-50/200/300/400/500/700/800/900/950 别名到 --color-secondary-*，
+     而 secondary 在 .dark 被重定义为【反转色阶】(50=#172554 深 → 950=#eff6ff 浅)，
+     故这些 info 档在暗色下会经别名自动取到 secondary 暗色值。
+     info-600 原先在此写死 #2563eb（= secondary-600 的【亮色】值），与别名档脱节：
+     暗色下 info-500(#3b82f6 亮) → info-600(#2563eb 暗，谷底) → info-700(#93c5fd 亮)
+     形成非单调跳跃，且 text-info-600 压在 #020617 画布上仅 ~2.37:1（AA 4.5:1 FAIL）。
+     此处按 secondary 反转色阶补齐全部 info 档（含把 info-600 校正为 #60a5fa），
+     使 info 族暗色下成为一条单调、与 secondary 同源协调的完整蓝色阶。
+     校正后 text-info-600 on #020617 ≈ 7.1:1 ✅ AA。
+     注：下方 info-100/700 与 secondary 暗色同名档逐字相等（冗余但无害，保留原值不动）。 */
+  --color-info-50:  #172554;  /* = secondary-50  (暗色最深) */
+  --color-info-100: #1e3a8a;  /* = secondary-100（原值保留） */
+  --color-info-200: #1e40af;  /* = secondary-200 */
+  --color-info-300: #1d4ed8;  /* = secondary-300 */
+  --color-info-400: #2563eb;  /* = secondary-400 */
+  --color-info-500: #3b82f6;  /* = secondary-500 */
+  --color-info-600: #60a5fa;  /* 校正：原 #2563eb → secondary-600 暗色值，修对比度谷底 */
+  --color-info-700: #93c5fd;  /* = secondary-700（原值保留） */
+  --color-info-800: #bfdbfe;  /* = secondary-800 */
+  --color-info-900: #dbeafe;  /* = secondary-900 */
+  --color-info-950: #eff6ff;  /* = secondary-950 (暗色最浅) */
 
   /* ── 状态徽章色（dark）── */
   --badge-draft-bg-dark: rgba(148, 163, 184, 0.08);

@@ -13,10 +13,10 @@ interface FormulaExplanationModalProps {
 
 // 药材角色颜色映射
 const ROLE_COLORS = {
-  '君药': 'bg-error-100 text-error-700 dark:bg-error-300/25 dark:text-error-700 border-error-200 dark:border-error-800',
-  '臣药': 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-700 border-warning-200 dark:border-warning-800',
-  '佐药': 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-700 border-secondary-200 dark:border-secondary-800',
-  '使药': 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-700 border-success-200 dark:border-success-800',
+  '君药': 'bg-error-100 text-error-700 dark:bg-error-300/25 dark:text-error-300 border-error-200 dark:border-error-800',
+  '臣药': 'bg-warning-100 text-warning-700 dark:bg-warning-300/25 dark:text-warning-300 border-warning-200 dark:border-warning-800',
+  '佐药': 'bg-secondary-100 text-secondary-700 dark:bg-secondary-300/25 dark:text-secondary-300 border-secondary-200 dark:border-secondary-800',
+  '使药': 'bg-success-100 text-success-700 dark:bg-success-300/25 dark:text-success-300 border-success-200 dark:border-success-800',
 }
 
 function HerbRoleBadge({ role }: { role: string }) {
@@ -43,9 +43,9 @@ function ExplanationSection({
     <div className={cn('mb-4 last:mb-0', className)}>
       <div className="flex items-center gap-2 mb-2">
         <span className="text-primary">{icon}</span>
-        <h4 className="text-sm font-semibold">{title}</h4>
+        <h4 className="text-h6 font-semibold">{title}</h4>
       </div>
-      <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
+      <p className="text-body-sm text-foreground leading-relaxed whitespace-pre-wrap">
         {content}
       </p>
     </div>
@@ -59,10 +59,10 @@ export function FormulaExplanationModal({ candidate, isOpen, onClose }: FormulaE
   const explanation = candidate.explanation
 
   return (
-    <Dialog open={isOpen} onOpenChange={isOpen ? undefined : onClose}>
+    <Dialog open={isOpen} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="pb-3 border-b">
-          <DialogTitle className="flex items-center gap-2 text-lg">
+          <DialogTitle className="flex items-center gap-2 text-h4">
             <BookOpen className="w-5 h-5 text-primary" />
             {explanation?.formula_name || candidate.formula_name || candidate.name}
           </DialogTitle>
@@ -72,7 +72,7 @@ export function FormulaExplanationModal({ candidate, isOpen, onClose }: FormulaE
           {/* 药材组成 */}
           {candidate.herb_combination && candidate.herb_combination.length > 0 && (
             <div className="bg-muted/50 rounded-lg p-4">
-              <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <h4 className="text-h6 font-semibold mb-3 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-primary" />
                 {t('ai.formula.generateTab.formulaComposition')}
               </h4>
@@ -153,7 +153,7 @@ export function FormulaExplanationModal({ candidate, isOpen, onClose }: FormulaE
           )}
 
           {/* 免责声明 */}
-          <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
+          <div className="text-caption text-muted-foreground bg-muted/50 rounded-lg p-3">
             <strong>{t('ai.formula.generateTab.disclaimer')}</strong>{t('ai.formula.generateTab.disclaimerText')}
           </div>
         </div>

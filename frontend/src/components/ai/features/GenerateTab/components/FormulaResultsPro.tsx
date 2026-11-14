@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import {
   Filter, Lightbulb, Share2, TrendingUp, CheckCircle,
   ChevronDown, Download, RefreshCw, BookOpen, Sparkles, FlaskConical,
+  AlertTriangle, MoreHorizontal,
 } from 'lucide-react'
 import { Badge, Button, useToast } from '@/components/ui'
 import { NeuralResultCard } from '@/components/ai/NeuralResultCard'
@@ -98,6 +99,8 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
   const [selectedForExplanation, setSelectedForExplanation] = React.useState<AICandidate | null>(null)
   const [showRecommend, setShowRecommend] = React.useState(false)
   const [showExplanation, setShowExplanation] = React.useState(false)
+  const [moreOpen, setMoreOpen] = React.useState(false)
+  const [exportOpen, setExportOpen] = React.useState(false)
 
   const stats = useMemo(() => {
     if (!generateResult || generateResult.length === 0) return null
@@ -180,24 +183,24 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
 
       {/* Stats panel */}
       {stats && showStats && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 p-4 bg-muted/30 rounded-xl border border-border">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 p-4 bg-muted/30 dark:bg-muted/10 rounded-xl border border-border">
           <div className="text-center">
-            <div className="text-display-sm font-bold text-primary">{stats.total}</div>
+            <div className="text-h5 font-bold font-mono text-primary">{stats.total}</div>
             <div className="text-caption text-muted-foreground mt-0.5">{t('ai.formula.generateTab.formulaCountLabel')}</div>
           </div>
           <div className="text-center">
-            <div className="text-display-sm font-bold text-success">{stats.avgScore.toFixed(1)}</div>
+            <div className="text-h5 font-bold font-mono text-success">{stats.avgScore.toFixed(1)}</div>
             <div className="text-caption text-muted-foreground mt-0.5">{t('ai.formula.generateTab.avgScore')}</div>
           </div>
           <div className="text-center">
-            <div className="text-display-sm font-bold text-warning">{stats.maxScore.toFixed(1)}</div>
+            <div className="text-h5 font-bold font-mono text-warning">{stats.maxScore.toFixed(1)}</div>
             <div className="text-caption text-muted-foreground mt-0.5">{t('ai.formula.generateTab.maxScore')}</div>
           </div>
           <div className="text-center">
-            <div className="text-display-sm font-bold text-info">{stats.passedSafety}/{stats.total}</div>
+            <div className="text-h5 font-bold font-mono text-info">{stats.passedSafety}/{stats.total}</div>
             <div className="text-caption text-muted-foreground mt-0.5">{t('ai.formula.generateTab.safetyPassed')}</div>
           </div>
-          <button onClick={() => setShowStats(false)} className="col-span-4 self-center text-caption text-muted-foreground hover:text-foreground flex items-center gap-1">
+          <button onClick={() => setShowStats(false)} className="col-span-4 self-center inline-flex items-center justify-center min-h-[44px] gap-1 text-caption text-muted-foreground hover:text-foreground">
             <ChevronDown className="w-3 h-3" />{t('ai.formula.generateTab.collapse')}
           </button>
         </div>
@@ -209,7 +212,7 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
           <div className="mb-4 p-4 rounded-xl border border-border bg-surface/60">
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <BookOpen className="w-4 h-4 text-primary" />
-              <span className="text-title-sm font-semibold">
+              <span className="text-h4 font-semibold">
                 {t('ai.formula.generateTab.ragEvidenceTitle')}
               </span>
               {ragEvidence.enabled ? (
@@ -257,7 +260,7 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
             )}
           </div>
         ) : (
-          <div className="mb-4 p-3 rounded-xl border border-dashed border-border bg-muted/20 flex items-center gap-2">
+          <div className="mb-4 p-3 rounded-xl border border-border dark:border-border bg-muted/20 dark:bg-muted/10 flex items-center gap-2">
             <BookOpen className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="text-caption text-muted-foreground">
               {t('ai.formula.generateTab.ragEvidenceNone')}
@@ -270,59 +273,72 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-title-sm font-semibold">{t('ai.formula.generateTab.formulaCount', { count: generateResult?.length || 0 })}</h3>
-            <Badge variant={getGeneratorBadge(generator)} className="text-label-sm">{getGeneratorLabel(generator)}</Badge>
+            <h3 className="text-h4 font-semibold">{t('ai.formula.generateTab.formulaCount', { count: generateResult?.length || 0 })}</h3>
+            <Badge variant={getGeneratorBadge(generator)} className="text-overline">{getGeneratorLabel(generator)}</Badge>
           </div>
           <p className="text-caption text-muted-foreground">{t('ai.formula.generateTab.clickFormulaForDetails')}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg border border-border">
+          {/* 筛选分组 */}
+          <div className="flex items-center gap-2 px-3 min-h-[44px] bg-muted dark:bg-muted/20 rounded-lg border border-border dark:border-border">
             <Filter className="w-3.5 h-3.5 text-muted-foreground" />
             <select
               value={selectedCategory}
               onChange={(e) => onCategoryChange(e.target.value as FormulaCategory | 'all')}
-              className="bg-transparent text-body-sm font-medium border-none outline-none cursor-pointer"
+              className="min-h-[44px] py-2 bg-transparent text-body-sm font-medium border-none outline-none cursor-pointer"
             >
               <option value="all">{t('ai.formula.generateTab.all')}</option>
               {formulaCategories.map((cat) => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
             </select>
             {selectedCategory !== 'all' && (
-              <span className="text-caption px-1.5 py-0.5 bg-primary/10 text-primary rounded-full">{filteredResults.length}</span>
+              <span className="text-caption px-1.5 py-0.5 bg-primary/10 dark:bg-primary/20 text-primary rounded-full">{filteredResults.length}</span>
             )}
           </div>
 
-          <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
-            <button onClick={() => onToggleSort('score')} className={`px-2 py-1 rounded text-caption font-medium ${sortBy === 'score' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground'}`}>
+          {/* 排序分组 */}
+          <div className="flex items-center gap-1 bg-muted dark:bg-muted/20 rounded-lg p-0.5">
+            <button onClick={() => onToggleSort('score')} className={`inline-flex items-center min-h-[44px] px-3 rounded text-caption font-medium ${sortBy === 'score' ? 'bg-background dark:bg-background shadow-sm text-primary' : 'text-muted-foreground'}`}>
               {t('ai.formula.generateTab.composite')} {sortBy === 'score' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
-            <button onClick={() => onToggleSort('synergy')} className={`px-2 py-1 rounded text-caption font-medium ${sortBy === 'synergy' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground'}`}>
+            <button onClick={() => onToggleSort('synergy')} className={`inline-flex items-center min-h-[44px] px-3 rounded text-caption font-medium ${sortBy === 'synergy' ? 'bg-background dark:bg-background shadow-sm text-primary' : 'text-muted-foreground'}`}>
               {t('ai.formula.generateTab.synergyShort')} {sortBy === 'synergy' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
           </div>
 
           {(generateResult?.length || 0) >= 2 && <ResultsViewSwitcher viewMode={viewMode} onViewModeChange={onViewModeChange} />}
 
-          <button onClick={() => setShowOptimizationAdvisor(!showOptimizationAdvisor)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showOptimizationAdvisor ? 'bg-warning/10 text-warning border-warning/20' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}>
+          <button onClick={() => setShowOptimizationAdvisor(!showOptimizationAdvisor)} className={`inline-flex items-center min-h-[44px] gap-1.5 px-3 rounded-lg text-body-sm font-medium border ${showOptimizationAdvisor ? 'bg-warning/10 dark:bg-warning/20 text-warning dark:text-warning-300 border-warning/20 dark:border-warning/30' : 'bg-muted dark:bg-muted/20 text-muted-foreground hover:text-foreground border-border'}`}>
             <Lightbulb className="w-3.5 h-3.5" />{t('ai.formula.generateTab.optimizationAdvice')}
           </button>
 
-          <button onClick={() => setShowSharePanel(!showSharePanel)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showSharePanel ? 'bg-info/10 text-info border-info/20' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}>
+          <button onClick={() => setShowSharePanel(!showSharePanel)} className={`inline-flex items-center min-h-[44px] gap-1.5 px-3 rounded-lg text-body-sm font-medium border ${showSharePanel ? 'bg-info/10 dark:bg-info/20 text-info dark:text-info-300 border-info/20 dark:border-info/30' : 'bg-muted dark:bg-muted/20 text-muted-foreground hover:text-foreground border-border'}`}>
             <Share2 className="w-3.5 h-3.5" />{t('ai.formula.generateTab.share')}
           </button>
 
-          <div className="relative group">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium bg-muted text-muted-foreground hover:text-foreground border border-border">
+          {/* 导出下拉（点击展开，仿「更多」菜单范式：state + aria-expanded + 遮罩关闭） */}
+          <div className="relative">
+            <button
+              onClick={() => setExportOpen(!exportOpen)}
+              aria-expanded={exportOpen}
+              className="inline-flex items-center min-h-[44px] gap-1.5 px-3 rounded-lg text-body-sm font-medium bg-muted dark:bg-muted/20 text-muted-foreground hover:text-foreground border border-border"
+            >
               <Download className="w-3.5 h-3.5" />{t('ai.formula.generateTab.export')}
             </button>
-            <div className="absolute right-0 mt-1 w-32 bg-surface rounded-lg shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-              <div className="py-1">
-                <button onClick={() => onExportFormula('json')} className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted">JSON</button>
-                <button onClick={() => onExportFormula('csv')} className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted">CSV</button>
-                {/* P2-4/P3-3：PDF 导出逻辑已实现（useExportFormula），启用菜单项并移除「即将推出」 */}
-                <button onClick={() => onExportFormula('pdf')} className="w-full px-3 py-2 text-left text-body-sm hover:bg-muted">导出 PDF</button>
-              </div>
-            </div>
+            {exportOpen && (
+              <>
+                {/* 点击遮罩关闭 */}
+                <div className="fixed inset-0 z-40" onClick={() => setExportOpen(false)} aria-hidden="true" />
+                <div className="absolute right-0 mt-1 w-40 bg-surface dark:bg-slate-900 rounded-lg shadow-lg border border-border dark:border-slate-700 z-50">
+                  <div className="py-1">
+                    <button onClick={() => { onExportFormula('json'); setExportOpen(false) }} className="w-full min-h-[44px] px-3 py-2 text-left text-body-sm text-foreground hover:bg-muted dark:hover:bg-slate-800">JSON</button>
+                    <button onClick={() => { onExportFormula('csv'); setExportOpen(false) }} className="w-full min-h-[44px] px-3 py-2 text-left text-body-sm text-foreground hover:bg-muted dark:hover:bg-slate-800">CSV</button>
+                    {/* P2-4/P3-3：PDF 导出逻辑已实现（useExportFormula），启用菜单项并移除「即将推出」 */}
+                    <button onClick={() => { onExportFormula('pdf'); setExportOpen(false) }} className="w-full min-h-[44px] px-3 py-2 text-left text-body-sm text-foreground hover:bg-muted dark:hover:bg-slate-800">{t('ai.formula.generateTab.exportPdf')}</button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -331,17 +347,18 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
       {showOptimizationAdvisor && generateResult && generateResult.length > 0 && (
         <div className="mb-4">
           {scoreMissing && (
-            <div role="status" className="mb-2 px-3 py-2 rounded-lg text-xs font-medium bg-warning/10 text-warning border border-warning/20">
-              ⚠ 部分评分数据暂不可用（暂无数据），以下优化建议基于现有数据生成。
+            <div role="status" className="mb-2 px-3 py-2 rounded-lg text-caption font-medium bg-warning/10 dark:bg-warning/20 text-warning dark:text-warning-300 border border-warning/20 dark:border-warning/30 flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+              <span>{t('ai.formula.generateTab.scorePartialUnavailableAdvisor')}</span>
             </div>
           )}
           <Suspense fallback={<div className="animate-pulse p-4 bg-muted rounded-xl h-32"></div>}>
             <OptimizationAdvisor
-              formula={{ formulaName: generateResult?.[0]?.formula_name || '当前配方', effects: effectLabels, ingredients: mappedIngredients, scores: topScores || { synergy: 0, taste: 0, stability: 0, safety: 0, cost: 0, overall: 0 } }}
+              formula={{ formulaName: generateResult?.[0]?.formula_name || t('ai.formula.generateTab.currentFormula'), effects: effectLabels, ingredients: mappedIngredients, scores: topScores || { synergy: 0, taste: 0, stability: 0, safety: 0, cost: 0, overall: 0 } }}
               onApplySuggestion={(suggestion) => {
                 // P2：优化建议应用后给出明确反馈（当前建议为记录型，不伪造配方数据）
-                const value = suggestion.suggestedValue ? `（建议值：${suggestion.suggestedValue}）` : ''
-                toastInfo(`已记录优化建议：${suggestion.title}${value}`)
+                const value = suggestion.suggestedValue ? t('ai.formula.generateTab.suggestedValue', { value: suggestion.suggestedValue }) : ''
+                toastInfo(t('ai.formula.generateTab.optimizationRecorded', { title: suggestion.title, value }))
               }}
             />
           </Suspense>
@@ -352,13 +369,14 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
       {showSharePanel && generateResult && generateResult.length > 0 && (
         <div className="mb-4">
           {scoreMissing && (
-            <div role="status" className="mb-2 px-3 py-2 rounded-lg text-xs font-medium bg-warning/10 text-warning border border-warning/20">
-              ⚠ 部分评分数据暂不可用（暂无数据），分享卡片将基于现有数据生成。
+            <div role="status" className="mb-2 px-3 py-2 rounded-lg text-caption font-medium bg-warning/10 dark:bg-warning/20 text-warning dark:text-warning-300 border border-warning/20 dark:border-warning/30 flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+              <span>{t('ai.formula.generateTab.scorePartialUnavailableShare')}</span>
             </div>
           )}
           <Suspense fallback={<div className="animate-pulse p-4 bg-muted rounded-xl h-32"></div>}>
             <FormulaSharePanel
-              formula={{ formulaName: generateResult?.[0]?.formula_name || '当前配方', effects: effectLabels, ingredients: mappedIngredients, scores: { synergy: topScores?.synergy || 0, taste: topScores?.taste || 0, stability: topScores?.stability || 0, overall: topScores?.overall || 0 } }}
+              formula={{ formulaName: generateResult?.[0]?.formula_name || t('ai.formula.generateTab.currentFormula'), effects: effectLabels, ingredients: mappedIngredients, scores: { synergy: topScores?.synergy || 0, taste: topScores?.taste || 0, stability: topScores?.stability || 0, overall: topScores?.overall || 0 } }}
               onClose={() => setShowSharePanel(false)}
               onShare={() => setShowSharePanel(false)}
             />
@@ -368,11 +386,11 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
 
       {/* Results */}
       {filteredResults.length === 0 ? (
-        <div className="text-center py-12 bg-muted/20 rounded-xl border-2 border-dashed border-border">
+        <div className="text-center py-12 bg-muted/30 dark:bg-muted/10 rounded-xl border border-border dark:border-border">
           <Filter className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
-          <h3 className="text-title-sm font-semibold text-foreground mb-1">{t('ai.formula.generateTab.noResults')}</h3>
+          <h3 className="text-h4 font-semibold text-foreground mb-1">{t('ai.formula.generateTab.noResults')}</h3>
           <p className="text-body-sm text-muted-foreground mb-3">{t('ai.formula.generateTab.noResultsHint')}</p>
-          <button onClick={() => onToggleSort('score')} className="px-3 py-1.5 text-caption bg-muted rounded-lg hover:bg-background">{t('ai.formula.generateTab.reset')}</button>
+          <button onClick={() => onToggleSort('score')} className="min-h-[44px] px-4 py-2 text-caption bg-muted dark:bg-muted/20 rounded-lg hover:bg-background border border-border">{t('ai.formula.generateTab.reset')}</button>
         </div>
       ) : viewMode === 'card' ? (
         <>
@@ -405,55 +423,83 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
         onClose={() => setSelectedForExplanation(null)}
       />
 
-      {/* Bottom bar */}
+      {/* Bottom bar：左侧状态信息 + 右侧主操作（保存全部 / 最佳配方解释）+「更多」溢出菜单 */}
       {filteredResults.length > 0 && (
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-border dark:border-slate-700">
+          {/* 左侧：状态信息（只读，非操作） */}
           <div className="flex items-center gap-4 text-caption text-muted-foreground">
             <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-success" />{t('ai.formula.generateTab.passedSafety', { count: filteredResults.filter(c => c.safety_passed).length })}</span>
             <span className="flex items-center gap-1.5"><TrendingUp className="w-3.5 h-3.5 text-primary" />{t('ai.formula.generateTab.average', { value: stats?.avgScore.toFixed(1) || 0 })}</span>
           </div>
+
+          {/* 右侧：主操作 2 个 + 更多溢出菜单 */}
           <div className="flex items-center gap-2">
-            {/* 配方解释按钮 */}
+            {/* 配方解释按钮（主操作） */}
             <button
               onClick={() => {
                 if (filteredResults.length > 0) {
                   setSelectedForExplanation(filteredResults[0])
                 }
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+              className="inline-flex items-center min-h-[44px] gap-1.5 px-3 rounded-lg text-body-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
             >
               <BookOpen className="w-3.5 h-3.5" />
               {t('ai.formula.generateTab.interpretBestFormula')}
             </button>
-            {!showStats && (
-              <button onClick={() => setShowStats(true)} className="px-3 py-1.5 text-caption text-muted-foreground hover:text-foreground flex items-center gap-1">
-                <RefreshCw className="w-3 h-3" />{t('ai.formula.generateTab.showStats')}
-              </button>
-            )}
             {onSaveAll && (
               <Button variant="outline" size="sm" icon={<Download className="w-3.5 h-3.5" />} onClick={onSaveAll}>{t('ai.formula.generateTab.saveAll')}</Button>
             )}
+
+            {/* 更多溢出菜单：智能推荐 / 配方解释 / 版本对比 / 显示统计 */}
+            <div className="relative">
+              <button
+                onClick={() => setMoreOpen(!moreOpen)}
+                aria-label={t('common.more')}
+                aria-expanded={moreOpen}
+                className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] gap-1 px-2 rounded-lg text-body-sm font-medium bg-muted dark:bg-slate-800 text-muted-foreground hover:text-foreground border border-border dark:border-slate-700"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+              {moreOpen && (
+                <>
+                  {/* 点击遮罩关闭 */}
+                  <div className="fixed inset-0 z-40" onClick={() => setMoreOpen(false)} aria-hidden="true" />
+                  <div className="absolute right-0 bottom-full mb-2 w-48 bg-surface dark:bg-slate-900 rounded-lg shadow-lg border border-border dark:border-slate-700 z-50">
+                    <div className="py-1">
+                      <button
+                        onClick={() => { setShowRecommend(!showRecommend); setMoreOpen(false) }}
+                        className="w-full inline-flex items-center gap-2 min-h-[44px] px-3 py-2 text-left text-body-sm text-foreground hover:bg-muted dark:hover:bg-slate-800"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-accent-500" />{t('ai.formula.generateTab.smartRecommend')}
+                      </button>
+                      <button
+                        onClick={() => { setShowExplanation(!showExplanation); setMoreOpen(false) }}
+                        className="w-full inline-flex items-center gap-2 min-h-[44px] px-3 py-2 text-left text-body-sm text-foreground hover:bg-muted dark:hover:bg-slate-800"
+                      >
+                        <FlaskConical className="w-3.5 h-3.5 text-accent-500" />{t('ai.formula.generateTab.formulaExplanation')}
+                      </button>
+                      {filteredResults.length >= 2 && onCompareVersions && (
+                        <button
+                          onClick={() => { onCompareVersions(1, 2); setMoreOpen(false) }}
+                          className="w-full inline-flex items-center gap-2 min-h-[44px] px-3 py-2 text-left text-body-sm text-foreground hover:bg-muted dark:hover:bg-slate-800"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5 text-info" />{t('ai.formula.generateTab.versionCompare')}
+                        </button>
+                      )}
+                      {!showStats && (
+                        <button
+                          onClick={() => { setShowStats(true); setMoreOpen(false) }}
+                          className="w-full inline-flex items-center gap-2 min-h-[44px] px-3 py-2 text-left text-body-sm text-foreground hover:bg-muted dark:hover:bg-slate-800"
+                        >
+                          <TrendingUp className="w-3.5 h-3.5 text-muted-foreground" />{t('ai.formula.generateTab.showStats')}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-          {filteredResults.length >= 2 && onCompareVersions && (
-            <button
-              onClick={() => onCompareVersions(1, 2)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium bg-info/10 text-info hover:bg-info/20 border border-info/20"
-            >
-              {t('ai.formula.generateTab.versionCompare')}
-            </button>
-          )}
-          <button
-            onClick={() => setShowRecommend(!showRecommend)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showRecommend ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />{t('ai.formula.generateTab.smartRecommend')}
-          </button>
-          <button
-            onClick={() => setShowExplanation(!showExplanation)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showExplanation ? 'bg-accent-50 text-accent-700 border-accent-200 dark:bg-accent-300/25 dark:text-accent-700 dark:border-accent-800' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}
-          >
-            <FlaskConical className="w-3.5 h-3.5" />{t('ai.formula.generateTab.formulaExplanation')}
-          </button>
         </div>
       )}
 

@@ -17,7 +17,7 @@ export const ResultsViewSwitcher: React.FC<ResultsViewSwitcherProps> = ({
   onViewModeChange,
 }) => {
   const base =
-    'px-3 py-2 min-h-[44px] rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5'
+    'px-3 py-2 min-h-[44px] rounded-lg text-caption font-medium transition-all duration-200 flex items-center gap-1.5'
   const active = 'bg-card shadow-sm text-primary'
   const inactive = 'text-muted-foreground hover:text-primary'
 

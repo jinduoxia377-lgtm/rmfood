@@ -95,7 +95,7 @@ export function FormulaComparePanel({
       {/* 版本信息 */}
       <div className="flex items-center justify-between text-caption text-muted-foreground">
         <span>{version1.formula_name || version1.name || resolvedLabel1}</span>
-        <Badge variant="neutral">对比</Badge>
+        <Badge variant="neutral">{t('ai.formula.ui.compareBadge')}</Badge>
         <span>{version2.formula_name || version2.name || resolvedLabel2}</span>
       </div>
 
@@ -104,28 +104,31 @@ export function FormulaComparePanel({
         {/* 图例 */}
         <div className="flex items-center gap-4 text-caption text-muted-foreground">
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-1.5 rounded-full bg-primary" /> {resolvedLabel1}
+            <span className="inline-block w-3 h-2 rounded-full bg-primary" /> {resolvedLabel1}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-1.5 rounded-full bg-info" /> {resolvedLabel2}
+            <span className="inline-block w-3 h-2 rounded-full bg-info" /> {resolvedLabel2}
           </span>
         </div>
         {diffs.map(d => {
-          const better = d.diff >= 0 ? 1 : 2
+          // H6：版本→颜色映射恒定化 —— v1 恒 bg-primary、v2 恒 bg-info（与图例一致），
+          // 不再靠交换底色表达「更优」；「更优」改用胜出侧数值加粗 + 条描边 ring 表达。
+          const v1Wins = d.diff > 0
+          const v2Wins = d.diff < 0
           return (
             <div key={d.key} className="space-y-1">
               <div className="flex items-center justify-between text-caption">
                 <span>{d.label}</span>
-                <span className={d.diff === 0 ? 'text-muted-foreground' : 'text-primary font-semibold'}>
+                <span className={d.diff === 0 ? 'text-muted-foreground' : v1Wins ? 'text-primary font-bold' : 'text-info font-bold'}>
                   {d.diff > 0 ? `+${Math.round(d.diff)}` : Math.round(d.diff)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full" style={{ width: `${metrics1[d.key]}%` }} />
+                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className={`h-full bg-primary rounded-full ${v1Wins ? 'ring-1 ring-primary/40' : ''}`} style={{ width: `${metrics1[d.key]}%` }} />
                 </div>
-                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${better === 1 ? 'bg-primary' : 'bg-info'}`} style={{ width: `${metrics2[d.key]}%` }} />
+                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className={`h-full bg-info rounded-full ${v2Wins ? 'ring-1 ring-info/40' : ''}`} style={{ width: `${metrics2[d.key]}%` }} />
                 </div>
               </div>
             </div>

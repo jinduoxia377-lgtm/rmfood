@@ -48,11 +48,11 @@ export function FormulaRecommendPanel({ targetEffects, onClose }: FormulaRecomme
   return (
     <Card className="p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-title-sm font-semibold flex items-center gap-1.5">
+        <h3 className="text-h4 font-semibold flex items-center gap-1.5">
           <Sparkles className="w-4 h-4 text-primary" />
           {t('ai.formula.generateTab.smartFormulaRecommend')}
         </h3>
-        <button onClick={onClose} className="text-caption text-muted-foreground hover:text-foreground">{t('ai.formula.generateTab.close')}</button>
+        <button onClick={onClose} className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-3 text-caption text-muted-foreground hover:text-foreground">{t('ai.formula.generateTab.close')}</button>
       </div>
 
       <p className="text-caption text-muted-foreground">
@@ -68,7 +68,7 @@ export function FormulaRecommendPanel({ targetEffects, onClose }: FormulaRecomme
       {error && (
         <div className="rounded-lg bg-danger/10 border border-danger/20 p-3 text-caption text-danger">
           {error}
-          <button onClick={retry} className="ml-2 underline">{t('ai.formula.generateTab.retry')}</button>
+          <button onClick={retry} className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] px-3 ml-2 underline">{t('ai.formula.generateTab.retry')}</button>
         </div>
       )}
 
