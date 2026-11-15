@@ -5,6 +5,9 @@
  *
  * 注：performanceMetrics（性能基准）为实验室内部压测示例，非生产实测基准。
  *
+ * 合规口径（已定，非待办）：算法 metric 为能力/机制描述，不用绝对化百分比宣称；
+ *   如需改变对外宣称须经法务书面复核。
+ *
  * 算法引擎对应后端路径：
  *   app/services/ai/algorithms/
  *     - unified_optimizer.py      → UnifiedFormulaOptimizer（统一调度器 + Bandit）
@@ -94,10 +97,10 @@ export const algorithms: Algorithm[] = [
     icon: 'Beaker',
     title: 'Binary GA + MILP',
     subtitle: '混合整数规划引擎',
-    desc: '二进制编码遗传算法与混合整数线性规划 (MILP) 的混合引擎。GA 负责全局离散变量选择，MILP 负责连续剂量精确求解，在硬约束（安全阈值、归一化）下保证可行解。',
+    desc: '二进制编码遗传算法与混合整数线性规划 (MILP) 的混合引擎。GA 负责全局离散变量选择，MILP 负责连续剂量精确求解，在硬约束（安全阈值、归一化）下求解满足约束的可行解。',
     tech: ['二进制编码 · MILP 精确求解 · 硬约束处理'],
     category: 'optimizer',
-    metric: { value: '100%', label: '约束满足率' },
+    metric: { value: '硬约束', label: '强制满足' },
     applicable: ['有严格法规约束的配方', '剂量精确计算'],
     backendClass: 'BinaryGAOptimizer',
   },

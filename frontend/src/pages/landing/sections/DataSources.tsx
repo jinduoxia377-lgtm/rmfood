@@ -14,7 +14,7 @@ import {
 import { Database, Network, Shield, Scale, FlaskConical, RefreshCw, Globe, ExternalLink } from 'lucide-react';
 
 // ── 聚合统计 ──────────────────────────────────────────────────────
-const SYNC_STATUS   = '实时同步';
+const SYNC_STATUS   = '同步';
 
 // ── 状态指示点 ──────────────────────────────────────────────────────
 function StatusDot({ status }: { status: DataSource['status'] }) {
@@ -149,7 +149,7 @@ export default function DataSources() {
               <span className="lp-section-tag block mb-2">数据底座</span>
               <h2 className="lp-h2 mb-1">6 大数据源 · 14,728+ 知识节点</h2>
               <p className="lp-data-section-desc">
-                覆盖中药材、活性肽、知识图谱、法规标准、国际标准五大维度，支持跨库联合查询与实时同步。
+                覆盖中药材、活性肽、知识图谱、法规标准、国际标准五大维度，支持跨库联合查询与同步。
               </p>
             </div>
             <span className="lp-caption shrink-0 hidden sm:block" style={{ color: 'var(--text-secondary)' }}>

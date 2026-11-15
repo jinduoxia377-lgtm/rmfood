@@ -78,7 +78,7 @@ export const useCases: (UseCaseItem & { scenario: Scenario })[] = [
     workflow: [
       { label: '原料筛选', detail: 'TCMSP · 612 味中药材' },
       { label: '配伍推理', detail: 'Neo4j 知识图谱 · 约 14.7K 节点' },
-      { label: '合规校验', detail: '卫健委目录 · 实时同步' },
+      { label: '合规校验', detail: '卫健委目录 · 目录对接' },
       { label: '报告生成', detail: 'DOCX/PDF · GLP 模板' },
     ],
     // 合规口径（已定，非待办）：「配伍禁忌 28 对」指配伍禁忌配对数（独立口径）；卫健委药食同源目录法定条目为 106 种，二者分列勿混淆。「612 味中药材」为已通过合规审计的库容量描述。依据 docs/marketing/03 审计矩阵；如需改变对外宣称须经法务书面复核。

@@ -24,9 +24,9 @@ interface DSItem {
 // ── 数据源数据 ──────────────────────────────────────────────────
 const DS_DATA: DSItem[] = [
   { name: 'TCMSP',      status: 'online',  stat: '612',    unit: '中药材',   color: 'var(--color-primary-700, #047857)', desc: '中药材化学成分与靶点数据库，覆盖 81 个数据库迁移版本', features: ['化学成分检索', '靶点匹配', '药理作用分析'] },
-  { name: 'DFBP',       status: 'online',  stat: '7,660+', unit: '活性肽结构', color: 'var(--color-secondary-700, #1d4ed8)', desc: '食源性活性肽序列数据库，PepINVENT 引擎实时集成',         features: ['肽序列预测', 'ADMET 评估', '毒性致敏性分析'] },
+  { name: 'DFBP',       status: 'online',  stat: '7,660+', unit: '活性肽结构', color: 'var(--color-secondary-700, #1d4ed8)', desc: '食源性活性肽序列数据库，PepINVENT 引擎集成',         features: ['肽序列预测', 'ADMET 评估', '毒性致敏性分析'] },
   { name: 'Neo4j 图谱', status: 'online',  stat: '14.7K',  unit: '实体节点',   color: 'var(--color-accent-700, #6d28d9)', desc: '药食同源多维关联图谱，Cypher 查询引擎驱动',               features: ['多维关联查询', 'D3 可视化', '图谱推理'] },
-  { name: '卫健委目录', status: 'syncing', stat: '106',    unit: '法定物质',   color: 'var(--color-danger-700, #dc2626)', desc: '实时同步卫健委药食同源名单，动态法规更新',                 features: ['配伍禁忌检测', '过敏原标注', '合规预判'] },
+  { name: '卫健委目录', status: 'syncing', stat: '106',    unit: '法定物质',   color: 'var(--color-danger-700, #dc2626)', desc: '同步卫健委药食同源名单，动态法规更新',                 features: ['配伍禁忌检测', '过敏原标注', '合规预判'] },
   { name: '食品安全国标', status: 'update', stat: '1,724', unit: '国家标准',   color: 'var(--color-warning-700, #b45309)', desc: 'GB 2760 / GB 14880 / GB 28050 核心标准全文检索',          features: ['全文检索', '条款对照', '版本追溯'] },
 ];
 

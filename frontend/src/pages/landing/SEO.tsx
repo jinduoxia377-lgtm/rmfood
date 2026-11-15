@@ -21,7 +21,7 @@ const SITE_NAME = '莱茵分子';
 const SITE_DESCRIPTION =
   '莱茵分子是药食同源AI配方研发平台，整合TCMSP、DFBP、Neo4j知识图谱等权威数据源，' +
   '提供从原料筛选、配伍禁忌检测、合规审查到功效预测的完整工作流。内置7种优化算法、' +
-  '5种协同机制，亚秒级实时推理，帮助研发机构实现精准个性化配方设计与科学机理阐释。';
+  '5种协同机制，高效推理，帮助研发机构实现精准个性化配方设计与科学机理阐释。';
 const SITE_KEYWORDS =
   '药食同源,AI配方研发,中医食疗,TCMSP,活性肽,知识图谱,配方优化,合规检测,莱茵分子,药食同源平台';
 const SITE_AUTHOR = '莱茵分子研发团队';
@@ -64,7 +64,7 @@ const JSON_LD = {
       applicationCategory: 'MedicalApplication',
       operatingSystem: 'Web',
       description:
-        '药食同源AI配方研发平台，整合TCMSP、DFBP、知识图谱等权威数据源，内置7种优化算法和5种协同机制，亚秒级实时推理。',
+        '药食同源AI配方研发平台，整合TCMSP、DFBP、知识图谱等权威数据源，内置7种优化算法和5种协同机制，高效推理。',
       offers: {
         '@type': 'AggregateOffer',
         lowPrice: '0',
@@ -76,9 +76,9 @@ const JSON_LD = {
         'AI智能配方对话',
         '7种优化算法引擎',
         '5种协同作用机制',
-        '亚秒级实时推理',
+        '高效推理',
         '合规检测与配伍禁忌',
-        '权威数据源实时同步',
+        '权威数据源同步',
         '企业团队协作',
         '实验数据管理',
       ],
