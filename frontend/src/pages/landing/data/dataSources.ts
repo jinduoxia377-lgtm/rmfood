@@ -69,7 +69,7 @@ export const dataSources: DataSource[] = [
     id: 'nfc',
     name: '卫健委目录',
     subtitle: '药食同源法规库',
-    desc: '实时对接卫健委药食同源名单，106 种法定条目，动态同步法规更新',
+    desc: '对接卫健委药食同源名单，106 种法定条目，动态同步法规更新',
     stat: '106',
     statLabel: '法定条目',
     color: 'var(--color-secondary-600, #2563eb)',

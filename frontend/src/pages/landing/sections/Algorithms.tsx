@@ -230,7 +230,7 @@ export default function Algorithms() {
             <span className="lp-section-tag block mb-[var(--space-apple-sm)]">算法引擎</span>
             <h2 className="lp-h2 mb-[var(--space-apple-sm)]">
               7 种优化算法 · 5 种协同机制 ·<br className="hidden sm:block" />
-              亚秒级实时推理
+              高效推理
             </h2>
             <p className="lp-body-sm max-w-2xl" style={{ color: 'var(--text-secondary)' }}>
               基于统一优化调度器（UnifiedOptimizer）的智能策略选择系统，内置 Bandit 在线学习自动匹配最优算法引擎。

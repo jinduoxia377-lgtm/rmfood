@@ -66,7 +66,7 @@ export const features: FeatureItem[] = [
     dimension: 'ai',
     keyMetric: '61 类阈值',
     techLabel: '三级预警 · PopPK/PD',
-    steps: [{ label: '原料扫描', detail: '遍历全量原料数据库' }, { label: '配伍禁忌 + 安全阈值', detail: '106 种法定条目 · 61 类阈值实时检测' }, { label: '合规报告生成', detail: '自动输出法规合规性报告' }],
+    steps: [{ label: '原料扫描', detail: '遍历全量原料数据库' }, { label: '配伍禁忌 + 安全阈值', detail: '106 种法定条目 · 61 类阈值检测' }, { label: '合规报告生成', detail: '自动输出法规合规性报告' }],
   },
   {
     id: 'kg',
