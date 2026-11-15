@@ -95,14 +95,14 @@ export default {
       sectionLabel: 'FAQ',
       items: [
         { q: 'Who is the Rhine Molecular Platform for?', a: 'It serves three user groups: ① Food science research teams — university faculty/students, research institutes, pharma R&D; ② Enterprise product R&D — supplements, functional foods, food-and-medicine-homology product teams; ③ Clinical nutrition — hospital nutrition departments and TCM clinic prescription design. Teams of any size can start on the free research tier.' },
-        { q: 'How is data security ensured?', a: 'AES-256 encrypted storage, RBAC five-level access control, multi-tenant data isolation, TLS 1.3 transport encryption. Every operation keeps a full audit log (retained 180 days), with configurable retention policies. The platform is designed in accordance with China MLPS Level 3 requirements for architecture and data governance.' }, // TODO(legal): certification wording pending final legal review
+        { q: 'How is data security ensured?', a: 'AES-256 encrypted storage, RBAC five-level access control, multi-tenant data isolation, TLS 1.3 transport encryption. Every operation keeps a full audit log (retained 180 days), with configurable retention policies. Architecture and data governance are designed with reference to China MLPS Level 3 requirements; the platform has not yet undergone MLPS assessment and holds no MLPS Level 3 certification.' },
         { q: 'How are user privacy and data ownership defined?', a: 'Formula data is owned by the user; the platform never uses user data for model training or shares it with third parties. All data is physically erased within 30 days of account deletion. The privacy policy complies with PIPL, supports data portability and one-click export.' },
         { q: 'What algorithms does AI formula generation use?', a: 'Seven optimizer engines are built in: Genetic Algorithm (GA), NSGA-III high-dimensional multi-objective, Binary GA+MILP mixed-integer programming, Bayesian optimization, MOEAD+CMA-ES decomposition, UCB1 Bandit auto-scheduling, and a neural formula network. A unified scheduler auto-selects the best strategy via Bandit online learning; similar-formula cache hit rate > 60%.' },
-        { q: 'Which standards does the safety & compliance check cover?', a: 'A three-level alert system (INFO/WARN/CRITICAL) covers 61 safety thresholds (peptides, polysaccharides, saponins, flavonoids, alkaloids, vitamins, minerals, etc.), live-linked to the NHC food-and-medicine-homology catalog (106 statutory entries) and GB 2760/14880/28050 national standards. Cross-checks international standards such as FDA GRAS and EFSA. PopPK/PD models compute optimal dosing windows.' },
+        { q: 'Which standards does the safety & compliance check cover?', a: 'A three-level alert system (INFO/WARN/CRITICAL) covers 61 safety thresholds (peptides, polysaccharides, saponins, flavonoids, alkaloids, vitamins, minerals, etc.), live-linked to the NHC food-and-medicine-homology catalog (106 statutory entries) and GB 2760/14880/28050 national standards. Supports compliance cross-checking against international standard lists such as FDA GRAS and EFSA; results are for research reference only and do not constitute overseas certification or registration. PopPK/PD models compute optimal dosing windows.' },
         { q: 'How fast is the platform?', a: 'Pairwise synergy analysis P50 < 45ms; 5-ingredient ratio optimization P95 < 1.8s; full pipeline (synergy+optimization+compatibility+safety+efficacy) P95 < 3.2s (internal lab benchmark example). Enterprise SLA guarantees < 6s at 99.9% availability.' },
         { q: 'Do you support private deployment?', a: 'The Enterprise tier offers a complete private-deployment option to the customer\'s own servers or private cloud. Supports SSO/LDAP integration, an independent database, and offline mode. Delivery is typically 4-6 weeks, including full technical training and ops documentation. Contact sales for details.' },
         { q: 'Is there a free trial? How does refunding work?', a: 'The research tier is free forever with no credit card required, including 3 formula projects and 20 AI conversations per day. Pro offers a 14-day free trial with all features. Enterprise supports annual billing or per-project customization. All paid plans are refundable within 30 days, no questions asked.' },
-        // TODO(legal): efficacy-boundary disclaimer pending final legal review
+        // Compliance position (settled, not pending): the efficacy boundary is stated as "an R&D aid tool that does not constitute medical advice and does not replace physician diagnosis or treatment", per docs/marketing/05 D8 / 03 §4. Any change requires written legal review.
         { q: 'Does the platform replace medical diagnosis or treatment?', a: 'No. This platform is a formula R&D aid for food scientists and product developers. It outputs a research evidence chain and does not constitute medical advice, nor does it replace diagnosis or treatment by a physician. Content involving special-population dosing or PopPK/PD modeling serves the safety-margin design of product development only. For health concerns, please consult a licensed physician.' },
       ],
     },
@@ -121,7 +121,7 @@ export default {
       ariaLabel: 'End-to-end R&D pipeline',
       sectionLabel: 'Full R&D pipeline',
       sectionTitle: 'From formulation wisdom to a deliverable evidence chain',
-      sectionSub: 'More than one-shot generation — a connected flow across design, compliance, validation, certification and reporting.',
+      sectionSub: 'More than one-shot generation — a connected flow across design, compliance, validation, certificate-of-analysis (COA) issuance and reporting.',
       steps: [
         { step: '01', title: 'Formula design', desc: 'Sovereign–minister–assistant–envoy pairing with network pharmacology — every rationale is traceable.', deliverable: 'Candidate formulas + pairing rationale + Pareto set + synergy index (SI)' },
         { step: '02', title: 'Safety & compliance', desc: '61 threshold classes, three-level alerts, and live checks against 106 statutory contraindications.', deliverable: 'Compliance report + contraindication checks + special-population dosing' },
@@ -132,11 +132,11 @@ export default {
       cta: 'Explore the full pipeline in the console',
       deliverablePrefix: 'Deliverable: ',
     },
-    // TODO(legal): disclaimer wording pending final legal review
+    // Compliance position (settled, not pending): the three disclaimers follow the most conservative default, per docs/marketing/05 D1/D6/§3.4. Any change requires written legal review.
     disclaimers: {
       partnerOrgs: 'The following are anonymized examples and do not represent established partnerships or endorsements.',
       testimonials: 'The above are illustrative reviews, not real user testimonials.',
-      certifications: 'The following reflects architecture and data-governance work carried out in line with the relevant standards and regulations; it does not indicate that the corresponding third-party certification has been obtained. Any certification will be announced separately.',
+      certifications: 'The following reflects architecture and data-governance work designed with reference to the relevant standards and regulations; it does not indicate that the corresponding third-party certification has been obtained. Any certification will be announced separately.',
     },
   },
 }

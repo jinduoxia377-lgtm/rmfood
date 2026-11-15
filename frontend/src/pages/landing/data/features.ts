@@ -94,7 +94,7 @@ export const features: FeatureItem[] = [
     id: 'collab',
     icon: 'GitBranch',
     title: '团队协作',
-    desc: '多租户行级隔离，RBAC 5 级角色权限，实时协同编辑 + 变更审计追踪，WebSocket 实时推送，满足 GLP 合规要求。',
+    desc: '多租户行级隔离，RBAC 5 级角色权限，实时协同编辑 + 变更审计追踪，WebSocket 实时推送，按 GLP 数据完整性要求组织记录与审计留痕。',
     tag: '企业协作',
     dimension: 'team',
     keyMetric: 'RBAC 5 级',

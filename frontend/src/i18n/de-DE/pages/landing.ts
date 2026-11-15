@@ -95,14 +95,14 @@ export default {
       sectionLabel: 'FAQ',
       items: [
         { q: 'Für wen ist die Rhein-Molekül-Plattform?', a: 'Sie bedient drei Nutzergruppen: ① Lebensmittel-Forschungsteams — Hochschulangehörige, Forschungsinstitute, Pharma-F&E; ② Produktentwicklung in Unternehmen — Nahrungsergänzung, funktionelle Lebensmittel, Lebensmittel-und-Arzneimittel-Produkte; ③ Klinische Ernährung — Krankenhaus-Ernährungsabteilungen und TCM-Praxis-Rezepturdesign. Teams jeder Größe können mit der kostenlosen Forschungsstufe beginnen.' },
-        { q: 'Wie wird Datensicherheit gewährleistet?', a: 'AES-256-Verschlüsselung, RBAC-Fünfstufen-Zugriffskontrolle, Multi-Tenant-Datenisolation, TLS-1.3-Transportverschlüsselung. Jede Operation behält ein vollständiges Prüfprotokoll (180 Tage), mit konfigurierbaren Aufbewahrungsrichtlinien. Die Plattform ist nach den MLPS-Stufe-3-Anforderungen hinsichtlich Architektur und Datengovernance konzipiert.' }, // TODO(legal): Zertifizierungsformulierung steht noch unter endgültiger Rechtsprüfung
+        { q: 'Wie wird Datensicherheit gewährleistet?', a: 'AES-256-Verschlüsselung, RBAC-Fünfstufen-Zugriffskontrolle, Multi-Tenant-Datenisolation, TLS-1.3-Transportverschlüsselung. Jede Operation behält ein vollständiges Prüfprotokoll (180 Tage), mit konfigurierbaren Aufbewahrungsrichtlinien. Architektur und Datengovernance orientieren sich an den MLPS-Stufe-3-Anforderungen; eine MLPS-Bewertung wurde noch nicht durchgeführt und es besteht keine MLPS-Stufe-3-Zertifizierung.' },
         { q: 'Wie sind Datenschutz und Dateneigentum geregelt?', a: 'Rezepturdaten gehören dem Nutzer; die Plattform nutzt keine Nutzerdaten für Modelltraining oder teilt sie mit Dritten. Alle Daten werden innerhalb von 30 Tagen nach Kontolöschung physisch gelöscht. Die Datenschutzrichtlinie entspricht der DSGVO/PIPL und unterstützt Datenportabilität und Ein-Klick-Export.' },
         { q: 'Welche Algorithmen nutzt die KI-Rezepturgenerierung?', a: 'Sieben Optimierer sind integriert: Genetischer Algorithmus (GA), NSGA-III mehrdimensionale Mehrzieloptimierung, Binary GA+MILP gemischt-ganzzahlige Programmierung, Bayes-Optimierung, MOEAD+CMA-ES-Zerlegung, UCB1-Bandit-Autoscheduling und ein neuronales Rezepturnetz. Ein einheitlicher Scheduler wählt per Bandit-Onlinelernen die beste Strategie; Cache-Trefferquote ähnlicher Rezepturen > 60 %.' },
-        { q: 'Welche Standards deckt die Sicherheits- & Compliance-Prüfung ab?', a: 'Ein dreistufiges Warnsystem (INFO/WARN/CRITICAL) deckt 61 Sicherheitsschwellen (Peptide, Polysaccharide, Saponine, Flavonoide, Alkaloide, Vitamine, Mineralstoffe usw.) ab, live verknüpft mit dem NHC-Katalog (106 Einträge) und den GB-Standards 2760/14880/28050. Kreuzprüfung internationaler Standards wie FDA GRAS und EFSA. PopPK/PD-Modelle berechnen optimale Einnahmefenster.' },
+        { q: 'Welche Standards deckt die Sicherheits- & Compliance-Prüfung ab?', a: 'Ein dreistufiges Warnsystem (INFO/WARN/CRITICAL) deckt 61 Sicherheitsschwellen (Peptide, Polysaccharide, Saponine, Flavonoide, Alkaloide, Vitamine, Mineralstoffe usw.) ab, live verknüpft mit dem NHC-Katalog (106 Einträge) und den GB-Standards 2760/14880/28050. Unterstützt den Compliance-Abgleich mit internationalen Standardlisten wie FDA GRAS und EFSA; die Ergebnisse dienen nur als Forschungsreferenz und stellen keine ausländische Zertifizierung oder Registrierung dar. PopPK/PD-Modelle berechnen optimale Einnahmefenster.' },
         { q: 'Wie schnell ist die Plattform?', a: 'Paarweise Synergieanalyse P50 < 45 ms; 5-Zutaten-Verhältnisoptimierung P95 < 1,8 s; vollständige Pipeline (Synergie+Optimierung+Kompatibilität+Sicherheit+Wirksamkeit) P95 < 3,2 s (internes Labor-Benchmark-Beispiel). Enterprise-SLA garantiert < 6 s bei 99,9 % Verfügbarkeit.' },
         { q: 'Unterstützen Sie Private Deployment?', a: 'Die Enterprise-Stufe bietet eine vollständige Private-Deployment-Option auf eigene Server oder Private Cloud. Unterstützt SSO/LDAP-Integration, eine unabhängige Datenbank und Offline-Betrieb. Lieferung in der Regel 4-6 Wochen, inklusive vollständiger Schulung und Ops-Dokumentation. Kontaktieren Sie den Vertrieb.' },
         { q: 'Gibt es eine kostenlose Testphase? Wie funktioniert die Rückerstattung?', a: 'Die Forschungsstufe ist dauerhaft kostenlos ohne Kreditkarte, inklusive 3 Rezepturprojekten und 20 KI-Dialogen pro Tag. Pro bietet eine 14-tägige kostenlose Testphase mit allen Funktionen. Enterprise unterstützt Jahresabrechnung oder projektspezifische Anpassung. Alle kostenpflichtigen Pläne sind innerhalb von 30 Tagen ohne Fragen erstattungsfähig.' },
-        // TODO(legal): Wirksamkeitsabgrenzung steht noch unter endgültiger Rechtsprüfung
+        // Compliance-Position (festgelegt, nicht offen): Die Wirksamkeitsabgrenzung wird als „F&E-Hilfswerkzeug, keine medizinische Beratung, kein Ersatz für ärztliche Diagnose und Behandlung“ formuliert, gemäß docs/marketing/05 D8 / 03 §4. Änderungen erfordern eine schriftliche Rechtsprüfung.
         { q: 'Ersetzt die Plattform eine ärztliche Diagnose oder Behandlung?', a: 'Nein. Diese Plattform ist ein Rezeptur-F&E-Werkzeug für Lebensmittelwissenschaftler und Produktentwickler. Sie liefert eine Forschungsbeweiskette, stellt keine medizinische Beratung dar und ersetzt weder Diagnose noch Behandlung durch einen Arzt. Inhalte zu Dosierung bei besonderen Personengruppen oder PopPK/PD-Modellierung dienen ausschließlich der Sicherung von Sicherheitsmargen in der Produktentwicklung. Bei gesundheitlichen Beschwerden wenden Sie sich bitte an eine approbierte Ärztin oder einen approbierten Arzt.' },
       ],
     },
@@ -121,22 +121,22 @@ export default {
       ariaLabel: 'F&E-Pipeline von Ende zu Ende',
       sectionLabel: 'Vollständige F&E-Pipeline',
       sectionTitle: 'Von der Kombinationsweisheit zur lieferbaren Evidenzkette',
-      sectionSub: 'Mehr als Einmal-Generierung – ein verbundener Ablauf über Design, Compliance, Validierung, Zertifizierung und Berichterstattung.',
+      sectionSub: 'Mehr als Einmal-Generierung – ein verbundener Ablauf über Design, Compliance, Validierung, COA-Ausstellung (Analysenzertifikat) und Berichterstattung.',
       steps: [
         { step: '01', title: 'Rezepturdesign', desc: 'Souverän–Minister–Assistent–Gesandter-Kombination mit Netzwerkpharmakologie – jede Begründung ist nachvollziehbar.', deliverable: 'Kandidatenrezepturen + Kombinationsbegründung + Pareto-Set + Synergieindex (SI)' },
         { step: '02', title: 'Sicherheit & Compliance', desc: '61 Schwellenwertklassen, dreistufige Warnungen und Live-Prüfung gegen 106 gesetzliche Inkompatibilitäten.', deliverable: 'Compliance-Bericht + Inkompatibilitätsprüfungen + Dosierung spezieller Gruppen' },
         { step: '03', title: 'Laborvalidierung', desc: 'Anbindung an Laboraufzeichnungen – eine vollständige Auditkette vom Design bis zu den Daten.', deliverable: 'Strukturierte Laboraufzeichnungen + Rohdaten-Parsing + Statistikdiagramme' },
-        { step: '04', title: 'COA-Ausstellung', desc: 'Chargenrückverfolgbarkeit ermöglicht lieferbereite Analyse-Zertifikate.', deliverable: 'COA-Dokument + Chargenrückverfolgbarkeit' },
+        { step: '04', title: 'COA-Ausstellung', desc: 'Chargenrückverfolgbarkeit ermöglicht lieferbereite Analysenberichte.', deliverable: 'COA-Dokument + Chargenrückverfolgbarkeit' },
         { step: '05', title: 'Wissenschaftlicher Bericht', desc: 'Methoden und Daten per Klick generieren, um die Publikation zu unterstützen.', deliverable: 'DOCX-/PDF-Berichte (GLP-/NMPA-Vorlagen) + Audit-Trail' },
       ],
       cta: 'Vollständige Pipeline in der Konsole erleben',
       deliverablePrefix: 'Ergebnis: ',
     },
-    // TODO(legal): Haftungsausschluss-Formulierung steht noch unter endgültiger Rechtsprüfung
+    // Compliance-Position (festgelegt, nicht offen): Die drei Haftungsausschlüsse folgen der konservativsten Standardformulierung, gemäß docs/marketing/05 D1/D6/§3.4. Änderungen erfordern eine schriftliche Rechtsprüfung.
     disclaimers: {
       partnerOrgs: 'Die folgenden Beispiele sind anonymisiert und stellen keine bestehende Zusammenarbeit oder Empfehlung dar.',
       testimonials: 'Die oben genannten Nutzerbewertungen sind beispielhaft und keine echten Nutzerstimmen.',
-      certifications: 'Die folgenden Angaben beschreiben Architektur- und Datengovernance-Arbeiten, die in Übereinstimmung mit den einschlägigen Standards und Vorschriften durchgeführt wurden; sie bedeuten nicht, dass die entsprechende Drittanbieter-Zertifizierung bereits erlangt wurde. Etwaige Zertifizierungen werden gesondert bekannt gegeben.',
+      certifications: 'Die folgenden Angaben beschreiben Architektur- und Datengovernance-Arbeiten, die mit Bezug auf die einschlägigen Standards und Vorschriften gestaltet wurden; sie bedeuten nicht, dass die entsprechende Drittanbieter-Zertifizierung bereits erlangt wurde. Etwaige Zertifizierungen werden gesondert bekannt gegeben.',
     },
   },
 }
