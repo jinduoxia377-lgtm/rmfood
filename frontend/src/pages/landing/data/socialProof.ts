@@ -19,11 +19,12 @@ export interface TrustMetric {
 }
 
 /** 平台指标（最保守默认）
- * 合规说明（TODO(legal): 待法务最终确认）：
+ * 合规说明（口径已定，非待办）：
  *   已移除「研发机构 9」「累计 AI 调用 41」「配方方案 12」三条内部统计——
  *   量级过小反削弱可信度，且为易过期的运营快照数据。仅保留有据的
  *   「优化算法引擎 7」（已实现的算法数量，属能力描述，非运营绩效）。
- *   待真实、可公开、可持续更新的运营数据经法务核实后可逐步恢复。
+ *   如需恢复须有真实、可公开、可持续更新的运营数据并经法务书面复核。
+ * 本文件全部「合规口径（已定，非待办）」条目依据 docs/marketing/05 D2/D3/D6 与 03 审计矩阵落地；如需改变对外宣称须经法务书面复核。
  */
 export const trustMetrics: TrustMetric[] = [
   { icon: 'Clock',          value: '7',     label: '优化算法引擎',    sub: '已实现',            color: 'var(--color-warning-700, #b45309)' },
@@ -49,7 +50,7 @@ export const partnerOrgs: PartnerOrg[] = [
   { name: '某医药集团',        category: 'enterprise'   },
 ];
 
-/** 合作机构免责文案 i18n key（TODO(legal): 待法务最终确认）
+/** 合作机构免责文案 i18n key（口径已定，非待办）
  * 供区块（SocialProof）在合作机构列表紧邻处渲染，明确以下为匿名示例。
  * 值为 i18n 键名，组件用 t(PARTNER_ORGS_DISCLAIMER_KEY) 取本地化文案。
  */
@@ -61,7 +62,7 @@ export interface Testimonial {
   role: string;
   org: string;
   quote: string;
-  // TODO(legal): 已移除 rating 字段——不给示意性文案打满分（避免"5 星好评"暗示真实评价）。
+  // 合规口径（已定，非待办）：已移除 rating 字段——不给示意性文案打满分（避免"5 星好评"暗示真实评价）。
   // 如后续恢复真实用户评分，须经法务确认并补用户授权。
   gradient: string;
 }
@@ -71,7 +72,7 @@ export const testimonials: Testimonial[] = [
     name: '张研究员',
     role: '高级研究员',
     org: '某中医药大学',
-    // 能力描述，移除"从数天缩短到数十分钟"未验证绩效承诺（TODO(legal): 待法务确认）
+    // 合规口径（已定，非待办）：能力描述，已移除"从数天缩短到数十分钟"未验证绩效承诺。
     quote: 'AI 配方对话提供原料筛选与知识图谱关联推理能力，帮助梳理配伍规律、辅助研究思路。',
     /* P0 对比度修复：白字落点色改为 800/900 级，保证 #fff 对比 ≥4.5:1
    （原 500/400 级中点 var(--color-success-500, #10b981)/var(--color-secondary-400, #60a5fa)/var(--color-accent-400, #a78bfa) 对白字仅 2.2–2.9:1） */
@@ -81,7 +82,7 @@ gradient: 'linear-gradient(135deg, var(--color-primary-800, #065f46), var(--colo
     name: '李工程师',
     role: '研发总监',
     org: '某保健食品企业',
-    // 降级为能力描述，移除"一次通过率明显提升""周期显著缩短"未验证绩效承诺（TODO(legal): 待法务确认）
+    // 合规口径（已定，非待办）：降级为能力描述，已移除"一次通过率明显提升""周期显著缩短"未验证绩效承诺。
     quote: '合规引擎提供配伍禁忌检测与合规校验能力，辅助团队在研发阶段自查、复核配方。',
     gradient: 'linear-gradient(135deg, var(--color-secondary-800, #1e40af), var(--color-secondary-700, #1d4ed8))',
   },
@@ -96,7 +97,7 @@ gradient: 'linear-gradient(135deg, var(--color-primary-800, #065f46), var(--colo
     name: '陈医师',
     role: '临床营养科主治医师',
     org: '某医院营养科',
-    // 改写：移除疗效/临床效果暗示（"患者接受度明显提高"），改为纯功能性描述（TODO(legal): 待法务确认）
+    // 合规口径（已定，非待办）：已移除疗效/临床效果暗示（"患者接受度明显提高"），改为纯功能性描述。
     quote: '平台提供配伍禁忌检测与剂量参考功能，辅助我在制定食疗方案时核对配伍与用量。',
     gradient: 'linear-gradient(135deg, var(--color-danger-800, #991b1b), var(--color-danger-700, #b91c1c))',
   },
@@ -104,13 +105,13 @@ gradient: 'linear-gradient(135deg, var(--color-primary-800, #065f46), var(--colo
     name: '刘工',
     role: '联合创始人',
     org: '某初创企业',
-    // 降级为能力描述，移除"大幅缩短了知识积累阶段"未验证绩效承诺（TODO(legal): 待法务确认）
+    // 合规口径（已定，非待办）：降级为能力描述，已移除"大幅缩短了知识积累阶段"未验证绩效承诺。
     quote: '平台的 AI 对话提供药食同源知识检索与梳理能力，可作为小团队研发起步阶段的辅助参考。',
     gradient: 'linear-gradient(135deg, var(--color-warning-800, #92400e), var(--color-warning-700, #b45309))',
   },
 ];
 
-/** 用户评价免责文案 i18n key（TODO(legal): 待法务最终确认）
+/** 用户评价免责文案 i18n key（口径已定，非待办）
  * 供区块（SocialProof）在评价列表紧邻处渲染，明确以下为示意性文案、非真实证言。
  * 值为 i18n 键名，组件用 t(TESTIMONIALS_DISCLAIMER_KEY) 取本地化文案。
  */

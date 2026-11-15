@@ -96,7 +96,7 @@ function PartnerLogos() {
             );
           })}
         </div>
-        {/* TODO(legal): 匿名示例免责，措辞待法务最终确认 */}
+        {/* 合规口径（已定，非待办）：合作机构为匿名化示例，免责文案由 i18n 键 pages.landing.disclaimers.partnerOrgs 提供。依据 docs/marketing/05 D6；如需改变对外宣称须经法务书面复核。 */}
         <p className="mt-3 text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           {t(PARTNER_ORGS_DISCLAIMER_KEY)}
         </p>
@@ -134,7 +134,7 @@ function Testimonials() {
               {/* 引用符号 */}
               <Quote size={14} className="mb-2 opacity-25" style={{ color: 'var(--color-primary-700, #047857)' }} />
 
-              {/* TODO(legal): 已移除 5 星评分渲染——不给示意性文案打满分；待法务确认是否恢复 */}
+              {/* 合规口径（已定，非待办）：已移除 5 星评分渲染——不给示意性文案打满分。恢复评分须有真实用户授权并经法务书面复核。依据 docs/marketing/05 D6。 */}
               {/* 引言 */}
               <div className="text-[14px] leading-[1.7] text-[var(--text-secondary)] mb-[var(--space-apple-sm)] min-h-[60px] lp-quote">
                 {t.quote}
@@ -156,7 +156,7 @@ function Testimonials() {
             </div>
           ))}
         </div>
-        {/* TODO(legal): 示意性评价免责，措辞待法务最终确认 */}
+        {/* 合规口径（已定，非待办）：评价为示意性内容，免责文案由 i18n 键 pages.landing.disclaimers.testimonials 提供。依据 docs/marketing/05 D6；如需改变对外宣称须经法务书面复核。 */}
         <p className="mt-5 text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
           {t(TESTIMONIALS_DISCLAIMER_KEY)}
         </p>

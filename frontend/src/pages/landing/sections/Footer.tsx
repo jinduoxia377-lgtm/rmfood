@@ -144,8 +144,9 @@ export default function Footer() {
               );
             })}
           </div>
-          {/* TODO(legal): 认证免责声明，措辞待法务最终确认。走 i18n 键 pages.landing.disclaimers.certifications；
-              样式沿用现有文本层级与 CSS 变量，无新增色值。 */}
+          {/* 合规口径（已定，非待办）：认证免责声明走 i18n 键 pages.landing.disclaimers.certifications，
+              全页统一「按标准开展架构设计与数据治理、不代表已取得第三方认证证书」口径。
+              依据 docs/marketing/05 D1；如需改变对外宣称须经法务书面复核。样式沿用现有文本层级与 CSS 变量，无新增色值。 */}
           <p className="mt-4 text-center text-[12px] leading-relaxed text-neutral-500 max-w-3xl mx-auto">
             {t('pages.landing.disclaimers.certifications')}
           </p>

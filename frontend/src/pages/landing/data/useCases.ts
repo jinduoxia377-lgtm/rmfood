@@ -74,14 +74,14 @@ export const useCases: (UseCaseItem & { scenario: Scenario })[] = [
     scenario: 'tcm',
     icon: 'Microscope',
     title: '药食同源配方研发',
-    desc: '基于 TCMSP 与药食同源知识图谱，AI 辅助快速筛选原料组合，自动生成包含剂量建议与配伍禁忌标注的完整配方报告，一键导出 GLP 合规文档。',
+    desc: '基于 TCMSP 与药食同源知识图谱，AI 辅助快速筛选原料组合，自动生成包含剂量建议与配伍禁忌标注的完整配方报告，一键导出 GLP 模板格式文档。',
     workflow: [
       { label: '原料筛选', detail: 'TCMSP · 612 味中药材' },
       { label: '配伍推理', detail: 'Neo4j 知识图谱 · 约 14.7K 节点' },
       { label: '合规校验', detail: '卫健委目录 · 实时同步' },
       { label: '报告生成', detail: 'DOCX/PDF · GLP 模板' },
     ],
-    // TODO(legal): 「配伍禁忌 28 对」=配伍禁忌配对数（口径独立）；卫健委药食同源目录法定条目为 106 种，二者分列勿混淆。「612 味中药材」已通过合规审计，保留。
+    // 合规口径（已定，非待办）：「配伍禁忌 28 对」指配伍禁忌配对数（独立口径）；卫健委药食同源目录法定条目为 106 种，二者分列勿混淆。「612 味中药材」为已通过合规审计的库容量描述。依据 docs/marketing/03 审计矩阵；如需改变对外宣称须经法务书面复核。
     metrics: [
       { label: '中药材', value: '612', unit: '味' },
       { label: '配伍禁忌', value: '28', unit: '对' },
@@ -100,7 +100,7 @@ export const useCases: (UseCaseItem & { scenario: Scenario })[] = [
       { label: 'ADMET', detail: '吸收/分布/代谢/排泄/毒性' },
       { label: '优化迭代', detail: '亲和性 · 突变设计' },
     ],
-    // TODO(legal): 「≈77%」限定为神经配方网络 balanced_accuracy（5 折验证），勿泛化为肽 ADMET 整体准确率；「3-5 轮」加经验值限定。
+    // 合规口径（已定，非待办）：「≈77%」限定为神经配方网络 balanced_accuracy（5 折验证），不得泛化为肽 ADMET 整体准确率；「3-5 轮」为经验值限定。依据 docs/marketing/05 D4；如需改变对外宣称须经法务书面复核。
     metrics: [
       { label: '活性肽库', value: '7,660+', unit: '结构' },
       { label: '神经网络判别力 (balanced_accuracy)', value: '≈77', unit: '% · 5 折验证' },
@@ -113,16 +113,16 @@ export const useCases: (UseCaseItem & { scenario: Scenario })[] = [
     scenario: 'eln',
     icon: 'BarChart3',
     title: '实验数据管理',
-    desc: '电子实验记录本 (ELN) 标准化实验流程，自动解析 HPLC/GC/MS 原始数据，支持多租户协作与变更审计追踪，一键生成符合 NMPA 申报要求的完整实验报告。',
+    desc: '电子实验记录本 (ELN) 标准化实验流程，自动解析 HPLC/GC/MS 原始数据，支持多租户协作与变更审计追踪，一键生成参照 NMPA 申报格式的完整实验报告。',
     workflow: [
       { label: '实验记录', detail: '结构化模板 · 版本控制' },
       { label: '数据解析', detail: 'HPLC/GC/MS 自动导入' },
       { label: '统计分析', detail: '趋势分析 · 异常检测' },
       { label: '报告导出', detail: 'NMPA 格式 · 审计追溯' },
     ],
-    // TODO(legal): 「GLP 报告 100% 覆盖」改为能力描述（去 100% 绝对化数字）；「机构 9 家」为实验室内部统计，已移除避免与外部客户混淆；「审计追溯全量」加能力描述限定。
+    // 合规口径（已定，非待办）：「GLP 报告」按能力描述、已去除 100% 绝对化；「机构 9 家」为实验室内部统计已移除，避免与外部客户混淆；「审计追溯全量」已加能力描述限定。依据 docs/marketing/05 D3；如需改变对外宣称须经法务书面复核。
     metrics: [
-      { label: 'GLP 合规报告', value: '模板', unit: '一键导出' },
+      { label: 'GLP 报告模板', value: '模板', unit: '一键导出' },
       { label: '审计追溯', value: '全量', unit: '留痕 · 能力描述' },
     ],
     ctaText: '查看实验管理',
