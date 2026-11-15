@@ -234,7 +234,7 @@ export default function Algorithms() {
             </h2>
             <p className="lp-body-sm max-w-2xl" style={{ color: 'var(--text-secondary)' }}>
               基于统一优化调度器（UnifiedOptimizer）的智能策略选择系统，内置 Bandit 在线学习自动匹配最优算法引擎。
-              5 种协同作用机制量化成分间交互，NSGA-III 支持 8 维目标 Pareto 优化，完整管线 P95 &lt; 3.2s。
+              5 种协同作用机制量化成分间交互，NSGA-III 支持 8 维目标 Pareto 优化，完整管线 P95 &lt; 3.2s（实验室内部压测示例）。
             </p>
           </div>
         </Reveal>
@@ -302,7 +302,7 @@ export default function Algorithms() {
               >
                 性能基准
               </span>
-              <span className="lp-caption text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">实测于 Intel i7 · Python 3.10 · 5 成分配方</span>
+              <span className="lp-caption text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">实验室内部压测示例 · Intel i7 · Python 3.10 · 5 成分配方 · 非生产实测基准</span>
             </div>
             <PerformanceTable />
           </div>
