@@ -47,15 +47,15 @@ function CountUnit({ value, label, prevValue }: UnitProps) {
           flipped && 'lp-countdown-flip'
         )}
         style={{
-          background: 'var(--color-neutral-50, #f8fafc)',
+          background: 'var(--bg-surface-raised, var(--bg-surface-container))',
           border: '1px solid var(--color-neutral-200, #e2e8f0)',
-          color: 'var(--color-neutral-900, #0f172a)',
+          color: 'var(--text-primary)',
           minWidth: 48,
         }}
       >
         {value}
       </div>
-      <span className="lp-caption uppercase tracking-wider" style={{ color: 'var(--color-neutral-600, #475569)' }}>{label}</span>
+      <span className="lp-caption uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>{label}</span>
     </div>
   );
 }
@@ -63,7 +63,7 @@ function CountUnit({ value, label, prevValue }: UnitProps) {
 // ── 分隔符（:） ────────────────────────────────────────────────────
 function Separator() {
   return (
-    <div className="flex items-center pb-5 text-lg font-bold" style={{ color: 'var(--color-neutral-300, #cbd5e1)' }}>
+    <div className="flex items-center pb-5 text-lg font-bold" style={{ color: 'var(--text-secondary)' }}>
       :
     </div>
   );
@@ -104,9 +104,9 @@ export function CountdownBanner() {
 
   return (
     <div
-      className="relative overflow-hidden mt-[64px] border-b"
+      className="relative overflow-hidden border-b"
       style={{
-        background: '#fff',
+        background: 'var(--bg-surface-container)',
         borderBottom: '1px solid var(--color-neutral-200, #e2e8f0)',
       }}
     >
@@ -130,10 +130,10 @@ export function CountdownBanner() {
 
             {/* 文案 */}
             <div className="min-w-0">
-              <p className="text-[15px] font-medium truncate" style={{ color: 'var(--color-neutral-900, #0f172a)' }}>
+              <p className="text-[15px] font-medium truncate" style={{ color: 'var(--text-primary)' }}>
                 {LAUNCH_CONFIG.subtitle}
               </p>
-              <p className="lp-caption mt-0.5" style={{ color: 'var(--color-neutral-600, #475569)' }}>
+              <p className="lp-caption mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                 {LAUNCH_CONFIG.footnote}
               </p>
             </div>

@@ -8,6 +8,7 @@
  *   - 底部细线分隔 + 页脚安全区
  */
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Beaker, Mail, MapPin, Globe, Github, MessageCircle, ShieldCheck, Award, FileCheck, UserCheck } from 'lucide-react';
 import { RHINE_BRAND_CONFIG } from '@/config';
 import { trustSignals, ICP_CONFIG } from '../data/trustSignals';
@@ -29,8 +30,8 @@ const navSections = [
     links: [
       { label: '使用文档', href: '/docs' },
       { label: 'API 参考', href: '/api-docs' },
-      { label: '更新日志', href: '/changelog' },
-      { label: '社区论坛', href: '/community' },
+      { label: '更新日志', href: '/docs' },
+      { label: '社区论坛', href: '/faqs' },
     ],
   },
   {
@@ -45,11 +46,12 @@ const navSections = [
 ];
 
 export default function Footer() {
+  const { t } = useTranslation();
   return (
     <footer aria-label="页脚 — 品牌信息与导航" className="lp-footer">
       {/* 主内容区 */}
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
 
           {/* 品牌区 */}
           <div className="col-span-2 md:col-span-1">
@@ -109,8 +111,8 @@ export default function Footer() {
                 { icon: Globe, text: 'www.rmfood.cn' },
                 { icon: MapPin, text: '厦门市思明区' },
               ].map(({ icon: Icon, text }, i) => (
-                <li key={i} className="flex items-center gap-2 text-[15px] min-h-[44px] text-neutral-400">
-                  <Icon size={14} className="shrink-0 opacity-60 text-neutral-500" />
+                <li key={i} className="flex items-center gap-2 text-[15px] min-h-[44px] text-neutral-400!">
+                  <Icon size={14} className="shrink-0 opacity-60 text-neutral-200" />
                   <span>{text}</span>
                 </li>
               ))}
@@ -136,25 +138,30 @@ export default function Footer() {
                   </div>
                   <div>
                     <div className="text-[13px] font-medium text-neutral-200">{s.name}</div>
-                    <div className="text-[11px] text-neutral-500">{s.desc}</div>
+                    <div className="text-[12px] text-neutral-400!">{s.desc}</div>
                   </div>
                 </div>
               );
             })}
           </div>
+          {/* TODO(legal): 认证免责声明，措辞待法务最终确认。走 i18n 键 pages.landing.disclaimers.certifications；
+              样式沿用现有文本层级与 CSS 变量，无新增色值。 */}
+          <p className="mt-4 text-center text-[12px] leading-relaxed text-neutral-500 max-w-3xl mx-auto">
+            {t('pages.landing.disclaimers.certifications')}
+          </p>
         </div>
       </div>
 
       <div className="border-t lp-footer-bottom">
         <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-[12px] text-neutral-300">
+            <p className="text-[12px] text-neutral-400!">
               &copy; {new Date().getFullYear()} {RHINE_BRAND_CONFIG.fullName}
             </p>
             <div className="flex items-center gap-4">
-              <span className="lp-mono text-[12px] text-neutral-400">{ICP_CONFIG.icp}</span>
-              <span className="text-[12px] text-neutral-400">·</span>
-              <span className="lp-mono text-[12px] text-neutral-400">{ICP_CONFIG.businessLicense}</span>
+              <span className="lp-mono text-[12px] text-neutral-400!">{ICP_CONFIG.icp}</span>
+              <span className="text-[12px] text-neutral-400!">·</span>
+              <span className="lp-mono text-[12px] text-neutral-400!">{ICP_CONFIG.businessLicense}</span>
             </div>
           </div>
         </div>

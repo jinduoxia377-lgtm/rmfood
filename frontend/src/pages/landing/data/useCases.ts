@@ -76,15 +76,15 @@ export const useCases: (UseCaseItem & { scenario: Scenario })[] = [
     title: '药食同源配方研发',
     desc: '基于 TCMSP 与药食同源知识图谱，AI 辅助快速筛选原料组合，自动生成包含剂量建议与配伍禁忌标注的完整配方报告，一键导出 GLP 合规文档。',
     workflow: [
-      { label: '原料筛选', detail: 'TCMSP 16版 · 29,361味药材' },
-      { label: '配伍推理', detail: 'Neo4j 知识图谱 · 128K节点' },
+      { label: '原料筛选', detail: 'TCMSP · 612 味中药材' },
+      { label: '配伍推理', detail: 'Neo4j 知识图谱 · 约 14.7K 节点' },
       { label: '合规校验', detail: '卫健委目录 · 实时同步' },
       { label: '报告生成', detail: 'DOCX/PDF · GLP 模板' },
     ],
+    // TODO(legal): 「配伍禁忌 28 对」=配伍禁忌配对数（口径独立）；卫健委药食同源目录法定条目为 106 种，二者分列勿混淆。「612 味中药材」已通过合规审计，保留。
     metrics: [
-      { label: '药材库', value: '29,361', unit: '味' },
-      { label: '配伍规则', value: '1,240', unit: '条' },
-      { label: '日均方案', value: '860', unit: '组' },
+      { label: '中药材', value: '612', unit: '味' },
+      { label: '配伍禁忌', value: '28', unit: '对' },
     ],
     ctaText: '查看配方研发',
   },
@@ -100,10 +100,11 @@ export const useCases: (UseCaseItem & { scenario: Scenario })[] = [
       { label: 'ADMET', detail: '吸收/分布/代谢/排泄/毒性' },
       { label: '优化迭代', detail: '亲和性 · 突变设计' },
     ],
+    // TODO(legal): 「≈77%」限定为神经配方网络 balanced_accuracy（5 折验证），勿泛化为肽 ADMET 整体准确率；「3-5 轮」加经验值限定。
     metrics: [
-      { label: '活性肽库', value: '5,200+', unit: '结构' },
-      { label: '预测准确率', value: '94.2', unit: '%' },
-      { label: '优化迭代', value: '3-5', unit: '轮/项目' },
+      { label: '活性肽库', value: '7,660+', unit: '结构' },
+      { label: '神经网络判别力 (balanced_accuracy)', value: '≈77', unit: '% · 5 折验证' },
+      { label: '优化迭代', value: '3-5', unit: '轮/项目 · 经验值' },
     ],
     ctaText: '了解肽设计',
   },
@@ -119,10 +120,10 @@ export const useCases: (UseCaseItem & { scenario: Scenario })[] = [
       { label: '统计分析', detail: '趋势分析 · 异常检测' },
       { label: '报告导出', detail: 'NMPA 格式 · 审计追溯' },
     ],
+    // TODO(legal): 「GLP 报告 100% 覆盖」改为能力描述（去 100% 绝对化数字）；「机构 9 家」为实验室内部统计，已移除避免与外部客户混淆；「审计追溯全量」加能力描述限定。
     metrics: [
-      { label: 'GLP 报告', value: '100', unit: '% 覆盖' },
-      { label: '审计追溯', value: '全量', unit: '留痕' },
-      { label: '协作团队', value: '50+', unit: '机构' },
+      { label: 'GLP 合规报告', value: '模板', unit: '一键导出' },
+      { label: '审计追溯', value: '全量', unit: '留痕 · 能力描述' },
     ],
     ctaText: '查看实验管理',
   },

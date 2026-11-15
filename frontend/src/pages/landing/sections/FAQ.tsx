@@ -8,17 +8,19 @@
  */
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/shadcn';
 import { Reveal } from '../shared/Reveal';
-import { sectionLabel, faqs } from '../data/faqs';
+import { sectionLabelKey, faqs } from '../data/faqs';
+import { useTranslation } from 'react-i18next';
 
 export default function FAQ() {
+  const { t } = useTranslation();
   return (
-    <section id="faq" aria-label="常见问题" className="py-16 lg:py-20 border-t" style={{ background: 'var(--bg-canvas, #f8fafc)', borderColor: 'var(--color-neutral-200, #e2e8f0)' }}>
+    <section id="faq" aria-label={t('pages.landing.faq.ariaLabel')} className="py-16 lg:py-20 border-t" style={{ background: 'var(--bg-canvas, #f8fafc)', borderColor: 'var(--color-neutral-200, #e2e8f0)' }}>
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
         <Reveal>
           <div className="text-center mb-8">
             <div className="lp-faq-accent" />
-            <span className="lp-section-tag block mb-[var(--space-apple-sm)]">{sectionLabel}</span>
-            <h2 className="lp-h2">常见问题</h2>
+            <span className="lp-section-tag block mb-[var(--space-apple-sm)]">{t(sectionLabelKey)}</span>
+            <h2 className="lp-h2">{t('pages.landing.faq.title')}</h2>
           </div>
         </Reveal>
 
@@ -26,14 +28,14 @@ export default function FAQ() {
           <Accordion type="multiple" className="space-y-1.5">
             {faqs.map((faq, i) => (
               <AccordionItem key={i} value={`faq-${i}`}
-                className="rounded-[var(--radius-Apple-sm)] transition-all duration-150"
-                style={{ background: '#fff', border: '1px solid var(--color-neutral-200, #e2e8f0)', borderRadius: '4px' }}
+                className="lp-card-hover rounded-[var(--radius-Apple-sm)] transition-all duration-150"
+                style={{ background: 'var(--bg-surface-container)', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}
               >
                 <AccordionTrigger className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] hover:no-underline">
-                  <span className="lp-body font-normal text-left" style={{ color: 'var(--color-neutral-800, #1e293b)' }}>{faq.q}</span>
+                  <span className="lp-body font-normal text-left" style={{ color: 'var(--text-primary)' }}>{t(faq.qKey)}</span>
                 </AccordionTrigger>
                 <AccordionContent className="pb-3">
-                  <p className="lp-body leading-[1.7]" style={{ color: 'var(--color-neutral-600, #475569)' }}>{faq.a}</p>
+                  <p className="lp-body leading-[1.7]" style={{ color: 'var(--text-secondary)' }}>{t(faq.aKey)}</p>
                 </AccordionContent>
               </AccordionItem>
             ))}

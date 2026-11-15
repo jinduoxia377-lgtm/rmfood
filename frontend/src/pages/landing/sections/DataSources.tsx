@@ -87,8 +87,8 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
                 key={f}
                 className="lp-data-card-feature"
                 style={{
-                  background: data.colorLight,
-                  color: data.colorText || data.color,
+                  background: 'var(--bg-surface-raised)',
+                  color: 'var(--text-secondary)',
                   border: `1px solid ${data.colorBorder}`,
                 }}
               >
@@ -147,12 +147,12 @@ export default function DataSources() {
           <div className="lp-data-section-header">
             <div className="lp-data-section-title-group">
               <span className="lp-section-tag block mb-2">数据底座</span>
-              <h2 className="lp-h2 mb-1">6 大数据源 · 128,000+ 知识节点</h2>
+              <h2 className="lp-h2 mb-1">6 大数据源 · 14,728+ 知识节点</h2>
               <p className="lp-data-section-desc">
                 覆盖中药材、活性肽、知识图谱、法规标准、国际标准五大维度，支持跨库联合查询与实时同步。
               </p>
             </div>
-            <span className="lp-caption shrink-0 hidden sm:block" style={{ color: 'var(--color-neutral-600, #475569)' }}>
+            <span className="lp-caption shrink-0 hidden sm:block" style={{ color: 'var(--text-secondary)' }}>
               最后更新：刚刚
             </span>
           </div>
@@ -162,10 +162,10 @@ export default function DataSources() {
         <Reveal>
           <div className="lp-data-panel mb-6" style={{ background: 'var(--color-neutral-900, #0f172a)' }}>
             {[
-              { value: '6',  label: '数据源',  color: 'var(--color-success-600, #6ee7b7)' },
-              { value: '38K+', label: '知识实体', color: 'var(--color-secondary-300, #93c5fd)' },
-              { value: '128K', label: '图谱节点', color: 'var(--color-accent-300, #c4b5fd)' },
-              { value: SYNC_STATUS, label: '同步状态', color: 'var(--color-neutral-300, #cbd5e1)' },
+              { value: '6',  label: '数据源',  color: '#6ee7b7' },
+              { value: '24万', label: '关联边', color: '#93c5fd' },
+              { value: '14.7K', label: '实体节点', color: '#c4b5fd' },
+              { value: SYNC_STATUS, label: '同步状态', color: '#cbd5e1' },
             ].map((s, i) => (
               <div key={i} className="flex-1 flex items-center gap-0">
                 {i > 0 && <div className="lp-data-panel-divider mr-4" />}

@@ -11,7 +11,7 @@
  */
 import { useState, useCallback } from 'react';
 import { MessageSquare, GitGraph, Database, ShieldCheck, Sparkles } from 'lucide-react';
-import ChatPreview, { type ChatPreviewState, type DemoState } from './ChatPreview';
+import ChatPreview, { type ChatPreviewState } from './ChatPreview';
 import GraphTab from './GraphTab';
 import DataTab from './DataTab';
 import ComplianceTab from './ComplianceTab';
@@ -40,7 +40,6 @@ export default function ProductPreview() {
   }, []);
 
   const isConversing = chatState.messageCount > 0;
-  const demoState: DemoState = { status: chatState.status, message: '' };
 
   const tabLabel = ['对话', '图谱', '数据', '合规'][activeTab];
   const tabEngine = ['thinking-engine', 'neo4j-graph', 'live-sync', 'compliance-engine'][activeTab];
@@ -59,7 +58,7 @@ export default function ProductPreview() {
           <div className="flex items-center gap-2">
             <span className="lp-brand tracking-wider" style={{ color: 'var(--color-neutral-300, #cbd5e1)' }}>莱茵分子</span>
             <div className="w-px h-3 bg-neutral-700" />
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded lp-section-tag" style={{ background: 'color-mix(in srgb, var(--color-primary-700, #047857) 45%, transparent)', color: '#ffffff', border: '1px solid color-mix(in srgb, var(--color-primary-700, #047857) 60%, transparent)' }}>
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded lp-section-tag" style={{ background: 'color-mix(in srgb, #047857 45%, transparent)', color: '#ffffff', border: '1px solid color-mix(in srgb, #047857 60%, transparent)' }}>
               <Sparkles size={10} aria-hidden="true" /><span>智能对话</span>
             </div>
           </div>
@@ -83,7 +82,7 @@ export default function ProductPreview() {
               return (
                 <button key={item.label} role="tab" onClick={() => setActiveTab(i)} aria-label={item.label} aria-selected={isActive} aria-controls={`tab-panel-${i}`} id={`tab-${i}`}
                   className="w-11 h-11 rounded-[var(--radius-Apple-sm)] flex items-center justify-center transition-all duration-150"
-                  style={isActive ? { background: 'var(--color-primary-700, #047857)', color: '#fff', border: '1px solid var(--color-primary-700, #047857)', boxShadow: '0 1px 2px rgba(16,185,129,0.3)' } : { background: 'transparent', color: 'var(--color-neutral-600, #475569)', border: '1px solid transparent' }}>
+                  style={isActive ? { background: '#047857', color: '#fff', border: '1px solid #047857', boxShadow: '0 1px 2px rgba(16,185,129,0.3)' } : { background: 'transparent', color: 'var(--color-neutral-600, #475569)', border: '1px solid transparent' }}>
                   <Icon size={16} strokeWidth={1.8} />
                 </button>
               );
@@ -108,7 +107,7 @@ export default function ProductPreview() {
           <div className="flex-1 flex flex-col overflow-hidden">
             {activeTab === 0 && (
               <div id="tab-panel-0" role="tabpanel" aria-labelledby="tab-0" className="flex-1 flex flex-col overflow-hidden">
-                <ChatPreview resetToken={resetToken} onStateChange={handleChatStateChange} />
+                <ChatPreview key={resetToken} onStateChange={handleChatStateChange} />
               </div>
             )}
             {activeTab === 1 && <div id="tab-panel-1" role="tabpanel" aria-labelledby="tab-1"><GraphTab /></div>}

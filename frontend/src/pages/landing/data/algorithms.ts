@@ -3,6 +3,8 @@
  *
  * 展示后端已实现的 7 种优化算法引擎、5 种协同机制、性能基准。
  *
+ * 注：performanceMetrics（性能基准）为实验室内部压测示例，非生产实测基准。
+ *
  * 算法引擎对应后端路径：
  *   app/services/ai/algorithms/
  *     - unified_optimizer.py      → UnifiedFormulaOptimizer（统一调度器 + Bandit）
@@ -143,7 +145,7 @@ export const algorithms: Algorithm[] = [
     desc: '基于 PyTorch 的神经网络配方架构搜索引擎。使用变分自编码器 (VAE) 学习配方分布隐空间，结合强化学习 (RL) 策略梯度在隐空间中导航，生成符合功效目标的新颖配方结构。',
     tech: ['VAE 隐空间 · RL 策略梯度 · PyTorch'],
     category: 'optimizer',
-    metric: { value: '94.2%', label: '预测准确率' },
+    metric: { value: '≈77%', label: 'balanced_accuracy（5 折验证）' },
     applicable: ['新颖配方设计', '结构创新探索'],
     backendClass: 'NeuralFormulaNetwork',
   },
@@ -156,7 +158,7 @@ export const synergyMechanisms: SynergyMechanism[] = [
     name: 'Bliss 独立性协同',
     formula: 'E_synergy = E_A + E_B − E_A×E_B + α·√(E_A×E_B)',
     desc: '基于 Bliss 独立性模型计算两种成分联合功效，α 为协同系数（从知识图谱查询或实验拟合）。α > 0 表示正向协同（1+1>2），α < 0 表示拮抗。',
-    weight: '30%',
+    weight: '25%',
   },
   {
     id: 'pk',
@@ -170,14 +172,14 @@ export const synergyMechanisms: SynergyMechanism[] = [
     name: 'Gibbs 自由能稳定性',
     formula: 'S_stability = 1 / (1 + e^(ΔG/RT))',
     desc: '通过 ΔG = ΔH − TΔS 计算复合物热力学稳定性，映射为 0-1 归一化稳定性得分。ΔG < -20 kJ/mol 为极稳定，> 20 为不稳定。',
-    weight: '20%',
+    weight: '15%',
   },
   {
     id: 'network',
     name: '网络药理学关联',
     formula: 'J(A,B) = |T_A ∩ T_B| / |T_A ∪ T_B|  (Jaccard)',
     desc: '基于 TCMSP 靶点集合计算 Jaccard 相似系数和 Tanimoto 扩展系数，超几何检验评估通路富集显著性，量化成分间药理关联强度。',
-    weight: '15%',
+    weight: '25%',
   },
   {
     id: 'taste',

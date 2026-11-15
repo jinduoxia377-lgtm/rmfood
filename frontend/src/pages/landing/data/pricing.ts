@@ -1,83 +1,86 @@
 /**
- * Landing Page — 定价方案数据
+ * Landing Page — 定价方案数据（i18n 键引用版）
  *
- * v2 优化：
- *   - 增强方案描述，突出差异化价值
- *   - 免费版限制合理化，体现专业价值
- *   - 专业版增加"性价比"价值说明
- *   - CTA 文案更具行动导向
+ * 显示文本全部通过 `pages.landing.pricing.plans.<id>.*` 键取 i18n 值；
+ * `name` 为稳定机器 id（free/pro/enterprise），仅用于逻辑判断与 React key。
  */
 export interface PlanFeature {
-  text: string;
+  textKey: string;
   included: boolean;
 }
 
 export interface PricingPlan {
-  name: string;
-  desc: string;
+  name: 'free' | 'pro' | 'enterprise';
+  nameKey: string;
+  descKey: string;
   priceMonthly: string;
   priceYearly: string;
-  cta: string;
+  ctaKey: string;
   popular?: boolean;
   features: PlanFeature[];
 }
 
-export const sectionLabel = '定价方案';
+const P = 'pages.landing.pricing.plans';
 
-export const sectionTitle = '透明的定价';
+export const sectionLabelKey = 'pages.landing.pricing.sectionLabel';
 
-export const sectionSub = '科研版永久免费，按需升级，30 天无理由退款。';
+export const sectionTitleKey = 'pages.landing.pricing.sectionTitle';
+
+export const sectionSubKey = 'pages.landing.pricing.sectionSub';
 
 export const plans: PricingPlan[] = [
   {
-    name: '科研版',
-    desc: '个人研究者与小型课题组起步首选',
+    name: 'free',
+    nameKey: `${P}.free.name`,
+    descKey: `${P}.free.desc`,
     priceMonthly: '免费',
     priceYearly: '免费',
-    cta: '免费注册',
+    ctaKey: `${P}.free.cta`,
     features: [
-      { text: '3 个配方项目', included: true },
-      { text: '每日 20 次 AI 对话', included: true },
-      { text: 'TCMSP 中药材基础检索', included: true },
-      { text: '基础实验记录与导出', included: true },
-      { text: '社区技术支持', included: true },
-      { text: 'DFFP 活性肽数据库', included: false },
-      { text: '安全合规引擎', included: false },
-      { text: '团队协作 >3 人', included: false },
+      { textKey: `${P}.free.features.0`, included: true },
+      { textKey: `${P}.free.features.1`, included: true },
+      { textKey: `${P}.free.features.2`, included: true },
+      { textKey: `${P}.free.features.3`, included: true },
+      { textKey: `${P}.free.features.4`, included: true },
+      { textKey: `${P}.free.features.5`, included: false },
+      { textKey: `${P}.free.features.6`, included: false },
+      { textKey: `${P}.free.features.7`, included: false },
     ],
   },
   {
-    name: '专业版',
-    desc: '中型研发团队与实验室日常使用',
-    priceMonthly: '¥299',
-    priceYearly: '¥2,899',
-    cta: '免费试用 14 天',
+    name: 'pro',
+    nameKey: `${P}.pro.name`,
+    descKey: `${P}.pro.desc`,
+    priceMonthly: '¥199',
+    priceYearly: '¥1,999',
+    ctaKey: `${P}.pro.cta`,
     popular: true,
     features: [
-      { text: '无限配方项目', included: true },
-      { text: '每日 200 次 AI 对话', included: true },
-      { text: 'TCMSP + DFBP 全库检索', included: true },
-      { text: '肽序列深度分析', included: true },
-      { text: '安全合规引擎', included: true },
-      { text: '团队协作 ≤10 人', included: true },
-      { text: '实验数据可视化', included: true },
-      { text: '邮件优先技术支持', included: true },
+      { textKey: `${P}.pro.features.0`, included: true },
+      { textKey: `${P}.pro.features.1`, included: true },
+      { textKey: `${P}.pro.features.2`, included: true },
+      { textKey: `${P}.pro.features.3`, included: true },
+      { textKey: `${P}.pro.features.4`, included: true },
+      { textKey: `${P}.pro.features.5`, included: true },
+      { textKey: `${P}.pro.features.6`, included: true },
+      { textKey: `${P}.pro.features.7`, included: true },
     ],
   },
   {
-    name: '企业版',
-    desc: '大型企业与多团队协作，私有化部署',
-    priceMonthly: '联系销售',
-    priceYearly: '联系销售',
-    cta: '获取定制方案',
+    name: 'enterprise',
+    nameKey: `${P}.enterprise.name`,
+    descKey: `${P}.enterprise.desc`,
+    priceMonthly: '¥19,990/年起',
+    priceYearly: '¥19,990/年起',
+    ctaKey: `${P}.enterprise.cta`,
     features: [
-      { text: '全部专业版功能', included: true },
-      { text: '多租户组织架构', included: true },
-      { text: 'SSO / LDAP 集成', included: true },
-      { text: '私有化部署', included: true },
-      { text: '7×24 专属技术支持', included: true },
-      { text: 'SLA 99.9% 保障', included: true },
-      { text: '定制开发服务', included: true },
+      { textKey: `${P}.enterprise.features.0`, included: true },
+      { textKey: `${P}.enterprise.features.1`, included: true },
+      { textKey: `${P}.enterprise.features.2`, included: true },
+      { textKey: `${P}.enterprise.features.3`, included: true },
+      { textKey: `${P}.enterprise.features.4`, included: true },
+      { textKey: `${P}.enterprise.features.5`, included: true },
+      { textKey: `${P}.enterprise.features.6`, included: true },
     ],
   },
 ];

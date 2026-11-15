@@ -24,7 +24,7 @@ export default function Hero() {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <section id="hero" aria-label="平台首屏 — 产品概览与交互式演示" className="lp-grid-bg relative overflow-hidden bg-card">
+    <section id="hero" aria-label="平台首屏 — 产品概览与交互式演示" className="lp-grid-bg relative overflow-hidden bg-card pt-[64px]">
       <CountdownBanner />
 
       <div className="relative z-10 max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 pt-12 pb-16">
@@ -42,19 +42,19 @@ export default function Hero() {
               <h1 className="lp-h1 mb-5">
                 对话式配方研发
                 <br />
-                <span className="text-[var(--color-primary-text)]">72 小时出成果</span>
+                <span className="text-[var(--color-primary-text)]">从想法到配方，一气呵成</span>
               </h1>
 
               <p className="lp-body mb-8 max-w-lg">
-                AI 驱动的配方研发引擎，整合 TCMSP、DFBP 等六大权威数据源，
-                从原料筛选到合规审查全程护航，研发团队平均研发周期缩短 60%。
+                AI 驱动的配方研发引擎，整合 TCMSP、DFBP 等权威数据源，
+                从原料筛选到合规审查全程护航，研发团队研发周期显著缩短。
               </p>
 
               <Reveal delay="lp-reveal-delay-1">
                 <div className="flex flex-col sm:flex-row items-start gap-[var(--space-apple-sm)] mb-10">
                   <Link to="/login" className="lp-cta-primary">
                     {isAuthenticated ? '进入工作台' : '免费开始研发'}
-                    <ArrowRight size={13} />
+                    <ArrowRight size={14} />
                   </Link>
                   <Link to="#demo-area" className="lp-cta-secondary">
                     <ChevronRight size={14} />
@@ -72,7 +72,7 @@ export default function Hero() {
                       </div>
                     ))}
                   </div>
-                  <span>已有 200+ 研发机构入驻</span>
+                  <span>已服务多家研发机构</span>
                 </div>
               </Reveal>
             </Reveal>

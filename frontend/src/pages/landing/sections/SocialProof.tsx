@@ -7,11 +7,13 @@
  *   - 指标卡片改用 lp-metric-card CSS 类
  */
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Reveal } from '../shared/Reveal';
 import { cn } from '@/lib/utils';
-import { Users, Zap, FileText, Clock, Star, Quote } from 'lucide-react';
+import { Users, Zap, FileText, Clock, Quote } from 'lucide-react';
 import {
   trustMetrics, partnerOrgs, testimonials, categoryStyle, categoryLabel,
+  PARTNER_ORGS_DISCLAIMER_KEY, TESTIMONIALS_DISCLAIMER_KEY,
 } from '../data/socialProof';
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>> = {
@@ -28,7 +30,7 @@ function TrustMetrics() {
         <div className="lp-section-tag mb-[var(--space-apple-md)]">
           平台数据 · {new Date().getFullYear()}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[var(--space-apple-sm)]">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-[var(--space-apple-sm)]">
           {trustMetrics.map((m) => {
             const IconComp = iconMap[m.icon];
             return (
@@ -43,7 +45,7 @@ function TrustMetrics() {
                   <span className="lp-caption" style={{ color: m.color }}>{m.sub}</span>
                 </div>
                 <div className="text-xl font-bold font-mono text-neutral-900">{m.value}</div>
-                <div className="lp-caption mt-0.5" style={{ color: 'var(--color-neutral-600, #475569)' }}>{m.label}</div>
+                <div className="lp-caption mt-0.5" style={{ color: 'var(--text-secondary)' }}>{m.label}</div>
               </div>
             );
           })}
@@ -55,6 +57,7 @@ function TrustMetrics() {
 
 function PartnerLogos() {
   const [hovered, setHovered] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   return (
     <Reveal delay="lp-reveal-delay-1">
@@ -79,7 +82,7 @@ function PartnerLogos() {
                 onMouseEnter={() => setHovered(org.name)}
                 onMouseLeave={() => setHovered(null)}
               >
-                <div className="lp-label" style={{ color: 'var(--color-neutral-800, #1e293b)' }}>{org.name}</div>
+                <div className="lp-label" style={{ color: 'var(--text-primary)' }}>{org.name}</div>
                 <span className="text-[12px] font-mono" style={{ color: s.text }}>
                   [{label}]
                 </span>
@@ -93,6 +96,10 @@ function PartnerLogos() {
             );
           })}
         </div>
+        {/* TODO(legal): 匿名示例免责，措辞待法务最终确认 */}
+        <p className="mt-3 text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+          {t(PARTNER_ORGS_DISCLAIMER_KEY)}
+        </p>
       </div>
     </Reveal>
   );
@@ -100,6 +107,7 @@ function PartnerLogos() {
 
 function Testimonials() {
   const [hovered, setHovered] = useState<number | null>(null);
+  const { t } = useTranslation();
 
   return (
     <Reveal delay="lp-reveal-delay-2">
@@ -107,7 +115,7 @@ function Testimonials() {
         <div className="lp-section-tag mb-[var(--space-apple-md)]">
           用户评价
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {testimonials.map((t, i) => (
             <div
               key={t.name}
@@ -116,7 +124,7 @@ function Testimonials() {
                 hovered === i && 'translate-y-[-1px]'
               )}
               style={{
-                background: hovered === i ? '#fff' : 'var(--color-neutral-50, #fafafa)',
+                background: 'var(--bg-surface-raised)',
                 border: `1px solid ${hovered === i ? 'var(--color-primary-600, #059669)' : 'var(--color-neutral-200, #e2e8f0)'}`,
                 boxShadow: hovered === i ? 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))' : 'none',
               }}
@@ -126,21 +134,9 @@ function Testimonials() {
               {/* 引用符号 */}
               <Quote size={14} className="mb-2 opacity-25" style={{ color: 'var(--color-primary-700, #047857)' }} />
 
-              {/* 星级 — 空心描边风格（学术克制） */}
-              <div className="flex items-center gap-0.5 mb-2.5" aria-label={`评分 ${t.rating} / 5`}>
-                {[...Array(t.rating)].map((_, si) => (
-                  <Star
-                    key={si}
-                    size={10}
-                    fill="none"
-                    stroke="var(--color-primary-700, #047857)"
-                    strokeWidth={1.8}
-                  />
-                ))}
-              </div>
-
+              {/* TODO(legal): 已移除 5 星评分渲染——不给示意性文案打满分；待法务确认是否恢复 */}
               {/* 引言 */}
-              <div className="text-[15px] leading-[1.7] text-[var(--text-secondary)] mb-[var(--space-apple-sm)] min-h-[60px] lp-quote">
+              <div className="text-[14px] leading-[1.7] text-[var(--text-secondary)] mb-[var(--space-apple-sm)] min-h-[60px] lp-quote">
                 {t.quote}
               </div>
 
@@ -153,13 +149,17 @@ function Testimonials() {
                   {t.name[0]}
                 </div>
                 <div>
-                  <div className="lp-label font-semibold" style={{ color: 'var(--color-neutral-800, #1e293b)' }}>{t.name}</div>
+                  <div className="text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>{t.name}</div>
                   <div className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t.role} · {t.org}</div>
                 </div>
               </div>
             </div>
           ))}
         </div>
+        {/* TODO(legal): 示意性评价免责，措辞待法务最终确认 */}
+        <p className="mt-5 text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
+          {t(TESTIMONIALS_DISCLAIMER_KEY)}
+        </p>
       </div>
     </Reveal>
   );
@@ -167,7 +167,7 @@ function Testimonials() {
 
 export default function SocialProof() {
   return (
-    <section id="social-proof" aria-label="信任证明与合作机构" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
+    <section id="social-proof" aria-label="信任证明与合作机构" className="py-16 lg:py-20" style={{ background: 'var(--bg-canvas)', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
 
         {/* 标题 */}

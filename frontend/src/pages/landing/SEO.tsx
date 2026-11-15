@@ -11,16 +11,17 @@
  *   - JSON-LD 结构化数据（Organization + SoftwareApplication + WebSite + FAQPage）
  */
 import { useEffect } from 'react';
+import i18n from '@/i18n';
+import { faqs } from './data/faqs';
 
 // ── 基础元信息 ──────────────────────────────────────────────────
 
 const SITE_URL = 'https://www.rmfood.cn/landing';
 const SITE_NAME = '莱茵分子';
 const SITE_DESCRIPTION =
-  '莱茵分子是药食同源AI配方研发平台，整合TCMSP、DFBP、Neo4j知识图谱等六大权威数据源，' +
+  '莱茵分子是药食同源AI配方研发平台，整合TCMSP、DFBP、Neo4j知识图谱等权威数据源，' +
   '提供从原料筛选、配伍禁忌检测、合规审查到功效预测的完整工作流。内置7种优化算法、' +
-  '5种协同机制，亚秒级实时推理，帮助200+研发机构将配方研发周期从数周缩短至72小时，' +
-  '实现精准个性化配方设计与科学机理阐释。';
+  '5种协同机制，亚秒级实时推理，帮助研发机构实现精准个性化配方设计与科学机理阐释。';
 const SITE_KEYWORDS =
   '药食同源,AI配方研发,中医食疗,TCMSP,活性肽,知识图谱,配方优化,合规检测,莱茵分子,药食同源平台';
 const SITE_AUTHOR = '莱茵分子研发团队';
@@ -63,7 +64,7 @@ const JSON_LD = {
       applicationCategory: 'MedicalApplication',
       operatingSystem: 'Web',
       description:
-        '药食同源AI配方研发平台，整合TCMSP、DFBP、知识图谱等六大权威数据源，内置7种优化算法和5种协同机制，亚秒级实时推理。',
+        '药食同源AI配方研发平台，整合TCMSP、DFBP、知识图谱等权威数据源，内置7种优化算法和5种协同机制，亚秒级实时推理。',
       offers: {
         '@type': 'AggregateOffer',
         lowPrice: '0',
@@ -77,15 +78,10 @@ const JSON_LD = {
         '5种协同作用机制',
         '亚秒级实时推理',
         '合规检测与配伍禁忌',
-        '6大权威数据源实时同步',
+        '权威数据源实时同步',
         '企业团队协作',
         '实验数据管理',
       ],
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.9',
-        ratingCount: '200',
-      },
     },
     // WebSite
     {
@@ -97,75 +93,18 @@ const JSON_LD = {
       publisher: { '@id': 'https://www.rmfood.cn/#organization' },
       inLanguage: 'zh-CN',
     },
-    // FAQPage
+    // FAQPage — 由 faqs.ts 单一来源生成，保证与页面 FAQ 100% 一致
     {
       '@type': 'FAQPage',
       '@id': 'https://www.rmfood.cn/landing#faq',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: '莱茵分子平台适合哪些用户？',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text:
-              '食品科学研究人员、药食同源产品研发工程师、保健品企业研发团队及中医药院校师生。',
-          },
+      mainEntity: faqs.map((q) => ({
+        '@type': 'Question',
+        name: i18n.t(q.qKey),
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: i18n.t(q.aKey),
         },
-        {
-          '@type': 'Question',
-          name: '数据安全如何保障？',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text:
-              'AES-256 加密存储、RBAC 五级权限、多租户隔离、TLS 传输加密，完整审计日志。',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'AI 引擎使用哪些算法？',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text:
-              '内置 7 种优化算法引擎：标准遗传算法 (GA)、NSGA-III 高维多目标优化、Binary GA+MILP 混合整数规划、贝叶斯优化、MOEAD+CMA-ES 分解策略、UCB1 Bandit 自动求解器、神经配方网络。',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: '协同效应如何计算？',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text:
-              '采用 5 种数学模型综合计算协同指数 SI：Bliss 独立性协同（30%权重）、药代动力学协同（20%）、Gibbs 自由能稳定性（20%）、网络药理学 Jaccard 关联（15%）、味觉矩阵协同（15%）。',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: '性能响应速度如何？',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text:
-              '单对成分协同分析 P50 < 45ms，5 成分配比优化 P95 < 1.8s，完整管线 P95 < 3.2s，SLA 保证 < 6s。',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: '安全合规如何保障？',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text:
-              '三级预警系统，61 类内置安全阈值，实时对接卫健委药食同源目录（130+ 条目）及 GB 2760/14880/28050 国家标准，PopPK/PD 模型支持最佳服用时间窗口计算。',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: '支持私有化部署吗？',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text:
-              '企业版提供私有化部署选项，可完整部署至自有服务器。请联系销售团队。',
-          },
-        },
-      ],
+      })),
     },
   ],
 };
@@ -190,6 +129,16 @@ function setMetaProperty(property: string, content: string) {
     document.head.appendChild(el);
   }
   el.setAttribute('content', content);
+}
+
+function setCanonical(url: string) {
+  let el = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+  if (!el) {
+    el = document.createElement('link');
+    el.setAttribute('rel', 'canonical');
+    document.head.appendChild(el);
+  }
+  el.setAttribute('href', url);
 }
 
 function setJsonLd(data: object) {
@@ -225,12 +174,20 @@ export default function SEO() {
     setMetaProperty('og:site_name', SITE_NAME);
     setMetaProperty('og:image', 'https://www.rmfood.cn/og-cover.png');
     setMetaProperty('og:image:alt', '莱茵分子 AI 配方研发平台');
+    setMetaProperty('og:image:width', '1200');
+    setMetaProperty('og:image:height', '630');
+    setMetaProperty('og:image:type', 'image/png');
+
+    // Canonical URL（与 og:url / SITE_URL 保持一致）
+    setCanonical(SITE_URL);
 
     // Twitter Card
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', '莱茵分子 — 药食同源 AI 配方研发平台');
     setMeta('twitter:description', SITE_DESCRIPTION);
     setMeta('twitter:creator', '@rmfood');
+    setMeta('twitter:image', 'https://www.rmfood.cn/og-cover.png');
+    setMeta('twitter:image:alt', '莱茵分子 AI 配方研发平台');
 
     // JSON-LD 结构化数据
     setJsonLd(JSON_LD);
