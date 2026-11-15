@@ -17,8 +17,6 @@
     "test:ci": "vitest run --coverage --reporter=verbose",
     "audit:lighthouse": "lighthouse http://localhost:3000 --view --output html --output-path ./lighthouse-report.html",
     "build:optimized": "vite build --config vite.config.optimized.ts",
-    "tokens:generate": "npx tsx scripts/generate-css-variables.ts",
-    "tokens:watch": "nodemon --watch scripts/generate-css-variables.ts --watch src/types/design-tokens.ts --exec \"npx tsx scripts/generate-css-variables.ts\"",
     "theme:gate": "node scripts/theme-audit/theme-gate.mjs",
     "theme:gate:m1": "node scripts/theme-audit/theme-gate.mjs --milestone M1",
     "theme:gate:ci": "node scripts/theme-audit/theme-gate.mjs --require-render",
