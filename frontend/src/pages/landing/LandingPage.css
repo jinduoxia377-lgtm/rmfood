@@ -190,6 +190,15 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   box-shadow: var(--shadow-md);
 }
 
+/* M-6 统一卡片语言：内容卡片（AlgoCard/SynergyCard/Pricing/FAQ）与 .lp-card 一致，
+   基础为边框优先，hover 升级为 shadow-md（与 .lp-card/.lp-card-white/.lp-metric-card 对齐） */
+.lp-card-hover {
+  transition: border-color var(--duration-normal) var(--ease-standard), box-shadow var(--duration-normal) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
+}
+.lp-card-hover:hover {
+  box-shadow: var(--shadow-md);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    导航链接样式类 — 已合并至下方「专业导航链接（桌面）」唯一定义
    （原 P1「.lp-nav-link 重复定义」修复：删除此处重复块，保留本注释标记）
@@ -213,7 +222,9 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 .lp-hero-metric strong {
   color: var(--color-neutral-900);
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -246,7 +257,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 /* ── 移动端菜单展开动画 ── */
 @keyframes lp-mobile-menu {
   from { max-height: 0; opacity: 0; }
-  to   { max-height: 300px; opacity: 1; }
+  to   { max-height: 560px; opacity: 1; }
 }
 
 /* ── 产品预览窗口动效 ── */
@@ -397,8 +408,17 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   color: var(--color-neutral-900);
 }
 
-/* ── H2 区块标题 — 使用 --text-h3 令牌（24px, weight 600） ── */
+/* ── H2 区块标题 — 使用 --text-h2 令牌（28px, weight 600） ── */
 .lp-h2 {
+  font-size: var(--text-h2);
+  font-weight: var(--text-h2-font-weight);
+  line-height: var(--text-h2-line-height);
+  letter-spacing: var(--text-h2-tracking);
+  color: var(--color-neutral-900);
+}
+
+/* ── H3 子标题 — 使用 --text-h3 令牌（24px, weight 600） ── */
+.lp-h3 {
   font-size: var(--text-h3);
   font-weight: var(--text-h3-font-weight);
   line-height: var(--text-h3-line-height);
@@ -406,20 +426,20 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   color: var(--color-neutral-900);
 }
 
-/* ── H3 小标题 — 使用 --text-h4 令牌（22px, weight 600） ── */
-.lp-h3 {
-  font-size: var(--text-h4);
-  font-weight: var(--text-h4-font-weight);
-  line-height: var(--text-h4-line-height);
-  letter-spacing: var(--text-h4-tracking);
+/* ── H4 卡标题 — 使用 --text-h5 令牌（18px, weight 600） ── */
+.lp-h4 {
+  font-size: var(--text-h5);
+  font-weight: var(--text-h5-font-weight);
+  line-height: var(--text-h5-line-height);
+  letter-spacing: var(--text-h5-tracking);
   color: var(--color-neutral-900);
 }
 
-/* ── 正文段落 — 使用 --text-body 令牌（15px） ── */
+/* ── 正文段落 — 使用 --text-body-lg 令牌（16px，正文基准） ── */
 .lp-body {
-  font-size: var(--text-body);
+  font-size: var(--text-body-lg);
   font-weight: 400;
-  line-height: var(--text-body-line-height);
+  line-height: var(--text-body-lg-line-height);
   color: var(--color-neutral-700);
 }
 
@@ -435,6 +455,24 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-size: var(--text-overline);
   font-weight: var(--text-overline-font-weight);
   line-height: var(--text-overline-line-height);
+}
+
+/* ── 等宽字体 — 对齐 --font-mono 令牌（原为无效类 no-op，L-1） ── */
+.lp-mono {
+  font-family: var(--font-mono);
+}
+
+/* ── 长页面分段渲染：跳过屏外布局/绘制（性能优化，排除首屏 Hero LCP） ── */
+#main-content section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+#main-content > section:first-of-type {
+  content-visibility: visible;
+}
+/* ── #demo-area 锚点跳转偏移：避免被固定导航遮挡 ── */
+#demo-area {
+  scroll-margin-top: 80px;
 }
 
 /* ── 辅助说明 — 使用 --text-caption 令牌（12px） ── */
@@ -672,7 +710,7 @@ section[id] {
   font-weight: 700;
   font-family: var(--font-mono);
   letter-spacing: -0.02em;
-  line-height: 1;
+  line-height: 1.2;
 }
 .lp-data-panel-label {
   font-size: var(--text-overline);
@@ -763,8 +801,8 @@ section[id] {
   min-width: 0;
 }
 .lp-data-card-name {
-  font-size: var(--text-caption);
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--color-neutral-900);
   letter-spacing: 0.01em;
   line-height: 1.2;
@@ -783,7 +821,7 @@ section[id] {
   padding: 0 var(--space-apple-sm);
 }
 .lp-data-card-desc {
-  font-size: var(--text-caption);
+  font-size: var(--text-body-sm);
   line-height: 1.6;
   color: var(--color-neutral-600);
   margin-bottom: var(--space-2);
@@ -824,7 +862,7 @@ section[id] {
   font-weight: 700;
   font-family: var(--font-mono);
   letter-spacing: -0.02em;
-  line-height: 1;
+  line-height: 1.2;
 }
 .lp-data-card-stat-label {
   font-size: var(--text-caption);
@@ -943,20 +981,9 @@ section[id] {
   border-color: color-mix(in srgb, var(--color-primary-500) 35%, transparent);
 }
 
-/* ③ elevation hover 分级：卡片 hover 从 e1 静态升级为 e2（去边框靠阴影表达层级） */
-.lp-card,
-.lp-card-white,
-.lp-metric-card {
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  box-shadow: 0 1px 2px color-mix(in srgb, #000000 5%, transparent);
-}
-.lp-card:hover,
-.lp-card-white:hover,
-.lp-metric-card:hover,
-.lp-data-card:hover {
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 2px 6px 2px rgba(0,0,0,0.06);
-  box-shadow: 0 1px 2px color-mix(in srgb, #000000 10%, transparent), 0 2px 6px 2px color-mix(in srgb, #000000 6%, transparent);
-}
+/* ③ elevation 统一（边框优先）：所有内容卡片以 1px 边框表达层级，
+   不再使用混合阴影——保证 AlgoCard/SynergyCard/UseCases/Pricing/FAQ 与
+   .lp-card/.lp-card-white/.lp-metric-card 的卡片语言一致（hover 靠 border-color 混入 primary） */
 
 /* ── Suspense 骨架屏加载器（React.lazy fallback） ── */
 @keyframes lp-spin { to { transform: rotate(360deg); } }
@@ -968,6 +995,38 @@ section[id] {
   border-top-color: var(--color-primary-500);
   animation: lp-spin 0.8s linear infinite; /* spinner 保持固定速度 */
 }
+
+/* ── 懒加载骨架屏（近似 section 结构，替代固定高度 spinner，减少布局跳动，M-12） ── */
+@keyframes lp-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.lp-skeleton {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding: var(--space-apple-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-apple-md);
+}
+.lp-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-primary) 8%, transparent), transparent);
+  background-size: 800px 100%;
+  animation: lp-shimmer 1.6s linear infinite;
+  pointer-events: none;
+}
+.lp-skeleton-head { width: 42%; max-width: 320px; height: 28px; border-radius: var(--radius-Apple-sm); background: var(--bg-surface-raised); }
+.lp-skeleton-sub { width: 26%; max-width: 220px; height: 14px; border-radius: 4px; background: var(--bg-surface-raised); }
+.lp-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-apple-md);
+}
+.lp-skeleton-card { height: 128px; border-radius: var(--radius-Apple-sm); background: var(--bg-surface-raised); }
 
 /* ═══════════════════════════════════════════════════════════════
    暗色模式覆盖 — .dark 类作用域
@@ -1043,6 +1102,10 @@ section[id] {
   background: color-mix(in srgb, #0f172a 97%, transparent) !important;
   border-bottom-color: var(--color-neutral-800) !important;
   box-shadow: 0 1px 0 var(--color-neutral-800), 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+/* 未滚动态暗色覆盖：inline bg 为 95% 白，需 !important 反转为深色（L-6） */
+.dark nav[aria-label="主导航"] {
+  background: color-mix(in srgb, #0f172a 95%, transparent) !important;
 }
 
 /* ── 导航链接暗色 ── */

@@ -88,13 +88,12 @@ export default function Navbar() {
         height: '64px',
         boxShadow: scrolled ? '0 1px 0 var(--hover-bg, rgba(0,0,0,0.04)), 0 2px 8px var(--hover-bg, rgba(0,0,0,0.04))' : 'none',
       }}
-      role="navigation"
       aria-label="主导航"
     >
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 h-full flex items-center justify-between">
 
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group min-h-[44px]" aria-label="莱茵分子 — 返回首页" style={{ color: 'var(--color-neutral-900, #0f172a)' }}>
+        <Link to="/" className="flex items-center gap-2.5 group min-h-[44px]" aria-label="莱茵分子 — 返回首页" style={{ color: 'var(--text-primary)' }}>
           {isImageLogo ? (
             <div className="shrink-0 rounded-[var(--radius-Apple-sm)] overflow-hidden" style={{ width: logoSize.image, height: logoSize.image }}>
                 <img
@@ -114,14 +113,14 @@ export default function Navbar() {
           )}
           <span
             className="font-bold text-[16px] tracking-tight leading-none"
-            style={{ color: 'var(--color-neutral-900, #0f172a)' }}
+            style={{ color: 'var(--text-primary)' }}
           >
             莱茵分子
           </span>
         </Link>
 
         {/* 桌面导航 */}
-        <div className="hidden md:flex items-center gap-0.5">
+        <div className="hidden md:flex items-center gap-2">
           {navLinks.map((l) => (
             <a
               key={l.href}
@@ -181,7 +180,7 @@ export default function Navbar() {
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent id="mobile-menu-content" className="md:hidden overflow-hidden" style={{ animation: 'lp-mobile-menu 0.2s ease' }}>
-              <div style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: 'var(--shadow-md, 0 2px 8px rgba(0,0,0,0.06))' }}>
+              <div style={{ background: 'var(--bg-surface-container)', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: 'var(--shadow-md, 0 2px 8px rgba(0,0,0,0.06))' }}>
                 <div className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] space-y-0.5">
                   {navLinks.map((l) => (
                     <a
@@ -190,7 +189,7 @@ export default function Navbar() {
                       onClick={() => setMobileOpen(false)}
                       className={cn(
                         'block text-[15px] font-medium py-2.5 px-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] transition-colors min-h-[44px] flex items-center',
-                        isActive(l.href) ? 'text-neutral-900 bg-[var(--bg-tertiary)]' : 'text-neutral-900 hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                        isActive(l.href) ? 'text-[var(--text-primary)] bg-[var(--bg-tertiary)]' : 'text-[var(--text-primary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
                       )}
                     >
                       {l.label}
@@ -200,7 +199,7 @@ export default function Navbar() {
                     <Link
                       to="/login?redirect=/landing"
                       className="w-full text-center text-[15px] font-semibold py-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] text-white block transition-opacity hover:opacity-90 min-h-[44px] flex items-center justify-center"
-                      style={{ background: 'var(--color-neutral-900, #0f172a)' }}
+                      style={{ background: '#047857' }}
                     >
                       {navbarCTA.trialLabel}
                     </Link>

@@ -13,7 +13,7 @@ import {
   algorithms, synergyMechanisms, performanceMetrics,
   getAlgoIcon, type Algorithm, type AlgoCategory,
 } from '../data/algorithms';
-import { ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
+import { ChevronDown, ChevronUp, Copy, Check, ArrowRight } from 'lucide-react';
 
 // ── 维度标签映射 ─────────────────────────────────────────────────
 const ALGO_COLORS: Record<AlgoCategory, {
@@ -51,16 +51,16 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
   return (
     <Reveal delay={`lp-reveal-delay-${(index % 3) + 1}`}>
       <div
-        className="rounded-[var(--radius-Apple-sm)] overflow-hidden transition-all duration-200"
+        className="lp-card-hover rounded-[var(--radius-Apple-sm)] overflow-hidden transition-all duration-200"
         style={{
           border: '1px solid var(--color-neutral-200, #e2e8f0)',
-          background: '#fff',
+          background: 'var(--bg-surface-container)',
         }}
       >
         {/* 顶部色条 */}
-        <div className="h-0.5 w-full" style={{ background: cfg.primary + '60' }} />
+        <div className="h-0.5 w-full" style={{ background: `color-mix(in srgb, ${cfg.primary} 60%, transparent)` }} />
 
-        <div className="p-5">
+        <div className="p-[var(--space-apple-lg)]">
           {/* 头部 */}
           <div className="flex items-start gap-[var(--space-apple-sm)] mb-[var(--space-apple-sm)]">
             <div
@@ -72,19 +72,19 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-[15px] font-bold text-neutral-900">{algo.title}</h3>
+                <h3 className="text-[16px] font-semibold text-neutral-900">{algo.title}</h3>
                 {algo.metric && (
                   <span className="lp-caption font-mono shrink-0" style={{ color: 'var(--color-primary-700, #047857)' }}>
                     {algo.metric.value}
                   </span>
                 )}
               </div>
-              <div className="text-[12px] font-mono text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{algo.subtitle}</div>
+              <div className="text-[12px] font-mono text-[var(--text-secondary)]">{algo.subtitle}</div>
             </div>
           </div>
 
           {/* 描述 */}
-          <p className="text-[15px] leading-[1.7] text-[var(--text-secondary)] mb-[var(--space-apple-sm)]">
+          <p className="text-[14px] leading-[1.7] text-[var(--text-secondary)] mb-[var(--space-apple-sm)]">
             {algo.desc}
           </p>
 
@@ -127,7 +127,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
                   onClick={handleCopy}
                   aria-label="复制类名"
                   className="flex items-center gap-1 text-[12px] font-mono px-2 min-h-[44px] rounded transition-colors"
-                  style={{ color: 'var(--color-neutral-500, #64748b)', background: 'transparent', border: 'none' }}
+                  style={{ color: 'var(--text-secondary)', background: 'transparent', border: 'none' }}
                   title="复制类名"
                 >
                   <span className="truncate max-w-[140px]">{algo.backendClass}</span>
@@ -157,11 +157,11 @@ function SynergyCard({ mech, index }: { mech: typeof synergyMechanisms[0]; index
   return (
     <Reveal delay={`lp-reveal-delay-${(index % 3) + 1}`}>
       <div
-        className="rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-md)]"
-        style={{ background: '#fff', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}
+        className="lp-card-hover rounded-[var(--radius-Apple-sm)] p-[var(--space-apple-md)]"
+        style={{ background: 'var(--bg-surface-container)', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}
       >
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-[15px] font-bold text-neutral-800">{mech.name}</h4>
+          <h4 className="text-[16px] font-semibold text-neutral-800">{mech.name}</h4>
           <span
             className="text-[12px] font-mono px-1.5 py-0.5 rounded"
             style={{ background: 'var(--color-success-50, #f0fdf4)', color: 'var(--color-primary-700, #047857)', border: '1px solid var(--color-success-200, #bbf7d0)' }}
@@ -175,7 +175,7 @@ function SynergyCard({ mech, index }: { mech: typeof synergyMechanisms[0]; index
         >
           {mech.formula}
         </div>
-        <p className="text-[12px] leading-[1.65] text-[var(--text-secondary)]">{mech.desc}</p>
+        <p className="text-[14px] leading-[1.65] text-[var(--text-secondary)]">{mech.desc}</p>
       </div>
     </Reveal>
   );
@@ -187,13 +187,13 @@ function PerformanceTable() {
     <Reveal>
       <div
         className="rounded-[var(--radius-Apple-sm)] overflow-x-auto"
-        style={{ background: '#fff', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}
+        style={{ background: 'var(--bg-surface-container)', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}
       >
         <table className="w-full text-[12px] border-collapse">
           <thead>
-            <tr style={{ background: 'var(--color-neutral-50, #f8fafc)' }}>
+            <tr style={{ background: 'var(--bg-surface-raised)' }}>
               {['操作类型', 'P50', 'P95', 'P99', 'SLA 目标'].map((h) => (
-                <th key={h} className="px-[var(--space-apple-sm)] py-2 text-left font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] whitespace-nowrap">
+                <th key={h} className="px-[var(--space-apple-sm)] py-2 text-left font-medium text-[var(--text-secondary)] whitespace-nowrap">
                   {h}
                 </th>
               ))}
@@ -221,7 +221,7 @@ export default function Algorithms() {
   const optimizerAlgos = algorithms.filter((a) => a.category === 'optimizer');
 
   return (
-    <section id="algorithms" aria-label="算法引擎与性能基准" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
+    <section id="algorithms" aria-label="算法引擎与性能基准" className="py-16 lg:py-20" style={{ background: 'var(--bg-surface-container)', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
 
         {/* 标题区 */}
@@ -232,7 +232,7 @@ export default function Algorithms() {
               7 种优化算法 · 5 种协同机制 ·<br className="hidden sm:block" />
               亚秒级实时推理
             </h2>
-            <p className="lp-body-sm max-w-2xl" style={{ color: 'var(--color-neutral-600, #475569)' }}>
+            <p className="lp-body-sm max-w-2xl" style={{ color: 'var(--text-secondary)' }}>
               基于统一优化调度器（UnifiedOptimizer）的智能策略选择系统，内置 Bandit 在线学习自动匹配最优算法引擎。
               5 种协同作用机制量化成分间交互，NSGA-III 支持 8 维目标 Pareto 优化，完整管线 P95 &lt; 3.2s。
             </p>
@@ -251,10 +251,23 @@ export default function Algorithms() {
               </span>
               <span className="lp-caption text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">7 种求解器 · 统一接口 · 自动策略选择</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {optimizerAlgos.map((algo, i) => (
                 <AlgoCard key={algo.id} algo={algo} index={i} />
               ))}
+              {/* 第 8 张占位卡：补齐 4×2 网格尾行，作为前往工作台的 CTA（L-2） */}
+              <Reveal delay="lp-reveal-delay-1">
+                <a
+                  href="/dashboard"
+                  aria-label="前往工作台查看全部算法"
+                  className="group flex flex-col items-center justify-center text-center rounded-[var(--radius-Apple-sm)] border border-dashed h-full min-h-[200px] p-[var(--space-apple-lg)] transition-colors"
+                  style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--bg-surface-container)' }}
+                >
+                  <span className="lp-mono text-[12px] text-[color:var(--text-secondary)] mb-1.5">7+ 算法引擎</span>
+                  <span className="text-[16px] font-semibold mb-2" style={{ color: 'var(--color-primary-700, #047857)' }}>前往工作台查看全部算法</span>
+                  <ArrowRight className="group-hover:translate-x-1 transition-transform" size={15} style={{ color: 'var(--color-primary-700, #047857)' }} />
+                </a>
+              </Reveal>
             </div>
           </div>
         </Reveal>
@@ -271,7 +284,7 @@ export default function Algorithms() {
               </span>
               <span className="lp-caption text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">5 种数学模型 · 加权综合指数 SI</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 gap-5">
               {synergyMechanisms.slice(0, 5).map((mech, i) => (
                 <SynergyCard key={mech.id} mech={mech} index={i} />
               ))}

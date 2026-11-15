@@ -56,7 +56,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-[15px] font-bold text-neutral-900">{feature.title}</h3>
+                <h3 className="text-[16px] font-semibold text-neutral-900">{feature.title}</h3>
                 {feature.keyMetric && (
                   <span className="lp-caption font-mono shrink-0 text-primary-main">{feature.keyMetric}</span>
                 )}
@@ -66,7 +66,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           </div>
 
           {/* 描述 */}
-          <p className="text-[15px] leading-relaxed text-[var(--text-secondary)] mb-[var(--space-apple-md)] min-h-[52px]">
+          <p className="text-[14px] leading-[1.7] text-[var(--text-secondary)] mb-[var(--space-apple-md)] min-h-[52px]">
             {feature.desc}
           </p>
 
@@ -107,7 +107,7 @@ export default function Features() {
   const titleLines = sectionTitle.split('\n');
 
   return (
-    <section id="features" aria-label="平台核心功能展示" className="py-20 lg:py-24 bg-neutral-default border-t border-t-neutral-200">
+    <section id="features" aria-label="平台核心功能展示" className="py-16 lg:py-20 bg-neutral-default border-t border-t-neutral-200">
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8">
 
         {/* 标题区 */}
@@ -131,7 +131,7 @@ export default function Features() {
           return (
             <div key={dim} className="mb-10 last:mb-0">
               <DimensionHeader dimension={dim} />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 gap-5">
                 {dimFeatures.map((f, i) => (
                   <FeatureCard key={f.id} feature={f} index={dimIdx * 3 + i} />
                 ))}

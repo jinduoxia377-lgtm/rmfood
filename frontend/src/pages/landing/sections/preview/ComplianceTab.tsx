@@ -78,7 +78,7 @@ export default function ComplianceTab() {
   return (
     <div className="flex flex-col h-full">
       {/* 输入区 */}
-      <div className="px-[var(--space-apple-sm)] py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--color-neutral-50, #fafbfc)' }}>
+      <div className="px-[var(--space-apple-sm)] py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--bg-surface-container)' }}>
         <div className="text-[12px] font-medium text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1.5 flex items-center gap-1">
           <ShieldCheck size={11} style={{ color: 'var(--color-neutral-500, #64748b)' }} />
           输入配方成分（每行一个）
@@ -92,7 +92,7 @@ export default function ComplianceTab() {
         />
         <button onClick={runCheck} disabled={result.status === 'scanning'}
           className="mt-1.5 w-full min-h-[36px] rounded-[var(--radius-Apple-sm)] lp-tiny font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
-          style={{ background: result.status === 'scanning' ? 'var(--color-neutral-400, #94a3b8)' : 'var(--color-primary-700, #047857)', color: '#fff' }}>
+          style={{ background: result.status === 'scanning' ? 'var(--color-neutral-400, #94a3b8)' : '#047857', color: '#fff' }}>
           {result.status === 'scanning'
             ? <><Loader2 size={11} className="animate-spin" />检测中…</>
             : <><ShieldCheck size={11} />开始合规检测</>
@@ -184,7 +184,7 @@ export default function ComplianceTab() {
                 </svg>
                 重新检测
               </button>
-              <button className="flex-1 min-h-[36px] rounded-[var(--radius-Apple-sm)] lp-tiny font-medium flex items-center justify-center gap-1" style={{ background: 'var(--color-primary-700, #047857)', color: '#fff' }}>
+              <button className="flex-1 min-h-[36px] rounded-[var(--radius-Apple-sm)] lp-tiny font-medium flex items-center justify-center gap-1" style={{ background: '#047857', color: '#fff' }}>
                 <FileText size={11} />导出报告
               </button>
             </div>

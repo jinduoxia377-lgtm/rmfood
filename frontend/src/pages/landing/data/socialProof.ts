@@ -18,11 +18,15 @@ export interface TrustMetric {
   color: string;
 }
 
+/** 平台指标（最保守默认）
+ * 合规说明（TODO(legal): 待法务最终确认）：
+ *   已移除「研发机构 9」「累计 AI 调用 41」「配方方案 12」三条内部统计——
+ *   量级过小反削弱可信度，且为易过期的运营快照数据。仅保留有据的
+ *   「优化算法引擎 7」（已实现的算法数量，属能力描述，非运营绩效）。
+ *   待真实、可公开、可持续更新的运营数据经法务核实后可逐步恢复。
+ */
 export const trustMetrics: TrustMetric[] = [
-  { icon: 'Users',          value: '200+', label: '研发机构',        sub: '入驻平台',            color: 'var(--color-primary-700, #047857)' },
-  { icon: 'Zap',            value: '12,000+', label: '日均 AI 请求', sub: '+18% 月增长',       color: 'var(--color-accent-700, #6d28d9)' },
-  { icon: 'FileText',       value: '3,800+', label: '配方方案生成',  sub: '已交付文档',         color: 'var(--color-secondary-700, #1d4ed8)' },
-  { icon: 'Clock',          value: '72h',   label: '平均研发周期',   sub: '较传统缩短 60%',     color: 'var(--color-warning-700, #b45309)' },
+  { icon: 'Clock',          value: '7',     label: '优化算法引擎',    sub: '已实现',            color: 'var(--color-warning-700, #b45309)' },
 ];
 
 // ── 合作机构 ──────────────────────────────────────────────────────
@@ -31,16 +35,25 @@ export interface PartnerOrg {
   category: 'university' | 'hospital' | 'enterprise' | 'government';
 }
 
+/** 合作伙伴（匿名化示例，避免冒用真实机构名义；如需展示具体机构须取得书面授权）
+ * 说明：以下为"示例/匿名"合作伙伴标识，不构成对任何真实机构的合作背书。
+ */
 export const partnerOrgs: PartnerOrg[] = [
-  { name: '广东中医药大学',   category: 'university'    },
-  { name: '上海医药工业研究院', category: 'government'  },
-  { name: '同仁堂健康',        category: 'enterprise'   },
-  { name: '华佗国医馆',        category: 'hospital'     },
-  { name: '云南白药集团',      category: 'enterprise'   },
-  { name: '中国食品药品检定研究院', category: 'government' },
-  { name: '北京中医药大学',   category: 'university'    },
-  { name: '华润三九医药',      category: 'enterprise'   },
+  { name: '某中医药大学',     category: 'university'    },
+  { name: '某省级食品药品研究院', category: 'government'  },
+  { name: '某保健食品企业',    category: 'enterprise'   },
+  { name: '某三甲医院营养科',  category: 'hospital'     },
+  { name: '某中药企业',        category: 'enterprise'   },
+  { name: '某药检机构',        category: 'government'   },
+  { name: '某中医药院校',      category: 'university'    },
+  { name: '某医药集团',        category: 'enterprise'   },
 ];
+
+/** 合作机构免责文案 i18n key（TODO(legal): 待法务最终确认）
+ * 供区块（SocialProof）在合作机构列表紧邻处渲染，明确以下为匿名示例。
+ * 值为 i18n 键名，组件用 t(PARTNER_ORGS_DISCLAIMER_KEY) 取本地化文案。
+ */
+export const PARTNER_ORGS_DISCLAIMER_KEY = 'pages.landing.disclaimers.partnerOrgs';
 
 // ── 用户评价 ──────────────────────────────────────────────────────
 export interface Testimonial {
@@ -48,54 +61,60 @@ export interface Testimonial {
   role: string;
   org: string;
   quote: string;
-  rating: number;
+  // TODO(legal): 已移除 rating 字段——不给示意性文案打满分（避免"5 星好评"暗示真实评价）。
+  // 如后续恢复真实用户评分，须经法务确认并补用户授权。
   gradient: string;
 }
 
 export const testimonials: Testimonial[] = [
   {
-    name: '张明远',
+    name: '张研究员',
     role: '高级研究员',
-    org: '广东中医药大学生药学院',
-    quote: 'AI 配方对话将原料筛选时间从 3 天缩短到 20 分钟，知识图谱的关联推理帮我们发现了以前忽略的配伍规律，已产出 3 篇 SCI 论文。',
-    rating: 5,
+    org: '某中医药大学',
+    // 能力描述，移除"从数天缩短到数十分钟"未验证绩效承诺（TODO(legal): 待法务确认）
+    quote: 'AI 配方对话提供原料筛选与知识图谱关联推理能力，帮助梳理配伍规律、辅助研究思路。',
     /* P0 对比度修复：白字落点色改为 800/900 级，保证 #fff 对比 ≥4.5:1
    （原 500/400 级中点 var(--color-success-500, #10b981)/var(--color-secondary-400, #60a5fa)/var(--color-accent-400, #a78bfa) 对白字仅 2.2–2.9:1） */
 gradient: 'linear-gradient(135deg, var(--color-primary-800, #065f46), var(--color-primary-700, #047857))',
   },
   {
-    name: '李思涵',
+    name: '李工程师',
     role: '研发总监',
-    org: '同仁堂健康药业',
-    quote: '合规引擎让配方审核一次通过率从 60% 提升到 92%，新品上市周期从 18 个月压缩到 9 个月，年节约合规成本超 80 万元。',
-    rating: 5,
+    org: '某保健食品企业',
+    // 降级为能力描述，移除"一次通过率明显提升""周期显著缩短"未验证绩效承诺（TODO(legal): 待法务确认）
+    quote: '合规引擎提供配伍禁忌检测与合规校验能力，辅助团队在研发阶段自查、复核配方。',
     gradient: 'linear-gradient(135deg, var(--color-secondary-800, #1e40af), var(--color-secondary-700, #1d4ed8))',
   },
   {
-    name: '王浩然',
+    name: '王博士',
     role: '博士后',
-    org: '上海医药工业研究院',
-    quote: '肽序列 ADME 预测准确率超过 94%，NSGA-III 多目标优化帮我们在 4 小时内完成了 120 条配方的协同效应排序。',
-    rating: 5,
+    org: '某科研院所',
+    quote: '肽序列 ADME 预测为候选肽初筛提供参考，NSGA-III 多目标优化可辅助完成配方的协同效应排序。',
     gradient: 'linear-gradient(135deg, var(--color-accent-800, #5b21b6), var(--color-accent-700, #6d28d9))',
   },
   {
-    name: '陈静怡',
+    name: '陈医师',
     role: '临床营养科主治医师',
-    org: '深圳市中医院营养科',
-    quote: '为患者定制食疗方案时，平台提供的配伍禁忌检测和剂量推荐让处方安全边界清晰可见，患者依从性提高了 35%。',
-    rating: 5,
+    org: '某医院营养科',
+    // 改写：移除疗效/临床效果暗示（"患者接受度明显提高"），改为纯功能性描述（TODO(legal): 待法务确认）
+    quote: '平台提供配伍禁忌检测与剂量参考功能，辅助我在制定食疗方案时核对配伍与用量。',
     gradient: 'linear-gradient(135deg, var(--color-danger-800, #991b1b), var(--color-danger-700, #b91c1c))',
   },
   {
-    name: '刘建国',
+    name: '刘工',
     role: '联合创始人',
-    org: '本草知味科技（初创企业）',
-    quote: '从 0 到 1 搭建产品线的过程中，平台的 AI 对话帮我们跳过了 6 个月的知识积累阶段，研发人员从 2 人就能高效运转。',
-    rating: 5,
+    org: '某初创企业',
+    // 降级为能力描述，移除"大幅缩短了知识积累阶段"未验证绩效承诺（TODO(legal): 待法务确认）
+    quote: '平台的 AI 对话提供药食同源知识检索与梳理能力，可作为小团队研发起步阶段的辅助参考。',
     gradient: 'linear-gradient(135deg, var(--color-warning-800, #92400e), var(--color-warning-700, #b45309))',
   },
 ];
+
+/** 用户评价免责文案 i18n key（TODO(legal): 待法务最终确认）
+ * 供区块（SocialProof）在评价列表紧邻处渲染，明确以下为示意性文案、非真实证言。
+ * 值为 i18n 键名，组件用 t(TESTIMONIALS_DISCLAIMER_KEY) 取本地化文案。
+ */
+export const TESTIMONIALS_DISCLAIMER_KEY = 'pages.landing.disclaimers.testimonials';
 
 // ── 合作机构分类标签样式 ──────────────────────────────────────────
 export const categoryStyle: Record<string, { bg: string; text: string; border: string }> = {

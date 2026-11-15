@@ -32,6 +32,7 @@ import organizations from './pages/organizations'
 import userManagement from './pages/userManagement'
 import settings from './pages/settings'
 import whitelist from './pages/whitelist'
+import landing from './pages/landing'
 import experimentForm from './pages/experimentForm'
 import experimentCalendar from './pages/experimentCalendar'
 import experimentShare from './pages/experimentShare'
@@ -42,6 +43,6 @@ export default {
     { ai },
     common,
     nav,
-    { pages: deepMerge({}, dashboard, formula, batch, experiment, stability, document, doe, compliance, labelCheck, ingredient, label, agent, peptide, academic, workflow, regulations, terminology, database, analytics, integrations, notification, auditLog, organizations, userManagement, settings, whitelist, experimentForm, experimentCalendar, experimentShare, experimentDetail) },
+    { pages: deepMerge({}, dashboard, formula, batch, experiment, stability, document, doe, compliance, labelCheck, ingredient, label, agent, peptide, academic, workflow, regulations, terminology, database, analytics, integrations, notification, auditLog, organizations, userManagement, settings, whitelist, experimentForm, experimentCalendar, experimentShare, experimentDetail, landing) },
   ),
 }

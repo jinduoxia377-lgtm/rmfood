@@ -35,14 +35,14 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
       <div
         className="lp-card-white relative overflow-hidden transition-all duration-200 cursor-default"
         style={{
-          background: hovered ? '#fff' : '#fff',
-          border: `1px solid ${hovered ? cfg.primary + '40' : 'var(--color-neutral-200, #e2e8f0)'}`,
+          background: 'var(--bg-surface-container)',
+          border: `1px solid ${hovered ? `color-mix(in srgb, ${cfg.primary} 40%, transparent)` : 'var(--color-neutral-200, #e2e8f0)'}`,
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         {/* 顶部色条（极简，无渐变） */}
-        <div className="h-0.5 w-full" style={{ background: cfg.primary + '50' }} />
+        <div className="h-0.5 w-full" style={{ background: `color-mix(in srgb, ${cfg.primary} 50%, transparent)` }} />
 
         <div className="p-[var(--space-apple-lg)]">
           {/* 场景标识 — 关键词标签替代"应用场景 X" */}
@@ -56,7 +56,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-[15px] font-bold text-neutral-900 truncate">{item.title}</h3>
+                <h3 className="text-[16px] font-semibold text-neutral-900 truncate">{item.title}</h3>
                 <span
                   className="shrink-0 lp-label px-2 py-0.5 rounded-[var(--radius-Apple-sm)]"
                   style={{ background: cfg.primaryLight, color: cfg.primaryText, border: `1px solid ${cfg.primaryBorder}` }}
@@ -68,7 +68,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
           </div>
 
           {/* 描述 */}
-          <p className="text-[15px] leading-[1.7] text-[var(--text-secondary)] mb-5 min-h-[66px]">
+          <p className="text-[14px] leading-[1.7] text-[var(--text-secondary)] mb-5 min-h-[66px]">
             {item.desc}
           </p>
 
@@ -87,7 +87,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
                     {i + 1}
                   </div>
                   <div className="pt-0.5">
-                    <div className="lp-label" style={{ color: 'var(--color-neutral-800, #1e293b)' }}>{step.label}</div>
+                    <div className="lp-label" style={{ color: 'var(--text-primary)' }}>{step.label}</div>
                     <div className="lp-caption">{step.detail}</div>
                   </div>
                 </div>
@@ -122,7 +122,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
                 type="button"
                 className="w-full inline-flex items-center justify-center gap-2 px-[var(--space-apple-sm)] py-2.5 min-h-[44px] rounded-[var(--radius-Apple-sm)] lp-label transition-colors"
                 style={{
-                  background: hovered ? cfg.primaryLight : '#fff',
+                  background: hovered ? cfg.primaryLight : 'var(--bg-surface-container)',
                   color: cfg.primaryText,
                   border: `1px solid ${cfg.primaryBorder}`,
                 }}
@@ -167,14 +167,14 @@ export default function UseCases() {
                 <span key={i}>{line}{i < titleLines.length - 1 && <br />} </span>
               ))}
             </h2>
-            <p className="lp-body-sm max-w-lg" style={{ color: 'var(--color-neutral-600, #475569)' }}>
+            <p className="lp-body-sm max-w-lg" style={{ color: 'var(--text-secondary)' }}>
               {sectionDesc}
             </p>
           </div>
         </Reveal>
 
         {/* 三场景卡片 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 gap-5">
           {useCases.map((c, i) => (
             <ScenarioCard key={c.id} item={c} index={i} />
           ))}

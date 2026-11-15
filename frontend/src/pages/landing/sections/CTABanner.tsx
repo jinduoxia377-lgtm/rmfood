@@ -13,6 +13,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowRight, ChevronUp, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/shadcn';
 import { Reveal } from '../shared/Reveal';
@@ -22,18 +23,18 @@ import { submitDemoBooking, friendlyError } from '../shared/apiClient';
 // ── 表单选项 ────────────────────────────────────────────────────
 
 const INDUSTRY_OPTIONS = [
-  { value: '制药', label: '制药' },
-  { value: '保健品', label: '保健品' },
-  { value: '食品', label: '食品' },
-  { value: '科研机构', label: '科研机构' },
-  { value: '其他', label: '其他' },
+  { value: '制药', labelKey: 'pages.landing.cta.industries.pharma' },
+  { value: '保健品', labelKey: 'pages.landing.cta.industries.supplement' },
+  { value: '食品', labelKey: 'pages.landing.cta.industries.food' },
+  { value: '科研机构', labelKey: 'pages.landing.cta.industries.research' },
+  { value: '其他', labelKey: 'pages.landing.cta.industries.other' },
 ];
 
 const BUDGET_OPTIONS = [
-  { value: '<10万', label: '< 10万' },
-  { value: '10-50万', label: '10 - 50万' },
-  { value: '50-100万', label: '50 - 100万' },
-  { value: '>100万', label: '> 100万' },
+  { value: '<10万', labelKey: 'pages.landing.cta.budgets.lt10' },
+  { value: '10-50万', labelKey: 'pages.landing.cta.budgets.b10to50' },
+  { value: '50-100万', labelKey: 'pages.landing.cta.budgets.b50to100' },
+  { value: '>100万', labelKey: 'pages.landing.cta.budgets.gt100' },
 ];
 
 // ── 通用样式 ────────────────────────────────────────────────────
@@ -41,11 +42,12 @@ const BUDGET_OPTIONS = [
 const inputBase = 'w-full h-11 px-[var(--space-apple-sm)] text-[15px] rounded-[var(--radius-Apple-sm)] border focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40';
 const inputStyle: React.CSSProperties = {
   borderColor: 'var(--border-color)',
-  background: 'var(--bg-secondary)',
-  color: 'var(--color-neutral-900, #0f172a)',
+  background: 'var(--bg-surface-container)',
+  color: 'var(--text-primary)',
 };
 
 export default function CTABanner() {
+  const { t } = useTranslation();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // 表单字段
@@ -95,12 +97,12 @@ export default function CTABanner() {
 
     // 字段校验
     if (!name.trim() || !email.trim()) {
-      setSubmitError('请填写姓名和邮箱');
+      setSubmitError(t('pages.landing.cta.errNameEmail'));
       setFeedbackAnimKey((k) => k + 1);
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setSubmitError('邮箱格式不正确');
+      setSubmitError(t('pages.landing.cta.errEmail'));
       setFeedbackAnimKey((k) => k + 1);
       return;
     }
@@ -119,16 +121,16 @@ export default function CTABanner() {
       });
       setSubmitted(true);
       setSuccessMessage(
-        `已收到您的预约信息（${email.trim()}），顾问将在 24 小时内与您联系。预约编号：${result.id}`,
+        t('pages.landing.cta.successBody', { email: email.trim(), id: result.id }),
       );
     } catch (err) {
-      setSubmitError(friendlyError(err, '提交失败：预约服务暂未就绪，请稍后重试或直接注册体验'));
+      setSubmitError(friendlyError(err, t('pages.landing.cta.errSubmit')));
     } finally {
       setSubmitting(false);
       isSubmittingRef.current = false;
       setFeedbackAnimKey((k) => k + 1);
     }
-  }, [name, email, company, industry, budget, notes, submitting]);
+  }, [name, email, company, industry, budget, notes, submitting, t]);
 
   // ── 键盘 Enter 提交 ──────────────────────────────────────────
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -139,7 +141,7 @@ export default function CTABanner() {
   };
 
   return (
-    <section id="cta" aria-label="行动召唤" className="py-16 relative bg-neutral-900">
+    <section id="cta" aria-label={t('pages.landing.cta.ariaSection')} className="py-16 relative bg-neutral-900">
       <style>{`
         @keyframes lp-fade-in-up {
           from { opacity: 0; transform: translateY(8px); }
@@ -164,15 +166,15 @@ export default function CTABanner() {
 
       <div className="max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 text-center">
         <Reveal>
-          <h2 className="lp-h3 text-white mb-2">开始您的配方研发</h2>
-          <p className="lp-body-sm mb-7 text-neutral-300">科研版永久免费，无需信用卡，30 秒完成注册。</p>
+          <h2 className="lp-h3 text-white! mb-2">{t('pages.landing.cta.title')}</h2>
+          <p className="lp-body-sm mb-7 text-neutral-300!">{t('pages.landing.cta.sub')}</p>
           <div className="flex items-center justify-center gap-[var(--space-apple-sm)] flex-wrap">
             {/* 主 CTA：免费注册 — 白色大按钮 */}
             <Link
               to="/login"
               className="inline-flex items-center gap-1.5 px-7 min-h-[44px] rounded-[var(--radius-Apple-sm)] text-[15px] font-semibold transition-opacity hover:opacity-90 lp-label bg-card text-neutral-900"
             >
-              免费注册
+              {t('pages.landing.cta.free')}
               <ArrowRight size={14} />
             </Link>
             {/* 副 CTA：预约演示 — 次要 outlined 样式 */}
@@ -180,21 +182,21 @@ export default function CTABanner() {
               <DialogTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1.5 text-[15px] font-medium px-6 py-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] transition-colors hover:text-white border min-h-[44px] lp-body-sm text-neutral-300 border-neutral-600"
+                  className="inline-flex items-center gap-1.5 text-[15px] font-medium px-6 py-[var(--space-apple-md)] rounded-[var(--radius-Apple-sm)] transition-colors hover:text-white border min-h-[44px] lp-body-sm text-neutral-300! border-neutral-600"
                   >
-                  预约演示
+                  {t('pages.landing.cta.demo')}
                 </button>
               </DialogTrigger>
-              <DialogContent size="sm" className="bg-card text-neutral-900">
+              <DialogContent size="sm" className="bg-card text-[var(--text-primary)]">
                 <DialogHeader>
-                  <DialogTitle>预约产品演示</DialogTitle>
-                  <DialogDescription>留下您的联系方式，我们的顾问将在 24 小时内与您联系，为您安排专属的产品演示。</DialogDescription>
+                  <DialogTitle>{t('pages.landing.cta.dialogTitle')}</DialogTitle>
+                  <DialogDescription>{t('pages.landing.cta.dialogDesc')}</DialogDescription>
                 </DialogHeader>
                 {submitted ? (
                   <div key={feedbackAnimKey} className="lp-success-pop flex items-start gap-[var(--space-apple-sm)] py-4">
                     <CheckCircle size={22} className="shrink-0 mt-0.5 text-primary-main" />
                     <div>
-                      <p className="text-[15px] font-semibold text-neutral-900">预约成功</p>
+                      <p className="text-[15px] font-semibold text-neutral-900">{t('pages.landing.cta.successTitle')}</p>
                       <p className="text-[12px] mt-1 text-text-muted">
                         {successMessage}
                       </p>
@@ -203,13 +205,13 @@ export default function CTABanner() {
                 ) : (
                   <div className="space-y-[var(--space-apple-sm)]">
                     <div>
-                      <label className="lp-label mb-1 block" htmlFor="demo-booking-name">姓名 <span className="text-danger-500">*</span></label>
+                      <label className="lp-label mb-1 block" htmlFor="demo-booking-name">{t('pages.landing.cta.labelName')} <span className="text-danger-500">*</span></label>
                       <input
                         id="demo-booking-name"
-                        aria-label="请输入您的姓名"
+                        aria-label={t('pages.landing.cta.phName')}
                         className={inputBase}
                         style={inputStyle}
-                        placeholder="请输入您的姓名"
+                        placeholder={t('pages.landing.cta.phName')}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         onKeyDown={handleKeyDown}
@@ -217,13 +219,13 @@ export default function CTABanner() {
                       />
                     </div>
                     <div>
-                      <label className="lp-label mb-1 block" htmlFor="demo-booking-email">邮箱 <span className="text-danger-500">*</span></label>
+                      <label className="lp-label mb-1 block" htmlFor="demo-booking-email">{t('pages.landing.cta.labelEmail')} <span className="text-danger-500">*</span></label>
                       <input
                         id="demo-booking-email"
-                        aria-label="请输入您的公司邮箱"
+                        aria-label={t('pages.landing.cta.phEmail')}
                         className={inputBase}
                         style={inputStyle}
-                        placeholder="company@example.com"
+                        placeholder={t('pages.landing.cta.phEmail')}
                         type="email"
                         inputMode="email"
                         value={email}
@@ -233,13 +235,13 @@ export default function CTABanner() {
                       />
                     </div>
                     <div>
-                      <label className="lp-label mb-1 block" htmlFor="demo-booking-company">公司名称（选填）</label>
+                      <label className="lp-label mb-1 block" htmlFor="demo-booking-company">{t('pages.landing.cta.labelCompany')}</label>
                       <input
                         id="demo-booking-company"
-                        aria-label="请输入公司名称"
+                        aria-label={t('pages.landing.cta.phCompany')}
                         className={inputBase}
                         style={inputStyle}
-                        placeholder="请输入公司名称"
+                        placeholder={t('pages.landing.cta.phCompany')}
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}
                         onKeyDown={handleKeyDown}
@@ -248,48 +250,48 @@ export default function CTABanner() {
                     </div>
                     <div className="grid grid-cols-2 gap-[var(--space-apple-sm)]">
                       <div>
-                        <label className="lp-label mb-1 block" htmlFor="demo-booking-industry">所属行业</label>
+                        <label className="lp-label mb-1 block" htmlFor="demo-booking-industry">{t('pages.landing.cta.labelIndustry')}</label>
                         <select
                           id="demo-booking-industry"
-                          aria-label="选择所属行业"
+                          aria-label={t('pages.landing.cta.placeholder')}
                           className={inputBase}
                           style={inputStyle}
                           value={industry}
                           onChange={(e) => setIndustry(e.target.value)}
                           disabled={submitting}
                         >
-                          <option value="">请选择</option>
+                          <option value="">{t('pages.landing.cta.placeholder')}</option>
                           {INDUSTRY_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
                           ))}
                         </select>
                       </div>
                       <div>
-                        <label className="lp-label mb-1 block" htmlFor="demo-booking-budget">预算范围</label>
+                        <label className="lp-label mb-1 block" htmlFor="demo-booking-budget">{t('pages.landing.cta.labelBudget')}</label>
                         <select
                           id="demo-booking-budget"
-                          aria-label="选择预算范围"
+                          aria-label={t('pages.landing.cta.placeholder')}
                           className={inputBase}
                           style={inputStyle}
                           value={budget}
                           onChange={(e) => setBudget(e.target.value)}
                           disabled={submitting}
                         >
-                          <option value="">请选择</option>
+                          <option value="">{t('pages.landing.cta.placeholder')}</option>
                           {BUDGET_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
                           ))}
                         </select>
                       </div>
                     </div>
                     <div>
-                      <label className="lp-label mb-1 block" htmlFor="demo-booking-notes">备注（选填）</label>
+                      <label className="lp-label mb-1 block" htmlFor="demo-booking-notes">{t('pages.landing.cta.labelNotes')}</label>
                       <input
                         id="demo-booking-notes"
-                        aria-label="补充说明"
+                        aria-label={t('pages.landing.cta.phNotes')}
                         className={inputBase}
                         style={inputStyle}
-                        placeholder="如有特殊需求请注明"
+                        placeholder={t('pages.landing.cta.phNotes')}
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         onKeyDown={handleKeyDown}
@@ -307,19 +309,19 @@ export default function CTABanner() {
                 <DialogFooter>
                   {submitted ? (
                     <Button onClick={resetForm} variant="outline">
-                      继续预约
+                      {t('pages.landing.cta.continueBooking')}
                     </Button>
                   ) : (
                     <Button
                       onClick={handleSubmit}
                       loading={submitting}
                       disabled={submitting}
-                      className="w-full sm:w auto bg-neutral-900"
+                      className="w-full sm:w auto bg-[var(--color-primary-surface)] text-white"
                     >
-                      {submitting ? '提交中…' : (
+                      {submitting ? t('pages.landing.cta.submitting') : (
                         <>
-                          <ArrowRight size={13} className="mr-1" />
-                          提交预约
+                          <ArrowRight size={14} className="mr-1" />
+                          {t('pages.landing.cta.submit')}
                         </>
                       )}
                     </Button>
@@ -341,7 +343,7 @@ export default function CTABanner() {
           showScrollTop && 'lp-scroll-top-visible'
         )}
         style={{ background: 'color-mix(in srgb, #ffffff 8%, transparent)', border: '1px solid color-mix(in srgb, #ffffff 12%, transparent)', color: 'var(--color-neutral-400, #94a3b8)' }}
-        aria-label="回到顶部"
+        aria-label={t('pages.landing.cta.backToTop')}
       >
         <ChevronUp size={14} />
       </button>

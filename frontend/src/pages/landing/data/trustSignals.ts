@@ -18,47 +18,48 @@ export interface TrustSignal {
 }
 
 /**
- * 安全合规认证标识
- * 覆盖数据分级、信息安全、质量管理的完整信任链条
+ * 安全合规信任标识（治理/设计层面如实表述，非"已认证"承诺）
+ * 说明：以下标识描述平台按相关要求进行的架构设计与数据治理，
+ * 不代表已取得第三方认证证书；证书信息以官网公示为准。
  */
 export const trustSignals: TrustSignal[] = [
   {
     name: '等保三级',
-    desc: '网络安全等级保护三级认证',
+    desc: '已按网络安全等级保护三级要求进行架构设计与数据治理',
     icon: 'ShieldCheck',
     color: 'var(--color-primary-700, #047857)',
-    date: '2025.06',
+    date: '—',
   },
   {
     name: 'ISO 27001',
-    desc: '信息安全管理体系认证',
+    desc: '已按 ISO 27001 要求进行信息安全管理体系设计',
     icon: 'Award',
     color: 'var(--color-secondary-700, #1d4ed8)',
-    date: '2025.09',
+    date: '—',
   },
   {
     name: 'SOC 2 Type II',
-    desc: '安全与合规审计报告',
+    desc: '已按 SOC 2 Type II 要求进行安全与合规治理设计',
     icon: 'FileCheck',
     color: 'var(--color-accent-700, #6d28d9)',
-    date: '2025.12',
+    date: '—',
   },
   {
     name: 'PIPL 合规',
-    desc: '《个人信息保护法》合规认证',
+    desc: '已按《个人信息保护法》要求进行数据治理与合规设计',
     icon: 'UserCheck',
     color: 'var(--color-warning-700, #b45309)',
-    date: '2026.01',
+    date: '—',
   },
 ];
 
 /**
  * ICP 备案号配置
- * 用于 Footer 底部渲染
+ * 真实备案号已由业务确认（2026-11-15）：闽ICP备2025096032号，页脚正常渲染。
  */
 export const ICP_CONFIG = {
-  /** ICP 备案号（闽ICP备XXXXXXX号-1 格式） */
-  icp: '闽ICP备2025001号-1',
+  /** ICP 备案号（业务确认真实值，页脚渲染） */
+  icp: '闽ICP备2025096032号',
   /** 网络经营备案信息 */
-  businessLicense: '闽公网安备 35020302000XXX 号',
+  businessLicense: '公安备案信息以官网公示为准',
 } as const;

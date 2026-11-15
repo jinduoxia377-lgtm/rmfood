@@ -70,12 +70,19 @@ function parseInline(text: string, keyPrefix: string): React.ReactNode {
         </code>
       );
     } else if (m[5] !== undefined) {
+      // 链接协议白名单：仅 http/https/mailto，其余渲染为纯文本（安全审计）
+      const href = m[6] as string | undefined;
+      const safeHref = typeof href === 'string' && /^(https?:\/\/|mailto:)/i.test(href);
       parts.push(
-        <a key={`${keyPrefix}-l-${idx++}`} href={m[6]} target="_blank" rel="noopener noreferrer"
-          className="text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] underline decoration-primary-400 underline-offset-2"
-          style={{ fontSize: 12 }}>
-          {m[5]}
-        </a>
+        safeHref ? (
+          <a key={`${keyPrefix}-l-${idx++}`} href={href} target="_blank" rel="noopener noreferrer"
+            className="text-[var(--color-primary-text)] hover:text-[var(--color-primary-text)] underline decoration-primary-400 underline-offset-2"
+            style={{ fontSize: 12 }}>
+            {m[5]}
+          </a>
+        ) : (
+          <span key={`${keyPrefix}-l-${idx++}`} style={{ fontSize: 12 }}>{m[5]}</span>
+        )
       );
     }
     lastIdx = m.index + m[0].length;
@@ -345,27 +352,17 @@ export interface ChatPreviewState {
 }
 
 interface ChatPreviewProps {
-  /** 递增触发重置（清空消息 + 回到 idle） */
-  resetToken: number;
   /** 状态变化回调，父组件用于状态栏 */
   onStateChange?: (state: ChatPreviewState) => void;
 }
 
-export default function ChatPreview({ resetToken, onStateChange }: ChatPreviewProps) {
+export default function ChatPreview({ onStateChange }: ChatPreviewProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [demoState, setDemoState] = useState<DemoState>({ status: 'idle', message: '' });
   const [thinkingStep, setThinkingStep] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // 外部重置信号
-  useEffect(() => {
-    if (resetToken > 0) {
-      setMessages([]);
-      setDemoState({ status: 'idle', message: '' });
-    }
-  }, [resetToken]);
 
   // 消息滚动到底部
   useEffect(() => {
@@ -442,15 +439,15 @@ export default function ChatPreview({ resetToken, onStateChange }: ChatPreviewPr
             <div className="w-10 h-10 rounded-[var(--radius-Apple-md)] flex items-center justify-center mb-[var(--space-apple-md)] lp-welcome-icon" style={{ background: 'linear-gradient(135deg, var(--color-success-50, #ecfdf5) 0%, var(--color-success-100, #d1fae5) 100%)', border: '1px solid var(--color-success-200, #a7f3d0)' }}>
               <Sparkles size={16} style={{ color: 'var(--color-primary-600, #059669)' }} />
             </div>
-            <p className="lp-label font-semibold mb-1" style={{ color: 'var(--color-neutral-700, #334155)' }}>与配方顾问对话</p>
+            <p className="lp-label font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>与配方顾问对话</p>
             <p className="text-[12px] text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] text-center leading-relaxed mb-6 max-w-[220px]">输入您的研发需求，获取专业配方设计与安全评估</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-[280px]">
               {PRESET_QUESTIONS.map((q, i) => (
                 <button key={i} onClick={() => triggerPreset(q)}
                   className="text-left px-[var(--space-apple-sm)] py-2 rounded-[var(--radius-Apple-sm)] text-[12px] leading-relaxed text-[var(--text-secondary)] transition-all duration-150 border min-h-[44px] flex items-center"
-                  style={{ background: 'var(--color-neutral-50, #f8fafc)', borderColor: 'var(--color-neutral-100, #eef2f7)' }}
+                  style={{ background: 'var(--bg-surface-raised)', borderColor: 'var(--color-neutral-200, #e2e8f0)' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-success-50, #f0fdf4)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-success-200, #bbf7d0)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary-800, #065f46)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-neutral-50, #f8fafc)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-neutral-100, #eef2f7)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-neutral-600, #475569)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-surface-raised)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-neutral-200, #e2e8f0)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)'; }}
                 >{q}</button>
               ))}
             </div>
@@ -464,7 +461,7 @@ export default function ChatPreview({ resetToken, onStateChange }: ChatPreviewPr
                     <Sparkles size={10} style={{ color: 'var(--color-primary-700, #047857)' }} />
                   </div>
                 )}
-                <div className="px-[var(--space-apple-sm)] py-2 max-w-[80%] leading-relaxed" style={{ background: msg.role === 'user' ? 'linear-gradient(135deg, var(--color-primary-600, #059669) 0%, var(--color-primary-700, #047857) 100%)' : '#ffffff', color: msg.role === 'user' ? '#fff' : 'var(--color-neutral-800, #1e293b)', borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '3px 12px 12px 3px', border: msg.role === 'assistant' ? '1px solid var(--color-neutral-200, #e2e8f0)' : 'none', lineHeight: '1.65', boxShadow: msg.role === 'assistant' ? 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))' : 'none' }}>
+                <div className="px-[var(--space-apple-sm)] py-2 max-w-[80%] leading-relaxed" style={{ background: msg.role === 'user' ? 'linear-gradient(135deg, #065f46 0%, #047857 100%)' : 'var(--bg-surface-container)', color: msg.role === 'user' ? '#fff' : 'var(--color-neutral-800, #1e293b)', borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '3px 12px 12px 3px', border: msg.role === 'assistant' ? '1px solid var(--color-neutral-200, #e2e8f0)' : 'none', lineHeight: '1.65', boxShadow: msg.role === 'assistant' ? 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))' : 'none' }}>
                   <MarkdownRenderer content={msg.content} />
                 </div>
               </div>
@@ -474,7 +471,7 @@ export default function ChatPreview({ resetToken, onStateChange }: ChatPreviewPr
                 <div className="w-5 h-5 rounded-[var(--radius-Apple-sm)] flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ background: 'var(--color-success-50, #ecfdf5)', border: '1px solid var(--color-success-100, #d1fae5)' }}>
                   <Sparkles size={10} style={{ color: 'var(--color-primary-700, #047857)' }} />
                 </div>
-                <div className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)]" style={{ background: '#ffffff', border: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))' }}>
+                <div className="px-[var(--space-apple-md)] py-[var(--space-apple-md)] rounded-[var(--radius-Apple-md)]" style={{ background: 'var(--bg-surface-container)', border: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))' }}>
                   <div className="flex items-center gap-2 mb-2">
                     {THINKING_STEPS.map((step, i) => (
                       <div key={step.label} className="flex items-center gap-1.5">
@@ -503,7 +500,7 @@ export default function ChatPreview({ resetToken, onStateChange }: ChatPreviewPr
         )}
         <div ref={messagesEndRef} />
       </div>
-      <div className="flex-shrink-0 px-[var(--space-apple-md)] py-[var(--space-apple-md)] border-t" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--color-neutral-50, #fafbfc)' }}>
+      <div className="flex-shrink-0 px-[var(--space-apple-md)] py-[var(--space-apple-md)] border-t" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--bg-surface-container)' }}>
         <form onSubmit={handleSubmit} className="flex items-end gap-2">
           <div className="flex-1 relative rounded-[var(--radius-Apple-sm)] border overflow-hidden transition-all lp-input-border" style={{ borderColor: 'var(--border-color, #e2e8f0)', background: 'var(--bg-canvas, #f8fafc)' }}>
             <textarea ref={textareaRef} value={input} onChange={(e) => setInput(e.target.value)}
@@ -516,7 +513,7 @@ export default function ChatPreview({ resetToken, onStateChange }: ChatPreviewPr
           <button type="submit" disabled={!input.trim() || demoState.status === 'thinking'}
             aria-label="发送"
             className="w-11 h-11 rounded-[var(--radius-Apple-sm)] flex items-center justify-center flex-shrink-0 transition-all duration-150 disabled:opacity-30 hover:opacity-90 active:scale-95"
-            style={{ background: 'var(--color-primary-700, #047857)' }}>
+            style={{ background: '#047857' }}>
             {demoState.status === 'thinking' ? <Loader2 size={14} color="white" className="animate-spin" /> : <Send size={14} color="white" />}
           </button>
         </form>
