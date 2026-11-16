@@ -13,8 +13,7 @@ import {
 } from './encodingUtils';
 import { ERROR_CODES } from '@/constants/errorCodes';
 import { getErrorMessage } from '@/constants';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { exportHtmlAsPdf, wrapPrintHtml } from '@/utils/pdfPrintExporter';
 
 let _exceljsModule: typeof import('exceljs') | null = null;
 
@@ -432,7 +431,7 @@ async function exportToCSV(
   downloadBlob(blob, filename, { timestamp: false });
 }
 
-// ==================== PDF 导出（使用 jspdf + autotable）====================
+// ==================== PDF 导出（方案C：生成 HTML → 浏览器打印，原生渲染中文）====================
 
 async function exportToPDF(
   formulas: Formula[],
@@ -441,21 +440,27 @@ async function exportToPDF(
 ): Promise<void> {
   reportProgress('processing', 30, '正在生成 PDF 文件...');
 
-  const doc = new jsPDF({
-    orientation: 'landscape',
-    unit: 'mm',
-    format: 'a4',
-  });
-
-  const headers = buildHeaders(options).map((h) => h.label);
-  const rows: string[][] = [];
+  const headerDefs = buildHeaders(options);
+  const headers = headerDefs.map((h) => h.label);
+  const statusColIndex = headerDefs.findIndex((h) => h.key === 'status');
   const totalRows = formulas.length;
-  const pageSize = 50;
 
+  const bodyRows: string[] = [];
   for (let i = 0; i < totalRows; i++) {
-    rows.push(Object.values(buildFormulaRow(formulas[i], options)).map((cell) => String(cell ?? '')));
+    const rowData = Object.values(buildFormulaRow(formulas[i], options)).map((cell) => String(cell ?? ''));
+    const statusCell =
+      statusColIndex >= 0 && rowData[statusColIndex] !== undefined
+        ? STATUS_COLOR_MAP[rowData[statusColIndex].toLowerCase()]
+        : undefined;
+    const cells = rowData
+      .map(
+        (cell, idx) =>
+          `<td style="${idx === statusColIndex && statusCell ? `background:#${statusCell.bg};color:#${statusCell.text};` : ''}">${escapeHtml(cell)}</td>`,
+      )
+      .join('');
+    bodyRows.push(`<tr>${cells}</tr>`);
 
-    if ((i + 1) % pageSize === 0 || i === totalRows - 1) {
+    if ((i + 1) % 50 === 0 || i === totalRows - 1) {
       const progress = 30 + Math.floor(((i + 1) / totalRows) * 50);
       reportProgress('processing', progress, `正在处理第 ${i + 1}/${totalRows} 条记录...`);
     }
@@ -463,75 +468,31 @@ async function exportToPDF(
 
   reportProgress('finalizing', 80, '正在渲染 PDF 页面...');
 
-  doc.setFontSize(16);
-  doc.text('RMFOOD 配方数据导出', 14, 15);
-
-  doc.setFontSize(9);
-  doc.setTextColor(100);
-  doc.text(`导出时间: ${new Date().toLocaleString('zh-CN')}  |  共 ${formulas.length} 条记录`, 14, 22);
-
-  autoTable(doc, {
-    head: [headers],
-    body: rows,
-    startY: 28,
-    styles: {
-      fontSize: 7,
-      cellPadding: 2,
-      overflow: 'ellipsize',
-      lineColor: [200, 200, 200],
-      lineWidth: 0.1,
-    },
-    headStyles: {
-      fillColor: [241, 245, 249],
-      textColor: [50, 50, 50],
-      fontStyle: 'bold',
-      fontSize: 8,
-    },
-    alternateRowStyles: {
-      fillColor: [250, 250, 252],
-    },
-    margin: { top: 28, left: 14, right: 14 },
-    didParseCell(data) {
-      if (data.section === 'body') {
-        const statusColIndex = headers.indexOf('状态');
-        if (data.column.index === statusColIndex) {
-          const statusValue = String(data.cell.raw || '').toLowerCase();
-          const colorConfig = STATUS_COLOR_MAP[statusValue];
-          if (colorConfig) {
-            const rgb = hexToRgb(colorConfig.bg);
-            data.cell.styles.fillColor = rgb;
-            data.cell.styles.textColor = hexToRgb(colorConfig.text);
-          }
-        }
-      }
-    },
-    didDrawPage(data) {
-      const pageCount = doc.getNumberOfPages();
-      doc.setFontSize(8);
-      doc.setTextColor(150);
-      doc.text(
-        `第 ${data.pageNumber} / ${pageCount} 页`,
-        doc.internal.pageSize.getWidth() / 2,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: 'center' },
-      );
-    },
-  });
+  const thead = `<thead><tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>`;
+  const contentHtml = `
+    <style>
+      @page { size: A4 landscape; margin: 12mm; }
+      .report-container { max-width: none; padding: 0; }
+      table { font-size: 7pt; }
+      th, td { padding: 3px 5px; word-break: break-word; }
+      th { font-size: 8pt; }
+    </style>
+    <h1 style="font-size:16pt;text-align:left;border:none;color:#1f2937;">RMFOOD 配方数据导出</h1>
+    <p style="font-size:9pt;color:#64748b;">导出时间: ${escapeHtml(new Date().toLocaleString('zh-CN'))}  |  共 ${formulas.length} 条记录</p>
+    <table>
+      ${thead}
+      <tbody>${bodyRows.join('')}</tbody>
+    </table>`;
 
   reportProgress('finalizing', 95, '正在保存文件...');
 
-  const blob = doc.output('blob');
   const filename = `${options.filename || '配方数据_' + getDateStamp()}.pdf`;
-  downloadBlob(blob, filename, { timestamp: false });
-}
-
-function hexToRgb(hex: string): [number, number, number] {
-  const cleanHex = hex.replace('#', '');
-  return [
-    parseInt(cleanHex.substring(0, 2), 16),
-    parseInt(cleanHex.substring(2, 4), 16),
-    parseInt(cleanHex.substring(4, 6), 16),
-  ];
+  exportHtmlAsPdf(wrapPrintHtml(contentHtml, filename), {
+    title: filename,
+    onError: (message) => {
+      logger.error('[FormulaExporter] PDF 导出失败:', message);
+    },
+  });
 }
 
 // ==================== 数据行构建 ====================
@@ -1175,14 +1136,6 @@ async function exportAsPDFLegacy(
   void _includeIngredients;
   void _filename;
   void _onProgress;
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-
-  doc.setFontSize(16);
-  doc.text(title || 'RMFOOD 配方列表', 14, 15);
-
-  doc.setFontSize(9);
-  doc.setTextColor(100);
-  doc.text(`导出时间: ${new Date().toLocaleString('zh-CN')}  |  共 ${formulas.length} 条`, 14, 22);
 
   const headers = ['序号', '配方名称', '成分数量', '置信度'];
   const rows = formulas.map((f, idx) => [
@@ -1192,17 +1145,31 @@ async function exportAsPDFLegacy(
     `${(f.confidence * 100).toFixed(0)}%`,
   ]);
 
-  autoTable(doc, {
-    head: [headers],
-    body: rows,
-    startY: 28,
-    styles: { fontSize: 9, cellPadding: 3 },
-    headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
-    margin: { top: 28, left: 14, right: 14 },
-  });
+  const contentHtml = `
+    <style>
+      @page { size: A4 landscape; margin: 12mm; }
+      .report-container { max-width: none; padding: 0; }
+      th { background: #3498db; color: #fff; }
+    </style>
+    <h1 style="font-size:16pt;text-align:left;border:none;color:#1f2937;">${escapeHtml(title || 'RMFOOD 配方列表')}</h1>
+    <p style="font-size:9pt;color:#64748b;">导出时间: ${escapeHtml(new Date().toLocaleString('zh-CN'))}  |  共 ${formulas.length} 条</p>
+    <table>
+      <thead><tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
+      <tbody>${rows
+        .map(
+          (row) =>
+            `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`,
+        )
+        .join('')}</tbody>
+    </table>`;
 
-  const blob = doc.output('blob');
-  downloadBlob(blob, `rmfood-formulas-${getDateStamp()}.pdf`, { timestamp: false });
+  const filename = `rmfood-formulas-${getDateStamp()}.pdf`;
+  exportHtmlAsPdf(wrapPrintHtml(contentHtml, filename), {
+    title: filename,
+    onError: (message) => {
+      logger.error('[FormulaExporter] PDF 导出失败(legacy):', message);
+    },
+  });
 }
 
 function downloadFile(content: string, filename: string, mimeType: string, fileExtension: string): void {

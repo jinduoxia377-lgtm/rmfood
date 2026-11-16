@@ -1,6 +1,9 @@
 import { logger } from '@/utils/safeLogger'
 import { useState, useCallback, useRef } from 'react';
 import { ExportFormat } from '../types/export.types';
+// 方案C：中文 PDF 走「生成 HTML → 浏览器打印」由浏览器原生渲染中文，避免 jsPDF 内置字体缺 CJK 字形乱码。
+// 静态导入（而非动态 import）以确保 exportHtmlAsPdf 内的 window.open 处于用户手势同步调用栈内，不被弹窗拦截。
+import { exportHtmlAsPdf, wrapPrintHtml } from '@/utils/pdfPrintExporter';
 import type {
   ExportOptions,
   ExportColumn,
@@ -313,95 +316,96 @@ async function exportToJSON(
   };
 }
 
+/** 转义用户数据，避免破坏 HTML 结构 / 注入 */
+function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+const EXPORT_BRAND_GREEN = '#10B981';
+
 async function exportToPDF(
   data: any[],
   columns: ExportColumn[],
   options: ExportOptions,
 ): Promise<ExportResult> {
+  const fileName = options.fileName || getDefaultFileNameStatic(ExportFormat.PDF);
+
   try {
-    const jsPDF = await import('jspdf');
-    await import('jspdf-autotable');
-
-    const doc = new jsPDF.default({
-      orientation: options.pdfConfig?.orientation || 'portrait',
-      unit: 'mm',
-      format: options.pdfConfig?.pageSize || 'A4',
-    });
-
-    if (options.pdfConfig?.title) {
-      doc.setFontSize(16);
-      doc.text(options.pdfConfig.title, 14, 20);
-    }
-
-    if (options.pdfConfig?.subtitle) {
-      doc.setFontSize(12);
-      doc.text(options.pdfConfig.subtitle, 14, 28);
-    }
-
-    const tableData = data.map((row, index) => {
-      const rowData: any[] = [];
-      if (options.includeIndex) rowData.push(index + 1);
-      columns.forEach(col => {
-        let value = row[col.key];
-        if (col.format && value != null) {
-          value = col.format(value);
-        }
-        rowData.push(String(value ?? ''));
-      });
-      return rowData;
-    });
-
+    // ===== 构建 HTML 表格（由浏览器原生渲染中文，避免 jsPDF 内置字体缺 CJK 字形乱码）=====
     const tableHeaders: string[] = [];
     if (options.includeIndex) tableHeaders.push('序号');
     columns.forEach(col => tableHeaders.push(col.label));
 
-    (doc as { autoTable?: (opts: unknown) => void }).autoTable?.({
-      head: [tableHeaders],
-      body: tableData,
-      startY: options.pdfConfig?.title ? 35 : 20,
-      styles: {
-        fontSize: options.pdfConfig ? 9 : 8,
-        cellPadding: 2,
+    const headCells = tableHeaders
+      .map(label => `<th>${escapeHtml(label)}</th>`)
+      .join('');
+
+    const bodyRows = data
+      .map((row, index) => {
+        const cells: string[] = [];
+        if (options.includeIndex) cells.push(String(index + 1));
+        columns.forEach(col => {
+          let value = row[col.key];
+          if (col.format && value != null) {
+            value = col.format(value);
+          }
+          cells.push(escapeHtml(value ?? ''));
+        });
+        return `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+      })
+      .join('');
+
+    const title = options.pdfConfig?.title;
+    const subtitle = options.pdfConfig?.subtitle;
+    const showPageNumbers = options.pdfConfig?.showPageNumbers !== false;
+
+    const contentHtml = `
+      <style>
+        h1.pdf-title{color:${EXPORT_BRAND_GREEN};font-size:16pt;margin-bottom:0.3em;}
+        p.pdf-subtitle{color:#64748b;font-size:12pt;margin-bottom:0.8em;}
+        table.pdf-table{width:100%;border-collapse:collapse;font-size:9pt;}
+        table.pdf-table th{background:${EXPORT_BRAND_GREEN};color:#fff;font-weight:bold;text-align:center;padding:4px 8px;border:1px solid #ccc;}
+        table.pdf-table td{padding:3px 8px;border:1px solid #ccc;}
+        table.pdf-table tbody tr:nth-child(even){background:#f5f5f5;}
+        .pdf-footer{margin-top:18px;padding-top:6px;border-top:1px solid #e2e8f0;text-align:center;color:#94a3b8;font-size:8pt;}
+        .pdf-footer .page-num::before{content:counter(page);}
+      </style>
+      ${title ? `<h1 class="pdf-title">${escapeHtml(title)}</h1>` : ''}
+      ${subtitle ? `<p class="pdf-subtitle">${escapeHtml(subtitle)}</p>` : ''}
+      <table class="pdf-table">
+        <thead><tr>${headCells}</tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+      ${
+        showPageNumbers
+          ? `<div class="pdf-footer">第 <span class="page-num"></span> 页</div>`
+          : ''
+      }`;
+
+    // 同步调用：exportHtmlAsPdf 内的 window.open 需处于用户手势调用栈内
+    exportHtmlAsPdf(wrapPrintHtml(contentHtml, fileName), {
+      title: fileName,
+      onError: (message) => {
+        logger.error('[useExport] PDF export failed:', message);
       },
-      headStyles: {
-        fillColor: [41, 128, 185],
-        textColor: 255,
-        fontStyle: 'bold',
-      },
-      alternateRowStyles: {
-        fillColor: [245, 245, 245],
-      },
-      margin: options.pdfConfig?.margins || { top: 20, right: 15, bottom: 20, left: 15 },
     });
 
-    if (options.pdfConfig?.showPageNumbers !== false) {
-      const pageCount = doc.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(150);
-        doc.text(
-          `第 ${i} 页 / 共 ${pageCount} 页`,
-          doc.internal.pageSize.getWidth() / 2,
-          doc.internal.pageSize.getHeight() - 10,
-          { align: 'center' },
-        );
-      }
-    }
-
-    const pdfBlob = doc.output('blob');
-    downloadBlob(pdfBlob, options.fileName || getDefaultFileNameStatic(ExportFormat.PDF));
-
     return {
-    success: true,
-    fileName: options.fileName || getDefaultFileNameStatic(ExportFormat.PDF),
-    format: ExportFormat.PDF,
-    recordCount: data.length,
-    fileSize: pdfBlob.size,
-    timestamp: Date.now(),
-  };
+      success: true,
+      fileName,
+      format: ExportFormat.PDF,
+      recordCount: data.length,
+      // 方案C 由浏览器打印，无 Blob 体积；fileSize 记 0
+      fileSize: 0,
+      timestamp: Date.now(),
+    };
   } catch {
-    throw new Error('PDF导出需要安装jspdf和jspdf-autotable库');
+    throw new Error('PDF导出失败，请检查浏览器是否允许弹出窗口');
   }
 }
 
