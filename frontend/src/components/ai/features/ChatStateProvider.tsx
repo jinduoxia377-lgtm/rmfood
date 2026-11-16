@@ -40,15 +40,9 @@ import { ChatStateContext } from './ChatStateContext'
 
 interface ChatStateProviderProps {
   children: ReactNode
-  onBatchExport?: (ids: string[], format: 'json' | 'csv' | 'excel' | 'pdf') => void
-  onBatchDelete?: (ids: string[]) => void
-  onBatchTag?: (ids: string[], tags: string[]) => void
-  onSelectAll?: () => void
-  onToggleSelect?: (id: string, sel?: boolean) => void
-  onImport?: (data: unknown[]) => void
 }
 
-export function ChatStateProvider({ children, ...props }: ChatStateProviderProps) {
+export function ChatStateProvider({ children }: ChatStateProviderProps) {
   // ===== 2. 核心消息状态 =====
   const chatMessages = useChatMessages()
   const {
@@ -143,6 +137,25 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     selectAll, showDetailTable,
     closeDetailTable, importFormulas, exportFormulas: handleExportFormulas,
     clearAllFormulas,
+    // v8.1 接线：面板缺失能力（重命名/删除/收藏/取消选择/批量删除/标签/评分）
+    renameFormula, removeFormula, toggleFavorite, clearSelection,
+    batchDelete, batchTag, getFormulaScore,
+    // v8.2 接线：批量收藏 / 配方对比
+    batchFavorite, compareFormulas,
+    // v8.2 接线：优先级 / 版本历史
+    setPriority, getVersionHistory, rollbackToVersion,
+    // v8.3 接线：批量导出（此前未接线）
+    batchExport,
+    // v8.3 接线：仅清空内存缓存
+    clearMemoryCache,
+    // v8.5 接线：持久化失败提示
+    storageError,
+    clearStorageError,
+    // v8.5 接线：批量删除撤销
+    undoBatchDelete,
+    canUndoBatchDelete,
+    batchLimitExceeded,
+    clearBatchLimitExceeded,
   } = useFormulaManager()
 
   // ===== 11. 报告生成 =====
@@ -300,12 +313,28 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     onToggleExpand: toggleExpand, onShowDetail: showDetailTable, onCloseDetail: closeDetailTable,
     onGenerateReport: handleGenerateReport, onExport: handleExportFormulas,
     onClearStorage: clearAllFormulas,
-    onBatchExport: props.onBatchExport ?? (() => {}),
-    onBatchDelete: props.onBatchDelete ?? (() => {}),
-    onBatchTag: props.onBatchTag ?? (() => {}),
+    // v8.3 修复：批量导出此前是空函数默认值（「导出选中」点了没反应）
+    onBatchExport: (ids, format) => { void batchExport(ids, format) },
+    onBatchDelete: (ids) => batchDelete(ids),
+    onBatchTag: (ids, tags) => batchTag(ids, tags),
     onSelectAll: selectAll,
     onToggleSelect: (id, sel) => selectFormula(id, sel ?? false),
     onImport: importFormulas,
+    // v8.1 接线：把 useFormulaManager 的真实能力接到面板
+    onRenameFormula: (id, newName) => renameFormula(id, newName),
+    onRemoveFormula: (id) => removeFormula(id),
+    onToggleFavorite: (id) => toggleFavorite(id),
+    onClearSelection: () => clearSelection(),
+    getFormulaScore,
+    // v8.2：批量收藏 / 配方对比（对比返回结果供面板展示）
+    onBatchFavorite: (ids, favorite) => batchFavorite(ids, favorite),
+    onCompare: (id1, id2) => compareFormulas(id1, id2),
+    // v8.2：优先级 / 版本历史
+    onSetPriority: (id, priority) => setPriority(id, priority),
+    onGetVersions: (id) => getVersionHistory(id),
+    onRollbackVersion: (id, version) => rollbackToVersion(id, version),
+    // v8.3：仅清空内存缓存（不清本地存储）
+    onClearMemoryCache: () => clearMemoryCache(),
   })
 
   // ===== 23. 构建 Context Value =====
@@ -350,6 +379,14 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     // 配方
     formulaCount, expandedIds, selectedIds, formulas,
     formulaActions, onClearStorage: clearAllFormulas,
+    // v8.5：本地持久化失败提示
+    formulaStorageError: storageError,
+    clearFormulaStorageError: clearStorageError,
+    // v8.5：批量删除撤销
+    undoBatchDelete,
+    canUndoBatchDelete,
+    batchLimitExceeded,
+    clearBatchLimitExceeded,
 
     // 报告
     showReportModal, setShowReportModal, reportData, isGeneratingReport,
@@ -382,7 +419,7 @@ export function ChatStateProvider({ children, ...props }: ChatStateProviderProps
     detailsCall, detailsOpen, showKBPanel, isDetailModalOpen, selectedForDetail,
     chatHook, callbacks, chatHandlers, messageEditing, formulaActions,
     handleForkMessage,
-    props, orchestrator.thinkingProcessV3.state.steps,
+    orchestrator.thinkingProcessV3.state.steps,
   ])
 
   return (

@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { AIRecognizedFormula, FormulaQualityScore } from '@/types/ai.types';
 import { Button } from '@/components/ui';
 import { useSwipe } from '@/hooks/useMobile';
@@ -27,6 +28,8 @@ import {
   Pencil,
   Check,
   X,
+  Flag,
+  MoreVertical,
 } from 'lucide-react';
 
 interface FormulaCardProps {
@@ -74,6 +77,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
     onJumpToSource,
     onToggleFavorite,
   }) => {
+    const { t, i18n } = useTranslation();
     const [isEditingName, setIsEditingName] = useState(false);
     const [editValue, setEditValue] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
@@ -84,7 +88,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
       threshold: 30,
     });
 
-    const { handlers: longPressHandlers } = useLongPress(
+    const { isPressed: isLongPressing, handlers: longPressHandlers } = useLongPress(
       () => {
         if (onShowContextMenu) {
           onShowContextMenu(formula.id, { x: 0, y: 0 });
@@ -140,11 +144,11 @@ const FormulaCard = React.memo<FormulaCardProps>(
       if (!grade) return null;
 
       const gradeConfig = {
-        A: { bg: 'bg-success-100', text: 'text-success-700', border: 'border-success-200', label: 'A级 · 优秀' },
-        B: { bg: 'bg-secondary-100', text: 'text-secondary-700', border: 'border-secondary-200', label: 'B级 · 良好' },
-        C: { bg: 'bg-warning-100', text: 'text-warning-700', border: 'border-warning-200', label: 'C级 · 一般' },
-        D: { bg: 'bg-warning-100', text: 'text-warning-700', border: 'border-warning-200', label: 'D级 · 较差' },
-        F: { bg: 'bg-error-100', text: 'text-error-700', border: 'border-error-200', label: 'F级 · 不合格' },
+        A: { bg: 'bg-success-100', text: 'text-success-700', border: 'border-success-200', label: t('ai.chat.formulaCard.gradeA') },
+        B: { bg: 'bg-secondary-100', text: 'text-secondary-700', border: 'border-secondary-200', label: t('ai.chat.formulaCard.gradeB') },
+        C: { bg: 'bg-warning-100', text: 'text-warning-700', border: 'border-warning-200', label: t('ai.chat.formulaCard.gradeC') },
+        D: { bg: 'bg-warning-100', text: 'text-warning-700', border: 'border-warning-200', label: t('ai.chat.formulaCard.gradeD') },
+        F: { bg: 'bg-error-100', text: 'text-error-700', border: 'border-error-200', label: t('ai.chat.formulaCard.gradeF') },
       };
 
       const config = gradeConfig[grade];
@@ -155,7 +159,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${config.bg} ${config.text} border ${config.border}`}
         >
           {grade}
-          <span className="ml-1 text-xs opacity-75">{config.label.split('·')[1]}</span>
+          <span className="ml-1 text-xs opacity-75">{config.label}</span>
         </span>
       );
     };
@@ -180,7 +184,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
         <span
           className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${colorClass} ${bgColor}`}
         >
-          置信度: {percentage}%
+          {t('ai.chat.formulaCard.confidence')}: {percentage}%
         </span>
       );
     };
@@ -221,7 +225,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
       return (
         <div>
           <div className={`font-medium text-neutral-500 dark:text-neutral-400 mb-2 ${compact ? 'text-xs' : 'text-xs'}`}>
-            核心成分:
+            {t('ai.chat.formulaCard.coreIngredients')}
           </div>
           <div className="flex flex-wrap gap-1.5">
             {displayIngredients.map((ing, index) => (
@@ -241,7 +245,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                   compact ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs'
                 }`}
               >
-                +{remainingCount}种
+                +{remainingCount}{t('ai.chat.formulaCard.kinds')}
               </span>
             )}
           </div>
@@ -265,32 +269,32 @@ const FormulaCard = React.memo<FormulaCardProps>(
             <div className="p-4 space-y-4 bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-900/50 dark:to-neutral-900">
               {(formula.targetAudience?.length || formula.recommendedDosage || formula.contraindications) && (
                 <div className="space-y-2">
-                  <div className="text-sm font-semibold text-neutral-900 dark:text-white mb-2">详细信息</div>
+                  <div className="text-sm font-semibold text-neutral-900 dark:text-white mb-2">{t('ai.chat.formulaCard.details')}</div>
 
                   {formula.targetAudience && formula.targetAudience.length > 0 && (
                     <div className="flex items-start gap-2 text-sm">
-                      <span className="text-neutral-500 dark:text-neutral-400 shrink-0">适用人群:</span>
-                      <span className="text-neutral-700 dark:text-neutral-300">{formula.targetAudience.join('、')}</span>
+                      <span className="text-neutral-500 dark:text-neutral-400 shrink-0">{t('ai.chat.formulaCard.targetAudience')}:</span>
+                      <span className="text-neutral-700 dark:text-neutral-300">{formula.targetAudience.join(t('ai.chat.formulaCard.listSeparator'))}</span>
                     </div>
                   )}
 
                   {formula.recommendedDosage && (
                     <div className="flex items-start gap-2 text-sm">
-                      <span className="text-neutral-500 dark:text-neutral-400 shrink-0">推荐剂量:</span>
+                      <span className="text-neutral-500 dark:text-neutral-400 shrink-0">{t('ai.chat.formulaCard.recommendedDosage')}:</span>
                       <span className="text-neutral-700 dark:text-neutral-300">{formula.recommendedDosage}</span>
                     </div>
                   )}
 
                   {formula.contraindications && (
                     <div className="flex items-start gap-2 text-sm">
-                      <span className="text-neutral-500 dark:text-neutral-400 shrink-0">禁忌症:</span>
+                      <span className="text-neutral-500 dark:text-neutral-400 shrink-0">{t('ai.chat.formulaCard.contraindications')}:</span>
                       <span className="text-neutral-700 dark:text-neutral-300">{formula.contraindications}</span>
                     </div>
                   )}
 
                   {formula.efficacy && (
                     <div className="flex items-start gap-2 text-sm">
-                      <span className="text-neutral-500 dark:text-neutral-400 shrink-0">功效描述:</span>
+                      <span className="text-neutral-500 dark:text-neutral-400 shrink-0">{t('ai.chat.formulaCard.efficacy')}:</span>
                       <span className="text-neutral-700 dark:text-neutral-300">{formula.efficacy}</span>
                     </div>
                   )}
@@ -300,25 +304,25 @@ const FormulaCard = React.memo<FormulaCardProps>(
               {qualityScore && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-white dark:bg-neutral-800 rounded-lg shadow-sm">
                   <div className="text-center">
-                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">综合评分</div>
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">{t('ai.chat.formulaCard.overallScore')}</div>
                     <div className="text-lg font-bold text-primary-700 dark:text-primary-700">
                       {qualityScore.overallScore}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">置信度</div>
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">{t('ai.chat.formulaCard.confidence')}</div>
                     <div className="text-lg font-bold text-success-600 dark:text-success-600">
                       {qualityScore.confidenceScore}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">完整性</div>
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">{t('ai.chat.formulaCard.completeness')}</div>
                     <div className="text-lg font-bold text-secondary-600 dark:text-secondary-700">
                       {qualityScore.completenessScore}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">多样性</div>
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">{t('ai.chat.formulaCard.diversity')}</div>
                     <div className="text-lg font-bold text-accent-600 dark:text-accent-700">
                       {qualityScore.diversityScore}
                     </div>
@@ -331,7 +335,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                   <div className="flex items-start gap-2">
                     <MessageSquare className="w-4 h-4 text-warning-600 dark:text-warning-700 mt-0.5 shrink-0" />
                     <div className="flex-1">
-                      <div className="text-xs font-semibold text-warning-800 dark:text-warning-700 mb-1">来源消息</div>
+                      <div className="text-xs font-semibold text-warning-800 dark:text-warning-700 mb-1">{t('ai.chat.formulaCard.sourceMessage')}</div>
                       <div className="text-xs text-warning-700 dark:text-warning-700 truncate">
                         Message ID: {formula.sourceMessageId}
                       </div>
@@ -351,7 +355,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                     }}
                     icon={<ExternalLink size={14} />}
                   >
-                    查看原文
+                    {t('ai.chat.formulaCard.viewSource')}
                   </Button>
                 )}
 
@@ -364,7 +368,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                   }}
                   icon={<Eye size={14} />}
                 >
-                  收起
+                  {t('ai.chat.formulaCard.collapse')}
                 </Button>
 
                 <Button
@@ -376,7 +380,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                   }}
                   icon={<FileText size={14} />}
                 >
-                  生成报告
+                  {t('ai.chat.formulaCard.generateReport')}
                 </Button>
 
                 <Button
@@ -389,7 +393,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                   disabled={!formula.ingredients || formula.ingredients.length === 0}
                   icon={<Table2 size={14} />}
                 >
-                  数据表格
+                  {t('ai.chat.formulaCard.dataTable')}
                 </Button>
 
                 <Button
@@ -407,8 +411,25 @@ const FormulaCard = React.memo<FormulaCardProps>(
                     )
                   }
                 >
-                  {formula.isFavorite ? '已收藏' : '收藏'}
+                  {formula.isFavorite ? t('ai.chat.formulaCard.favorited') : t('ai.chat.formulaCard.favorite')}
                 </Button>
+
+                {/* v8.2：显式「更多」入口，避免优先级/版本历史只能靠长按发现 */}
+                {onShowContextMenu && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onShowContextMenu(formula.id, { x: e.clientX, y: e.clientY });
+                    }}
+                    icon={<MoreVertical size={14} />}
+                    aria-label={t('ai.chat.formulaCard.moreActions')}
+                    title={t('ai.chat.formulaCard.moreActions')}
+                  >
+                    {t('ai.chat.formulaCard.moreActions')}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -419,14 +440,14 @@ const FormulaCard = React.memo<FormulaCardProps>(
     const displayName = formula.autoName || formula.name;
     const parsedAt = formula.parsedAt;
     const timeStr = parsedAt
-      ? parsedAt.toLocaleString('zh-CN', {
+      ? parsedAt.toLocaleString(i18n.language || 'zh-CN', {
           year: 'numeric',
           month: 'numeric',
           day: 'numeric',
           hour: '2-digit',
           minute: '2-digit',
         })
-      : '未知时间';
+      : t('ai.chat.formulaCard.unknownTime');
 
     return (
       <div
@@ -443,8 +464,18 @@ const FormulaCard = React.memo<FormulaCardProps>(
             ? 'border-l-4 border-l-primary-500 border-primary-300 dark:border-primary-800 bg-primary-50/30 dark:bg-primary-300/15'
             : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
         }
+        ${isLongPressing ? 'ring-2 ring-secondary-400/60 scale-[0.995]' : ''}
       `}
+        aria-label={t('ai.chat.formulaCard.cardAriaLabel', { name: formula.autoName || formula.name || '' })}
+        data-long-press-available={onShowContextMenu ? 'true' : undefined}
         onDoubleClick={() => onToggleExpand(formula.id)}
+        onContextMenu={(e) => {
+          // v8.2：桌面端右键也能打开上下文菜单（长按在桌面难发现）
+          if (onShowContextMenu) {
+            e.preventDefault();
+            onShowContextMenu(formula.id, { x: e.clientX, y: e.clientY });
+          }
+        }}
       >
         <div className={`space-y-3 ${compact ? 'p-3' : 'sm:p-4 p-3'}`}>
           {/* Header: Checkbox + 名称 + 质量等级 - 移动端堆叠显示 */}
@@ -480,7 +511,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                       className={`flex-1 font-semibold border border-primary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500/50 bg-white dark:bg-neutral-900 dark:border-primary-700 dark:text-white ${
                         compact ? 'px-2 py-1 text-sm' : 'px-2 py-1 text-base'
                       }`}
-        aria-label="配方名称"
+        aria-label={t('ai.chat.formulaCard.formulaName')}
       />
                     <button
                       onClick={(e) => {
@@ -508,13 +539,28 @@ const FormulaCard = React.memo<FormulaCardProps>(
                       e.stopPropagation();
                       handleStartEdit();
                     }}
-                    title="点击编辑名称"
+                    title={t('ai.chat.formulaCard.clickToEditName')}
                   >
                     <h3
                       className={`${compact ? 'text-sm' : 'text-lg sm:text-lg'} font-semibold text-neutral-900 dark:text-white truncate flex-1`}
                     >
                       {displayName}
                     </h3>
+                    {formula.priority && (
+                      <span
+                        className={`shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium ${
+                          formula.priority === 'high'
+                            ? 'bg-error-50 text-error-700 dark:bg-error-900/25 dark:text-error-300'
+                            : formula.priority === 'medium'
+                              ? 'bg-warning-50 text-warning-700 dark:bg-warning-900/25 dark:text-warning-300'
+                              : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
+                        }`}
+                        title={`${t('ai.chat.formulaCard.priority')}: ${t(`ai.chat.formulaCard.priority_${formula.priority}`)}`}
+                      >
+                        <Flag size={10} aria-hidden="true" />
+                        {t(`ai.chat.formulaCard.priority_${formula.priority}`)}
+                      </span>
+                    )}
                     {onRename && (
                       <Pencil
                         size={14}
@@ -545,11 +591,11 @@ const FormulaCard = React.memo<FormulaCardProps>(
             <span className="inline-flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{timeStr}</span>
-              <span className="sm:hidden">{parsedAt ? parsedAt.toLocaleDateString('zh-CN') : '未知'}</span>
+              <span className="sm:hidden">{parsedAt ? parsedAt.toLocaleDateString(i18n.language || 'zh-CN') : t('ai.chat.formulaCard.unknown')}</span>
             </span>
             <span className="inline-flex items-center gap-1">
               <Hash className="w-3.5 h-3.5" />
-              {formula.ingredientCount || formula.ingredients?.length || 0}种成分
+              {formula.ingredientCount || formula.ingredients?.length || 0}{t('ai.chat.formulaCard.ingredientKinds')}
             </span>
 
             {/* 移动端触摸优化的展开按钮 */}
@@ -559,18 +605,18 @@ const FormulaCard = React.memo<FormulaCardProps>(
                 onToggleExpand(formula.id);
               }}
               className="ml-auto inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-700 font-medium cursor-pointer p-2 -mr-2 active:bg-neutral-100 dark:bg-neutral-800 rounded-full min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
-              aria-label={isExpanded ? '收起' : '展开详情'}
+              aria-label={isExpanded ? t('ai.chat.formulaCard.collapse') : t('ai.chat.formulaCard.expandDetails')}
             >
               {isExpanded ? (
                 <>
                   <Eye className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">已收起</span>
+                  <span className="hidden sm:inline">{t('ai.chat.formulaCard.collapsed')}</span>
                   <ChevronUp className="w-3.5 h-3.5" />
                 </>
               ) : (
                 <>
                   <Eye className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">展开详情</span>
+                  <span className="hidden sm:inline">{t('ai.chat.formulaCard.expandDetails')}</span>
                   <ChevronDown className="w-3.5 h-3.5" />
                 </>
               )}
@@ -592,6 +638,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
       prevProps.formula.confidence === nextProps.formula.confidence &&
       prevProps.formula.tags === nextProps.formula.tags &&
       prevProps.formula.isFavorite === nextProps.formula.isFavorite &&
+      prevProps.formula.priority === nextProps.formula.priority &&
       prevProps.formula.ingredientCount === nextProps.formula.ingredientCount &&
       prevProps.formula.updatedAt === nextProps.formula.updatedAt &&
       prevProps.isExpanded === nextProps.isExpanded &&

@@ -23,6 +23,7 @@
     "theme:audit:css": "node scripts/theme-audit/theme-audit-isolation.mjs",
     "theme:validate": "npx tsx scripts/theme-validate.ts",
     "postinstall": "node scripts/postinstall.cjs",
+    "i18n:guard": "node scripts/i18n-key-guard.mjs",
     "ui:guard": "node scripts/ui-guard.mjs",
     "ui:guard:baseline": "node scripts/ui-guard.mjs --baseline"
   },
