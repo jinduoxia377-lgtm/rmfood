@@ -136,6 +136,12 @@ export interface ChatState {
     handleRollbackVersion: (id: string, version: number) => boolean
     /** v8.3 新增：仅清空内存缓存（不动本地存储） */
     handleClearMemoryCache: () => void
+    /** v9.0 新增：单卡添加标签（后端已记版本快照） */
+    handleAddTag: (id: string, tag: string) => void
+    /** v9.0 新增：单卡移除标签 */
+    handleRemoveTag: (id: string, tag: string) => void
+    /** v9.0 新增：读取单卡标签 */
+    handleGetTags: (id: string) => string[]
   }
   /** 清除配方存储 */
   onClearStorage: () => void

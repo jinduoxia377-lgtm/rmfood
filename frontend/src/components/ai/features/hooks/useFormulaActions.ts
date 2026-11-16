@@ -58,6 +58,12 @@ interface UseFormulaActionsOptions {
   onGetVersions?: (id: string) => FormulaVersion[]
   /** v8.2 新增：回滚版本 */
   onRollbackVersion?: (id: string, version: number) => boolean
+  /** v9.0 新增：单卡添加标签（后端已记版本快照，此前只有批量标签） */
+  onAddTag?: (id: string, tag: string) => void
+  /** v9.0 新增：单卡移除标签 */
+  onRemoveTag?: (id: string, tag: string) => void
+  /** v9.0 新增：读取单卡标签 */
+  getTags?: (id: string) => string[]
 }
 
 /**
@@ -88,6 +94,7 @@ export function useFormulaActions(opts: UseFormulaActionsOptions) {
     onBatchFavorite, onCompare,
     onSetPriority, onGetVersions, onRollbackVersion,
     onClearMemoryCache,
+    onAddTag, onRemoveTag, getTags,
   } = opts
 
   // 配方展开/收起
@@ -234,10 +241,27 @@ export function useFormulaActions(opts: UseFormulaActionsOptions) {
     [onRollbackVersion],
   )
 
+  // v9.0：单卡标签管理（后端 addTag/removeTag 已记版本快照，此前只有批量标签、单卡无法增删）
+  const handleAddTag = useCallback(
+    (id: string, tag: string) => onAddTag?.(id, tag),
+    [onAddTag],
+  )
+
+  const handleRemoveTag = useCallback(
+    (id: string, tag: string) => onRemoveTag?.(id, tag),
+    [onRemoveTag],
+  )
+
   // v8.3 新增：仅清空内存缓存
   const handleClearMemoryCache = useCallback(() => {
     onClearMemoryCache?.()
   }, [onClearMemoryCache])
+
+  // v9.0：读取单卡标签（getTags 为可选，兜底返回空数组以匹配 context 非可选签名）
+  const handleGetTags = useCallback(
+    (id: string) => getTags?.(id) ?? [],
+    [getTags],
+  )
 
   return {
     handleToggleExpand,
@@ -263,6 +287,10 @@ export function useFormulaActions(opts: UseFormulaActionsOptions) {
     handleGetVersions,
     handleRollbackVersion,
     handleClearMemoryCache,
+    // v9.0 新增：单卡标签管理（后端 addTag/removeTag 已记版本快照）
+    handleAddTag,
+    handleRemoveTag,
+    handleGetTags,
   }
 }
 

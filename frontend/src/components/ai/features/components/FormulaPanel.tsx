@@ -188,6 +188,10 @@ interface FormulaPanelProps {
   onGetVersions?: (id: string) => FormulaVersion[]
   /** v8.2 新增：回滚到指定版本 */
   onRollbackVersion?: (id: string, version: number) => boolean
+  /** v9.0 新增：单卡添加标签（后端已记版本快照，此前只有批量标签） */
+  onAddTag?: (id: string, tag: string) => void
+  /** v9.0 新增：单卡移除标签 */
+  onRemoveTag?: (id: string, tag: string) => void
 }
 
 /**
@@ -238,6 +242,8 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
   onSetPriority,
   onGetVersions,
   onRollbackVersion,
+  onAddTag,
+  onRemoveTag,
 }) => {
 
   const { t, i18n } = useTranslation()
@@ -799,6 +805,8 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                     compact={isTabletView}
                     onToggleFavorite={onToggleFavorite}
                     onShowContextMenu={handleShowContextMenu}
+                    onAddTag={onAddTag}
+                    onRemoveTag={onRemoveTag}
                   />
                 ))}
               </div>

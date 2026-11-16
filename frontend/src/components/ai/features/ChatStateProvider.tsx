@@ -140,6 +140,8 @@ export function ChatStateProvider({ children }: ChatStateProviderProps) {
     // v8.1 接线：面板缺失能力（重命名/删除/收藏/取消选择/批量删除/标签/评分）
     renameFormula, removeFormula, toggleFavorite, clearSelection,
     batchDelete, batchTag, getFormulaScore,
+    // v9.0 接线：单卡标签管理（addTag/removeTag 后端已记版本快照，此前无 UI 入口）
+    addTag, removeTag,
     // v8.2 接线：批量收藏 / 配方对比
     batchFavorite, compareFormulas,
     // v8.2 接线：优先级 / 版本历史
@@ -335,6 +337,9 @@ export function ChatStateProvider({ children }: ChatStateProviderProps) {
     onRollbackVersion: (id, version) => rollbackToVersion(id, version),
     // v8.3：仅清空内存缓存（不清本地存储）
     onClearMemoryCache: () => clearMemoryCache(),
+    // v9.0：单卡标签管理（此前只有批量标签，单卡无法增删标签）
+    onAddTag: (id, tag) => addTag(id, tag),
+    onRemoveTag: (id, tag) => removeTag(id, tag),
   })
 
   // ===== 23. 构建 Context Value =====
