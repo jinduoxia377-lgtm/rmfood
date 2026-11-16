@@ -186,7 +186,7 @@ function PerformanceTable() {
   return (
     <Reveal>
       <div
-        className="rounded-[var(--radius-Apple-sm)] overflow-x-auto"
+        className="rounded-[var(--radius-Apple-sm)] overflow-x-auto max-w-full"
         style={{ background: 'var(--bg-surface-container)', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}
       >
         <table className="w-full text-[12px] border-collapse">

@@ -316,7 +316,7 @@ export default function CTABanner() {
                       onClick={handleSubmit}
                       loading={submitting}
                       disabled={submitting}
-                      className="w-full sm:w auto bg-[var(--color-primary-surface)] text-white"
+                      className="w-full sm:w-auto bg-[var(--color-primary-surface)] text-white"
                     >
                       {submitting ? t('pages.landing.cta.submitting') : (
                         <>

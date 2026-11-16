@@ -100,19 +100,21 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
             <div className="lp-caption mb-2">
               核心指标
             </div>
-            <table className="w-full text-[12px] border-collapse">
-              <tbody>
-                {item.metrics.map((m, i) => (
-                  <tr key={m.label} style={{ borderBottom: i < item.metrics.length - 1 ? '1px solid var(--color-neutral-100, #f1f5f9)' : 'none' }}>
-                    <td className="py-1 px-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{m.label}</td>
-                    <td className="py-1 px-2 text-right font-mono font-semibold" style={{ color: 'var(--color-primary-700, #047857)' }}>
-                      {m.value}
-                      {m.unit && <span className="font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-0.5">{m.unit}</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto max-w-full">
+              <table className="w-full text-[12px] border-collapse">
+                <tbody>
+                  {item.metrics.map((m, i) => (
+                    <tr key={m.label} style={{ borderBottom: i < item.metrics.length - 1 ? '1px solid var(--color-neutral-100, #f1f5f9)' : 'none' }}>
+                      <td className="py-1 px-2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{m.label}</td>
+                      <td className="py-1 px-2 text-right font-mono font-semibold" style={{ color: 'var(--color-primary-700, #047857)' }}>
+                        {m.value}
+                        {m.unit && <span className="font-normal text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] ml-0.5">{m.unit}</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* CTA */}
