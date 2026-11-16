@@ -53,21 +53,21 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
   const uniqueEfficacyTags = [...new Set(allEfficacyTags)]
   const mainEfficacies = uniqueEfficacyTags.slice(0, 3)
 
+  // 适用场景：仅基于功效标签关键词做初步推断，非经临床/数据库验证的结论。
+  // 措辞显式标注"待验证"，避免被误读为确定性的适用人群结论。
   const applicableScenarios: string[] = []
   if (uniqueEfficacyTags.some(tag => tag.includes('免疫') || tag.includes('抗氧化'))) {
-    applicableScenarios.push('日常保健')
+    applicableScenarios.push('日常保健（基于功效标签的初步推断，待验证）')
   }
   if (uniqueEfficacyTags.some(tag => tag.includes('睡眠') || tag.includes('安神'))) {
-    applicableScenarios.push('改善睡眠质量')
+    applicableScenarios.push('改善睡眠质量（基于功效标签的初步推断，待验证）')
   }
   if (uniqueEfficacyTags.some(tag => tag.includes('美容') || tag.includes('抗衰老'))) {
-    applicableScenarios.push('美容养颜')
+    applicableScenarios.push('美容养颜（基于功效标签的初步推断，待验证）')
   }
   if (applicableScenarios.length === 0) {
-    applicableScenarios.push('功能性食品研发', '健康调理方案')
+    applicableScenarios.push('适用场景待结合功效数据与文献进一步验证')
   }
-
-  const synergyScore = totalIngredients > 1 ? Math.min(95, 60 + totalIngredients * 5) : 40
 
   const sections: ReportSection[] = [
     {
@@ -139,12 +139,14 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
       type: 'ingredient-analysis',
       title: '成分分析',
       content: {
-        ingredients: ingredients.map((ing, idx) => ({
+        // 说明：不按成分位置硬编"君臣佐使"角色（主/辅/佐使），因输入数据不含真实配伍层级。
+        // description 仅呈现识别到的功效标签（真实字段）；mechanism 无实测/文献支撑时标注待验证。
+        ingredients: ingredients.map((ing) => ({
           name: ing.name,
           amount: parseDosageToGramsOrZero(ing.dosage),
           unit: ing.unit || 'g',
-          description: ing.efficacy || '待进一步分析其药理作用',
-          mechanism: ing.notes || `作为${idx === 0 ? '主成分' : idx < 3 ? '辅助成分' : '配伍成分'}参与配方整体功效的构建`,
+          description: ing.efficacy || '功效待数据库比对确认',
+          mechanism: ing.notes || '药理机制待数据库比对/文献验证，当前未作机理结论',
           references: [
             `来源消息: ${formula.sourceMessageId}`,
             '成分知识库: RMFOOD 内置药食同源数据库',
@@ -159,25 +161,25 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
       title: '协同效应评估',
       content: {
         // SynergyRadarChart 的 SynergyRadarData[]：{ id, name, scores: { dimension, value }[] }
+        // 重要（诚实化）：协同六维评分需实测/网络药理学数据库比对才能得出，输入数据不含任何
+        // 实验或数据库依据，故六维 value 一律置为中性占位 0（"待评估"），绝不编造看似专业的
+        // 分数。雷达图会因此收缩至中心，这是有意的诚实呈现；结论见 mechanismDescription 免责说明。
+        // value 类型必须为 number（DimensionScore.value: number），故用 0 而非 null。
         radarData: [
           {
             id: `${formula.id}-synergy`,
             name: formula.name,
             scores: [
-              { dimension: 'synergyStrength' as SynergyDimension, value: synergyScore },
-              { dimension: 'bioavailabilityEnhancement' as SynergyDimension, value: Math.min(90, 55 + totalIngredients * 4) },
-              { dimension: 'efficacyMultiplication' as SynergyDimension, value: Math.min(92, 58 + uniqueEfficacyTags.length * 6) },
-              { dimension: 'safetyIndex' as SynergyDimension, value: Math.round(formula.confidence * 100) },
-              { dimension: 'stabilityImprovement' as SynergyDimension, value: Math.min(85, 60 + totalIngredients * 3) },
-              { dimension: 'tasteBalance' as SynergyDimension, value: Math.min(80, 50 + totalIngredients * 4) },
+              { dimension: 'synergyStrength' as SynergyDimension, value: 0 },
+              { dimension: 'bioavailabilityEnhancement' as SynergyDimension, value: 0 },
+              { dimension: 'efficacyMultiplication' as SynergyDimension, value: 0 },
+              { dimension: 'safetyIndex' as SynergyDimension, value: 0 },
+              { dimension: 'stabilityImprovement' as SynergyDimension, value: 0 },
+              { dimension: 'tasteBalance' as SynergyDimension, value: 0 },
             ],
           },
         ],
-        mechanismDescription: totalIngredients <= 2
-          ? `成分较少（${totalIngredients}种），配伍协同效应有限，建议适当增加君臣佐使结构以增强整体功效。`
-          : totalIngredients <= 5
-            ? `成分搭配合理（${totalIngredients}种），各成分功效互补，存在潜在协同增强作用，综合协同评分${synergyScore}。`
-            : `成分丰富（${totalIngredients}种），需关注成分间相互作用，在保证功效倍增的同时监控安全性指标。`,
+        mechanismDescription: `当前协同六维评分均为"待评估"占位（值 0），不代表实测结果。协同效应（协同强度、生物利用度提升、功效倍增、安全性指数、稳定性改善、口感平衡）需经实验测定或网络药理学/成分数据库比对后方可量化，本报告不基于成分数或功效标签数量编造评分。成分数（${totalIngredients}种）与识别置信度（${(formula.confidence * 100).toFixed(1)}%）为真实统计，但与协同强度无直接换算关系。建议下一步：接入成分-靶点数据库或开展体外/体内实验以获得可量化的协同与安全性数据。`,
         warnings: ingredients.filter(ing => ing.notes).map(ing => `${ing.name}：${ing.notes}`),
       },
       order: 4,
@@ -188,13 +190,17 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
       title: '建议与结论',
       content: {
         targetAudience: applicableScenarios,
+        // 诚实化：用法用量优先采用配方自带的真实字段 recommendedDosage；无该字段时不编造
+        // 具体克重/频次/时长，统一标注"待配方确认/遵医嘱"。下列为通用参考，非基于本配方的定量结论。
         usageInstructions: [
-          `建议单次用量参照配方总量的1/10，每日1-2次${formula.recommendedDosage ? `（推荐剂量：${formula.recommendedDosage}）` : ''}`,
-          '温水冲调或煎煮后服用，建议餐后30分钟食用以促进吸收',
-          '连续服用2-4周为一个观察周期，期间记录身体反应',
+          formula.recommendedDosage
+            ? `配方自带推荐剂量：${formula.recommendedDosage}（来自配方识别结果，建议遵医嘱复核）`
+            : '具体单次用量与每日频次：待配方确认，请遵医嘱确定，本报告不提供未经验证的定量建议',
+          '服用形式（冲调/煎煮/餐后等）：通用参考，具体请结合配方形态与专业人士建议',
+          '服用周期与效果观察：待结合实际使用情况与专业指导评估，本报告不作未经验证的周期承诺',
           '如出现不适，立即停用并咨询专业人士',
         ],
-        storageConditions: '密封、阴凉干燥处保存，避免阳光直射与高温高湿环境；开封后建议冷藏并于30日内用完。',
+        storageConditions: '储存条件：通用参考——密封、阴凉干燥处保存，避免阳光直射与高温高湿环境；开封后建议冷藏并尽快用完。具体保质期与储存要求待配方确认（依实际形态与包装而定）。',
         precautions: [
           ...ingredients.filter(ing => ing.notes).map(ing => `${ing.name}：${ing.notes}`),
           ...(formula.contraindications ? [formula.contraindications] : []),
@@ -361,22 +367,21 @@ export function generateComprehensiveReport(formulas: AIRecognizedFormula[]): Pr
       type: 'synergy-assessment',
       title: '跨配方协同分析',
       content: {
+        // 诚实化：跨配方协同潜力无实测/数据库依据，不给编造的 potentialScore 数字，
+        // 仅作定性提示并标注"待验证"。
         crossFormulaSynergies: totalIngredients > formulas.length ? [
           {
             type: '成分复用',
-            description: '多个配方共享相同成分，可能存在协同优化空间',
-            potentialScore: 75,
+            description: '多个配方共享相同成分，可能存在协同优化空间（定性提示，待实验/数据库比对验证）',
           },
           {
             type: '功效互补',
-            description: '不同配方覆盖不同功效领域，可组合使用',
-            potentialScore: 80,
+            description: '不同配方覆盖不同功效领域，或可组合使用（定性提示，待验证）',
           },
         ] : [
           {
             type: '独立配方',
-            description: '各配方成分独立性较强，协同潜力有限',
-            potentialScore: 50,
+            description: '各配方成分重叠较少，跨配方协同潜力有限（定性提示，待验证）',
           },
         ],
         optimizationOpportunities: [
