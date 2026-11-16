@@ -1,8 +1,13 @@
 /**
  * SafetyReportExporter - PDF export for safety check reports
+ *
+ * 采用仓库既定的「方案C：生成 HTML → 浏览器打印」范式（见 src/utils/pdfPrintExporter.ts），
+ * 由浏览器原生渲染中文，避免纯文本绘制内置字体缺少 CJK 字形导致的中文乱码。
+ * 所有文案均走 i18n（ai.safety.report.*），无英文硬编码。
  */
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import i18n from '@/i18n';
+import { exportHtmlAsPdf, wrapPrintHtml } from '@/utils/pdfPrintExporter';
+import { feedbackService } from '@/services/feedbackService';
 import type { SafetyCheckResult } from '@/types';
 
 interface ExportOptions {
@@ -11,162 +16,153 @@ interface ExportOptions {
   complianceRate: number;
 }
 
+/** 品牌色（Forest Green），替代原先的非品牌蓝色带 */
+const BRAND_GREEN = '#10B981';
+const SUCCESS = '#22c55e';
+const DANGER = '#dc2626';
+const DARK = '#0f172a';
+const GRAY = '#64748b';
+
+/** 局部 t：统一取 ai.safety.report.* 命名空间文案 */
+const t = (key: string, opts?: Record<string, unknown>): string =>
+  i18n.t(`ai.safety.report.${key}`, opts) as string;
+
+/** 转义用户数据，避免破坏 HTML 结构 / 注入 */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export function exportSafetyReport(options: ExportOptions): void {
   const { ingredients, result, complianceRate } = options;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const pageW = doc.internal.pageSize.getWidth();
-  const margin = 20;
-  const contentW = pageW - margin * 2;
-  let y = 15;
-
-  const PRIMARY: [number, number, number] = [59, 130, 246];
-  const DANGER: [number, number, number] = [220, 38, 38];
-  const SUCCESS: [number, number, number] = [34, 197, 94];
-  const GRAY: [number, number, number] = [100, 116, 139];
-  const DARK: [number, number, number] = [15, 23, 42];
-
-  doc.setFillColor(PRIMARY[0], PRIMARY[1], PRIMARY[2]);
-  doc.rect(0, 0, pageW, 38, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Safety Compliance Report', margin, 18);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text('RMFOOD Formula R&D Platform', margin, 27);
-  doc.text(new Date().toLocaleString('zh-CN'), margin, 33);
-  y = 48;
-
-  doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Overview', margin, y);
-  y += 2;
-  doc.setDrawColor(GRAY[0], GRAY[1], GRAY[2]);
-  doc.line(margin, y, margin + 40, y);
-  y += 8;
-
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-  doc.text('Ingredients:', margin, y);
-  y += 5;
-  doc.setFontSize(10);
-  doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-  const ingLines = doc.splitTextToSize(ingredients.join(', '), contentW);
-  doc.text(ingLines, margin, y);
-  y += ingLines.length * 5 + 6;
 
   const passed = (result as Partial<SafetyCheckResult>).passed ?? true;
   const badgeColor = passed ? SUCCESS : DANGER;
-  doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2]);
-  doc.roundedRect(margin, y - 4, 22, 8, 2, 2, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
-  doc.text(passed ? 'PASS' : 'FAIL', margin + 11, y + 1.5);
-  doc.setFontSize(11);
-  doc.setTextColor(badgeColor[0], badgeColor[1], badgeColor[2]);
-  doc.text('Compliance: ' + complianceRate.toFixed(1) + '%', margin + 28, y + 1.5);
-  y += 14;
+  const badgeText = passed ? t('pass') : t('fail');
 
   const warnings = (result as Partial<SafetyCheckResult>).warnings || [];
   const errors = result.errors || [];
-  const details: Record<string, any> = (result as unknown as { details?: Record<string, any> }).details || {};
+  const details: Record<string, unknown> =
+    (result as unknown as { details?: Record<string, unknown> }).details || {};
 
-  const dangerCount = warnings.filter((w: any) => ['danger','critical','contraindicated'].includes(w.level)).length;
-  const warningCount = warnings.filter((w: any) => ['warning','caution'].includes(w.level)).length;
+  const dangerCount = warnings.filter((w: { level?: string }) =>
+    ['danger', 'critical', 'contraindicated'].includes(w.level ?? ''),
+  ).length;
+  const warningCount = warnings.filter((w: { level?: string }) =>
+    ['warning', 'caution'].includes(w.level ?? ''),
+  ).length;
 
-  if (dangerCount > 0 || warningCount > 0) {
-    doc.setFontSize(9);
-    doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-    doc.text('Risks: ' + dangerCount + ' danger, ' + warningCount + ' warnings', margin, y);
-    y += 6;
-  }
+  // ===== 头部品牌横幅（Forest Green）=====
+  const banner = `
+    <div style="background:${BRAND_GREEN};color:#fff;padding:18px 20px;border-radius:6px;margin-bottom:18px;">
+      <div style="font-size:20pt;font-weight:bold;">${escapeHtml(t('title'))}</div>
+      <div style="font-size:10pt;margin-top:4px;">${escapeHtml(t('subtitle'))}</div>
+      <div style="font-size:9pt;margin-top:6px;">${escapeHtml(new Date().toLocaleString('zh-CN'))}</div>
+    </div>`;
 
+  // ===== Overview =====
+  const overview = `
+    <h2>${escapeHtml(t('overview'))}</h2>
+    <p style="color:${GRAY};font-size:9pt;">${escapeHtml(t('ingredients'))}</p>
+    <p style="color:${DARK};font-size:10pt;">${escapeHtml(ingredients.join(', '))}</p>
+    <p style="margin-top:8px;">
+      <span style="display:inline-block;background:${badgeColor};color:#fff;font-weight:bold;font-size:9pt;padding:3px 10px;border-radius:4px;">${escapeHtml(badgeText)}</span>
+      <span style="color:${DARK};font-size:11pt;font-weight:bold;margin-left:12px;">${escapeHtml(t('compliance', { rate: complianceRate.toFixed(1) }))}</span>
+    </p>`;
+
+  // ===== Risks =====
+  const risks =
+    dangerCount > 0 || warningCount > 0
+      ? `<p style="color:${GRAY};font-size:9pt;margin-top:6px;">${escapeHtml(
+          t('risks', { danger: dangerCount, warning: warningCount }),
+        )}</p>`
+      : '';
+
+  // ===== Issues 表 =====
   const allIssues = [
     ...warnings.map((w) => ({
       type: w.level === 'danger' ? 'DANGER' : 'WARNING',
-      ingredient: w.ingredient || (w as unknown as { name?: string }).name || '-',
-      message: (w.message || (w as unknown as { reason?: string }).reason || String(w)).slice(0, 80),
+      ingredient: w.ingredient || (w as { name?: string }).name || '-',
+      message: (w.message || (w as { reason?: string }).reason || String(w)).slice(0, 80),
     })),
     ...errors.map((e) => ({
       type: 'ERROR',
       ingredient: '-',
-      message: (typeof e === 'string' ? e : (e as unknown as { message?: string }).message || String(e)).slice(0, 80),
+      message: (typeof e === 'string' ? e : (e as { message?: string }).message || String(e)).slice(0, 80),
     })),
   ];
 
-  if (allIssues.length > 0) {
-    y += 4;
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-    doc.text('Issues', margin, y);
-    y += 2;
-    doc.line(margin, y, margin + 30, y);
-    y += 8;
+  const issuesSection =
+    allIssues.length > 0
+      ? `
+    <h2>${escapeHtml(t('issues'))}</h2>
+    <table>
+      <thead>
+        <tr><th style="width:18%;">${escapeHtml(t('type'))}</th><th style="width:22%;">${escapeHtml(t('ingredient'))}</th><th>${escapeHtml(t('detail'))}</th></tr>
+      </thead>
+      <tbody>
+        ${allIssues
+          .map(
+            (issue) =>
+              `<tr><td style="font-weight:bold;">${escapeHtml(issue.type)}</td><td>${escapeHtml(issue.ingredient)}</td><td>${escapeHtml(issue.message)}</td></tr>`,
+          )
+          .join('')}
+      </tbody>
+    </table>`
+      : '';
 
-    autoTable(doc, {
-      startY: y,
-      margin: { left: margin, right: margin },
-      columnStyles: {
-        0: { cellWidth: 30, fontStyle: 'bold' },
-        1: { cellWidth: 35 },
-        2: { cellWidth: 'auto' },
-      },
-      head: [['Type', 'Ingredient', 'Detail']],
-      headStyles: { fillColor: GRAY, textColor: 255, fontStyle: 'bold', fontSize: 9 },
-      bodyStyles: { fontSize: 8.5, textColor: DARK },
-      alternateRowStyles: { fillColor: [248, 250, 252] },
-      styles: { cellPadding: 3, lineColor: [226, 232, 240] },
-      body: allIssues.map((issue) => [issue.type, issue.ingredient, issue.message]),
-    });
-    const finalY = (doc as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY;
-    y = typeof finalY === 'number' ? finalY + 10 : y + 10;
-  }
-
+  // ===== Check Items 表 =====
   const checkKeys = Object.keys(details);
-  if (checkKeys.length > 0) {
-    y += 4;
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(DARK[0], DARK[1], DARK[2]);
-    doc.text('Check Items', margin, y);
-    y += 2;
-    doc.line(margin, y, margin + 30, y);
-    y += 8;
+  const checkSection =
+    checkKeys.length > 0
+      ? `
+    <h2>${escapeHtml(t('checkItems'))}</h2>
+    <table>
+      <thead>
+        <tr><th style="width:30%;">${escapeHtml(t('item'))}</th><th style="width:18%;">${escapeHtml(t('result'))}</th><th>${escapeHtml(t('note'))}</th></tr>
+      </thead>
+      <tbody>
+        ${checkKeys
+          .map((key) => {
+            const val = details[key] as { passed?: boolean; message?: string } | undefined;
+            const isPassed = val?.passed ?? true;
+            return `<tr><td style="font-weight:bold;">${escapeHtml(key.replace(/_/g, ' '))}</td><td>${escapeHtml(
+              isPassed ? t('pass') : t('fail'),
+            )}</td><td>${escapeHtml(val?.message || '')}</td></tr>`;
+          })
+          .join('')}
+      </tbody>
+    </table>`
+      : '';
 
-    const checkData = checkKeys.map((key) => {
-      const val = details[key];
-      const isPassed = val?.passed ?? true;
-      return [key.replace(/_/g, ' '), isPassed ? 'Pass' : 'Fail', val?.message || ''];
-    });
+  // ===== 页脚 =====
+  const footer = `<p style="color:${GRAY};font-size:8pt;margin-top:20px;border-top:1px solid #e2e8f0;padding-top:8px;">${escapeHtml(
+    t('footer'),
+  )}</p>`;
 
-    autoTable(doc, {
-      startY: y,
-      margin: { left: margin, right: margin },
-      columnStyles: {
-        0: { cellWidth: 50, fontStyle: 'bold' },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 'auto' },
-      },
-      head: [['Item', 'Result', 'Note']],
-      headStyles: { fillColor: GRAY, textColor: 255, fontStyle: 'bold', fontSize: 9 },
-      bodyStyles: { fontSize: 8.5, textColor: DARK },
-      alternateRowStyles: { fillColor: [248, 250, 252] },
-      styles: { cellPadding: 3, lineColor: [226, 232, 240] },
-      body: checkData,
-    });
-  }
+  const contentHtml = `
+    <style>
+      .report-container h2 { color: ${BRAND_GREEN}; border-bottom-color: ${BRAND_GREEN}; }
+    </style>
+    ${banner}
+    ${overview}
+    ${risks}
+    ${issuesSection}
+    ${checkSection}
+    ${footer}`;
 
-  const pageH = doc.internal.pageSize.getHeight();
-  doc.setFillColor(248, 250, 252);
-  doc.rect(0, pageH - 20, pageW, 20, 'F');
-  doc.setFontSize(8);
-  doc.setTextColor(GRAY[0], GRAY[1], GRAY[2]);
-  doc.text('Generated by RMFOOD AI Assistant - For reference only', margin, pageH - 12);
-
+  // 文件名逻辑保留：作为打印文档标题 / 用户「另存为 PDF」的默认命名
   const dateStr = new Date().toISOString().slice(0, 10);
-  doc.save('safety_report_' + ingredients.slice(0, 3).join('-') + '_' + dateStr + '.pdf');
+  const title = 'safety_report_' + ingredients.slice(0, 3).join('-') + '_' + dateStr;
+
+  exportHtmlAsPdf(wrapPrintHtml(contentHtml, title), {
+    title,
+    onError: (message) => {
+      feedbackService.showError(i18n.t('ai.safety.notice') as string, message);
+    },
+  });
 }
