@@ -12,9 +12,9 @@
  *
  * v9.0 新增特性：
  * - ✅ AI 智能分析集成（自动生成执行摘要）
- * - ✅ 多维度评分系统（安全性/有效性/成本/合规性）
- * - ✅ 风险评估引擎（基于规则和机器学习）
- * - ✅ 优化建议生成器（个性化推荐算法）
+ * - ✅ 多维评分系统（安全性/有效性为启发式估计；稳定性/合规性/成本待实测，不编造）
+ * - ✅ 风险评估引擎（基于规则触发，probability/impact 为启发式估计）
+ * - ✅ 优化建议生成器（基于真实信号，成本/周期/置信度待真实评估）
  * - ✅ 报告模板系统（10+ 行业模板）
  * - ✅ 协作评论和批注功能
  * - ✅ 数字签名和时间戳
@@ -106,11 +106,13 @@ interface OptimizationSuggestion {
   title: string
   currentIssue: string
   suggestedAction: string
-  expectedImprovement: string
+  expectedImprovement: string   // 定性表述（需开展何种测试/评估），不含虚构目标分
   evidence: string
-  confidence: number        // 0-1
-  estimatedCost?: number
-  estimatedTime?: string
+  // 诚实化：不再输出编造的 confidence / estimatedCost / estimatedTime 数字。
+  // 这些字段保留为可选占位，待真实测算/排期数据可用后再填充。
+  confidence?: number           // 0-1（当前不填充，待真实评估）
+  estimatedCost?: number        // 待真实成本核算
+  estimatedTime?: string        // 待真实排期
 }
 
 interface UseReportGeneratorOptions {
@@ -191,15 +193,26 @@ interface UseReportGeneratorReturn {
   getChartData: (chartType: 'ingredient-radar' | 'cost-breakdown' | 'timeline') => ChartData
 }
 
+/**
+ * 多维评分（诚实化）：
+ * - safety / efficacy 为基于配方可见字段（成分数量、剂量完整性、识别置信度）的
+ *   启发式估计，非实测专业结论，仅供参考。
+ * - stability / compliance / costEffectiveness 需要真实测试数据 / 法规数据库 / 成本
+ *   模块才能计算，当前一律返回 null（待实测），绝不以常量冒充实测值。
+ * - overall / grade 仅在全部维度均可用时才计算；任一维度待实测则置 null / 'pending'，
+ *   避免用残缺数据给出失真的 A/B/C 等级。
+ * - pending 列出所有尚不可用（待实测）的维度，供 UI 明确标注。
+ */
 interface ReportScores {
-  overall: number           // 0-100
-  safety: number             // 安全性
-  efficacy: number           // 有效性
-  stability: number          // 稳定性
-  compliance: number         // 合规性
-  costEffectiveness: number  // 成本效益
-  grade: 'A+' | 'A' | 'B+' | 'B' | 'C' | 'D' | 'F'
-  breakdown: Record<string, number>
+  overall: number | null            // 0-100；仅当无待实测维度时可信
+  safety: number | null             // 启发式估计
+  efficacy: number | null           // 启发式估计
+  stability: number | null          // 待实测（需稳定性测试数据）
+  compliance: number | null         // 待实测（需法规数据库比对）
+  costEffectiveness: number | null  // 待实测（需成本核算模块）
+  grade: 'A+' | 'A' | 'B+' | 'B' | 'C' | 'D' | 'F' | 'pending'
+  pending: string[]                 // 待实测维度名（如 ['stability','compliance','costEffectiveness']）
+  breakdown: Record<string, number | null>
 }
 
 interface VersionDiff {
@@ -679,38 +692,29 @@ export function useReportGenerator(
 
     const formula = currentFormula
 
-    // 安全性评分 (0-100)
+    // 安全性评分（启发式估计，非实测，0-100）
     const safetyScore = calculateSafetyScore(formula)
 
-    // 有效性评分 (0-100)
+    // 有效性评分（启发式估计，非实测，0-100）
     const efficacyScore = calculateEfficacyScore(formula)
 
-    // 稳定性评分 (0-100)
+    // 稳定性 / 合规性 / 成本效益：需真实测试 / 法规数据库 / 成本模块数据，
+    // 当前一律返回 null（待实测）。pending 由实际为 null 的维度推导。
     const stabilityScore = calculateStabilityScore(formula)
-
-    // 合规性评分 (0-100)
     const complianceScore = calculateComplianceScore(formula)
-
-    // 成本效益评分 (0-100)
     const costScore = calculateCostScore(formula)
 
-    // 综合评分
-    const overall = Math.round(
-      safetyScore * 0.25 +
-      efficacyScore * 0.25 +
-      stabilityScore * 0.15 +
-      complianceScore * 0.2 +
-      costScore * 0.15,
-    )
+    const dimensionEntries: [string, number | null][] = [
+      ['stability', stabilityScore],
+      ['compliance', complianceScore],
+      ['costEffectiveness', costScore],
+    ]
+    const pending: string[] = dimensionEntries.filter(([, v]) => v === null).map(([k]) => k)
 
-    let grade: ReportScores['grade']
-    if (overall >= 95) grade = 'A+'
-    else if (overall >= 90) grade = 'A'
-    else if (overall >= 85) grade = 'B+'
-    else if (overall >= 80) grade = 'B'
-    else if (overall >= 70) grade = 'C'
-    else if (overall >= 60) grade = 'D'
-    else grade = 'F'
+    // 综合评分：任一维度待实测则无法可信计算，置 null / 'pending' 而非用残缺数据冒充。
+    // 待全部维度均有真实数据后，方可启用加权计算与 A/B/C 等级。
+    const overall: number | null = null
+    const grade: ReportScores['grade'] = 'pending'
 
     const newScores: ReportScores = {
       overall,
@@ -720,6 +724,7 @@ export function useReportGenerator(
       compliance: complianceScore,
       costEffectiveness: costScore,
       grade,
+      pending,
       breakdown: {
         safety: safetyScore,
         efficacy: efficacyScore,
@@ -733,28 +738,30 @@ export function useReportGenerator(
     return newScores
   }, [reportData, currentFormula])
 
+  /** 安全性评分：基于成分数量与识别置信度的启发式估计，非实测专业结论 */
   function calculateSafetyScore(formula: AIRecognizedFormula): number {
-    let score = 80 // 基础分
+    let score = 80 // 启发式基础分（非实测）
 
-    // 成分数量适中加分
+    // 成分数量适中加分（启发式：5-20 种视为配伍更可控）
     const ingCount = formula.ingredients?.length || 0
     if (ingCount >= 5 && ingCount <= 20) score += 10
 
-    // 置信度高加分
+    // 识别置信度高加分（反映识别可靠度，非安全性实测）
     score += (formula.confidence || 0) * 10
 
     return Math.min(100, Math.max(0, score))
   }
 
+  /** 有效性评分：基于剂量信息完整性与配比区间的启发式估计，非功效实测 */
   function calculateEfficacyScore(formula: AIRecognizedFormula): number {
-    let score = 75
+    let score = 75 // 启发式基础分（非实测）
 
-    // 有完整成分信息加分
+    // 有完整成分剂量信息加分
     if (formula.ingredients?.every(ing => ing.dosage !== undefined)) {
       score += 15
     }
 
-    // 成分数合理范围
+    // 成分总量在常见配比区间（启发式，非功效证据）
     const totalDosage = formula.ingredients?.reduce((sum, ing) => {
       const dosage = parseFloat(ing.dosage) || 0
       return sum + dosage
@@ -766,19 +773,31 @@ export function useReportGenerator(
     return Math.min(100, Math.max(0, score))
   }
 
-  function calculateStabilityScore(_formula: AIRecognizedFormula): number {
+  /**
+   * 稳定性评分：需真实稳定性测试（加速/长期、Q10、货架期）数据方可计算。
+   * 当前无数据源，返回 null（待实测），绝不以常量冒充实测值。
+   */
+  function calculateStabilityScore(_formula: AIRecognizedFormula): number | null {
     void _formula;
-    return 85 // 默认值，需要实际测试数据
+    return null // 待实测：需稳定性测试数据
   }
 
-  function calculateComplianceScore(_formula: AIRecognizedFormula): number {
+  /**
+   * 合规性评分：需法规数据库（如 GB 16740-2014、《化妆品安全技术规范》）逐项比对方可计算。
+   * 当前无数据源，返回 null（待实测），绝不以常量冒充实测值。
+   */
+  function calculateComplianceScore(_formula: AIRecognizedFormula): number | null {
     void _formula;
-    return 90 // 默认值，需要法规数据库比对
+    return null // 待实测：需法规数据库比对
   }
 
-  function calculateCostScore(_formula: AIRecognizedFormula): number {
+  /**
+   * 成本效益评分：需原料成本核算模块与报价数据方可计算。
+   * 当前无数据源，返回 null（待实测），绝不以常量冒充实测值。
+   */
+  function calculateCostScore(_formula: AIRecognizedFormula): number | null {
     void _formula;
-    return 80 // 默认值，需要成本计算模块
+    return null // 待实测：需成本核算模块
   }
 
   // ===== 风险评估引擎 =====
@@ -794,22 +813,38 @@ export function useReportGenerator(
     const formula = currentFormula
     const risks: RiskAssessment['risks'] = []
 
-    // 安全性风险
+    /**
+     * probability / impact / score 说明（诚实化）：
+     * 这些并非精确概率，而是由规则命中的 level 映射出的「启发式估计」，仅用于
+     * 相对排序与展示，不代表统计意义上的真实发生概率。映射关系见 LEVEL_TO_HEURISTIC。
+     */
+    const LEVEL_TO_HEURISTIC: Record<RiskAssessment['risks'][number]['level'], { probability: number; impact: number }> = {
+      critical: { probability: 0.9, impact: 0.95 },
+      high: { probability: 0.7, impact: 0.8 },
+      medium: { probability: 0.4, impact: 0.6 },
+      low: { probability: 0.2, impact: 0.3 },
+    }
+    // score = probability × impact × 100（启发式风险分，非精确概率）
+    const heuristicScore = (level: RiskAssessment['risks'][number]['level']): number => {
+      const h = LEVEL_TO_HEURISTIC[level]
+      return Math.round(h.probability * h.impact * 100)
+    }
+
+    // 安全性风险（基于真实字段：识别置信度）
     if ((formula.confidence || 0) < 0.6) {
       risks.push({
         id: 'risk-' + Date.now() + '-1',
         category: 'safety',
         level: 'high',
         title: '识别置信度过低',
-        description: '当前置信度仅 ' + (formula.confidence * 100).toFixed(1) + '%，可能存在误识别风险',
+        description: '当前置信度仅 ' + (formula.confidence * 100).toFixed(1) + '%，可能存在误识别风险（启发式判定，非实测）',
         mitigation: '建议人工复核或重新采集数据',
-        probability: 0.7,
-        impact: 0.8,
-        score: 56,
+        ...LEVEL_TO_HEURISTIC.high,
+        score: heuristicScore('high'),
       })
     }
 
-    // 成分风险
+    // 成分风险（基于真实字段：是否有成分）
     const ingredients = formula.ingredients || []
     if (ingredients.length === 0) {
       risks.push({
@@ -819,24 +854,22 @@ export function useReportGenerator(
         title: '无成分数据',
         description: '未能识别到任何有效成分，无法进行功效评估',
         mitigation: '检查原始数据质量或调整识别参数',
-        probability: 0.9,
-        impact: 0.95,
-        score: 86,
+        ...LEVEL_TO_HEURISTIC.critical,
+        score: heuristicScore('critical'),
       })
     }
 
-    // 数量异常风险
+    // 数量异常风险（基于真实字段：成分数量）
     if (ingredients.length > 50) {
       risks.push({
         id: 'risk-' + Date.now() + '-3',
         category: 'stability',
         level: 'medium',
         title: '成分数量过多',
-        description: '检测到 ' + ingredients.length + ' 种成分，可能影响稳定性',
+        description: '检测到 ' + ingredients.length + ' 种成分，可能影响稳定性（启发式判定，需稳定性测试验证）',
         mitigation: '精简配方或分组管理',
-        probability: 0.4,
-        impact: 0.6,
-        score: 24,
+        ...LEVEL_TO_HEURISTIC.medium,
+        score: heuristicScore('medium'),
       })
     }
 
@@ -873,62 +906,62 @@ export function useReportGenerator(
     const formula = currentFormula
     if (!formula) return suggestions
 
-    // 基于评分的智能建议
-    if (scores) {
-      if (scores.safety < 70) {
-        suggestions.push({
-          id: 'sug-' + Date.now() + '-1',
-          priority: 'high',
-          category: 'testing',
-          title: '加强安全性测试',
-          currentIssue: '安全性评分为 ' + scores.safety + '，低于推荐阈值 70',
-          suggestedAction: '增加皮肤刺激性测试、致敏性测试、光毒性测试等',
-          expectedImprovement: '预计安全性评分提升至 85+',
-          evidence: '基于行业标准和历史数据',
-          confidence: 0.85,
-          estimatedTime: '2-4 周',
-          estimatedCost: 50000,
-        })
-      }
+    /**
+     * 诚实化说明：
+     * - 建议触发条件改用真实可算的信号（识别置信度、成分/剂量完整性），不再依赖
+     *   stability/compliance/cost 这些待实测（null）维度。
+     * - 不再输出编造的 estimatedCost / estimatedTime / confidence 数字。
+     * - expectedImprovement 只做定性表述（说明需开展何种测试/评估），不给虚构目标分。
+     */
+    const confidence = formula.confidence || 0
+    const ingredients = formula.ingredients || []
+    const dosageComplete = ingredients.length > 0 && ingredients.every(ing => ing.dosage !== undefined)
 
-      if (scores.efficacy < 70) {
-        suggestions.push({
-          id: 'sug-' + Date.now() + '-2',
-          priority: 'high',
-          category: 'ingredient',
-          title: '优化核心成分组合',
-          currentIssue: '有效性评分为 ' + scores.efficacy + '，可能存在协同效应不足',
-          suggestedAction: '考虑添加促渗剂、保湿剂或调整活性物浓度',
-          expectedImprovement: '预计有效性评分提升至 80+',
-          evidence: '参考类似配方成功案例',
-          confidence: 0.78,
-          estimatedTime: '4-8 周',
-          estimatedCost: 80000,
-        })
-      }
-
-      if (scores.compliance < 70) {
-        suggestions.push({
-          id: 'sug-' + Date.now() + '-3',
-          priority: 'critical',
-          category: 'testing',
-          title: '补充合规性测试',
-          currentIssue: '合规性评分为 ' + scores.compliance + '，可能存在法规限制物质超标',
-          suggestedAction: '进行全面的重金属、微生物、防腐剂限量测试',
-          expectedImprovement: '确保符合《化妆品安全技术规范》要求',
-          evidence: '强制性法规要求',
-          confidence: 0.95,
-          estimatedTime: '2-3 周',
-          estimatedCost: 30000,
-        })
-      }
+    // 识别置信度低 → 建议人工复核（真实信号）
+    if (confidence < 0.6) {
+      suggestions.push({
+        id: 'sug-' + Date.now() + '-1',
+        priority: 'high',
+        category: 'testing',
+        title: '人工复核识别结果',
+        currentIssue: '当前识别置信度仅 ' + (confidence * 100).toFixed(1) + '%，存在误识别风险',
+        suggestedAction: '由专业人员复核成分清单与剂量，必要时重新采集原始数据',
+        expectedImprovement: '需人工复核以确认识别准确性（准确性待复核评估）',
+        evidence: '基于识别置信度字段（真实数据）',
+      })
     }
+
+    // 剂量信息不完整 → 建议补全（真实信号）
+    if (ingredients.length > 0 && !dosageComplete) {
+      suggestions.push({
+        id: 'sug-' + Date.now() + '-2',
+        priority: 'medium',
+        category: 'ingredient',
+        title: '补全成分剂量信息',
+        currentIssue: '部分成分缺少剂量，无法进行配比与功效的理论核算',
+        suggestedAction: '补齐各成分的具体用量（克/毫克），以便开展配比与总量核算',
+        expectedImprovement: '需补全剂量数据后才能评估配比合理性',
+        evidence: '基于成分剂量字段完整性（真实数据）',
+      })
+    }
+
+    // 合规性待实测（法规数据库比对不可用）→ 建议送检
+    suggestions.push({
+      id: 'sug-' + Date.now() + '-3',
+      priority: 'critical',
+      category: 'testing',
+      title: '开展合规性检测（合规评分待实测）',
+      currentIssue: '合规性维度当前为「待实测」，尚未与法规限量（如重金属、微生物、防腐剂）逐项比对',
+      suggestedAction: '依据适用法规送检重金属、微生物、防腐剂限量等项目，以评估合规性',
+      expectedImprovement: '需法规数据库比对/送检结果方能给出合规结论（当前无结论）',
+      evidence: '合规性评分需法规数据库比对，当前数据不足',
+    })
 
     setSuggestions(suggestions)
     logger.info('[ReportGenerator] 已生成 ' + suggestions.length + ' 条优化建议')
 
     return suggestions
-  }, [reportData, scores, currentFormula])
+  }, [reportData, currentFormula])
 
   const applySuggestion = useCallback(async (_suggestionId: string): Promise<boolean> => {
     void _suggestionId;
@@ -1117,15 +1150,26 @@ export function useReportGenerator(
     htmlContent.push('')
 
     if (reportScores) {
+      const isPending = (v: number | null): string => v === null ? '待实测' : String(v)
+      const hasPending = (reportScores.pending?.length ?? 0) > 0
+
       htmlContent.push('  <h2>综合评分</h2>')
-      htmlContent.push('  <p>总体评分: <span class="score-badge score-' + reportScores.grade + '">' + reportScores.overall + ' (' + reportScores.grade + ')</span></p>')
+      if (reportScores.overall === null || reportScores.grade === 'pending') {
+        htmlContent.push('  <p>总体评分: <span class="score-badge score-C">数据不足，待实测</span>（稳定性/合规性/成本效益待实测，暂不出具 A/B/C 等级）</p>')
+      } else {
+        htmlContent.push('  <p>总体评分: <span class="score-badge score-' + reportScores.grade + '">' + reportScores.overall + ' (' + reportScores.grade + ')</span></p>')
+      }
+      htmlContent.push('  <p><small>安全性 / 有效性为基于配方可见字段的启发式估计，非实测专业结论；稳定性 / 合规性 / 成本效益需真实测试、法规数据库与成本核算数据。</small></p>')
       htmlContent.push('  <ul>')
-      htmlContent.push('    <li>安全性: ' + reportScores.safety + '</li>')
-      htmlContent.push('    <li>有效性: ' + reportScores.efficacy + '</li>')
-      htmlContent.push('    <li>稳定性: ' + reportScores.stability + '</li>')
-      htmlContent.push('    <li>合规性: ' + reportScores.compliance + '</li>')
-      htmlContent.push('    <li>成本效益: ' + reportScores.costEffectiveness + '</li>')
+      htmlContent.push('    <li>安全性（启发式估计）: ' + isPending(reportScores.safety) + '</li>')
+      htmlContent.push('    <li>有效性（启发式估计）: ' + isPending(reportScores.efficacy) + '</li>')
+      htmlContent.push('    <li>稳定性: ' + isPending(reportScores.stability) + (reportScores.stability === null ? '（需稳定性测试数据）' : '') + '</li>')
+      htmlContent.push('    <li>合规性: ' + isPending(reportScores.compliance) + (reportScores.compliance === null ? '（需法规数据库比对）' : '') + '</li>')
+      htmlContent.push('    <li>成本效益: ' + isPending(reportScores.costEffectiveness) + (reportScores.costEffectiveness === null ? '（需成本核算模块）' : '') + '</li>')
       htmlContent.push('  </ul>')
+      if (hasPending) {
+        htmlContent.push('  <p><small>待实测维度: ' + reportScores.pending.join('、') + '</small></p>')
+      }
     }
 
     htmlContent.push('')
@@ -1133,6 +1177,7 @@ export function useReportGenerator(
     if (risks && risks.risks.length > 0) {
       htmlContent.push('  <h2>风险评估</h2>')
       htmlContent.push('  <p>整体风险等级: <strong>' + risks.overallRiskLevel.toUpperCase() + '</strong></p>')
+      htmlContent.push('  <p><small>以下 probability / impact / score 为基于触发规则的启发式估计，非精确统计概率，仅用于相对排序。</small></p>')
 
       risks.risks.forEach(risk => {
         let riskColor = '#4CAF50'
