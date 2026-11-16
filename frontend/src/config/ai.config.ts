@@ -72,7 +72,9 @@ export interface AIConfig {
 // ============================================================================
 
 function getEnvironment(): Environment {
-  const env = import.meta.env?.VITE_APP_ENV || process.env?.NODE_ENV || 'development';
+  // 仅使用 Vite 注入的 import.meta.env；浏览器无 process 全局，裸 process.env 会在
+  // 模块求值期抛 ReferenceError 导致整个应用白屏（landing 首屏即崩）。
+  const env = import.meta.env?.VITE_APP_ENV || 'development';
 
   if (env.includes('prod')) return 'production';
   if (env.includes('stag')) return 'staging';

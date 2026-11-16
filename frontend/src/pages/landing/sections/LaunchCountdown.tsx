@@ -111,10 +111,10 @@ export function CountdownBanner() {
       }}
     >
       <div className="relative z-10 max-w-6xl mx-auto px-[var(--space-apple-md)] sm:px-6 lg:px-8 py-4 sm:py-5">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-between gap-4">
 
           {/* 左侧：文案 + CTA */}
-          <div className="flex items-center gap-4 min-w-0">
+          <div className="flex items-center gap-4 min-w-0 w-full max-w-full sm:w-auto">
             {/* 徽章 */}
             <div
               className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-pill)] lp-label"
@@ -140,7 +140,7 @@ export function CountdownBanner() {
           </div>
 
           {/* 右侧：倒计时 + CTA */}
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4 min-w-0 max-w-full">
             {/* 倒计时单位 */}
             <div className="flex items-center gap-1.5">
               <CountUnit value={pad(timeLeft.days)}         label="天" prevValue={String(prevTime?.days ?? -1)} />

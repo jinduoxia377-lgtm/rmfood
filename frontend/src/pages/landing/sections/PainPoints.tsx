@@ -67,7 +67,7 @@ function PainCard({ item, index }: { item: PainItem; index: number }) {
             className="mt-[var(--space-apple-md)] pt-[var(--space-apple-sm)] border-l-2 pl-[var(--space-apple-sm)]"
             style={{ borderColor: cfg.primary }}
           >
-            <p className="text-[14px] font-medium leading-[1.6] text-[var(--text-primary)]">
+            <p className="text-[14px] font-medium leading-[1.6] text-[var(--text-primary)] [overflow-wrap:anywhere]">
               <span aria-hidden="true" style={{ color: cfg.primary }}>→ </span>
               {t(item.turnKey)}
             </p>
