@@ -17,10 +17,12 @@ export default {
       email: '邮箱',
       emailPlaceholder: 'you@company.com',
       emailRequired: '请输入有效的邮箱地址',
-      fullName: '姓名（选填）',
+      fullName: '姓名',
       fullNamePlaceholder: '您的姓名',
-      organization: '单位（选填）',
+      fullNameRequired: '请输入姓名',
+      organization: '单位',
       organizationPlaceholder: '所在单位/部门',
+      organizationRequired: '请输入单位/部门',
       reason: '申请理由（选填）',
       reasonPlaceholder: '简要说明您的使用场景',
       consent: '我已阅读并同意《隐私政策》，授权将上述信息用于账号开通审核',
@@ -45,6 +47,9 @@ export default {
       verifying: '验证中…',
       expired: '验证码已过期，请重新发送',
       devCodeHint: '开发模式验证码',
+      emailSendFailed: '验证码邮件发送失败，请稍后重试或联系管理员。',
+      resendSuccess: '新验证码已发送至 {{email}}。',
+      checkSpam: '未收到邮件？请检查垃圾邮件文件夹。',
     },
 
     // ── 提交成功 / 审核中 ──
@@ -72,7 +77,7 @@ export default {
       title: '查询申请进度',
       tokenPlaceholder: '输入申请编号或状态 token',
       query: '查询',
-      error: '未找到对应申请，请检查 token 是否正确',
+      error: '未找到对应申请，请核对申请编号或状态查询 token',
     },
 
     // ── 剩余名额 ──

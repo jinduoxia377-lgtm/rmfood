@@ -21,6 +21,9 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+# 🔒 SMTP 连接/读超时（秒）：防止 SMTP 服务器无响应时长时间阻塞工作线程
+SMTP_TIMEOUT_SECONDS = 15
+
 # 🔒 reset token 速率限制（每邮箱每分钟最多 5 次）
 _reset_attempts: dict[str, list[float]] = {}
 _RESET_RATE_LIMIT = 5
@@ -145,12 +148,12 @@ def send_email_with_smtp(
         if use_tls:
             # 🔒 使用 TLS 加密连接
             context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context, timeout=SMTP_TIMEOUT_SECONDS) as server:
                 server.login(smtp_username, smtp_password)
                 server.sendmail(sender, to_email, message.as_string())
         else:
             # STARTTLS 升级
-            with smtplib.SMTP(smtp_host, smtp_port) as server:
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=SMTP_TIMEOUT_SECONDS) as server:
                 server.starttls(context=ssl.create_default_context())
                 server.login(smtp_username, smtp_password)
                 server.sendmail(sender, to_email, message.as_string())

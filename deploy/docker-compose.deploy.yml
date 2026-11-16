@@ -108,6 +108,16 @@ services:
       # Set-Cookie；HTTPS 部署（443/TLS 终结）请设为 true。嵌套配置同步 SECURITY__COOKIE_SECURE。
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       SECURITY__COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      # ===== 邮件 SMTP（白名单验证码/审核结果邮件）=====
+      # 缺失会导致 send_whitelist_verification_email 走「SMTP 配置缺失」分支，邮件从不发出（apply 仍 201）
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      # 白名单验证码/状态 token 哈希盐（生产必须非默认值，防离线破解）
+      WHITELIST_SECRET_SALT: ${WHITELIST_SECRET_SALT:-}
+      # 邮件正文里的前端链接域名（重置/登录/再次申请）
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
       # 数据库连接池优化
       DATABASE__POOL_SIZE: "${DATABASE__POOL_SIZE:-20}"
       DATABASE__MAX_OVERFLOW: "${DATABASE__MAX_OVERFLOW:-10}"
@@ -124,6 +134,7 @@ services:
       - uploads_data:/app/uploads
       - ./temp_files:/app/temp_files
       - chromadb_v2_data:/app/data/chromadb_v2
+      - fastembed_cache_data:/app/data/fastembed_cache
     depends_on:
       postgres:
         condition: service_healthy
@@ -207,6 +218,8 @@ volumes:
   chromadb_v2_data:
     driver: local
   chroma_data:
+    driver: local
+  fastembed_cache_data:
     driver: local
 
 networks:

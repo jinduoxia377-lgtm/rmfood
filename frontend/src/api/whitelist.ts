@@ -12,8 +12,8 @@ import api from './client'
 
 export interface WhitelistApplyParams {
   email: string
-  fullName?: string
-  organization?: string
+  fullName: string
+  organization: string
   reason?: string
   source?: 'whitelist_page' | 'login'
   lang?: string
@@ -35,6 +35,8 @@ export interface WhitelistApplyResult {
   cooldown_until: string | null
   /** 仅开发环境（ENV=development）返回，用于无 SMTP 时本地测试；生产环境为 null */
   dev_verify_code?: string | null
+  /** 后端是否成功发出验证码邮件；false 表示 SMTP 未配置/投递失败，前端须如实提示而非声称「已发送」 */
+  email_sent: boolean
 }
 
 export interface WhitelistStatusResult {
@@ -92,7 +94,7 @@ export const whitelistApi = {
   /** 60s 冷却后重发验证码 */
   resendCode: (requestId: number, lang?: string) =>
     api
-      .post<{ retry_after: number; server_time: string }>('/auth/whitelist/resend-code', {
+      .post<{ retry_after: number; server_time: string; email_sent?: boolean }>('/auth/whitelist/resend-code', {
         request_id: requestId,
         lang: lang ?? 'zh-CN',
       })
