@@ -783,7 +783,7 @@ export function SafetyTab({
                 })
               }}
             >
-              {DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_EXPORT_REPORT || '导出报告'}
+              {t('ai.safety.report.exportButton')}
             </Button>
           </div>
         </div>
