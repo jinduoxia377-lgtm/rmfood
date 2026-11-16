@@ -124,6 +124,18 @@ const SUGGESTED_HERBS = [
   ['白术', '茯苓'], ['陈皮', '半夏'], ['薄荷', '连翘'],
 ];
 
+// ── 协同热力图：协同强度档位 → 静态查表 ──────────────────────────────────────
+// Tailwind v4 无 safelist，用模板字符串拼接 bg-primary-XXX/15 这类类名 JIT 扫描不到 →
+// 5 档(100/200/300/400/500)全仓无字面量，格子无背景（同源 D-55）。改为完整字面量
+// 静态查表，保证 5 档类名真实存在。键为 step(1-5)。
+const HEAT: Record<number, string> = {
+  1: 'bg-primary-100/15 dark:bg-primary-100/30',
+  2: 'bg-primary-200/15 dark:bg-primary-200/30',
+  3: 'bg-primary-300/15 dark:bg-primary-300/30',
+  4: 'bg-primary-400/15 dark:bg-primary-400/30',
+  5: 'bg-primary-500/15 dark:bg-primary-500/30',
+};
+
 // ── 主组件 ─────────────────────────────────────────────────────────────────────
 
 export function SynergyTab() {
@@ -293,7 +305,7 @@ export function SynergyTab() {
             <button
               key={herb}
               onClick={() => handleAddHerb(herb)}
-              className="px-2 py-1 text-xs rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-primary-400 hover:text-primary-700 transition-colors flex items-center gap-1"
+              className="min-h-[44px] min-w-[44px] px-2 py-1 text-xs rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors flex items-center gap-1"
             >
               <Plus className="w-3 h-3" /> {herb}
             </button>
@@ -305,10 +317,10 @@ export function SynergyTab() {
           <div className="bg-warning-50 dark:bg-warning-300/20 border border-warning-300 dark:border-warning-700/50 rounded-xl p-4 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-warning-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-warning-700 dark:text-warning-700 text-sm">
+              <p className="font-medium text-warning-700 dark:text-warning-300 text-sm">
                 {t('ai.synergy.synergyTab.contraindicationFound')}
               </p>
-              <ul className="mt-2 space-y-1 text-sm text-warning-600 dark:text-warning-700">
+              <ul className="mt-2 space-y-1 text-sm text-warning-600 dark:text-warning-300">
                 {contraindicationWarnings.map((w, i) => (
                   <li key={i}>⚠ {w.a} + {w.b}：{t(`ai.synergy.synergyTab.type.${w.type}`)}</li>
                 ))}
@@ -318,7 +330,7 @@ export function SynergyTab() {
         )}
 
         {mutation.isError && errorMessage && (
-          <div className="bg-danger-50 dark:bg-danger-500/10 border border-danger-200 dark:border-danger-500/20 rounded-xl p-5 text-sm text-danger-600 dark:text-danger-600">
+          <div className="bg-danger-50 dark:bg-danger-500/10 border border-danger-200 dark:border-danger-500/20 rounded-xl p-5 text-sm text-danger-600 dark:text-danger-300">
             {errorMessage}
           </div>
         )}
@@ -330,17 +342,17 @@ export function SynergyTab() {
           {/* 摘要卡片 */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-4 bg-primary-50/50 dark:bg-primary-300/15">
-              <div className="text-2xl font-bold text-primary-700">{synergyResult.score ?? 0}</div>
+              <div className="text-2xl font-bold text-primary-700 dark:text-primary-300">{synergyResult.score ?? 0}</div>
               <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.synergy.synergyTab.overallScore')}</div>
             </div>
             <div className="border border-success-200 dark:border-success-800 rounded-xl p-4 bg-success-50/50 dark:bg-success-300/15">
-              <div className="text-2xl font-bold text-success-600">
+              <div className="text-2xl font-bold text-success-600 dark:text-success-400">
                 {synergyResult.synergy_pairs?.length ?? 0}
               </div>
               <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.synergy.synergyTab.synergyPairs')}</div>
             </div>
             <div className="border border-danger-200 dark:border-danger-800 rounded-xl p-4 bg-danger-50/50 dark:bg-danger-500/10">
-              <div className="text-2xl font-bold text-danger-600">
+              <div className="text-2xl font-bold text-danger-600 dark:text-danger-400">
                 {synergyResult.antagonism_warnings?.length ?? 0}
               </div>
               <div className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.synergy.synergyTab.tabooPairs')}</div>
@@ -381,13 +393,13 @@ export function SynergyTab() {
                           content = '·';
                         } else if (cell.type === 'synergy') {
                           const intensity = Math.min(cell.value, 1);
-                          // 修复 D-55 同源动态类 bug：原 `bg-primary-${Math.round(intensity*200)}00`
-                          // 生成 000/010/020... 等不存在档位（Tailwind 色阶为 50-950），JIT 0 生成 →
-                          // 热力图整行无背景。改为映射到真实色阶档位（100-500）+ 暗色不反转的 /alpha。
+                          // 修复 D-55 同源动态类 bug：原先用模板字符串拼接 bg-primary-档位/15，
+                          // Tailwind v4 扫描不到 → 5 档全仓无字面量、格子无背景。
+                          // 改为上方 HEAT 静态查表（完整字面量，JIT 可见）。
                           const step = Math.min(5, Math.max(1, Math.round(intensity * 5)));
-                          const tier = [100, 200, 300, 400, 500][step - 1];
-                          bgClass = `bg-primary-${tier}/15 dark:bg-primary-${tier}/30`;
-                          textColor = 'text-primary-700 dark:text-primary-700';
+                          bgClass = HEAT[step];
+                          // 暗色用更亮档 primary-300（原 dark:text-primary-700 深绿压深底）
+                          textColor = 'text-primary-700 dark:text-primary-300';
                           content = cell.value.toFixed(2);
                         } else if (cell.type === 'antagonism') {
                           bgClass = 'bg-danger-100 dark:bg-danger-500/20';
@@ -397,9 +409,12 @@ export function SynergyTab() {
                         return (
                           <td
                             key={h2}
-                            className={`p-3 text-center rounded cursor-pointer transition-all duration-150 border border-transparent ${bgClass} ${textColor} ${isHovered ? 'ring-2 ring-primary-500 scale-105' : ''}`}
+                            tabIndex={0}
+                            className={`p-3 text-center rounded cursor-pointer transition-all duration-150 border border-transparent focus:outline-none ${bgClass} ${textColor} ${isHovered ? 'ring-2 ring-primary-500 scale-105' : ''}`}
                             onMouseEnter={() => setHoveredCell(`${h1}-${h2}`)}
                             onMouseLeave={() => setHoveredCell(null)}
+                            onFocus={() => setHoveredCell(`${h1}-${h2}`)}
+                            onBlur={() => setHoveredCell(null)}
                           >
                             {content}
                           </td>
@@ -437,10 +452,10 @@ export function SynergyTab() {
           {/* 协同配对详情 */}
           {synergyResult.synergy_pairs && synergyResult.synergy_pairs.length > 0 && (
             <div className="border border-primary-200 dark:border-primary-800 rounded-xl p-5 bg-primary-50/30 dark:bg-primary-300/15">
-              <h4 className="font-semibold text-primary-700 dark:text-primary-700 mb-3">
+              <h4 className="font-semibold text-primary-700 dark:text-primary-300 mb-3">
                 {t('ai.synergy.synergyTab.synergyPairsList')}
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-3">
                 {synergyResult.synergy_pairs.map((p, i) => (
                   <div key={i} className="flex items-center gap-3 p-3 bg-white dark:bg-neutral-800 rounded-lg border border-primary-100 dark:border-primary-900/30">
                     <span className="text-primary-500 font-medium">+</span>
@@ -459,7 +474,7 @@ export function SynergyTab() {
           {/* 配伍禁忌详情 */}
           {synergyResult.antagonism_warnings && synergyResult.antagonism_warnings.length > 0 && (
             <div className="border border-danger-200 dark:border-danger-800 rounded-xl p-5 bg-danger-50/30 dark:bg-danger-300/15">
-              <h4 className="font-semibold text-danger-700 dark:text-danger-600 mb-3 flex items-center gap-2">
+              <h4 className="font-semibold text-danger-700 dark:text-danger-300 mb-3 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 {t('ai.synergy.synergyTab.antagonismWarning')}
               </h4>
@@ -481,6 +496,19 @@ export function SynergyTab() {
         </div>
       )}
 
+      {/* ── 结果区域空态占位（无结果时不再静默留白）── */}
+      {!synergyResult && (
+        <Card className="p-8 flex flex-col items-center justify-center text-center space-y-3">
+          <GitMerge className="w-12 h-12 text-primary-300 dark:text-primary-500" />
+          <h3 className="text-lg font-semibold text-neutral-700 dark:text-neutral-200">
+            {t('ai.synergy.synergyTab.noData')}
+          </h3>
+          <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">
+            {t('ai.synergy.synergyTab.inputDescription')}
+          </p>
+        </Card>
+      )}
+
       {/* ── 历史记录面板 ── */}
       <div className="relative">
         <Button
@@ -498,7 +526,7 @@ export function SynergyTab() {
               <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">{t('ai.synergy.synergyTab.recentAnalysis')}</span>
               <button
                 onClick={handleClearHistory}
-                className="text-xs text-danger-500 hover:text-danger-700 flex items-center gap-1"
+                className="min-h-[44px] min-w-[44px] text-xs text-danger-500 hover:text-danger-700 dark:hover:text-danger-300 flex items-center gap-1 justify-center"
               >
                 <Trash2 className="w-3 h-3" /> {t('ai.synergy.synergyTab.clear')}
               </button>

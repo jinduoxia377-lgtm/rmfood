@@ -39,12 +39,21 @@ const DEFAULT_HAZARD_TYPES: HazardType[] = [
   { id: 'other', name: 'other', label: '其他' },
 ]
 
+// 医疗红线：单元格文字必须始终落在 ≥4.5:1 的底色上。
+// 采用「语义实底填充 + 强对比前景（danger/success/warning-foreground = 白）」模式，
+// 文字色与 getOpacityByScore 的 fill-opacity 完全解耦——无论评分高低、填充透明度如何，
+// 文字始终以白色压在各自的语义实底（danger #dc2626 / warning #b45309 / success #047857）上。
+// 旧实现用「深色字压同色系亮填充」(如 #DC2626 压 #FF3B30 ≈1.8:1)，高危等级最看不清，已废弃。
 const COLOR_CONFIG = {
-  unknown: { fill: 'var(--color-slate-200, #E5E7EB)', text: 'var(--color-neutral-500, #6B7280)' },
-  low: { fill: 'var(--color-primary, var(--color-primary-400))', text: 'var(--color-green-900, #065F46)' },
-  medium: { fill: 'var(--color-warning, #FF9F0A)', text: 'var(--color-amber-800, #D97706)' },
-  high: { fill: 'var(--color-error, #FF3B30)', text: 'var(--color-red-800, #DC2626)' },
+  unknown: { fill: 'var(--color-slate-600, #475569)', text: 'var(--color-neutral-50, #ffffff)', levelText: 'var(--color-neutral-700, #374151)' },
+  low: { fill: 'var(--color-success, #047857)', text: 'var(--color-success-foreground, #ffffff)', levelText: 'var(--color-success-700, #047857)' },
+  medium: { fill: 'var(--color-warning, #b45309)', text: 'var(--color-warning-foreground, #ffffff)', levelText: 'var(--color-warning-700, #b45309)' },
+  high: { fill: 'var(--color-danger, #dc2626)', text: 'var(--color-danger-foreground, #ffffff)', levelText: 'var(--color-danger-700, #b91c1c)' },
 }
+
+// 单元格填充恒为实底（fill-opacity=1），保证白色文字的对比度不受评分透明度影响。
+// 评分强度改由独立通道表达（见下：满分格加粗描边），不再靠降低填充透明度。
+const CELL_FILL_OPACITY = 1
 
 const CELL_SIZE = 60
 const CELL_PADDING = 2
@@ -70,13 +79,6 @@ export function RiskMatrix({
 
   const matrixWidth = HEADER_WIDTH + hazardTypes.length * (CELL_SIZE + CELL_PADDING)
   const matrixHeight = HEADER_HEIGHT + displayData.length * (CELL_SIZE + CELL_PADDING)
-
-  const getOpacityByScore = useCallback((score: number, level: string) => {
-    if (level === 'unknown') return 0.3
-    if (level === 'low') return 0.3 + (score / 100) * 0.5
-    if (level === 'medium') return 0.5 + (score / 100) * 0.4
-    return 0.7 + (score / 100) * 0.3
-  }, [])
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault()
@@ -126,7 +128,7 @@ export function RiskMatrix({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
           <div>
             <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.safety.matrix.riskLevel')}</span>
-            <span className={`ml-2 font-medium`} style={{ color: colorConfig.text }}>
+            <span className={`ml-2 font-medium`} style={{ color: colorConfig.levelText }}>
               {hazard.level === 'low' ? '低' : hazard.level === 'medium' ? '中' : hazard.level === 'high' ? '高' : '未检测'}
             </span>
           </div>
@@ -167,7 +169,7 @@ export function RiskMatrix({
       .attr('width', matrixWidth)
       .attr('height', matrixHeight)
       .attr('fill', 'white')
-      .attr('stroke', 'var(--color-slate-200, #E5E7EB)')
+      .attr('stroke', 'var(--color-neutral-200, #E5E7EB)')
 
     hazardTypes.forEach((hazard, colIndex) => {
       const x = HEADER_WIDTH + colIndex * (CELL_SIZE + CELL_PADDING)
@@ -178,7 +180,7 @@ export function RiskMatrix({
         .attr('dominant-baseline', 'middle')
         .attr('font-size', '12px')
         .attr('font-weight', '600')
-        .attr('fill', 'var(--color-gray-700, #374151)')
+        .attr('fill', 'var(--color-neutral-700, #374151)')
         .attr('transform', `rotate(-45, ${x + CELL_SIZE / 2}, ${HEADER_HEIGHT / 2})`)
         .text(hazard.label)
     })
@@ -192,7 +194,7 @@ export function RiskMatrix({
         .attr('text-anchor', 'end')
         .attr('dominant-baseline', 'middle')
         .attr('font-size', '12px')
-        .attr('fill', 'var(--color-gray-700, #374151)')
+        .attr('fill', 'var(--color-neutral-700, #374151)')
         .text(ingredient.name.length > 8 ? ingredient.name.substring(0, 8) + '...' : ingredient.name)
 
       hazardTypes.forEach((hazard, colIndex) => {
@@ -201,7 +203,8 @@ export function RiskMatrix({
         const level = cellData?.level || 'unknown'
         const score = cellData?.score || 0
         const colorConfig = COLOR_CONFIG[level]
-        const opacity = getOpacityByScore(score, level)
+        // 填充恒为实底，文字对比度与评分无关；评分强度改由描边宽度表达（满分格描边更粗）。
+        const scoreStroke = 0.5 + (score / 100) * 1.5
 
         const cellGroup = g.append('g')
           .attr('class', 'matrix-cell')
@@ -214,9 +217,9 @@ export function RiskMatrix({
           .attr('height', CELL_SIZE)
           .attr('rx', 4)
           .attr('fill', colorConfig.fill)
-          .attr('fill-opacity', opacity)
+          .attr('fill-opacity', CELL_FILL_OPACITY)
           .attr('stroke', colorConfig.fill)
-          .attr('stroke-width', hoveredCell?.ingredientId === ingredient.ingredientId && hoveredCell?.hazardTypeId === hazard.id ? 2 : 0.5)
+          .attr('stroke-width', hoveredCell?.ingredientId === ingredient.ingredientId && hoveredCell?.hazardTypeId === hazard.id ? 2 : scoreStroke)
           .style('transition', 'all 0.2s ease')
 
         const levelText = level === 'unknown' ? '未检测' : level === 'low' ? '低' : level === 'medium' ? '中' : '高'
@@ -252,7 +255,7 @@ export function RiskMatrix({
         })
       })
     })
-  }, [displayData, hazardTypes, transform, hoveredCell, onCellClick, getOpacityByScore, matrixWidth, matrixHeight])
+  }, [displayData, hazardTypes, transform, hoveredCell, onCellClick, matrixWidth, matrixHeight])
 
   return (
     <div ref={containerRef} className={`relative overflow-hidden border border-neutral-200 dark:border-neutral-700 rounded-lg ${className}`}>
@@ -281,7 +284,7 @@ export function RiskMatrix({
               className="w-3 h-3 rounded"
               style={{ backgroundColor: config.fill }}
             />
-            <span style={{ color: config.text }}>
+            <span style={{ color: 'var(--text-primary, #1f2937)' }}>
               {level === 'unknown' ? '未检测' : level === 'low' ? '低风险' : level === 'medium' ? '中风险' : '高风险'}
             </span>
           </div>

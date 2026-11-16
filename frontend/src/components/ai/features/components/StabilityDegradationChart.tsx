@@ -19,18 +19,21 @@ import {
   AreaChart,
 } from 'recharts'
 import type { StabilityAssessment, StabilityDataPoint } from '@/types/stability.types'
+import { useBreakpoint } from '@/hooks/useMobile'
 
 interface StabilityDegradationChartProps {
   result: StabilityAssessment
   className?: string
 }
 
+// 走语义令牌：potency=primary(绿)、impurities=error(红/风险)、shelfLife=warning(琥珀)、
+// 置信区间=primary-400/300（弱化的主色带）。Recharts stopColor/fill/stroke 接受 CSS 变量字符串。
 const COLORS = {
-  potency: '#10B981',
-  impurities: '#EF4444',
-  confidenceUpper: '#34D399',
-  confidenceLower: '#6EE7B7',
-  shelfLife: '#F59E0B',
+  potency: 'var(--color-primary)',
+  impurities: 'var(--color-error)',
+  confidenceUpper: 'var(--color-primary-400)',
+  confidenceLower: 'var(--color-primary-300)',
+  shelfLife: 'var(--color-warning)',
 }
 
 function buildChartData(data: StabilityDataPoint[]): {
@@ -63,6 +66,8 @@ function buildChartData(data: StabilityDataPoint[]): {
 }
 
 export function StabilityDegradationChart({ result, className = '' }: StabilityDegradationChartProps) {
+  const { isMobile } = useBreakpoint()
+  const chartHeight = isMobile ? 200 : 280
   const { chart, shelfLifeMonth } = useMemo(
     () => buildChartData(result.timeSeriesData),
     [result.timeSeriesData],
@@ -79,7 +84,7 @@ export function StabilityDegradationChart({ result, className = '' }: StabilityD
   return (
     <div className={`space-y-4 ${className}`}>
       {/* 主图表 */}
-      <ResponsiveContainer width="100%" height={280}>
+      <ResponsiveContainer width="100%" height={chartHeight}>
         <AreaChart data={chart} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="potencyFill" x1="0" y1="0" x2="0" y2="1">
@@ -167,7 +172,7 @@ export function StabilityDegradationChart({ result, className = '' }: StabilityD
       {/* 关键指标卡片 */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-xl border border-success-200 dark:border-success-800 bg-success-50/50 dark:bg-success-300/15 p-3 text-center">
-          <div className="text-2xl font-bold text-success-600 dark:text-success-600">
+          <div className="text-2xl font-bold text-success-600 dark:text-success-400">
             {result.shelfLifeDays >= 365
               ? `${(result.shelfLifeDays / 365).toFixed(1)}年`
               : `${result.shelfLifeDays}天`}
@@ -175,7 +180,7 @@ export function StabilityDegradationChart({ result, className = '' }: StabilityD
           <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">预测保质期</div>
         </div>
         <div className="rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-300/15 p-3 text-center">
-          <div className="text-2xl font-bold text-primary-700 dark:text-primary-700">
+          <div className="text-2xl font-bold text-primary-700 dark:text-primary-400">
             {result.score}/100
           </div>
           <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-1">稳定性评分</div>
@@ -236,7 +241,7 @@ export function FactorImpactBar({ factors, className = '' }: FactorImpactBarProp
               className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${Math.min(100, f.impact)}%`,
-                backgroundColor: f.impact > 30 ? '#EF4444' : f.impact > 15 ? '#F59E0B' : '#10B981',
+                backgroundColor: f.impact > 30 ? 'var(--color-error)' : f.impact > 15 ? 'var(--color-warning)' : 'var(--color-success)',
               }}
             />
           </div>

@@ -121,30 +121,27 @@ export function TasteRadarChart({
         >
           {showGrid && (
             <PolarGrid
-              stroke="#e5e7eb"
-              className="dark:stroke-neutral-700"
+              stroke="var(--border-color)"
             />
           )}
 
           <PolarAngleAxis
             dataKey="label"
             tick={{
-              fill: '#6b7280',
+              fill: 'var(--text-muted)',
               fontSize: 13,
               fontWeight: 500,
             }}
-            className="dark:text-neutral-400"
           />
 
           <PolarRadiusAxis
             angle={30}
             domain={[0, 100]}
             tick={{
-              fill: '#9ca3af',
+              fill: 'var(--text-muted)',
               fontSize: 12,
             }}
             axisLine={false}
-            className="dark:text-neutral-400"
           />
 
           {/* 主数据 */}

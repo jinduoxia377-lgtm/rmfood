@@ -189,7 +189,7 @@ export function StabilityPredictTab() {
                 <h2 className="text-base font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
                   {t('ai.stability.tab.title')}
                 </h2>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
+                <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-0.5 leading-relaxed">
                   {t('ai.stability.tab.subtitle')}
                 </p>
               </div>
@@ -197,7 +197,7 @@ export function StabilityPredictTab() {
 
             {/* 输入框 */}
             <div>
-              <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
+              <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 uppercase tracking-wider mb-2 block">
                 {t('ai.stability.tab.formulaLabel')}
               </label>
               <textarea
@@ -223,9 +223,9 @@ export function StabilityPredictTab() {
                 </h3>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                  <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1.5 block uppercase tracking-wider">
                     {t('ai.stability.tab.temperature')}
                   </label>
                   <Select value={String(temperature)} onChange={(v) => setTemperature(Number(v))} className="rounded-lg">
@@ -235,7 +235,7 @@ export function StabilityPredictTab() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                  <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1.5 block uppercase tracking-wider">
                     {t('ai.stability.tab.humidity')}
                   </label>
                   <Select value={String(humidity)} onChange={(v) => setHumidity(Number(v))} className="rounded-lg">
@@ -246,9 +246,9 @@ export function StabilityPredictTab() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                  <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1.5 block uppercase tracking-wider">
                     {t('ai.stability.tab.light')}
                   </label>
                   <Select value={lightExposure} onChange={(v) => setLightExposure(v as 'dark' | 'ambient' | 'bright')} className="rounded-lg">
@@ -258,7 +258,7 @@ export function StabilityPredictTab() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                  <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1.5 block uppercase tracking-wider">
                     {t('ai.stability.tab.packaging')}
                   </label>
                   <Select value={packaging} onChange={(v) => setPackaging(v as 'sealed' | 'semi-permeable' | 'open')} className="rounded-lg">
@@ -307,10 +307,10 @@ export function StabilityPredictTab() {
         {/* 条件摘要卡片 */}
         {(parsedIngredients.length > 0 || stabilityResult) && (
           <Card className="p-4 rounded-lg">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3">{t('ai.stability.tab.currentConditions')}</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-300 mb-3">{t('ai.stability.tab.currentConditions')}</h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-neutral-600">
+                <span className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300">
                   <Thermometer className="w-4 h-4" /> {t('ai.stability.tab.tempShort')}
                 </span>
                 <Badge variant={temperature > 30 ? 'danger' : temperature > 25 ? 'warning' : 'success'}>
@@ -318,13 +318,13 @@ export function StabilityPredictTab() {
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-neutral-600">
+                <span className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300">
                   <Droplets className="w-4 h-4" /> {t('ai.stability.tab.humidityShort')}
                 </span>
                 <Badge variant={humidity > 70 ? 'danger' : humidity > 60 ? 'warning' : 'success'}>{humidity}%</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-neutral-600">
+                <span className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300">
                   <Sun className="w-4 h-4" /> {t('ai.stability.tab.lightShort')}
                 </span>
                 <Badge variant={lightExposure === 'bright' ? 'warning' : 'success'}>
@@ -332,7 +332,7 @@ export function StabilityPredictTab() {
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-neutral-600">
+                <span className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300">
                   <Package className="w-4 h-4" /> {t('ai.stability.tab.packagingShort')}
                 </span>
                 <Badge
@@ -370,7 +370,7 @@ export function StabilityPredictTab() {
                            from-secondary-50 to-info-50 dark:from-neutral-800 dark:to-neutral-900"
           >
             <div className="text-center space-y-3 p-8">
-              <BarChart3 className="w-16 h-16 mx-auto text-secondary-300 dark:text-secondary-700" />
+              <BarChart3 className="w-16 h-16 mx-auto text-secondary-300 dark:text-secondary-400" />
               <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">{t('ai.stability.tab.emptyTitle')}</h3>
               <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">
                 {t('ai.stability.tab.emptyDesc')}
@@ -397,7 +397,7 @@ export function StabilityPredictTab() {
             {/* 总览视图 */}
             <TabsContent value="overview" className="mt-0">
               <Card className="p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-6">
                   {/* 稳定性评分 */}
                   <div className="space-y-3">
                     <h3 className="font-semibold text-lg">{t('ai.stability.tab.overview.score')}</h3>
@@ -405,7 +405,7 @@ export function StabilityPredictTab() {
                       <span className="text-5xl font-bold text-secondary-600">{stabilityResult.score.toFixed(0)}</span>
                       <span className="text-xl text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">/100</span>
                     </div>
-                    <div className="w-full bg-neutral-200 rounded-full h-3 overflow-hidden">
+                    <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-3 overflow-hidden">
                       <div
                         className={`h-full transition-all duration-500 ${
                           stabilityResult.score >= 80
@@ -432,7 +432,7 @@ export function StabilityPredictTab() {
                       <Clock className="w-5 h-5" />
                       {t('ai.stability.tab.overview.shelfLife')}
                     </h3>
-                    <div className="text-4xl font-bold text-accent-600">
+                    <div className="text-4xl font-bold text-primary-600">
                       {formatShelfLife(stabilityResult.shelfLifeDays)}
                     </div>
                     <p className="text-sm text-neutral-600">{t('ai.stability.tab.overview.shelfLifeHint')}</p>
@@ -475,7 +475,7 @@ export function StabilityPredictTab() {
                           {t('ai.stability.tab.factors.impact', { value: contrib.impact.toFixed(2) })}
                         </Badge>
                       </div>
-                      <div className="w-full bg-neutral-200 rounded-full h-2 overflow-hidden">
+                      <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2 overflow-hidden">
                         <div
                           className={`h-full transition-all duration-500 ${
                             contrib.impact > 2 ? 'bg-error-500' : contrib.impact > 1.2 ? 'bg-warning-500' : 'bg-success-500'
@@ -521,7 +521,7 @@ export function StabilityPredictTab() {
 
                 <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
                   <h4 className="font-semibold text-sm mb-2">{t('ai.stability.tab.recommendations.degradationPathway')}</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-2">
                     {stabilityResult.degradationPathway.map((pathway, idx) => (
                       <div key={idx} className="text-xs px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded">
                         • {pathway}
