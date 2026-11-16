@@ -516,4 +516,49 @@ describe('FormulaCard - 配方卡片组件', () => {
       expect(cardContent?.className).toContain('p-3')
     })
   })
+
+  // v9.0 单卡标签管理（此前只有显示，无添加/删除入口）
+  describe('12. 单卡标签管理', () => {
+    it('点击 + 按钮出现输入框，回车提交调用 onAddTag', () => {
+      const onAddTag = vi.fn()
+      render(<FormulaCard {...defaultProps} onAddTag={onAddTag} />)
+
+      const addBtn = screen.getByLabelText('添加标签')
+      fireEvent.click(addBtn)
+
+      const input = screen.getByPlaceholderText('输入标签')
+      fireEvent.change(input, { target: { value: '安神' } })
+      fireEvent.keyDown(input, { key: 'Enter' })
+
+      expect(onAddTag).toHaveBeenCalledWith('formula-001', '安神')
+    })
+
+    it('点击标签上的 × 调用 onRemoveTag', () => {
+      const onRemoveTag = vi.fn()
+      render(<FormulaCard {...defaultProps} onRemoveTag={onRemoveTag} />)
+
+      const removeBtn = screen.getByLabelText('移除标签 补气')
+      fireEvent.click(removeBtn)
+
+      expect(onRemoveTag).toHaveBeenCalledWith('formula-001', '补气')
+    })
+
+    it('未传 onAddTag 时不显示添加按钮', () => {
+      render(<FormulaCard {...defaultProps} />)
+      expect(screen.queryByLabelText('添加标签')).not.toBeInTheDocument()
+    })
+
+    it('Esc 取消添加', () => {
+      const onAddTag = vi.fn()
+      render(<FormulaCard {...defaultProps} onAddTag={onAddTag} />)
+
+      fireEvent.click(screen.getByLabelText('添加标签'))
+      const input = screen.getByPlaceholderText('输入标签')
+      fireEvent.change(input, { target: { value: '安神' } })
+      fireEvent.keyDown(input, { key: 'Escape' })
+
+      expect(onAddTag).not.toHaveBeenCalled()
+      expect(screen.queryByPlaceholderText('输入标签')).not.toBeInTheDocument()
+    })
+  })
 })

@@ -684,6 +684,8 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
               onSetPriority={formulaActions.handleSetPriority}
               onGetVersions={formulaActions.handleGetVersions}
               onRollbackVersion={formulaActions.handleRollbackVersion}
+              onAddTag={formulaActions.handleAddTag}
+              onRemoveTag={formulaActions.handleRemoveTag}
               storageError={formulaStorageError}
               onDismissStorageError={clearFormulaStorageError}
               onUndoBatchDelete={undoBatchDelete}

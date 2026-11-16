@@ -28,6 +28,7 @@ import {
   Pencil,
   Check,
   X,
+  Plus,
   Flag,
   MoreVertical,
 } from 'lucide-react';
@@ -59,6 +60,10 @@ interface FormulaCardProps {
   onJumpToSource?: (sourceMessageId: string) => void;
   /** 切换收藏状态 */
   onToggleFavorite?: (id: string) => void;
+  /** v9.0 新增：单卡添加标签（后端已记版本快照，此前只有批量标签） */
+  onAddTag?: (id: string, tag: string) => void;
+  /** v9.0 新增：单卡移除标签 */
+  onRemoveTag?: (id: string, tag: string) => void;
 }
 
 const FormulaCard = React.memo<FormulaCardProps>(
@@ -76,11 +81,17 @@ const FormulaCard = React.memo<FormulaCardProps>(
     onShowContextMenu,
     onJumpToSource,
     onToggleFavorite,
+    onAddTag,
+    onRemoveTag,
   }) => {
     const { t, i18n } = useTranslation();
     const [isEditingName, setIsEditingName] = useState(false);
     const [editValue, setEditValue] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
+    // v9.0：单卡标签管理（此前只有显示，无添加/删除入口）
+    const [isAddingTag, setIsAddingTag] = useState(false);
+    const [tagValue, setTagValue] = useState('');
+    const tagInputRef = useRef<HTMLInputElement>(null);
 
     const swipeHandlers = useSwipe({
       onSwipeRight: () => onSelect?.(formula.id),
@@ -190,25 +201,95 @@ const FormulaCard = React.memo<FormulaCardProps>(
     };
 
     const renderEfficacyTags = () => {
-      const tags = formula.tags;
-      if (!tags || tags.length === 0) return null;
-
+      const tags = formula.tags ?? [];
       const maxTags = compact ? 3 : 4;
+      const canManage = Boolean(onAddTag || onRemoveTag);
+
+      // v9.0：无标签且无管理能力时保持原样（不渲染），避免破坏纯展示场景
+      if (tags.length === 0 && !canManage) return null;
+
+      const commitTag = () => {
+        const value = tagValue.trim();
+        if (value && onAddTag) onAddTag(formula.id, value);
+        setTagValue('');
+        setIsAddingTag(false);
+      };
 
       return (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           {tags.slice(0, maxTags).map((tag, index) => (
             <span
-              key={index}
-              className={`inline-flex items-center rounded-full font-medium bg-accent-50 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700 ${
+              key={`${tag}-${index}`}
+              className={`inline-flex items-center gap-0.5 rounded-full font-medium bg-accent-50 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700 ${
                 compact ? 'px-1.5 py-0.5 text-xs' : 'px-2 py-0.5 text-xs'
               }`}
             >
               {tag}
+              {onRemoveTag && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveTag(formula.id, tag);
+                  }}
+                  aria-label={t('ai.chat.formulaCard.removeTag', { tag })}
+                  title={t('ai.chat.formulaCard.removeTag', { tag })}
+                  className="ml-0.5 rounded-full hover:bg-accent-200/60 dark:hover:bg-accent-300/20 p-0.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-500"
+                >
+                  <X size={10} aria-hidden="true" />
+                </button>
+              )}
             </span>
           ))}
           {tags.length > maxTags && (
             <span className="text-xs text-neutral-500 dark:text-neutral-400 px-1">+{tags.length - maxTags}</span>
+          )}
+
+          {/* v9.0：添加标签 —— 内联输入，回车提交，Esc 取消 */}
+          {onAddTag && isAddingTag && (
+            <input
+              ref={tagInputRef}
+              type="text"
+              value={tagValue}
+              onChange={(e) => setTagValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  commitTag();
+                } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  setTagValue('');
+                  setIsAddingTag(false);
+                }
+                e.stopPropagation();
+              }}
+              onBlur={() => {
+                // 失焦时若有内容则提交，否则收起
+                if (tagValue.trim()) commitTag();
+                else setIsAddingTag(false);
+              }}
+              onClick={(e) => e.stopPropagation()}
+              placeholder={t('ai.chat.formulaCard.tagPlaceholder')}
+              aria-label={t('ai.chat.formulaCard.tagPlaceholder')}
+              className="w-24 rounded-full border border-accent-300 dark:border-accent-300/30 bg-white dark:bg-neutral-800 px-2 py-0.5 text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-500"
+            />
+          )}
+          {onAddTag && !isAddingTag && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setTagValue('');
+                setIsAddingTag(true);
+                // 下一帧聚焦输入框
+                requestAnimationFrame(() => tagInputRef.current?.focus());
+              }}
+              aria-label={t('ai.chat.formulaCard.addTag')}
+              title={t('ai.chat.formulaCard.addTag')}
+              className="inline-flex items-center justify-center rounded-full border border-dashed border-accent-300 dark:border-accent-300/40 text-accent-700 dark:text-accent-300 hover:bg-accent-50 dark:hover:bg-accent-300/15 p-0.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-500"
+            >
+              <Plus size={12} aria-hidden="true" />
+            </button>
           )}
         </div>
       );
