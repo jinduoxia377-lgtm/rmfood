@@ -24,6 +24,8 @@ interface PersistedState {
   serverTime: string | null
   email: string
   devVerifyCode: string | null
+  /** 后端是否成功发出验证码邮件；null=未知（旧 sessionStorage 条目 / token 路径），true/false=后端明示 */
+  emailSent: boolean | null
 }
 
 const STORAGE_KEY = 'rmfood_whitelist_apply'
@@ -33,7 +35,11 @@ function loadPersisted(): PersistedState | null {
     const raw = sessionStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw) as PersistedState
-    if (parsed && parsed.step) return parsed
+    if (parsed && parsed.step) {
+      // 迁移：旧 sessionStorage 条目无 emailSent 字段 → 默认 null（未知），避免误判为「已发送」
+      if (parsed.emailSent === undefined) parsed.emailSent = null
+      return parsed
+    }
   } catch {
     /* ignore */
   }
@@ -81,9 +87,9 @@ export default function WhitelistApplyPage() {
     if (persisted) return persisted
     const token = searchParams.get('token')
     if (token) {
-      return { step: 'result', applicationId: null, statusToken: token, reviewDeadline: null, serverTime: null, email: '', devVerifyCode: null }
+      return { step: 'result', applicationId: null, statusToken: token, reviewDeadline: null, serverTime: null, email: '', devVerifyCode: null, emailSent: null }
     }
-    return { step: 'apply', applicationId: null, statusToken: null, reviewDeadline: null, serverTime: null, email: '', devVerifyCode: null }
+    return { step: 'apply', applicationId: null, statusToken: null, reviewDeadline: null, serverTime: null, email: '', devVerifyCode: null, emailSent: null }
   })
 
   const [submitting, setSubmitting] = useState(false)
@@ -117,6 +123,7 @@ export default function WhitelistApplyPage() {
         email: values.email,
         serverTime: result.server_time,
         devVerifyCode: result.dev_verify_code ?? null,
+        emailSent: result.email_sent ?? null,
       }))
     } catch (err) {
       setError(extractWhitelistErrorMessage(err, t))
@@ -188,6 +195,7 @@ export default function WhitelistApplyPage() {
               requestId={state.applicationId}
               lang={lang}
               devCode={state.devVerifyCode}
+              emailSent={state.emailSent}
               onVerified={handleVerified}
               onError={(msg) => setError(msg)}
             />
@@ -210,8 +218,8 @@ export default function WhitelistApplyPage() {
             </>
           )}
 
-          {/* 状态查询折叠区 */}
-          <StatusLookupSection />
+          {/* 状态查询折叠区（预填本人状态 token，一键查询） */}
+          <StatusLookupSection defaultToken={state.statusToken ?? undefined} />
         </main>
       </div>
     </div>

@@ -16,10 +16,12 @@ export default {
       email: 'E-Mail',
       emailPlaceholder: 'you@company.com',
       emailRequired: 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
-      fullName: 'Vollständiger Name (optional)',
+      fullName: 'Vollständiger Name',
       fullNamePlaceholder: 'Ihr Name',
-      organization: 'Organisation (optional)',
+      fullNameRequired: 'Bitte geben Sie Ihren Namen ein',
+      organization: 'Organisation',
       organizationPlaceholder: 'Unternehmen / Abteilung',
+      organizationRequired: 'Bitte geben Sie Ihre Organisation ein',
       reason: 'Begründung (optional)',
       reasonPlaceholder: 'Beschreiben Sie kurz Ihren Verwendungszweck',
       consent: 'Ich habe die Datenschutzerklärung gelesen und stimme der Verwendung meiner Daten zur Kontofreischaltung zu',
@@ -43,6 +45,9 @@ export default {
       verifying: 'Wird verifiziert…',
       expired: 'Der Code ist abgelaufen. Bitte fordern Sie einen neuen an.',
       devCodeHint: 'Verifizierungscode (Entwicklungsmodus)',
+      emailSendFailed: 'Das Senden der Verifizierungs-E-Mail ist fehlgeschlagen. Bitte versuchen Sie es erneut oder wenden Sie sich an den Administrator.',
+      resendSuccess: 'Ein neuer Verifizierungscode wurde an {{email}} gesendet.',
+      checkSpam: 'Nicht erhalten? Bitte prüfen Sie Ihren Spam-/Junk-Ordner.',
     },
 
     success: {
@@ -67,7 +72,7 @@ export default {
       title: 'Bewerbungsstatus prüfen',
       tokenPlaceholder: 'Bewerbungs-ID oder Status-Token eingeben',
       query: 'Prüfen',
-      error: 'Keine Bewerbung gefunden. Bitte überprüfen Sie Ihr Token.',
+      error: 'Bewerbung nicht gefunden. Prüfen Sie Ihre Bewerbungs-ID oder das Status-Token.',
     },
 
     quota: {

@@ -25,7 +25,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -92,6 +92,18 @@ class PreRegisterRequestOut(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @field_validator("verify_attempts", "attempt_count", mode="before")
+    @classmethod
+    def _coerce_null_counters(cls, v):
+        """遗留行（早于加列）这两列为 NULL，ORM 标 nullable=False 但历史数据未回填。
+
+        None 会触发 Pydantic int 校验失败（422），炸掉整个列表接口。
+        这里把 None 归一化为默认值，输出仍为 int（前端无感）。
+        """
+        if v is None:
+            return 0  # 统一回退；attempt_count 语义为“提交次数”，0 与 1 对展示无实质差异
+        return v
 
 
 class WhitelistQuotaOut(BaseModel):

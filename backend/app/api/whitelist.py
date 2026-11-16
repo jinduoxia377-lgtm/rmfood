@@ -16,7 +16,7 @@
 import base64
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session
@@ -27,14 +27,26 @@ router = APIRouter(prefix="/auth/whitelist", tags=["白名单申请"])
 
 
 class WhitelistApplyRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     email: EmailStr = Field(..., min_length=6, max_length=100, description="申请邮箱")
-    full_name: str | None = Field(None, max_length=50, description="姓名（选填）")
-    organization: str | None = Field(None, max_length=100, description="单位/部门（选填）")
+    full_name: str = Field(..., min_length=1, max_length=50, description="姓名（必填）")
+    organization: str = Field(..., min_length=1, max_length=100, description="单位/部门（必填）")
     reason: str | None = Field(None, max_length=500, description="申请理由（选填）")
     source: str = Field("whitelist_page", pattern="^(whitelist_page|login)$", description="申请来源")
     lang: str = Field("zh-CN", pattern="^(zh-CN|en-US|de-DE)$", description="邮件语言")
     captcha_id: str = Field(..., min_length=8, max_length=64, description="人机验证码 ID")
     captcha_answer: str = Field(..., min_length=1, max_length=8, description="人机验证码答案")
+
+    @field_validator("full_name", "organization")
+    @classmethod
+    def _strip_and_require_not_blank(cls, v: str) -> str:
+        # str_strip_whitespace=True 已先行去除首尾空白；此处再兜底一次，
+        # 确保 strip 后为空（如纯空白）时被拒绝，并给出友好错误信息。
+        v = v.strip()
+        if not v:
+            raise ValueError("姓名/单位不能为空")
+        return v
 
 
 class WhitelistVerifyCodeRequest(BaseModel):
@@ -130,6 +142,7 @@ async def whitelist_apply(
         "request_id": result["request_id"],
         "status_token": result["status_token"],
         "email_verified": result["email_verified"],
+        "email_sent": result.get("email_sent", False),
         "server_time": result["server_time"],
         "cooldown_until": result.get("cooldown_until"),
         "dev_verify_code": result.get("dev_verify_code"),
@@ -192,9 +205,26 @@ async def whitelist_resend_code(
 @router.get("/status", summary="查询白名单申请状态")
 async def whitelist_status(
     token: str,
+    request: Request,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """凭申请成功时返回的状态 token 查询审核状态（防枚举）。"""
+    """查询申请审核状态（防枚举）。
+
+    支持「状态 token」与「申请编号（纯数字）」两种查询方式（token 优先）。
+    按 IP 限流（每小时 IP_STATUS_LIMIT 次），响应不含 email/姓名/单位等 PII。
+    """
+    ip = request.client.host if request.client else None
+    allowed, _ = await whitelist_service.allow_status(ip)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "code": "RATE_LIMITED",
+                "message": "查询过于频繁，请稍后再试",
+                "retry_after": whitelist_service.IP_STATUS_WINDOW,
+            },
+        )
+
     result = await whitelist_service.get_application_status(db, token)
     if "error" in result:
         _raise_error(result["error"])

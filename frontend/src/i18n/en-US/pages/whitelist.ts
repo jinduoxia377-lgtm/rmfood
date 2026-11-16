@@ -16,10 +16,12 @@ export default {
       email: 'Email',
       emailPlaceholder: 'you@company.com',
       emailRequired: 'Please enter a valid email address',
-      fullName: 'Full Name (optional)',
+      fullName: 'Full Name',
       fullNamePlaceholder: 'Your name',
-      organization: 'Organization (optional)',
+      fullNameRequired: 'Please enter your full name',
+      organization: 'Organization',
       organizationPlaceholder: 'Company / department',
+      organizationRequired: 'Please enter your organization',
       reason: 'Reason for Applying (optional)',
       reasonPlaceholder: 'Briefly describe your use case',
       consent: 'I have read and agree to the Privacy Policy and consent to the use of my information for account activation review',
@@ -43,6 +45,9 @@ export default {
       verifying: 'Verifying…',
       expired: 'The code has expired. Please request a new one.',
       devCodeHint: 'Dev-mode verification code',
+      emailSendFailed: 'Failed to send the verification email. Please retry or contact the administrator.',
+      resendSuccess: 'A new verification code was sent to {{email}}.',
+      checkSpam: "Didn't receive it? Please check your spam/junk folder.",
     },
 
     success: {
@@ -67,7 +72,7 @@ export default {
       title: 'Check Application Status',
       tokenPlaceholder: 'Enter application ID or status token',
       query: 'Check',
-      error: 'No application found. Please check your token.',
+      error: 'Application not found. Check your application ID or status token.',
     },
 
     quota: {

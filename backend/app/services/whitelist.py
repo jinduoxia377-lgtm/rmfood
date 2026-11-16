@@ -5,12 +5,14 @@
 
 安全要点:
 - 验证码 6 位数字，DB 仅存 SHA-256 哈希（带盐），10 分钟有效，单码最多尝试 5 次
-- 状态查询 token 32B 随机，DB 仅存哈希，明文仅申请成功时返回一次（防枚举）
+- 状态查询 token 32B 随机，DB 仅存哈希，明文仅申请成功时返回一次；查询支持「状态 token」与「申请编号（纯数字）」两种方式，token 优先（防枚举）
+- 状态查询响应不含 email/姓名/单位等 PII，配合 IP 限流（allow_status）抑制枚举
 - IP 维度限流（内存滑动窗口），邮箱维度 7 天冷却（DB 持久化，防换 IP 绕过）
 - 服务端下发绝对时间戳（server_time / review_deadline / cooldown_until），前端只做差值渲染
 """
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import logging
 import os
@@ -37,10 +39,12 @@ IP_APPLY_LIMIT = 5                    # IP 维度：每小时最多申请 5 次
 IP_RESEND_LIMIT = 10                # IP 维度：每小时最多重发验证码 10 次
 IP_VERIFY_LIMIT = 20                # IP 维度：每小时最多校验验证码 20 次（防爆破）
 IP_CAPTCHA_LIMIT = 60                # IP 维度：每小时最多生成人机验证码 60 次
+IP_STATUS_LIMIT = 30                 # IP 维度：每小时最多查询申请进度 30 次（防枚举）
 IP_APPLY_WINDOW = 3600
 IP_RESEND_WINDOW = 3600
 IP_VERIFY_WINDOW = 3600
 IP_CAPTCHA_WINDOW = 3600
+IP_STATUS_WINDOW = 3600
 CAPTCHA_TTL_SECONDS = 300             # 人机验证码 5 分钟有效
 CAPTCHA_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"  # 去掉易混淆字符 0/O/1/I
 
@@ -51,6 +55,7 @@ _IP_APPLY_BUCKET: dict[str, list[float]] = {}
 _IP_RESEND_BUCKET: dict[str, list[float]] = {}
 _IP_VERIFY_BUCKET: dict[str, list[float]] = {}
 _IP_CAPTCHA_BUCKET: dict[str, list[float]] = {}
+_IP_STATUS_BUCKET: dict[str, list[float]] = {}
 _IP_LOCK = threading.Lock()
 
 # ── 人机验证码存储（Redis 未启用时内存兜底） ──
@@ -166,6 +171,14 @@ async def allow_captcha(ip: str) -> tuple[bool, int]:
     return check_ip_rate(ip or "unknown", _IP_CAPTCHA_BUCKET, IP_CAPTCHA_LIMIT, IP_CAPTCHA_WINDOW)
 
 
+async def allow_status(ip: str) -> tuple[bool, int]:
+    """IP 维度申请进度查询限流：每小时最多 IP_STATUS_LIMIT 次（防枚举，Redis 优先，内存兜底）。"""
+    from ..core.distributed.redis_client import is_redis_enabled
+    if is_redis_enabled():
+        return await _check_ip_rate_redis(ip, "status", IP_STATUS_LIMIT, IP_STATUS_WINDOW)
+    return check_ip_rate(ip or "unknown", _IP_STATUS_BUCKET, IP_STATUS_LIMIT, IP_STATUS_WINDOW)
+
+
 def reset_rate_limits() -> None:
     """清空 IP 限流桶与人机验证码内存存储（测试夹具/运维工具使用）。"""
     with _IP_LOCK:
@@ -173,6 +186,7 @@ def reset_rate_limits() -> None:
         _IP_RESEND_BUCKET.clear()
         _IP_VERIFY_BUCKET.clear()
         _IP_CAPTCHA_BUCKET.clear()
+        _IP_STATUS_BUCKET.clear()
     with _CAPTCHA_LOCK:
         _CAPTCHA_STORE.clear()
 
@@ -289,7 +303,9 @@ async def send_verification_code_email(email: str, code: str, lang: str = "zh-CN
     try:
         from ..utils.email_service import send_whitelist_verification_email
         cfg = _smtp_config()
-        return send_whitelist_verification_email(
+        # SMTP I/O 为阻塞调用，放到线程池执行，避免阻塞事件循环
+        return await asyncio.to_thread(
+            send_whitelist_verification_email,
             to_email=email,
             code=code,
             lang=lang,
@@ -319,7 +335,9 @@ async def send_review_result_email(
     try:
         from ..utils.email_service import send_whitelist_review_email
         cfg = _smtp_config()
-        return send_whitelist_review_email(
+        # SMTP I/O 为阻塞调用，放到线程池执行，避免阻塞事件循环
+        return await asyncio.to_thread(
+            send_whitelist_review_email,
             to_email=email,
             status=status,
             username=username,
@@ -466,6 +484,11 @@ async def create_application(
 
     email_verified = False
     code: str | None = None
+    # email_sent: 验证码邮件是否真正发出（SMTP 投递成功）。
+    # - require_verification=True：取 send_verification_code_email 的实际返回值
+    # - require_verification=False（旧 /auth/pre-register 路径）：无需邮箱验证，
+    #   不发验证码，设为 True 避免「未发送」告警语义污染前端（该路径本无验证步骤）
+    email_sent = True
     if require_verification:
         code = generate_verify_code()
         new_request.verify_code_hash = hash_secret(code)
@@ -474,7 +497,7 @@ async def create_application(
         await db.commit()
         await db.refresh(new_request)
         # 邮件发送失败不阻断申请（开发环境 SMTP 未配置时日志落盘降级）
-        await send_verification_code_email(email_norm, code, lang=lang)
+        email_sent = await send_verification_code_email(email_norm, code, lang=lang)
     else:
         email_verified = True
         await db.commit()
@@ -498,6 +521,7 @@ async def create_application(
         "request_id": new_request.id,
         "status_token": status_token,
         "email_verified": email_verified,
+        "email_sent": email_sent,
         "server_time": utc_iso(now),
         "cooldown_until": None,
         "dev_verify_code": dev_verify_code,
@@ -612,9 +636,13 @@ async def resend_application_code(
     req.verify_attempts = 0
     await db.commit()
 
-    await send_verification_code_email(req.email, code, lang=lang)
+    email_sent = await send_verification_code_email(req.email, code, lang=lang)
     logger.info("[AUDIT] whitelist resend request_id=%s email=%s ip=%s", request_id, req.email, ip or "-")
-    return {"retry_after": RESEND_COOLDOWN_SECONDS, "server_time": utc_iso(now)}
+    return {
+        "retry_after": RESEND_COOLDOWN_SECONDS,
+        "email_sent": email_sent,
+        "server_time": utc_iso(now),
+    }
 
 
 async def admin_resend_verification_code(db: AsyncSession, *, request_id: int) -> dict:
@@ -651,12 +679,13 @@ async def admin_resend_verification_code(db: AsyncSession, *, request_id: int) -
     req.verify_attempts = 0
     await db.commit()
 
-    await send_verification_code_email(req.email, code, lang="zh-CN")
+    email_sent = await send_verification_code_email(req.email, code, lang="zh-CN")
     logger.info("[AUDIT] whitelist admin-resend request_id=%s email=%s", request_id, req.email)
     return {
         "request_id": req.id,
         "email": req.email,
         "retry_after": RESEND_COOLDOWN_SECONDS,
+        "email_sent": email_sent,
         "server_time": utc_iso(now),
     }
 
@@ -666,10 +695,21 @@ async def admin_resend_verification_code(db: AsyncSession, *, request_id: int) -
 # ═══════════════════════════════════════════
 
 async def get_application_status(db: AsyncSession, token: str) -> dict:
-    """凭状态 token 查询申请状态（防枚举：DB 仅存哈希）。"""
+    """查询申请状态（防枚举：token 优先，纯数字回退按申请编号查询）。
+
+    查询优先级：
+    1. 先按状态 token 哈希查询（DB 仅存哈希，明文 token 仅申请成功时返回一次）。
+    2. 未命中且 token 为纯数字（长度 1-12，对应申请编号 id）时，回退按 id 查询。
+    3. 均未命中返回 404。
+
+    防枚举说明：本接口不返回 email/姓名/单位等 PII，仅返回申请状态与审核信息；
+    调用方须配合 IP 限流（allow_status）抑制枚举。
+    """
     req = await get_request_by_token(db, token)
+    if req is None and token.isdigit() and 1 <= len(token) <= 12:
+        req = await get_request_by_id(db, int(token))
     if req is None:
-        return {"error": {"code": "NOT_FOUND", "message": "申请不存在或 token 无效", "status": 404}}
+        return {"error": {"code": "NOT_FOUND", "message": "申请不存在或编号/令牌无效", "status": 404}}
 
     return {
         "request_id": req.id,
