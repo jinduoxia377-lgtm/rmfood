@@ -67,6 +67,7 @@ import {
   ChevronDown,
   ChevronUp,
   PenLine,
+  ArrowRight,
 } from 'lucide-react'
 
 /** 分页配置常量 */
@@ -93,11 +94,14 @@ function formatVersionFieldLabel(
 }
 
 /**
- * 将版本 diff 中某字段的【新值】安全序列化为可展示文本。
+ * 将版本 diff 中某字段的【旧值 / 新值】安全序列化为可展示文本。
+ * 旧值与新值共用同一序列化规则，保证 before → after 两侧可比。
  * - 数组（如 tags）用「、」连接
  * - 布尔用本地化「是/否」
  * - priority 复用已有 priority_high/medium/low
  * - 其余对象走 JSON（保底），原始值直接 String()
+ *
+ * 注意：null/undefined 返回 ''，由调用方决定用「（无）」等占位符呈现"字段缺失"语义。
  */
 function formatVersionChangeValue(
   field: keyof AIRecognizedFormula,
@@ -345,6 +349,11 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
   }, [compareResult, comparePair, t])
   const [versionPanel, setVersionPanel] = useState<{ id: string; versions: FormulaVersion[] } | null>(null)
   const [expandedVersion, setExpandedVersion] = useState<number | null>(null)
+  // 版本 diff 需要「最新版改动后的值」：从 formulas 按当前查看的配方 id 取当前对象，
+  // 供相邻快照推不出新值时（即最新版）回退使用。
+  const currentFormula = versionPanel
+    ? formulas.find((f) => f.id === versionPanel.id)
+    : undefined
   // v8.5：批量操作的对话框状态（替代原生 window.confirm / window.prompt）
   const [confirmBatchDelete, setConfirmBatchDelete] = useState(false)
   const [tagDialogOpen, setTagDialogOpen] = useState(false)
@@ -1468,7 +1477,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                   {t('ai.chat.formulaPanel.versionEmpty')}
                 </p>
               ) : (
-                versionPanel.versions.map((v) => {
+                versionPanel.versions.map((v, thisIdx) => {
                   const changeEntries = Object.entries(v.changes).filter(
                     ([, value]) => value !== undefined
                   ) as [keyof AIRecognizedFormula, unknown][]
@@ -1538,21 +1547,49 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                             </p>
                           ) : (
                             <ul className="space-y-1.5">
-                              {changeEntries.map(([field, value]) => (
-                                <li
-                                  key={String(field)}
-                                  className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2 text-xs"
-                                >
-                                  <span className="font-medium text-neutral-700 dark:text-neutral-300 sm:min-w-[96px] shrink-0">
-                                    {formatVersionFieldLabel(field, t)}
-                                  </span>
-                                  <span className="text-neutral-600 dark:text-neutral-400 break-words">
-                                    {t('ai.chat.formulaPanel.versionChangesSetTo', {
-                                      value: formatVersionChangeValue(field, value, t),
-                                    })}
-                                  </span>
-                                </li>
-                              ))}
+                              {changeEntries.map(([field]) => {
+                                // 旧值：本版快照存的是「本次改动前」的原值；缺失表示该字段为本次新增
+                                const oldValue = v.changes[field]
+                                // 新值：相邻快照关系——history[i].changes[field] 既是第 i+1 版改动前、
+                                // 也是第 i 版改动后的值；最新版（无下一版快照）新值取当前配方该字段。
+                                const newValue =
+                                  thisIdx + 1 < versionPanel.versions.length
+                                    ? versionPanel.versions[thisIdx + 1].changes[field]
+                                    : currentFormula?.[field]
+                                const hasOldValue = oldValue !== undefined && oldValue !== null
+                                const fromText = hasOldValue
+                                  ? formatVersionChangeValue(field, oldValue, t)
+                                  : t('ai.chat.formulaPanel.compareNone')
+                                const toText = formatVersionChangeValue(field, newValue, t)
+                                return (
+                                  <li
+                                    key={String(field)}
+                                    className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-2 text-xs"
+                                  >
+                                    <span className="font-medium text-neutral-700 dark:text-neutral-300 sm:min-w-[96px] shrink-0">
+                                      {formatVersionFieldLabel(field, t)}
+                                    </span>
+                                    <span className="flex items-baseline gap-1.5 break-words min-w-0">
+                                      <span
+                                        className={cn(
+                                          'text-neutral-500 dark:text-neutral-400',
+                                          !hasOldValue && 'italic'
+                                        )}
+                                        aria-label={`${t('ai.chat.formulaPanel.versionChangesFromLabel')}: ${fromText}`}
+                                      >
+                                        {fromText}
+                                      </span>
+                                      <ArrowRight className="w-3 h-3 shrink-0 text-neutral-400 dark:text-neutral-500 self-center" aria-hidden="true" />
+                                      <span
+                                        className="font-medium text-neutral-800 dark:text-neutral-100"
+                                        aria-label={`${t('ai.chat.formulaPanel.versionChangesToLabel')}: ${toText}`}
+                                      >
+                                        {toText}
+                                      </span>
+                                    </span>
+                                  </li>
+                                )
+                              })}
                             </ul>
                           )}
                         </div>

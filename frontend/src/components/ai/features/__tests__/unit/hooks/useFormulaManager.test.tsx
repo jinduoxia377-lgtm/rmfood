@@ -548,4 +548,38 @@ describe('useFormulaManager', () => {
     const restored = result.current.getFormulaById('f1')
     expect(restored?.autoName || restored?.name).toBe('旧名称')
   })
+
+  it('rollbackToVersion 应还原到目标版本的完整状态（累积性撤销，v8.4）', () => {
+    const { result } = renderHook(() => useFormulaManager())
+
+    act(() => {
+      result.current.addFormula(makeFormula('f1', '原名'))
+    })
+    // 预置一个"旧功效"，作为 efficacy 被改之前的原值（不记版本快照）
+    act(() => {
+      result.current.updateFormula('f1', { efficacy: '旧功效' })
+    })
+    expect(result.current.getFormulaById('f1')?.efficacy).toBe('旧功效')
+
+    // 连续三次带版本编辑，分别改不同字段
+    act(() => { result.current.updateFormulaWithVersion('f1', { name: '名v1' }, '改名') })
+    act(() => { result.current.updateFormulaWithVersion('f1', { efficacy: '功效v2' }, '改功效') })
+    act(() => { result.current.updateFormulaWithVersion('f1', { confidence: 0.5 }, '改置信度') })
+
+    // 当前状态应是三次改动的累积
+    expect(result.current.getFormulaById('f1')?.name).toBe('名v1')
+    expect(result.current.getFormulaById('f1')?.efficacy).toBe('功效v2')
+    expect(result.current.getFormulaById('f1')?.confidence).toBe(0.5)
+
+    // 回滚到 v1：应还原到"第 1 版改动之前"的完整状态，
+    // 即 v1 之后的所有改动（efficacy/confidence）都要被逐层撤销
+    act(() => {
+      const ok = result.current.rollbackToVersion('f1', 1)
+      expect(ok).toBe(true)
+    })
+    const restored = result.current.getFormulaById('f1')
+    expect(restored?.name).toBe('原名')
+    expect(restored?.efficacy).toBe('旧功效') // v2 的改动也应被撤销
+    expect(restored?.confidence).toBe(0.9)    // v3 的改动也应被撤销
+  })
 })
