@@ -10,7 +10,7 @@
  */
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { FormulaCard } from '@/components/ai/features/components/FormulaCard'
+import { FormulaCard, deriveTagSuggestions } from '@/components/ai/features/components/FormulaCard'
 import type { AIRecognizedFormula, FormulaQualityScore } from '@/types/ai.types'
 
 const mockFormula: AIRecognizedFormula = {
@@ -559,6 +559,151 @@ describe('FormulaCard - 配方卡片组件', () => {
 
       expect(onAddTag).not.toHaveBeenCalled()
       expect(screen.queryByPlaceholderText('输入标签')).not.toBeInTheDocument()
+    })
+  })
+
+  // v9.1 基于成分的智能标签建议
+  const makeFormula = (overrides: Partial<AIRecognizedFormula>): AIRecognizedFormula => ({
+    ...mockFormula,
+    tags: [],
+    ...overrides,
+  })
+
+  describe('13. deriveTagSuggestions 纯函数', () => {
+    it('两类关键词各命中≥2个成分时返回两个建议类别', () => {
+      const formula = makeFormula({
+        ingredients: [
+          { name: '维生素C', dosage: 10, unit: 'g' },
+          { name: '葡萄多酚', dosage: 5, unit: 'g' },
+          { name: '胶原蛋白肽', dosage: 8, unit: 'g' },
+          { name: '乳清蛋白', dosage: 6, unit: 'g' },
+        ],
+      })
+
+      expect(deriveTagSuggestions(formula)).toEqual(['抗氧化', '蛋白质'])
+    })
+
+    it('仅命中1个关键词时不建议该类别（阈值≥2）', () => {
+      const formula = makeFormula({
+        ingredients: [
+          { name: '维生素C', dosage: 10, unit: 'g' },
+          { name: '人参', dosage: 10, unit: 'g' },
+        ],
+      })
+
+      expect(deriveTagSuggestions(formula)).toEqual([])
+    })
+
+    it('大小写不敏感：大写 VC / Vitamin E 类成分名可命中', () => {
+      const formula = makeFormula({
+        ingredients: [
+          { name: '维生素C', dosage: 3, unit: 'g' },
+          { name: '维生素E', dosage: 4, unit: 'g' },
+        ],
+      })
+
+      // 关键词表存的是小写 '维生素c'/'维生素e'，成分名大小写不影响匹配
+      expect(deriveTagSuggestions(formula)).toEqual(['抗氧化'])
+    })
+
+    it('vc衍生物 属美白类关键词（大小写不敏感）', () => {
+      const formula = makeFormula({
+        ingredients: [
+          { name: 'VC衍生物', dosage: 3, unit: 'g' },
+          { name: '传明酸', dosage: 4, unit: 'g' },
+        ],
+      })
+
+      expect(deriveTagSuggestions(formula)).toEqual(['美白'])
+    })
+
+    it('过滤掉 tags 里已有的类别', () => {
+      const formula = makeFormula({
+        tags: ['抗氧化'],
+        ingredients: [
+          { name: '维生素C', dosage: 10, unit: 'g' },
+          { name: '花青素', dosage: 5, unit: 'g' },
+          { name: '胶原蛋白肽', dosage: 8, unit: 'g' },
+          { name: '氨基酸', dosage: 6, unit: 'g' },
+        ],
+      })
+
+      expect(deriveTagSuggestions(formula)).toEqual(['蛋白质'])
+    })
+
+    it('全部建议都已存在时返回空数组', () => {
+      const formula = makeFormula({
+        tags: ['抗氧化', '蛋白质', '保湿', '美白'],
+        ingredients: [
+          { name: '维生素C', dosage: 10, unit: 'g' },
+          { name: '维生素e', dosage: 5, unit: 'g' },
+          { name: '神经酰胺', dosage: 2, unit: 'g' },
+          { name: '角鲨烷', dosage: 2, unit: 'g' },
+          { name: '烟酰胺', dosage: 3, unit: 'g' },
+          { name: '传明酸', dosage: 3, unit: 'g' },
+          { name: '胶原蛋白肽', dosage: 8, unit: 'g' },
+          { name: '乳清蛋白', dosage: 6, unit: 'g' },
+        ],
+      })
+
+      expect(deriveTagSuggestions(formula)).toEqual([])
+    })
+
+    it('无成分或成分名全空时返回空数组', () => {
+      expect(deriveTagSuggestions(makeFormula({ ingredients: [] }))).toEqual([])
+      expect(
+        deriveTagSuggestions(makeFormula({ ingredients: [{ name: '', dosage: 1, unit: 'g' }] })),
+      ).toEqual([])
+    })
+  })
+
+  describe('14. 智能标签建议 UI', () => {
+    const suggestibleFormula = makeFormula({
+      ingredients: [
+        { name: '维生素C', dosage: 10, unit: 'g' },
+        { name: '葡萄多酚', dosage: 5, unit: 'g' },
+      ],
+    })
+
+    it('点 + 后展示建议 chip（含 Sparkles 图标区），点击 chip 调用 onAddTag 并收起', () => {
+      const onAddTag = vi.fn()
+      render(<FormulaCard {...defaultProps} formula={suggestibleFormula} onAddTag={onAddTag} />)
+
+      fireEvent.click(screen.getByLabelText('添加标签'))
+
+      const region = screen.getByTestId('tag-suggestions')
+      expect(region).toBeInTheDocument()
+      expect(screen.getByText('推荐标签')).toBeInTheDocument()
+
+      const chip = screen.getByRole('button', { name: '添加标签 抗氧化' })
+      fireEvent.click(chip)
+
+      expect(onAddTag).toHaveBeenCalledWith(suggestibleFormula.id, '抗氧化')
+      // 收起后建议区不再渲染
+      expect(screen.queryByTestId('tag-suggestions')).not.toBeInTheDocument()
+    })
+
+    it('无建议（成分不匹配）时不显示建议区', () => {
+      const onAddTag = vi.fn()
+      render(<FormulaCard {...defaultProps} onAddTag={onAddTag} />)
+
+      fireEvent.click(screen.getByLabelText('添加标签'))
+
+      expect(screen.queryByTestId('tag-suggestions')).not.toBeInTheDocument()
+      // 输入框仍可用
+      expect(screen.getByPlaceholderText('输入标签')).toBeInTheDocument()
+    })
+
+    it('建议 chip 传回的是原始类别串（而非本地化文案）', () => {
+      const onAddTag = vi.fn()
+      render(<FormulaCard {...defaultProps} formula={suggestibleFormula} onAddTag={onAddTag} />)
+
+      fireEvent.click(screen.getByLabelText('添加标签'))
+      fireEvent.click(screen.getByRole('button', { name: '添加标签 抗氧化' }))
+
+      const passedTag = onAddTag.mock.calls[0][1]
+      expect(['抗氧化', 'Antioxidant']).toContain(passedTag)
+      expect(passedTag).not.toBe('ai.chat.formulaCard.tagCategory_antioxidant')
     })
   })
 })
