@@ -31,6 +31,7 @@ import {
   Plus,
   Flag,
   MoreVertical,
+  Sparkles,
 } from 'lucide-react';
 
 interface FormulaCardProps {
@@ -66,7 +67,72 @@ interface FormulaCardProps {
   onRemoveTag?: (id: string, tag: string) => void;
 }
 
-const FormulaCard = React.memo<FormulaCardProps>(
+/**
+ * 成分关键词 → 功效类别映射（与 useFormulaManager.autoClassify 保持一致）。
+ * 匹配规则：formula.ingredients[].name（小写化）包含某 keyword（同样小写化）即命中，
+ * 单个类别命中 ≥2 个成分才视为成立，避免单个成分误判。
+ */
+const TAG_CATEGORY_KEYWORDS: Record<string, string[]> = {
+  '抗氧化': ['维生素c', '维生素e', '多酚', '花青素', '番茄红素'],
+  '蛋白质': ['胶原蛋白', '乳清蛋白', '大豆蛋白', '肽', '氨基酸'],
+  '保湿': ['透明质酸', '甘油', '神经酰胺', '角鲨烷'],
+  '美白': ['烟酰胺', '熊果苷', 'vc衍生物', '传明酸'],
+};
+
+/** 类别中文串 → i18n key 后缀（未覆盖的类别回退为直接展示中文串） */
+const TAG_CATEGORY_I18N_KEY: Record<string, string> = {
+  '抗氧化': 'ai.chat.formulaCard.tagCategory_antioxidant',
+  '蛋白质': 'ai.chat.formulaCard.tagCategory_protein',
+  '保湿': 'ai.chat.formulaCard.tagCategory_hydration',
+  '美白': 'ai.chat.formulaCard.tagCategory_whitening',
+};
+
+/**
+ * 纯函数：基于配方成分推导智能标签建议。
+ *
+ * 规则：
+ * 1. 每个类别统计有多少成分名包含其任一关键词（大小写不敏感，子串匹配）；
+ * 2. 命中成分数 ≥ 2 才将该类别作为建议；
+ * 3. 过滤掉 formula.tags 中已有的标签，避免重复建议；
+ * 4. 无匹配成分或全部命中类别都已在 tags 中时返回空数组。
+ */
+export function deriveTagSuggestions(formula: AIRecognizedFormula): string[] {
+  const ingredients = formula.ingredients ?? [];
+  const existingTags = new Set((formula.tags ?? []).map((tag) => tag.trim()));
+
+  if (ingredients.length === 0) return [];
+
+  const ingredientNames = ingredients
+    .map((ing) => (ing?.name ?? '').toString().trim().toLowerCase())
+    .filter(Boolean);
+
+  if (ingredientNames.length === 0) return [];
+
+  const suggestions: string[] = [];
+  for (const [category, keywords] of Object.entries(TAG_CATEGORY_KEYWORDS)) {
+    if (existingTags.has(category)) continue;
+
+    const lowerKeywords = keywords.map((k) => k.toLowerCase());
+    const hitCount = ingredientNames.filter((name) =>
+      lowerKeywords.some((keyword) => name.includes(keyword)),
+    ).length;
+
+    if (hitCount >= 2) {
+      suggestions.push(category);
+    }
+  }
+
+  return suggestions;
+}
+
+/** 类别中文串 → 本地化展示文案（有 i18n key 则翻译，否则回退中文串） */
+function localizeTagCategory(category: string, t: (key: string) => string): string {
+  const key = TAG_CATEGORY_I18N_KEY[category];
+  if (!key) return category;
+  const translated = t(key);
+  // i18n 未命中时会回退返回 key 本身，此时仍展示中文类别串
+  return translated === key ? category : translated;
+}const FormulaCard = React.memo<FormulaCardProps>(
   ({
     formula,
     isExpanded,
@@ -204,6 +270,8 @@ const FormulaCard = React.memo<FormulaCardProps>(
       const tags = formula.tags ?? [];
       const maxTags = compact ? 3 : 4;
       const canManage = Boolean(onAddTag || onRemoveTag);
+      // v9.0：仅当 onAddTag 可用（否则点了也无法添加）时才推导建议，避免无谓计算
+      const tagSuggestions = onAddTag ? deriveTagSuggestions(formula) : [];
 
       // v9.0：无标签且无管理能力时保持原样（不渲染），避免破坏纯展示场景
       if (tags.length === 0 && !canManage) return null;
@@ -273,6 +341,37 @@ const FormulaCard = React.memo<FormulaCardProps>(
               aria-label={t('ai.chat.formulaCard.tagPlaceholder')}
               className="w-24 rounded-full border border-accent-300 dark:border-accent-300/30 bg-white dark:bg-neutral-800 px-2 py-0.5 text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-500"
             />
+          )}
+          {/* v9.0：智能标签建议 —— 基于成分推导，点 chip 即添加（无建议时不渲染） */}
+          {onAddTag && isAddingTag && tagSuggestions.length > 0 && (
+            <div
+              data-testid="tag-suggestions"
+              className="flex flex-wrap items-center gap-1 w-full mt-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="inline-flex items-center gap-0.5 text-[11px] text-neutral-500 dark:text-neutral-400 shrink-0">
+                <Sparkles size={11} aria-hidden="true" />
+                {t('ai.chat.formulaCard.suggestedTags')}
+              </span>
+              {tagSuggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // 传回原始类别串（与 autoClassify 一致），展示层才做本地化
+                    onAddTag(formula.id, suggestion);
+                    setTagValue('');
+                    setIsAddingTag(false);
+                  }}
+                  aria-label={t('ai.chat.formulaCard.addTag') + ' ' + localizeTagCategory(suggestion, t)}
+                  title={t('ai.chat.formulaCard.addTag') + ' ' + localizeTagCategory(suggestion, t)}
+                  className="inline-flex items-center rounded-full border border-dashed border-accent-300 dark:border-accent-300/40 bg-accent-50 text-accent-700 dark:bg-accent-300/25 dark:text-accent-700 hover:bg-accent-100 dark:hover:bg-accent-300/35 px-2 py-0.5 text-xs font-medium focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-500"
+                >
+                  {localizeTagCategory(suggestion, t)}
+                </button>
+              ))}
+            </div>
           )}
           {onAddTag && !isAddingTag && (
             <button
