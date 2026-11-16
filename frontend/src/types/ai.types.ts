@@ -731,6 +731,9 @@ export interface AIRecognizedFormula {
   /** 是否已收藏 */
   isFavorite?: boolean;
 
+  /** 优先级（用于排序/强调） */
+  priority?: 'high' | 'medium' | 'low';
+
   /** 创建时间戳 */
   createdAt?: number;
 

@@ -189,11 +189,18 @@ export function useLongPress(
   const [isPressed, setIsPressed] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const targetRef = useRef<EventTarget | null>(null)
+  const startPosRef = useRef<{ x: number; y: number } | null>(null)
 
   const start = useCallback(
     (event: React.TouchEvent | React.MouseEvent) => {
       setIsPressed(true)
       targetRef.current = event.target
+
+      startPosRef.current = 'touches' in event && event.touches.length > 0
+        ? { x: event.touches[0].clientX, y: event.touches[0].clientY }
+        : 'clientX' in event
+          ? { x: (event as React.MouseEvent).clientX, y: (event as React.MouseEvent).clientY }
+          : null
 
       timeoutRef.current = setTimeout(() => {
         options.onLongPress?.()
@@ -206,10 +213,25 @@ export function useLongPress(
 
   const cancel = useCallback(() => {
     setIsPressed(false)
+    startPosRef.current = null
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
     }
   }, [])
+
+  /** 手指移动超过容差即视为「在滚动页面」，取消长按，避免滑动时误弹出上下文菜单 */
+  const handleTouchMove = useCallback(
+    (event: React.TouchEvent) => {
+      const start = startPosRef.current
+      const touch = event.touches[0]
+      if (!start || !touch) return
+      const dx = Math.abs(touch.clientX - start.x)
+      const dy = Math.abs(touch.clientY - start.y)
+      if (dx > 10 || dy > 10) cancel()
+    },
+    [cancel],
+  )
 
   useEffect(() => {
     return () => {
@@ -227,6 +249,8 @@ export function useLongPress(
       onMouseLeave: cancel,
       onTouchStart: start,
       onTouchEnd: cancel,
+      onTouchCancel: cancel,
+      onTouchMove: handleTouchMove,
     },
   }
 }

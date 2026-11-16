@@ -27,12 +27,14 @@ import type { FormulaExportFormat } from '@/utils/formulaExporter'
 import type { IEventBus, UnsubscribeFn } from '@/components/ai/features/services/eventBus'
 import { eventBus } from '@/components/ai/features/services/eventBus'
 import {
-  saveFormulaIndex,
+  saveFormulaIndexWithReason,
   loadFormulaIndex,
+  loadFormulaVersionHistory,
   clearFormulaStorage,
   isStorageAvailable,
   importFormulaData,
 } from '@/utils/formulaStorage'
+import type { StoredVersionHistory, FormulaSaveFailureReason } from '@/utils/formulaStorage'
 import { exportFormulas as exportFormulasUtil } from '@/utils/formulaExporter'
 import { smartMatch } from '@/utils/pinyinUtils'
 import { logger } from '@/utils/safeLogger'
@@ -42,6 +44,19 @@ import { calculateQualityScore } from '@/utils/formulaQuality'
 // ===== 常量定义 =====
 
 const DEFAULT_MAX_FORMULAS = 50
+
+/**
+ * v8.4 新增：判断一个值能否被安全地解析为有效时间戳。
+ * 用于从 localStorage 恢复版本历史时挡住脏数据，避免 UI 渲染出 "Invalid Date"。
+ */
+function isValidTimestamp(value: unknown): value is number | string | Date {
+  if (value === null || value === undefined || value === '') return false
+  if (typeof value === 'number') return Number.isFinite(value) && value > 0
+  if (value instanceof Date) return !Number.isNaN(value.getTime())
+  if (typeof value === 'string') return !Number.isNaN(new Date(value).getTime())
+  return false
+}
+
 const SAVE_DEBOUNCE_MS = 1000
 const UPDATE_DEBOUNCE_MS = 500
 
@@ -116,6 +131,24 @@ export interface UseFormulaManagerReturn {
   updateFormula: (id: string, updates: Partial<AIRecognizedFormula>) => void
   getFormulaById: (id: string) => AIRecognizedFormula | undefined
   clearAllFormulas: () => void
+  /** v8.3 新增：仅清空内存缓存（不动本地存储） */
+  clearMemoryCache: () => void
+  /** v8.5：持久化失败原因（null=无错误），UI 应据此给用户可见提示 */
+  storageError: FormulaSaveFailureReason | null
+  clearStorageError: () => void
+  /** v8.5：撤销最近一次批量删除，返回恢复条数（-1=无可撤销项） */
+  undoBatchDelete: () => number
+  /** v8.5：是否存在可撤销的批量删除 */
+  canUndoBatchDelete: boolean
+  /** v8.5：批量删除因超限被拒时记录被拒条数（null=无），UI 应提示分批 */
+  batchLimitExceeded: number | null
+  clearBatchLimitExceeded: () => void
+  /** v8.4 新增：带版本快照的用户编辑（内部会先快照改动前原值，再应用 updates） */
+  updateFormulaWithVersion: (
+    id: string,
+    updates: Partial<AIRecognizedFormula>,
+    reason?: string,
+  ) => void
 
   // 展开收起
   toggleExpand: (id: string) => void
@@ -254,6 +287,8 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [priorities, setPriorities] = useState<Map<string, 'high' | 'medium' | 'low'>>(new Map())
   const [versionHistory, setVersionHistory] = useState<Map<string, FormulaVersion[]>>(new Map())
+  // v8.5：持久化失败原因，供 UI 给用户可见提示（原仅 logger，用户以为已存，刷新即丢）
+  const [storageError, setStorageError] = useState<FormulaSaveFailureReason | null>(null)
   const [formulaTags, setFormulaTags] = useState<Map<string, string[]>>(new Map())
 
   // v8.0 新增：智能命名引擎与筛选排序状态
@@ -263,6 +298,9 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
 
   // ===== Refs =====
+
+  /** v8.4：createVersion 的 ref 转发，供声明位置更靠前的 addTag/removeTag 记版本快照 */
+  const createVersionRef = useRef<((id: string, changes: Partial<AIRecognizedFormula>, reason?: string) => void) | null>(null)
 
   const formulaCacheRef = useRef<Map<string, AIRecognizedFormula>>(new Map())
   const saveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -294,7 +332,9 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
   // ===== v7.0: EventBus 事件订阅集成 =====
 
   useEffect(() => {
-    const unsubFormulasDetected = bus.subscribe('formulas:detected', (payload: { formulas?: Record<string, unknown>[] }) => {
+    // 契约修复：payload 类型与 eventBus.ts 的 EventPayloadMap['formulas:detected']
+    // 统一为 AIRecognizedFormula[]（原为 Record<string, unknown>[]，与发布方脱节）。
+    const unsubFormulasDetected = bus.subscribe('formulas:detected', (payload: { formulas?: AIRecognizedFormula[] }) => {
       logger.info('[useFormulaManager] 📡 收到 formulas:detected 事件', {
         formulaCount: payload.formulas?.length || 0,
       })
@@ -305,15 +345,17 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
       }
 
       payload.formulas.forEach((detectedFormula) => {
+        // 规范化：补齐缺失字段，保证写入 formulaIndex 的对象满足 AIRecognizedFormula
         const formula: AIRecognizedFormula = {
-          id: (detectedFormula.id as string) || `auto-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-          name: (detectedFormula.name as string) || '',
+          ...detectedFormula,
+          id: detectedFormula.id || `auto-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+          name: detectedFormula.name || '',
           ingredientCount: Array.isArray(detectedFormula.ingredients) ? detectedFormula.ingredients.length : 0,
           confidence: typeof detectedFormula.confidence === 'number' ? detectedFormula.confidence : 0,
-          sourceMessageId: (detectedFormula.sourceMessageId as string) || '',
-          parsedAt: new Date(),
-          rawData: (detectedFormula.rawData as AIRecognizedFormula['rawData']) || {},
-          ingredients: Array.isArray(detectedFormula.ingredients) ? detectedFormula.ingredients as AIRecognizedFormula['ingredients'] : [],
+          sourceMessageId: detectedFormula.sourceMessageId || '',
+          parsedAt: detectedFormula.parsedAt instanceof Date ? detectedFormula.parsedAt : new Date(),
+          rawData: detectedFormula.rawData || ({} as AIRecognizedFormula['rawData']),
+          ingredients: Array.isArray(detectedFormula.ingredients) ? detectedFormula.ingredients : [],
         }
 
         addFormula(formula)
@@ -356,6 +398,36 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
         setFormulaIndex(savedIndex)
         formulaCacheRef.current = savedIndex
         logger.info(`[FormulaManager] 📂 已从本地存储加载 ${savedIndex.size} 个配方`)
+
+        // v8.2 修复：从持久化的 formulaIndex 重建 favorites / priorities，
+        // 否则刷新后 formula.isFavorite / formula.priority 仍在、但内部 Set/Map 为空，
+        // 导致「已收藏」点不动、批量收藏误判、按优先级查询失效等状态不一致。
+        const restoredFavorites = new Set<string>()
+        const restoredPriorities = new Map<string, 'high' | 'medium' | 'low'>()
+        savedIndex.forEach((f) => {
+          if (f.isFavorite) restoredFavorites.add(f.id)
+          if (f.priority) restoredPriorities.set(f.id, f.priority)
+        })
+        if (restoredFavorites.size > 0) setFavorites(restoredFavorites)
+        if (restoredPriorities.size > 0) setPriorities(restoredPriorities)
+
+        // v8.2 修复：恢复版本历史（此前完全未持久化，刷新即丢）
+        const storedVersions = loadFormulaVersionHistory()
+        if (storedVersions.length > 0) {
+          const restoredHistory = new Map<string, FormulaVersion[]>()
+          storedVersions.forEach((entry) => {
+            const versions: FormulaVersion[] = entry.versions.map((v) => ({
+              version: v.version,
+              // v8.4 加固：坏时间戳（null/NaN/非法字符串）不能污染 UI 成「Invalid Date」
+              timestamp: isValidTimestamp(v.timestamp) ? new Date(v.timestamp) : new Date(),
+              changes: v.changes as Partial<AIRecognizedFormula>,
+              changeReason: v.changeReason,
+              author: v.author,
+            }))
+            if (versions.length > 0) restoredHistory.set(entry.id, versions)
+          })
+          if (restoredHistory.size > 0) setVersionHistory(restoredHistory)
+        }
       }
     }
 
@@ -370,12 +442,14 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
     }
   }, [autoSave])
 
-  // 自动保存到 localStorage
+  // 自动保存到 localStorage（v8.2：版本历史变化时也保存，保证刷新后不丢）
+  const versionHistoryRef = useRef(versionHistory)
+  versionHistoryRef.current = versionHistory
   useEffect(() => {
     if (autoSave && formulaIndex.size > 0 && isStorageAvailable()) {
       debouncedSaveToStorage(formulaIndex)
     }
-  }, [formulaIndex, autoSave])
+  }, [formulaIndex, versionHistory, autoSave])
 
   // 搜索变化时重置分页
   useEffect(() => {
@@ -392,8 +466,26 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
     }
 
     saveDebounceRef.current = setTimeout(() => {
-      const success = saveFormulaIndex(index)
-      if (success) {
+      // v8.2：版本历史一并落盘（Map → 可序列化数组，timestamp 转毫秒）
+      const storedVersions: StoredVersionHistory[] = Array.from(versionHistoryRef.current.entries())
+        .filter(([, versions]) => versions.length > 0)
+        .map(([id, versions]) => ({
+          id,
+          versions: versions.map((v) => ({
+            version: v.version,
+            timestamp: v.timestamp instanceof Date ? v.timestamp.getTime() : Number(v.timestamp),
+            changes: v.changes as Record<string, unknown>,
+            changeReason: v.changeReason,
+            author: v.author,
+          })),
+        }))
+
+      const failure = saveFormulaIndexWithReason(index, storedVersions)
+      if (failure) {
+        setStorageError(failure)
+        logger.error(`[FormulaManager] ❌ 配方自动保存失败: ${failure}`)
+      } else {
+        setStorageError(null)
         logger.info(`[FormulaManager] 💾 配方数据已自动保存 (${index.size} 个)`)
       }
       saveDebounceRef.current = null
@@ -553,6 +645,32 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
         return newSet
       })
 
+      // v8.2 修复：同步清理该配方的收藏/优先级/版本历史/标签，避免残留脏数据
+      setFavorites(prev => {
+        if (!prev.has(id)) return prev
+        const newSet = new Set(prev)
+        newSet.delete(id)
+        return newSet
+      })
+      setPriorities(prev => {
+        if (!prev.has(id)) return prev
+        const newMap = new Map(prev)
+        newMap.delete(id)
+        return newMap
+      })
+      setVersionHistory(prev => {
+        if (!prev.has(id)) return prev
+        const newMap = new Map(prev)
+        newMap.delete(id)
+        return newMap
+      })
+      setFormulaTags(prev => {
+        if (!prev.has(id)) return prev
+        const newMap = new Map(prev)
+        newMap.delete(id)
+        return newMap
+      })
+
       if (selectedForDetail?.id === id) {
         setSelectedForDetail(null)
         setIsDetailModalOpen(false)
@@ -615,8 +733,36 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
     // v7.0: 清除选择状态
     setSelectedIds(new Set())
 
+    // v8.2 修复：清除辅助状态，避免"清空后仍显示已收藏/优先级/版本"的脏数据
+    setFavorites(new Set())
+    setPriorities(new Map())
+    setVersionHistory(new Map())
+    setFormulaTags(new Map())
+
     logger.info('[FormulaManager] 🗑️ 已清除所有配方数据和本地存储')
   }, [autoSave])
+
+  /**
+   * v8.3 新增：仅清空内存缓存（不动 localStorage）
+   * 与 clearAllFormulas 语义区分：本方法用于"释放内存"，用户刷新后仍可从本地存储恢复，
+   * 避免此前面板「清空内存缓存」误接 clearAllFormulas 导致持久化数据被一并删除。
+   */
+  const clearMemoryCache = useCallback((): void => {
+    if (!isMountedRef.current) return
+
+    setFormulaIndex(new Map())
+    formulaCacheRef.current.clear()
+    setExpandedIds(new Set())
+    setSelectedIds(new Set())
+    setFavorites(new Set())
+    setPriorities(new Map())
+    setFormulaTags(new Map())
+    setSelectedForDetail(null)
+    setIsDetailModalOpen(false)
+    setCurrentPage(1)
+
+    logger.info('[FormulaManager] 🧹 已清空内存缓存（本地存储保留）')
+  }, [])
 
   // ===== 展开收起操作 =====
 
@@ -725,19 +871,45 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
     }
 
     try {
-      data.forEach(item => {
-        if (item && item.id) {
-          addFormula(item as unknown as AIRecognizedFormula)
-        }
+      // v8.4 修复：a) id 已存在则跳过（导入不覆盖本地更新）；b) 同名同成分视为重复；
+      // c) 返回「真正新增」的条数（此前返回 data.length，与事实不符，用户无法判断导入结果）。
+      const existingIds = new Set(formulaIndex.keys())
+      const signature = (f: { name?: string; autoName?: string; ingredients?: { name?: string }[] }) => {
+        const name = (f.autoName || f.name || '').trim()
+        const names = (f.ingredients || [])
+          .map((ing) => (ing.name || '').trim())
+          .filter(Boolean)
+          .sort()
+          .join('|')
+        return `${name}__${names}`
+      }
+      const existingSignatures = new Set(
+        Array.from(formulaIndex.values()).map((f) => signature(f)),
+      )
+
+      let imported = 0
+      data.forEach((item) => {
+        if (!item || !item.id) return
+        // a) id 已存在则跳过（不覆盖本地可能更新的版本）
+        if (existingIds.has(item.id)) return
+        const candidate = item as unknown as AIRecognizedFormula
+        // b) 同名同成分视为同一条配方（跨设备导出再导入的常见情形）
+        const sig = signature(candidate)
+        if (existingSignatures.has(sig)) return
+
+        existingIds.add(item.id)
+        existingSignatures.add(sig)
+        addFormula(candidate)
+        imported += 1
       })
 
-      logger.info(`[FormulaManager] 📥 批量导入 ${data.length} 个配方`)
-      return data.length
+      logger.info(`[FormulaManager] 📥 导入完成：新增 ${imported} / 共 ${data.length} 条`)
+      return imported
     } catch (e) {
       logger.error('[FormulaManager] ❌ 导入失败:', e)
       return 0
     }
-  }, [addFormula])
+  }, [addFormula, formulaIndex])
 
   const exportFormulas = useCallback(async (
     format: FormulaExportFormat | string = 'json',
@@ -844,17 +1016,56 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
   /**
    * 批量删除多个配方
    */
+  // v8.5：批量操作上限——超过阈值拒绝一次性删除，避免数百条硬删卡死主线程且无法恢复
+  const BATCH_DELETE_HARD_LIMIT = 200
+  // v8.5：记录最近一次批量删除的完整配方快照，供撤销恢复
+  const [lastBatchDeleted, setLastBatchDeleted] = useState<{
+    formulas: AIRecognizedFormula[]
+    favIds: Set<string>
+    prioEntries: Array<[string, 'high' | 'medium' | 'low']>
+    deletedAt: number
+  } | null>(null)
+
+  /** v8.5：批量删除是否因超限被拒绝（记录被拒条数），供 UI 提示用户分批 */
+  const [batchLimitExceeded, setBatchLimitExceeded] = useState<number | null>(null)
+
   const batchDelete = useCallback((ids: string[]): void => {
     if (!Array.isArray(ids) || ids.length === 0) {
       logger.warn('[FormulaManager] ⚠️ 批量删除：无效的ID列表')
       return
     }
 
+    // v8.5 上限保护：超限直接拒绝，并记录原因供 UI 提示用户分批操作
+    if (ids.length > BATCH_DELETE_HARD_LIMIT) {
+      logger.error(`[FormulaManager] ❌ 批量删除被拒绝：一次最多删除 ${BATCH_DELETE_HARD_LIMIT} 条（当前 ${ids.length} 条）`)
+      setBatchLimitExceeded(ids.length)
+      return
+    }
+    setBatchLimitExceeded(null)
+
     setIsLoading(true)
+
+    // v8.5 撤销支持：删除前保留完整快照（含 isFavorite/priority/tags 等），供 undoBatchDelete 恢复
+    const snapshot: AIRecognizedFormula[] = []
+    // 派生集合（favorites/priorities）的成员关系必须单独捕获——removeFormula 会把它们从
+    // Set/Map 里摘掉，而 addFormula 只还原对象、不还原派生集合，否则撤销后卡片显示与逻辑不一致。
+    const favIds = new Set<string>()
+    const prioEntries: Array<[string, 'high' | 'medium' | 'low']> = []
+    ids.forEach((id) => {
+      const existing = formulaIndex.get(id)
+      if (existing) {
+        snapshot.push(existing)
+        if (favorites.has(id)) favIds.add(id)
+        const prio = priorities.get(id)
+        if (prio) prioEntries.push([id, prio])
+      }
+    })
 
     ids.forEach(id => {
       removeFormula(id)
     })
+
+    setLastBatchDeleted({ formulas: snapshot, favIds, prioEntries, deletedAt: Date.now() })
 
     // 清除被删除项的选择状态
     setSelectedIds(prev => {
@@ -865,7 +1076,51 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
 
     logger.info(`[FormulaManager] 🗑️ 批量删除完成`, { deletedCount: ids.length, remainingCount: formulaIndex.size - ids.length })
     setIsLoading(false)
-  }, [removeFormula, formulaIndex.size])
+  }, [removeFormula, formulaIndex, formulaIndex.size])
+
+  /**
+   * v8.5 新增：撤销最近一次批量删除，按快照恢复配方及其状态。
+   * @returns 实际恢复的条数（-1 表示无可撤销项）
+   */
+  const undoBatchDelete = useCallback((): number => {
+    if (!lastBatchDeleted || lastBatchDeleted.formulas.length === 0) {
+      logger.warn('[FormulaManager] ⚠️ 撤销批量删除：没有可恢复的记录')
+      return -1
+    }
+
+    setIsLoading(true)
+    let restored = 0
+    lastBatchDeleted.formulas.forEach((formula) => {
+      // 已存在则跳过，避免覆盖用户在删除后可能新增的同 id 配方
+      if (formulaIndex.has(formula.id)) return
+      addFormula(formula)
+      restored += 1
+    })
+
+    // 还原派生集合成员关系（addFormula 只还原对象，不还原 favorites/priorities）
+    if (lastBatchDeleted.favIds.size > 0) {
+      setFavorites(prev => {
+        const next = new Set(prev)
+        lastBatchDeleted.favIds.forEach((id) => next.add(id))
+        return next
+      })
+    }
+    if (lastBatchDeleted.prioEntries.length > 0) {
+      setPriorities(prev => {
+        const next = new Map(prev)
+        lastBatchDeleted.prioEntries.forEach(([id, prio]) => next.set(id, prio))
+        return next
+      })
+    }
+
+    setLastBatchDeleted(null)
+    logger.info(`[FormulaManager] ♻️ 撤销批量删除完成`, { restoredCount: restored })
+    setIsLoading(false)
+    return restored
+  }, [lastBatchDeleted, formulaIndex, addFormula, setFavorites, setPriorities])
+
+  /** v8.5：是否有可撤销的批量删除（UI 据此显示「撤销」入口） */
+  const canUndoBatchDelete = lastBatchDeleted !== null && lastBatchDeleted.formulas.length > 0
 
   /**
    * 批量导出选中的配方
@@ -1045,60 +1300,73 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
   const addTag = useCallback((formulaId: string, tag: string): void => {
     if (!formulaId || !tag?.trim()) return
 
-    setFormulaTags(prev => {
-      const currentTags = prev.get(formulaId) || []
-      if (currentTags.includes(tag.trim())) return prev
+    const trimmed = tag.trim()
+    // v8.2 修复：以 formula.tags 为真实来源（卡片渲染它），同时同步 formulaTags 索引，
+    // 否则「批量标签」写入后卡片看不到任何变化。
+    const formula = formulaIndex.get(formulaId)
+    const currentTags = formula?.tags ?? []
+    if (currentTags.includes(trimmed)) return
 
-      const newTags = [...currentTags, tag.trim()]
+    const newTags = [...currentTags, trimmed]
+    setFormulaTags(prev => {
       const newMap = new Map(prev)
       newMap.set(formulaId, newTags)
-
-      logger.info(`[useFormulaManager] 🏷️ 添加标签: ${tag} -> ${formulaId}`)
       return newMap
     })
-  }, [])
+    // v8.4：用户显式打标签，记版本快照（经 ref 调用，规避与 createVersion 的声明顺序冲突）
+    createVersionRef.current?.(formulaId, { tags: currentTags }, '添加标签')
+    updateFormula(formulaId, { tags: newTags, updatedAt: Date.now() })
+
+    logger.info(`[useFormulaManager] 🏷️ 添加标签: ${trimmed} -> ${formulaId}`)
+  }, [formulaIndex, updateFormula])
 
   /**
    * 移除标签
    */
   const removeTag = useCallback((formulaId: string, tag: string): void => {
-    setFormulaTags(prev => {
-      const currentTags = prev.get(formulaId) || []
-      const newTags = currentTags.filter(t => t !== tag)
-      const newMap = new Map(prev)
+    const formula = formulaIndex.get(formulaId)
+    const currentTags = formula?.tags ?? []
+    if (!currentTags.includes(tag)) return
 
+    const newTags = currentTags.filter(t => t !== tag)
+
+    setFormulaTags(prev => {
+      const newMap = new Map(prev)
       if (newTags.length === 0) {
         newMap.delete(formulaId)
       } else {
         newMap.set(formulaId, newTags)
       }
-
       return newMap
     })
-  }, [])
+    // v8.4：移除标签同样记版本快照，支持回滚恢复被删掉的标签
+    createVersionRef.current?.(formulaId, { tags: currentTags }, '移除标签')
+    updateFormula(formulaId, { tags: newTags, updatedAt: Date.now() })
+  }, [formulaIndex, updateFormula])
 
   /**
    * 获取配方的标签
    */
   const getTags = useCallback((formulaId: string): string[] => {
-    return formulaTags.get(formulaId) || []
-  }, [formulaTags])
+    return formulaIndex.get(formulaId)?.tags ?? formulaTags.get(formulaId) ?? []
+  }, [formulaIndex, formulaTags])
 
   /**
    * 获取所有标签（去重）
    */
   const getAllTags = useCallback((): string[] => {
     const allTags = new Set<string>()
-    formulaTags.forEach(tags => tags.forEach(tag => allTags.add(tag)))
+    formulas.forEach(f => (f.tags ?? formulaTags.get(f.id) ?? []).forEach(tag => allTags.add(tag)))
     return Array.from(allTags).sort()
-  }, [formulaTags])
+  }, [formulas, formulaTags])
 
   /**
    * 根据标签获取配方列表
    */
   const getFormulasByTag = useCallback((tag: string): AIRecognizedFormula[] => {
     if (!tag?.trim()) return []
-    return formulas.filter(f => (formulaTags.get(f.id) || []).includes(tag.trim()))
+    const target = tag.trim()
+    return formulas.filter(f => (f.tags ?? formulaTags.get(f.id) ?? []).includes(target))
   }, [formulas, formulaTags])
 
   /**
@@ -1216,6 +1484,46 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
     })
   }, [formulaIndex])
 
+  // v8.4：把真实的 createVersion 挂到 ref，供声明位置在前的 addTag/removeTag 记快照
+  createVersionRef.current = createVersion
+
+  /**
+   * v8.4 新增：带版本快照的用户编辑（底层 updateFormula 不记快照，避免内部批量刷写刷爆历史）
+   * 语义：先快照「被本次改动覆盖的字段原值」→ 再应用改动，因此 rollbackToVersion(v) 能真正还原。
+   * @param id - 配方 ID
+   * @param updates - 要应用的改动
+   * @param reason - 变更原因（展示在版本历史里）
+   */
+  const updateFormulaWithVersion = useCallback((
+    id: string,
+    updates: Partial<AIRecognizedFormula>,
+    reason?: string,
+  ): void => {
+    const existing = formulaIndex.get(id)
+    if (!existing) {
+      logger.warn('[useFormulaManager] ⚠️ 版本快照失败：配方不存在', { id })
+      return
+    }
+
+    const before: Partial<AIRecognizedFormula> = {}
+    const changedKeys = Object.keys(updates).filter((key) => key !== 'updatedAt')
+    changedKeys.forEach((key) => {
+      ;(before as Record<string, unknown>)[key] = (existing as unknown as Record<string, unknown>)[key]
+    })
+
+    // 仅当确有字段变化时才记快照，避免"值没变也刷一条历史"
+    const hasChange = changedKeys.some(
+      (key) => JSON.stringify((existing as unknown as Record<string, unknown>)[key]) !== JSON.stringify((updates as unknown as Record<string, unknown>)[key]),
+    )
+    if (!hasChange) {
+      logger.debug(`[useFormulaManager] 无变更，跳过版本快照: ${id}`)
+      return
+    }
+
+    createVersion(id, before, reason)
+    updateFormula(id, { ...updates, updatedAt: Date.now() })
+  }, [formulaIndex, createVersion, updateFormula])
+
   /**
    * 获取版本历史
    */
@@ -1226,27 +1534,81 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
   /**
    * 回滚到指定版本
    */
+  /**
+   * 回滚到指定版本
+   *
+   * v8.4 语义修正：快照记录的是「改动前该字段的原值」，若原值为 undefined 表示"当时没有这个字段"。
+   * 因此回滚不能只做浅合并（会把新值残留在对象上），而要先删除这些字段再应用快照值。
+   */
   const rollbackToVersion = useCallback((formulaId: string, version: number): boolean => {
     const history = versionHistory.get(formulaId)
-    if (!history || version < 1 || version > history.length) {
+    const current = formulaIndex.get(formulaId)
+    if (!history || !current || version < 1 || version > history.length) {
       logger.warn('[useFormulaManager] ⚠️ 回滚失败：无效的版本号', { formulaId, version })
       return false
     }
 
     const targetVersion = history[version - 1]
-    updateFormula(formulaId, targetVersion.changes)
+    const restored: AIRecognizedFormula = { ...current }
+
+    Object.entries(targetVersion.changes).forEach(([key, value]) => {
+      if (value === undefined) {
+        // 改动前该字段不存在 → 回滚时应移除，而不是留成 undefined 键
+        delete (restored as unknown as Record<string, unknown>)[key]
+      } else {
+        ;(restored as unknown as Record<string, unknown>)[key] = value
+      }
+    })
+    restored.updatedAt = Date.now()
+
+    setFormulaIndex(prevIndex => {
+      const newIndex = new Map(prevIndex)
+      newIndex.set(formulaId, restored)
+      formulaCacheRef.current.set(formulaId, restored)
+      return newIndex
+    })
+
+    // 回滚也要让派生 Set/Map 与主数据一致，否则卡片显示的收藏/优先级会和公式列表不符
+    if ('isFavorite' in targetVersion.changes) {
+      setFavorites(prev => {
+        const newSet = new Set(prev)
+        if (restored.isFavorite) newSet.add(formulaId)
+        else newSet.delete(formulaId)
+        return newSet
+      })
+    }
+    if ('priority' in targetVersion.changes) {
+      setPriorities(prev => {
+        const newMap = new Map(prev)
+        const p = restored.priority
+        if (p) newMap.set(formulaId, p)
+        else newMap.delete(formulaId)
+        return newMap
+      })
+    }
+    if ('tags' in targetVersion.changes) {
+      setFormulaTags(prev => {
+        const newMap = new Map(prev)
+        const t = restored.tags
+        if (t && t.length > 0) newMap.set(formulaId, t)
+        else newMap.delete(formulaId)
+        return newMap
+      })
+    }
 
     logger.info(`[useFormulaManager] ⏪ 回滚到版本 v${version}: ${formulaId}`)
     return true
-  }, [versionHistory, updateFormula])
+  }, [formulaIndex, versionHistory])
 
   /**
    * 切换收藏状态
    */
   const toggleFavorite = useCallback((formulaId: string): void => {
+    // v8.2 修复：以 formula.isFavorite 为真源（刷新后 favorites Set 可能未恢复，避免点不动）
+    const isFav = formulaIndex.get(formulaId)?.isFavorite ?? favorites.has(formulaId)
     setFavorites(prev => {
       const newSet = new Set(prev)
-      if (newSet.has(formulaId)) {
+      if (isFav) {
         newSet.delete(formulaId)
         logger.info(`[useFormulaManager] 💔 取消收藏: ${formulaId}`)
       } else {
@@ -1255,20 +1617,22 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
       }
       return newSet
     })
-  }, [])
+    // v8.1 修复：同步回写 formulaIndex，使 FormulaCard 的 formula.isFavorite 联动更新 UI
+    updateFormulaWithVersion(formulaId, { isFavorite: !isFav }, isFav ? '取消收藏' : '添加收藏')
+  }, [formulaIndex, favorites, updateFormula, updateFormulaWithVersion])
 
   /**
    * 检查是否已收藏
    */
   const isFavorite = useCallback((formulaId: string): boolean => {
-    return favorites.has(formulaId)
-  }, [favorites])
+    return formulaIndex.get(formulaId)?.isFavorite ?? favorites.has(formulaId)
+  }, [formulaIndex, favorites])
 
   /**
    * 获取所有收藏的配方
    */
   const getFavorites = useCallback((): AIRecognizedFormula[] => {
-    return formulas.filter(f => favorites.has(f.id))
+    return formulas.filter(f => f.isFavorite ?? favorites.has(f.id))
   }, [formulas, favorites])
 
   /**
@@ -1283,8 +1647,11 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
       newMap.set(formulaId, priority)
       return newMap
     })
+    // v8.2 修复：同步回写 formulaIndex，使卡片 priority 联动更新 UI
+    // v8.4：改走 updateFormulaWithVersion，优先级变更也可在版本历史里回滚
+    updateFormulaWithVersion(formulaId, { priority }, '设置优先级')
     logger.info(`[useFormulaManager] ⭐ 设置优先级: ${formulaId} -> ${priority}`)
-  }, [])
+  }, [updateFormula, updateFormulaWithVersion])
 
   /**
    * 根据优先级获取配方
@@ -1326,14 +1693,12 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
    * 批量收藏/取消收藏
    */
   const batchFavorite = useCallback((ids: string[], favorite: boolean): void => {
+    // v8.2 修复：以 formula.isFavorite 为真源，避免内部 favorites Set 与数据不一致导致误判
     ids.forEach(id => {
-      if (favorite && !favorites.has(id)) {
-        toggleFavorite(id)
-      } else if (!favorite && favorites.has(id)) {
-        toggleFavorite(id)
-      }
+      const current = formulaIndex.get(id)?.isFavorite ?? favorites.has(id)
+      if (current !== favorite) toggleFavorite(id)
     })
-  }, [favorites, toggleFavorite])
+  }, [formulaIndex, favorites, toggleFavorite])
 
   /**
    * 验证单个配方数据质量
@@ -1438,9 +1803,20 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
       newName = generateFormulaName(formula, existingNames)
     }
 
+    // v8.3：重命名属于用户显式修改，先快照「改动前」的名称再更新，
+    // 这样版本历史的「回滚」能真正还原旧名称（此前 createVersion 无任何调用方 → 恒显示"暂无版本记录"）。
+    if (formula.autoName !== newName) {
+      createVersion(
+        id,
+        { autoName: formula.autoName, name: formula.name },
+        name?.trim() ? '手动重命名' : '智能命名',
+      )
+    }
+
     updateFormula(id, { autoName: newName, updatedAt: Date.now() })
+
     logger.info(`[useFormulaManager] ✏️ 配方重命名成功: ${id} -> ${newName}`)
-  }, [formulaIndex, updateFormula])
+  }, [formulaIndex, updateFormula, createVersion])
 
   /**
    * 批量为配方生成名称
@@ -1517,6 +1893,17 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
     updateFormula,
     getFormulaById,
     clearAllFormulas,
+    clearMemoryCache,
+    // v8.4 新增：带版本快照的用户编辑（底层 updateFormula 不记快照）
+    updateFormulaWithVersion,
+    // v8.5 新增：持久化失败原因与清除方法
+    storageError,
+    clearStorageError: () => setStorageError(null),
+    // v8.5 新增：批量删除上限保护 + 撤销
+    undoBatchDelete,
+    canUndoBatchDelete,
+    batchLimitExceeded,
+    clearBatchLimitExceeded: () => setBatchLimitExceeded(null),
 
     // 展开收起
     toggleExpand,

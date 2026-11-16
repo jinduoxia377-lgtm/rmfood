@@ -13,7 +13,9 @@ import type { HistorySession } from './components/pro'
 import type { ChatMessage } from './types'
 import type { ScenarioMode } from './services/scenarioSwitcher'
 import type { RAGChunkResult } from '@/api/rag'
-import type { AIRecognizedFormula } from '@/types/ai.types'
+import type { AIRecognizedFormula, FormulaQualityScore } from '@/types/ai.types'
+import type { FormulaComparisonResult, FormulaVersion } from './hooks/useFormulaManager'
+import type { FormulaSaveFailureReason } from '@/utils/formulaStorage'
 
 /** 与后端 ThinkingStep 对齐的简化类型，供 ReasoningRow 消费 */
 export interface ThinkingStepExport {
@@ -112,9 +114,45 @@ export interface ChatState {
     handleBatchDelete: () => void
     handleBatchTag: (tags: string[]) => void
     handleSelectAll: () => void
+    /** v8.1 新增：单配方重命名 */
+    handleRenameFormula: (id: string, newName: string) => void
+    /** v8.1 新增：单配方删除 */
+    handleRemoveFormula: (id: string) => void
+    /** v8.1 新增：收藏切换 */
+    handleToggleFavorite: (id: string) => void
+    /** v8.1 新增：清空选中 */
+    handleClearSelection: () => void
+    /** v8.1 新增：获取配方质量评分 */
+    getFormulaScore?: (id: string) => FormulaQualityScore | null | undefined
+    /** v8.2 新增：批量收藏 */
+    handleBatchFavorite: (ids: string[], favorite: boolean) => void
+    /** v8.2 新增：两两配方对比（返回对比结果） */
+    handleCompare: (id1: string, id2: string) => FormulaComparisonResult | null
+    /** v8.2 新增：设置优先级 */
+    handleSetPriority: (id: string, priority: 'high' | 'medium' | 'low') => void
+    /** v8.2 新增：获取版本历史 */
+    handleGetVersions: (id: string) => FormulaVersion[]
+    /** v8.2 新增：回滚版本 */
+    handleRollbackVersion: (id: string, version: number) => boolean
+    /** v8.3 新增：仅清空内存缓存（不动本地存储） */
+    handleClearMemoryCache: () => void
   }
   /** 清除配方存储 */
   onClearStorage: () => void
+
+  // ===== v8.5 持久化失败提示 =====
+  /** 配方本地存储失败原因（null=正常）；存在时 UI 应提示用户数据可能无法保存 */
+  formulaStorageError: FormulaSaveFailureReason | null
+  clearFormulaStorageError: () => void
+
+  // ===== v8.5 批量删除撤销 =====
+  /** 撤销最近一次批量删除，返回恢复条数（-1=无可撤销项） */
+  undoBatchDelete: () => number
+  /** 是否存在可撤销的批量删除（UI 据此显示「撤销删除」入口） */
+  canUndoBatchDelete: boolean
+  /** v8.5：批量删除因超限被拒时记录被拒条数（null=无），UI 应提示分批 */
+  batchLimitExceeded: number | null
+  clearBatchLimitExceeded: () => void
 
   // ===== 报告状态 =====
   showReportModal: boolean

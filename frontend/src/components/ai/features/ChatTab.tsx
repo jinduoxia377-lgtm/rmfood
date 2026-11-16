@@ -126,6 +126,12 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
     // 配方
     formulaCount, formulas, expandedIds, selectedIds,
     formulaActions, onClearStorage,
+    // v8.5：本地持久化失败提示
+    formulaStorageError, clearFormulaStorageError,
+    // v8.5：批量删除撤销
+    undoBatchDelete, canUndoBatchDelete,
+    // v8.5：批量删除超限提示
+    batchLimitExceeded, clearBatchLimitExceeded,
     // UI（配方列表面板）
     showFormulaList, setShowFormulaList, searchQuery,
     // 报告
@@ -662,13 +668,28 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
               onExport={formulaActions.handleExportData}
               onImport={formulaActions.handleImportData}
               onClearStorage={onClearStorage}
-              onClearMemory={onClearStorage}
+              onClearMemory={formulaActions.handleClearMemoryCache}
               isGeneratingReport={isGeneratingReport}
               onClose={() => setShowFormulaList(false)}
               onBatchExport={formulaActions.handleBatchExport}
               onBatchDelete={formulaActions.handleBatchDelete}
               onBatchTag={formulaActions.handleBatchTag}
               onSelectAll={formulaActions.handleSelectAll}
+              clearSelection={formulaActions.handleClearSelection}
+              onRenameFormula={formulaActions.handleRenameFormula}
+              getFormulaScore={formulaActions.getFormulaScore}
+              onToggleFavorite={formulaActions.handleToggleFavorite}
+              onBatchFavorite={formulaActions.handleBatchFavorite}
+              onCompare={formulaActions.handleCompare}
+              onSetPriority={formulaActions.handleSetPriority}
+              onGetVersions={formulaActions.handleGetVersions}
+              onRollbackVersion={formulaActions.handleRollbackVersion}
+              storageError={formulaStorageError}
+              onDismissStorageError={clearFormulaStorageError}
+              onUndoBatchDelete={undoBatchDelete}
+              canUndoBatchDelete={canUndoBatchDelete}
+              batchLimitExceeded={batchLimitExceeded}
+              onDismissBatchLimit={clearBatchLimitExceeded}
             />
           </React.Suspense>
         )}

@@ -20,11 +20,21 @@
  */
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { AIRecognizedFormula, FormulaQualityScore, FormulaFilters, FormulaSortField, SortOrder } from '@/types/ai.types'
+import type { FormulaComparisonResult, FormulaVersion } from '../hooks/useFormulaManager'
+import type { FormulaSaveFailureReason } from '@/utils/formulaStorage'
 import { Button } from '@/components/ui'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { FormulaCard } from './FormulaCard'
-import { FormulaSkeleton } from './FormulaSkeleton'
 import { AdvancedFilter } from './AdvancedFilter'
 import { MobileBottomSheet } from '@/hooks/components/MobileBottomSheet'
 import { smartMatch } from '@/utils/pinyinUtils'
@@ -41,6 +51,19 @@ import {
   LayoutGrid,
   MoreVertical,
   Eye,
+  RotateCcw,
+  Download,
+  Upload,
+  Trash2,
+  FileJson,
+  FileSpreadsheet,
+  Globe,
+  Star,
+  GitCompare,
+  Flag,
+  History,
+  RotateCw,
+  AlertTriangle,
 } from 'lucide-react'
 
 /** 分页配置常量 */
@@ -125,14 +148,26 @@ interface FormulaPanelProps {
   onClearStorage: () => void
   /** 清空内存中的配方缓存 */
   onClearMemory: () => void
+  /** v8.5：本地持久化失败原因（存在时顶部显示警告条，避免用户误以为已保存） */
+  storageError?: FormulaSaveFailureReason | null
+  /** v8.5：用户关闭警告条 */
+  onDismissStorageError?: () => void
+  /** v8.5：撤销最近一次批量删除 */
+  onUndoBatchDelete?: () => void
+  /** v8.5：是否存在可撤销的批量删除（true 时显示「撤销删除」按钮） */
+  canUndoBatchDelete?: boolean
+  /** v8.5：批量删除因超限被拒时记录被拒条数，顶部显示提示条 */
+  batchLimitExceeded?: number | null
+  /** v8.5：用户关闭超限提示 */
+  onDismissBatchLimit?: () => void
   /** 删除配方（带动画） */
   onRemoveFormula?: (id: string) => void
+  /** 收藏切换（卡片收藏按钮） */
+  onToggleFavorite?: (id: string) => void
   /** 清空选中状态 */
   clearSelection?: () => void
   /** 报告生成加载状态 */
   isGeneratingReport: boolean
-  /** 配方数据加载状态（用于显示骨架屏） */
-  isLoading?: boolean
   /** 关闭面板事件处理 */
   onClose: () => void
   /** 批量导出 */
@@ -143,6 +178,16 @@ interface FormulaPanelProps {
   onBatchTag?: (ids: string[], tags: string[]) => void
   /** 全选 */
   onSelectAll?: () => void
+  /** v8.2 新增：批量收藏/取消收藏 */
+  onBatchFavorite?: (ids: string[], favorite: boolean) => void
+  /** v8.2 新增：两两配方对比（返回对比结果用于展示） */
+  onCompare?: (id1: string, id2: string) => FormulaComparisonResult | null
+  /** v8.2 新增：设置优先级 */
+  onSetPriority?: (id: string, priority: 'high' | 'medium' | 'low') => void
+  /** v8.2 新增：获取版本历史 */
+  onGetVersions?: (id: string) => FormulaVersion[]
+  /** v8.2 新增：回滚到指定版本 */
+  onRollbackVersion?: (id: string, version: number) => boolean
 }
 
 /**
@@ -173,13 +218,29 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
   onImport,
   onClearStorage,
   onClearMemory,
+  storageError,
+  onDismissStorageError,
+  onUndoBatchDelete,
+  canUndoBatchDelete,
+  batchLimitExceeded,
+  onDismissBatchLimit,
   onRemoveFormula,
+  onToggleFavorite,
   clearSelection,
   isGeneratingReport,
-  isLoading,
   onClose,
+  onBatchExport,
+  onBatchDelete,
+  onBatchTag,
+  onSelectAll,
+  onBatchFavorite,
+  onCompare,
+  onSetPriority,
+  onGetVersions,
+  onRollbackVersion,
 }) => {
 
+  const { t, i18n } = useTranslation()
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false)
   const [localSortBy, setLocalSortBy] = useState<FormulaSortField>(externalSortBy || 'createdAt')
@@ -188,6 +249,51 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
   const [, setDeletingIds] = useState<Set<string>>(new Set())
   const [isTabletView, setIsTabletView] = useState(false)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
+  // 导出格式菜单：原实现是 `opacity-0 invisible group-hover:*` 的悬停展开——触屏无
+  // hover，导出入口在手机上完全不可达。改为点击展开（+ 外部点击关闭）。
+  const [showExportMenu, setShowExportMenu] = useState(false)
+  const exportMenuRef = useRef<HTMLDivElement>(null)
+  const [compareResult, setCompareResult] = useState<FormulaComparisonResult | null>(null)
+  // v8.5：并排对比需要两张卡片的完整信息（名称等），compareResult 只带 id
+  const [comparePair, setComparePair] = useState<{ a: AIRecognizedFormula; b: AIRecognizedFormula } | null>(null)
+  // v8.5：导出对比报告（.txt），把并排对比结果落成文件
+  const handleExportComparison = useCallback(() => {
+    if (!compareResult || !comparePair) return
+    const { a, b } = comparePair
+    const nameA = a.name || a.autoName || a.id
+    const nameB = b.name || b.autoName || b.id
+    const fmtPct = (n: number) => `${Math.round(n * 100)}%`
+    const lines = [
+      `${t('ai.chat.formulaPanel.compareResultTitle')}`,
+      '',
+      `${nameA}  vs  ${nameB}`,
+      '',
+      `${t('ai.chat.formulaPanel.compareSimilarity')}: ${fmtPct(compareResult.similarityScore)}`,
+      `${t('ai.chat.formulaPanel.compareConfidenceDiff')}: ${fmtPct(compareResult.confidenceDiff)}`,
+      '',
+      `${t('ai.chat.formulaPanel.compareCommon')} (${compareResult.commonIngredients.length}):`,
+      compareResult.commonIngredients.join(', ') || t('ai.chat.formulaPanel.compareNone'),
+      '',
+      `${t('ai.chat.formulaPanel.compareOnlyIn1')} (${nameA}) (${compareResult.uniqueToFormula1.length}):`,
+      compareResult.uniqueToFormula1.join(', ') || t('ai.chat.formulaPanel.compareNone'),
+      '',
+      `${t('ai.chat.formulaPanel.compareOnlyIn2')} (${nameB}) (${compareResult.uniqueToFormula2.length}):`,
+      compareResult.uniqueToFormula2.join(', ') || t('ai.chat.formulaPanel.compareNone'),
+    ]
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `formula-comparison-${a.id}-${b.id}.txt`
+    link.click()
+    URL.revokeObjectURL(url)
+  }, [compareResult, comparePair, t])
+  const [versionPanel, setVersionPanel] = useState<{ id: string; versions: FormulaVersion[] } | null>(null)
+  // v8.5：批量操作的对话框状态（替代原生 window.confirm / window.prompt）
+  const [confirmBatchDelete, setConfirmBatchDelete] = useState(false)
+  const [tagDialogOpen, setTagDialogOpen] = useState(false)
+  const [tagInput, setTagInput] = useState('')
+  const [tagInputError, setTagInputError] = useState('')
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     isOpen: false,
     formulaId: null,
@@ -207,6 +313,29 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
   useEffect(() => {
     if (externalSortOrder) setLocalSortOrder(externalSortOrder)
   }, [externalSortOrder])
+
+  /**
+   * 导出菜单：点击外部 / Esc 关闭（触屏与键盘同等可退出）。
+   */
+  useEffect(() => {
+    if (!showExportMenu) return
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+        setShowExportMenu(false)
+      }
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowExportMenu(false)
+    }
+    document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('touchstart', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('touchstart', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [showExportMenu])
 
   /**
    * 搜索关键词变更处理（带200ms防抖）
@@ -425,16 +554,76 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
            if (e.target === e.currentTarget) onClose()
          }}>
       <div
-        className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden
+        className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85dvh] overflow-hidden
                    flex flex-col animate-in-from-right"
          role="button" tabIndex={0} onClick={e => e.stopPropagation()}
       >
+        {/* ===== v8.5 持久化失败警告条：数据可能无法保存，必须让用户看见 ===== */}
+        {storageError && (
+          <div
+            role="alert"
+            className="flex items-start gap-2 px-4 py-2 bg-warning-50 dark:bg-warning-900/30
+                       border-b border-warning-300 dark:border-warning-700"
+          >
+            <AlertTriangle className="w-4 h-4 mt-0.5 text-warning-700 dark:text-warning-300 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-warning-800 dark:text-warning-200">
+                {t('ai.chat.formulaPanel.storageErrorTitle')}
+              </p>
+              <p className="text-xs text-warning-700 dark:text-warning-300 mt-0.5">
+                {t(`ai.chat.formulaPanel.storageError_${storageError}`)}
+              </p>
+            </div>
+            {onDismissStorageError && (
+              <button
+                type="button"
+                onClick={onDismissStorageError}
+                aria-label={t('ai.chat.formulaPanel.dismissStorageError')}
+                className="p-1 -mr-1 rounded hover:bg-warning-100 dark:hover:bg-warning-800/40
+                           text-warning-700 dark:text-warning-300 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ===== v8.5 批量删除超限提示：一次删太多被拒，让用户知道要分批 ===== */}
+        {typeof batchLimitExceeded === 'number' && batchLimitExceeded > 0 && (
+          <div
+            role="alert"
+            className="flex items-start gap-2 px-4 py-2 bg-warning-50 dark:bg-warning-900/30
+                       border-b border-warning-300 dark:border-warning-700"
+          >
+            <AlertTriangle className="w-4 h-4 mt-0.5 text-warning-700 dark:text-warning-300 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-warning-800 dark:text-warning-200">
+                {t('ai.chat.formulaPanel.batchLimitTitle')}
+              </p>
+              <p className="text-xs text-warning-700 dark:text-warning-300 mt-0.5">
+                {t('ai.chat.formulaPanel.batchLimitDesc', { count: batchLimitExceeded })}
+              </p>
+            </div>
+            {onDismissBatchLimit && (
+              <button
+                type="button"
+                onClick={onDismissBatchLimit}
+                aria-label={t('ai.chat.formulaPanel.dismissBatchLimit')}
+                className="p-1 -mr-1 rounded hover:bg-warning-100 dark:hover:bg-warning-800/40
+                           text-warning-700 dark:text-warning-300 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
+
         {/* ===== 面板头部区域 - 移动端自适应 ===== */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-neutral-50 to-white dark:from-neutral-800 dark:to-neutral-900">
           <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <FlaskConical className="w-5 h-5 sm:w-6 sm:h-6 text-primary-700 shrink-0" />
             <h2 className="text-base sm:text-xl font-bold text-neutral-900 dark:text-white">
-              已识别的配方
+              {t('ai.chat.formulaPanel.title')}
             </h2>
             <span className="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-semibold bg-primary-100 text-primary-700 dark:bg-primary-300/25 dark:text-primary-700">
               {filteredAndSortedFormulas.length}/{formulaCount}
@@ -448,23 +637,36 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
               className="w-full sm:w-auto bg-primary-container text-primary-main shadow-lg px-4 py-2.5 sm:py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 active:scale-95"
               icon={isGeneratingReport ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
             >
-              {isGeneratingReport ? '生成中...' : `生成报告 (${formulaCount})`}
+              {isGeneratingReport ? t('ai.chat.formulaPanel.generating') : t('ai.chat.formulaPanel.generateReport', { count: formulaCount })}
             </Button>
+
+            {/* v8.5 撤销批量删除：仅在有可撤销记录时出现，提供硬删后的唯一后悔入口 */}
+            {canUndoBatchDelete && onUndoBatchDelete && (
+              <Button
+                variant="outline"
+                onClick={() => onUndoBatchDelete()}
+                className="w-full sm:w-auto px-3 py-2 rounded-lg text-sm transition-all duration-200
+                           min-h-[44px] whitespace-nowrap"
+                icon={<RotateCcw size={16} />}
+              >
+                {t('ai.chat.formulaPanel.undoBatchDelete')}
+              </Button>
+            )}
 
             {/* 平板端视图切换按钮 */}
             <button
               onClick={() => setIsTabletView(!isTabletView)}
               className="hidden md:flex lg:hidden items-center justify-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors min-h-[44px]"
-              title={isTabletView ? '切换到单列视图' : '切换到双列视图'}
+              title={isTabletView ? t('ai.chat.formulaPanel.switchToSingle') : t('ai.chat.formulaPanel.switchToDouble')}
             >
               <LayoutGrid className="w-4 h-4" />
-              <span className="text-sm">{isTabletView ? '单列' : '双列'}</span>
+              <span className="text-sm">{isTabletView ? t('ai.chat.formulaPanel.singleColumn') : t('ai.chat.formulaPanel.doubleColumn')}</span>
             </button>
 
             <button
               onClick={onClose}
               className="self-end sm:self-auto p-2 -mr-2 sm:mr-0 rounded-lg hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
-              aria-label="关闭面板"
+              aria-label={t('ai.chat.formulaPanel.closePanel')}
             >
               <X className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
             </button>
@@ -473,7 +675,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
 
         {/* 提示文本区域 */}
         <div className="px-6 py-2 text-sm text-secondary-700 dark:text-secondary-700 bg-secondary-50 dark:bg-secondary-300/20 border-b border-secondary-100 dark:border-secondary-900/30">
-          支持中文/拼音/英文智能搜索 · 多条件组合筛选 · 多维度排序
+          {t('ai.chat.formulaPanel.hint')}
         </div>
 
         {/* ===== 搜索框区域 ===== */}
@@ -484,7 +686,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="🔍 搜索配方（支持拼音/中文/英文）..."
+                placeholder={t('ai.chat.formulaPanel.searchPlaceholder')}
                 value={localSearchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full pl-10 pr-10 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg
@@ -494,9 +696,10 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
               {localSearchQuery && (
                 <button
                   onClick={handleClearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600"
+                  aria-label={t('ai.chat.formulaPanel.clearSearch')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:text-neutral-600 flex items-center justify-center min-h-[24px] min-w-[24px]"
                 >
-                  ✕
+                  <X size={16} />
                 </button>
               )}
             </div>
@@ -508,8 +711,8 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
               icon={<SlidersHorizontal size={16} />}
               className="relative"
             >
-              <span className="hidden sm:inline">高级筛选</span>
-              <span className="sm:hidden">筛选</span>
+              <span className="hidden sm:inline">{t('ai.chat.formulaPanel.advancedFilter')}</span>
+              <span className="sm:hidden">{t('ai.chat.formulaPanel.filterShort')}</span>
               {activeFilterCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-error-500 text-white text-xs rounded-full flex items-center justify-center">
                   {activeFilterCount}
@@ -519,8 +722,9 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
           </div>
 
           {localSearchQuery && (
-            <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
-              🔍 搜索 "<strong>{localSearchQuery}</strong>" · 找到 <strong>{filteredAndSortedFormulas.length}</strong> 个匹配结果
+            <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
+              <Search size={14} />
+              <span>"<strong>{localSearchQuery}</strong>" · {t('ai.chat.formulaPanel.resultsFound', { count: filteredAndSortedFormulas.length })}</span>
             </div>
           )}
         </div>
@@ -529,7 +733,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
         <MobileBottomSheet
           open={showAdvancedFilter}
           onClose={() => setShowAdvancedFilter(false)}
-          title="高级筛选"
+          title={t('ai.chat.formulaPanel.advancedFilter')}
         >
           <AdvancedFilter
             filters={externalFilters || {}}
@@ -543,7 +747,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
         <div className="flex items-center gap-4 px-6 py-3 bg-neutral-50 dark:bg-neutral-800 text-sm border-b border-neutral-200 dark:border-neutral-700">
           <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-1">
             <ArrowUpDown size={14} />
-            排序:
+            {t('ai.chat.formulaPanel.sortLabel')}
           </span>
 
           <select
@@ -551,31 +755,29 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
             onChange={(e) => handleSortChange(e.target.value as FormulaSortField)}
             className="px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm focus:ring-2 focus:ring-secondary-500 outline-none"
           >
-            <option value="createdAt">创建时间</option>
-            <option value="updatedAt">更新时间</option>
-            <option value="name">名称</option>
-            <option value="confidence">置信度</option>
-            <option value="qualityScore">质量评分</option>
-            <option value="ingredientCount">成分数量</option>
+            <option value="createdAt">{t('ai.chat.formulaPanel.sortCreatedAt')}</option>
+            <option value="updatedAt">{t('ai.chat.formulaPanel.sortUpdatedAt')}</option>
+            <option value="name">{t('ai.chat.formulaPanel.sortName')}</option>
+            <option value="confidence">{t('ai.chat.formulaPanel.sortConfidence')}</option>
+            <option value="qualityScore">{t('ai.chat.formulaPanel.sortQualityScore')}</option>
+            <option value="ingredientCount">{t('ai.chat.formulaPanel.sortIngredientCount')}</option>
           </select>
 
           <button
             onClick={toggleSortOrder}
             className="px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-1"
           >
-            {localSortOrder === 'asc' ? '↑ 升序' : '↓ 降序'}
+            {localSortOrder === 'asc' ? t('ai.chat.formulaPanel.sortAsc') : t('ai.chat.formulaPanel.sortDesc')}
           </button>
 
           <span className="ml-auto text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-            共 {filteredAndSortedFormulas.length} 条结果
+            {t('ai.chat.formulaPanel.resultCount', { count: filteredAndSortedFormulas.length })}
           </span>
         </div>
 
         {/* ===== 配方列表主内容区 - 支持平板端双列布局 ===== */}
         <div className="flex-1 overflow-hidden">
-          {isLoading ? (
-            <FormulaSkeleton count={5} />
-          ) : filteredAndSortedFormulas.length > 0 ? (
+          {filteredAndSortedFormulas.length > 0 ? (
             <div className="p-4 space-y-3 h-full">
               {/* 平板端双列网格 / 移动端单列 */}
               <div className={cn(
@@ -595,6 +797,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                     onRename={onRenameFormula}
                     qualityScore={getFormulaScore ? getFormulaScore(formula.id) : undefined}
                     compact={isTabletView}
+                    onToggleFavorite={onToggleFavorite}
                     onShowContextMenu={handleShowContextMenu}
                   />
                 ))}
@@ -603,18 +806,67 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
               {selectedIds.size > 0 && (
                 <div className="sticky bottom-0 left-0 right-0 bg-primary-50 dark:bg-primary-300/20 border-t border-primary-200 dark:border-primary-800 px-4 sm:px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg shadow-lg mt-4 gap-2">
                   <span className="text-sm font-medium text-primary-700 dark:text-primary-700">
-                    已选择 {selectedIds.size} 个配方
+                    {t('ai.chat.formulaPanel.selectedCount', { count: selectedIds.size })}
                   </span>
 
                   {/* 移动端：操作按钮横向滚动 */}
                   <div className="flex items-center gap-2 overflow-x-auto pb-1 w-full sm:w-auto">
-                    <Button variant="outline" size="sm" onClick={() => onExport('json')} className="whitespace-nowrap text-xs sm:text-sm">
-                      导出选中
+                    <Button variant="outline" size="sm" onClick={() => onBatchExport?.('json')} className="whitespace-nowrap text-xs sm:text-sm">
+                      {t('ai.chat.formulaPanel.exportSelected')}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => {
+                      // v8.5：改用项目 Dialog，替代无法样式化、无无障碍语义的原生 window.prompt
+                      setTagInput('')
+                      setTagInputError('')
+                      setTagDialogOpen(true)
+                    }} className="whitespace-nowrap text-xs sm:text-sm">
+                      {t('ai.chat.formulaPanel.tagSelected')}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => {
+                      const selected = formulas.filter(f => selectedIds.has(f.id))
+                      const allFav = selected.length > 0 && selected.every(f => f.isFavorite)
+                      onBatchFavorite?.(Array.from(selectedIds), !allFav)
+                    }} icon={<Star size={14} />} className="whitespace-nowrap text-xs sm:text-sm">
+                      {(() => {
+                        const selected = formulas.filter(f => selectedIds.has(f.id))
+                        const allFav = selected.length > 0 && selected.every(f => f.isFavorite)
+                        return allFav
+                          ? t('ai.chat.formulaPanel.unfavoriteSelected')
+                          : t('ai.chat.formulaPanel.favoriteSelected')
+                      })()}
+                    </Button>
+                    {selectedIds.size === 2 && (
+                      <Button variant="outline" size="sm" onClick={() => {
+                        const ids = Array.from(selectedIds)
+                        const result = onCompare?.(ids[0], ids[1]) ?? null
+                        if (result) {
+                          setCompareResult(result)
+                          // v8.5：并排对比需要两张卡片的完整信息
+                          const a = formulas.find((f) => f.id === ids[0])
+                          const b = formulas.find((f) => f.id === ids[1])
+                          if (a && b) setComparePair({ a, b })
+                        }
+                      }} icon={<GitCompare size={14} />} className="whitespace-nowrap text-xs sm:text-sm">
+                        {t('ai.chat.formulaPanel.compareSelected')}
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setConfirmBatchDelete(true)}
+                      className="whitespace-nowrap text-xs sm:text-sm text-error-600"
+                    >
+                      {t('ai.chat.formulaPanel.deleteSelected')}
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      onSelectAll?.()
+                    }} className="whitespace-nowrap text-xs sm:text-sm">
+                      {t('ai.chat.formulaPanel.selectAll')}
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => {
                       clearSelection?.()
                     }} className="whitespace-nowrap text-xs sm:text-sm">
-                      取消选择
+                      {t('ai.chat.formulaPanel.cancelSelection')}
                     </Button>
                   </div>
                 </div>
@@ -629,14 +881,13 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                                  hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed
                                  transition-colors"
                       >
-                        ⬅️ 上一页
+                        {t('ai.chat.formulaPanel.prevPage')}
                       </button>
 
                       <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                        第 <strong className="text-secondary-600 dark:text-secondary-700">{currentPage}</strong> /
-                        共 <strong>{totalPages}</strong> 页
+                        {t('ai.chat.formulaPanel.pageInfo', { current: currentPage, total: totalPages })}
                         <span className="ml-2 text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-                          (共 {filteredAndSortedFormulas.length} 个配方)
+                          {t('ai.chat.formulaPanel.formulasTotal', { count: filteredAndSortedFormulas.length })}
                         </span>
                       </span>
 
@@ -647,7 +898,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                                  hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed
                                  transition-colors"
                       >
-                        下一页 ➡️
+                        {t('ai.chat.formulaPanel.nextPage')}
                       </button>
                     </div>
                   )}
@@ -657,9 +908,9 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
               <FlaskConical className="w-16 h-16 mx-auto mb-4 opacity-30" />
               {localSearchQuery || externalFilters ? (
                 <>
-                  <p className="text-lg font-medium text-neutral-600 dark:text-neutral-400">未找到匹配的配方</p>
+                  <p className="text-lg font-medium text-neutral-600 dark:text-neutral-400">{t('ai.chat.formulaPanel.noMatchTitle')}</p>
                   <p className="text-sm mt-2 text-neutral-500 dark:text-neutral-400">
-                    尝试调整搜索关键词或筛选条件...
+                    {t('ai.chat.formulaPanel.noMatchHint')}
                   </p>
                   <Button
                     variant="outline"
@@ -667,16 +918,16 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                     onClick={handleResetFilters}
                     className="mt-4"
                   >
-                    重置所有筛选条件
+                    {t('ai.chat.formulaPanel.resetAllFilters')}
                   </Button>
                 </>
               ) : (
                 <>
-                  <p className="text-lg font-medium text-neutral-600 dark:text-neutral-400">暂未识别到任何配方</p>
+                  <p className="text-lg font-medium text-neutral-600 dark:text-neutral-400">{t('ai.chat.formulaPanel.emptyTitle')}</p>
                   <p className="text-sm mt-2 text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto">
-                    继续对话并请求AI提供配方信息<br/>
+                    {t('ai.chat.formulaPanel.emptyHint')}<br/>
                     <span className="text-primary-700 dark:text-primary-700 font-medium">
-                      （如："请给我一个抗氧化配方"）
+                      {t('ai.chat.formulaPanel.emptyExample')}
                     </span>
                   </p>
                 </>
@@ -689,19 +940,19 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
         <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 flex flex-col gap-3">
           <div className="flex items-center justify-between text-xs">
             <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-              共 {formulaCount} 个配方{localSearchQuery || externalFilters ? ` | 显示 ${filteredAndSortedFormulas.length} 个` : ''} |
-              <span className="text-success-600 ml-1">💾 已自动保存</span>
+              {t('ai.chat.formulaPanel.statusFormulas', { count: formulaCount })}{localSearchQuery || externalFilters ? ` | ${t('ai.chat.formulaPanel.statusShowing', { count: filteredAndSortedFormulas.length })}` : ''} |
+              <span className="text-success-600 ml-1">{t('ai.chat.formulaPanel.autoSaved')}</span>
             </span>
             <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-              v8.0 高级筛选版
+              {t('ai.chat.formulaPanel.versionLabel')}
             </span>
           </div>
 
           <div className="flex items-center justify-between flex-col sm:flex-row gap-3">
             <div className="flex items-center gap-2 w-full sm:w-auto">
               {(localSearchQuery || externalFilters) && (
-                <Button variant="ghost" size="sm" onClick={handleResetFilters} className="flex-1 sm:flex-initial">
-                  🔄 重置筛选
+                <Button variant="ghost" size="sm" onClick={handleResetFilters} icon={<RotateCcw size={14} />} className="flex-1 sm:flex-initial">
+                  {t('ai.chat.formulaPanel.resetFilterShort')}
                 </Button>
               )}
 
@@ -714,7 +965,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                   className="flex items-center gap-1 min-h-[44px]"
                 >
                   <MoreVertical className="w-4 h-4" />
-                  更多操作
+                  {t('ai.chat.formulaPanel.moreActions')}
                 </Button>
 
                 {showMoreMenu && (
@@ -728,13 +979,15 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                         onClick={() => { onClearMemory(); setShowMoreMenu(false); }}
                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
                       >
-                        🔄 清空内存缓存
+                        <RotateCcw className="w-4 h-4" />
+                        {t('ai.chat.formulaPanel.clearMemoryCache')}
                       </button>
                       <button
                         onClick={() => { onImport(); setShowMoreMenu(false); }}
                         className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
                       >
-                        📥 导入数据
+                        <Download className="w-4 h-4" />
+                        {t('ai.chat.formulaPanel.importData')}
                       </button>
                       <hr className="my-1 border-neutral-200 dark:border-neutral-700" />
                       <button
@@ -742,7 +995,8 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                         className="w-full px-4 py-2.5 text-left text-sm text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 flex items-center gap-3 min-h-[44px]"
                         disabled={formulaCount === 0}
                       >
-                        🗑 清空存储
+                        <Trash2 className="w-4 h-4" />
+                        {t('ai.chat.formulaPanel.clearStorage')}
                       </button>
                     </div>
                   </>
@@ -751,7 +1005,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
 
               {/* 大屏：直接显示所有操作 */}
               <Button variant="ghost" size="sm" onClick={onClearMemory} className="hidden md:flex">
-                清空内存
+                {t('ai.chat.formulaPanel.clearMemory')}
               </Button>
             </div>
 
@@ -760,69 +1014,88 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                 variant="ghost"
                 size="sm"
                 onClick={onImport}
-                title="从JSON文件导入配方数据"
+                title={t('ai.chat.formulaPanel.importFromJson')}
+                icon={<Download size={14} />}
                 className="hidden md:flex"
               >
-                📥 导入
+                {t('ai.chat.formulaPanel.import')}
               </Button>
 
-              <div className="relative group">
+              <div className="relative group" ref={exportMenuRef}>
                 <Button
                   variant="ghost"
                   size="sm"
-                  title="选择导出格式"
+                  onClick={() => setShowExportMenu((prev) => !prev)}
+                  title={t('ai.chat.formulaPanel.chooseExportFormat')}
                   disabled={formulaCount === 0}
+                  aria-haspopup="menu"
+                  aria-expanded={showExportMenu}
+                  icon={<Upload size={14} />}
                   className="group-hover:bg-neutral-100 dark:bg-neutral-800"
                 >
-                  📤 导出 ▼
+                  {t('ai.chat.formulaPanel.export')}
+                  <MoreVertical className="w-3 h-3 rotate-[-90deg]" aria-hidden="true" />
                 </Button>
 
-                <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-neutral-800
+                {showExportMenu && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-1 w-36 max-w-[calc(100vw-2rem)] bg-white dark:bg-neutral-800
                             rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700
-                            opacity-0 invisible group-hover:opacity-100 group-hover:visible
-                            transition-all duration-200 z-50">
-                  <div className="py-1">
-                    <button
-                      onClick={() => onExport('json')}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-secondary-50
+                            z-50"
+                  >
+                    <div className="py-1">
+                      <button
+                        role="menuitem"
+                        onClick={() => { onExport('json'); setShowExportMenu(false) }}
+                        className="w-full px-4 py-2 min-h-[44px] text-left text-sm hover:bg-secondary-50
                                dark:hover:bg-secondary-900/20 flex items-center gap-2"
-                    >
-                      📄 JSON 格式
-                    </button>
-                    <button
-                      onClick={() => onExport('csv')}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-secondary-50
+                      >
+                        <FileJson className="w-4 h-4" />
+                        {t('ai.chat.formulaPanel.exportJson')}
+                      </button>
+                      <button
+                        role="menuitem"
+                        onClick={() => { onExport('csv'); setShowExportMenu(false) }}
+                        className="w-full px-4 py-2 min-h-[44px] text-left text-sm hover:bg-secondary-50
                                dark:hover:bg-secondary-900/20 flex items-center gap-2"
-                    >
-                      📊 CSV 表格
-                    </button>
-                    <button
-                      onClick={() => onExport('txt')}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-secondary-50
+                      >
+                        <FileSpreadsheet className="w-4 h-4" />
+                        {t('ai.chat.formulaPanel.exportCsv')}
+                      </button>
+                      <button
+                        role="menuitem"
+                        onClick={() => { onExport('txt'); setShowExportMenu(false) }}
+                        className="w-full px-4 py-2 min-h-[44px] text-left text-sm hover:bg-secondary-50
                                dark:hover:bg-secondary-900/20 flex items-center gap-2"
-                    >
-                      📝 纯文本
-                    </button>
-                    <button
-                      onClick={() => onExport('html')}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-secondary-50
+                      >
+                        <FileText className="w-4 h-4" />
+                        {t('ai.chat.formulaPanel.exportTxt')}
+                      </button>
+                      <button
+                        role="menuitem"
+                        onClick={() => { onExport('html'); setShowExportMenu(false) }}
+                        className="w-full px-4 py-2 min-h-[44px] text-left text-sm hover:bg-secondary-50
                                dark:hover:bg-secondary-900/20 flex items-center gap-2"
-                    >
-                      🌐 HTML 网页
-                    </button>
+                      >
+                        <Globe className="w-4 h-4" />
+                        {t('ai.chat.formulaPanel.exportHtml')}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onClearStorage}
-                title="清除本地保存的所有配方数据"
+                title={t('ai.chat.formulaPanel.clearStorageTitle')}
+                icon={<Trash2 size={14} />}
                 className="text-error-500 hover:text-error-600 hover:bg-error-50 hidden md:flex"
                 disabled={formulaCount === 0}
               >
-                🗑️ 清除存储
+                {t('ai.chat.formulaPanel.clearStorageBtn')}
               </Button>
             </div>
           </div>
@@ -848,30 +1121,329 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
               className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
             >
               <Eye className="w-4 h-4" />
-              查看详情
+              {t('ai.chat.formulaPanel.viewDetail')}
             </button>
             <button
               onClick={() => handleContextAction('generateReport')}
               className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
             >
               <FileText className="w-4 h-4" />
-              生成报告
+              {t('ai.chat.formulaPanel.generateReportCtx')}
             </button>
             <button
               onClick={() => handleContextAction('export')}
               className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
             >
-              📤 导出数据
+              <Upload className="w-4 h-4" />
+              {t('ai.chat.formulaPanel.exportData')}
             </button>
+
+            {/* v8.2：优先级设置 */}
+            <div className="px-4 py-2">
+              <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mb-1.5">
+                <Flag className="w-3.5 h-3.5" />
+                {t('ai.chat.formulaPanel.priorityLabel')}
+              </div>
+              <div className="flex items-center gap-1">
+                {(['high', 'medium', 'low'] as const).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => {
+                      if (contextMenu.formulaId) onSetPriority?.(contextMenu.formulaId, p)
+                      handleCloseContextMenu()
+                    }}
+                    className="flex-1 px-2 py-1.5 rounded-md text-xs border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 min-h-[36px]"
+                  >
+                    {t(`ai.chat.formulaPanel.priority_${p}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                if (contextMenu.formulaId && onGetVersions) {
+                  setVersionPanel({ id: contextMenu.formulaId, versions: onGetVersions(contextMenu.formulaId) })
+                }
+                handleCloseContextMenu()
+              }}
+              className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
+            >
+              <History className="w-4 h-4" />
+              {t('ai.chat.formulaPanel.versionHistory')}
+            </button>
+
             <hr className="my-1 border-neutral-200 dark:border-neutral-700" />
             <button
               onClick={() => handleContextAction('delete')}
               className="w-full px-4 py-2.5 text-left text-sm text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 flex items-center gap-3 min-h-[44px]"
             >
-              🗑 删除配方
+              <Trash2 className="w-4 h-4" />
+              {t('ai.chat.formulaPanel.deleteFormula')}
             </button>
           </div>
         </>
+      )}
+
+      {/* ===== v8.5 批量删除确认对话框（替代原生 window.confirm） ===== */}
+      <Dialog open={confirmBatchDelete} onOpenChange={setConfirmBatchDelete}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('ai.chat.formulaPanel.confirmBatchDeleteTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('ai.chat.formulaPanel.confirmBatchDelete', { count: selectedIds.size })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setConfirmBatchDelete(false)}>
+              {t('ai.chat.formulaPanel.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              className="bg-error-600 hover:bg-error-700"
+              onClick={() => {
+                onBatchDelete?.(Array.from(selectedIds))
+                setConfirmBatchDelete(false)
+              }}
+            >
+              {t('ai.chat.formulaPanel.confirmDeleteAction')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== v8.5 批量标签输入对话框（替代原生 window.prompt） ===== */}
+      <Dialog open={tagDialogOpen} onOpenChange={setTagDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('ai.chat.formulaPanel.tagDialogTitle')}</DialogTitle>
+            <DialogDescription>{t('ai.chat.formulaPanel.tagPrompt')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <input
+              type="text"
+              autoFocus
+              value={tagInput}
+              onChange={(e) => {
+                setTagInput(e.target.value)
+                if (tagInputError) setTagInputError('')
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  const tags = tagInput.split(/[,，]/).map((s) => s.trim()).filter(Boolean)
+                  if (tags.length === 0) {
+                    setTagInputError(t('ai.chat.formulaPanel.tagEmptyError'))
+                    return
+                  }
+                  onBatchTag?.(Array.from(selectedIds), tags)
+                  setTagDialogOpen(false)
+                }
+              }}
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg
+                       bg-white dark:bg-neutral-900 text-sm outline-none
+                       focus:ring-2 focus:ring-secondary-500 min-h-[44px]"
+              placeholder={t('ai.chat.formulaPanel.tagInputPlaceholder')}
+              aria-label={t('ai.chat.formulaPanel.tagInputPlaceholder')}
+            />
+            {tagInputError && (
+              <p className="text-xs text-error-600" role="alert">{tagInputError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setTagDialogOpen(false)}>
+              {t('ai.chat.formulaPanel.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                const tags = tagInput.split(/[,，]/).map((s) => s.trim()).filter(Boolean)
+                if (tags.length === 0) {
+                  setTagInputError(t('ai.chat.formulaPanel.tagEmptyError'))
+                  return
+                }
+                onBatchTag?.(Array.from(selectedIds), tags)
+                setTagDialogOpen(false)
+              }}
+            >
+              {t('ai.chat.formulaPanel.confirmTagAction')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== 配方对比结果弹窗 (v8.2) ===== */}
+      {compareResult && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40" role="dialog" aria-modal="true" aria-label={t('ai.chat.formulaPanel.compareResultTitle')}>
+          <div className="w-full max-w-lg bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+              <h3 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+                <GitCompare className="w-5 h-5 text-secondary-600" />
+                {t('ai.chat.formulaPanel.compareResultTitle')}
+              </h3>
+              <button
+                onClick={() => { setCompareResult(null); setComparePair(null) }}
+                aria-label={t('ai.chat.formulaPanel.closePanel')}
+                className="flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-[color:var(--text-muted)] hover:bg-neutral-100 dark:hover:bg-neutral-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4 text-sm">
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-900/50">
+                <span className="text-neutral-600 dark:text-neutral-400">{t('ai.chat.formulaPanel.compareSimilarity')}</span>
+                <span className="font-semibold text-secondary-600">{Math.round(compareResult.similarityScore * 100)}%</span>
+              </div>
+
+              {/* v8.5 并排对比表：共同成分中性，独有成分高亮，一眼看出差异 */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr>
+                      <th className="text-left px-2 py-2 font-semibold text-neutral-700 dark:text-neutral-300 border-b border-neutral-200 dark:border-neutral-700 break-words max-w-[45%]">
+                        {comparePair ? (comparePair.a.name || comparePair.a.autoName || t('ai.chat.formulaPanel.compareFormula1')) : t('ai.chat.formulaPanel.compareFormula1')}
+                      </th>
+                      <th className="text-left px-2 py-2 font-semibold text-neutral-700 dark:text-neutral-300 border-b border-neutral-200 dark:border-neutral-700 break-words max-w-[45%]">
+                        {comparePair ? (comparePair.b.name || comparePair.b.autoName || t('ai.chat.formulaPanel.compareFormula2')) : t('ai.chat.formulaPanel.compareFormula2')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="align-top px-2 py-2 border-b border-neutral-100 dark:border-neutral-800">
+                        {(() => {
+                          const unique = new Set(compareResult.uniqueToFormula1)
+                          const list = [...compareResult.commonIngredients, ...compareResult.uniqueToFormula1]
+                          if (list.length === 0) return <span className="text-neutral-400">{t('ai.chat.formulaPanel.compareNone')}</span>
+                          return (
+                            <div className="flex flex-wrap gap-1">
+                              {list.map((ing) => (
+                                <span key={ing} className={
+                                  unique.has(ing)
+                                    ? 'px-2 py-0.5 rounded bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-medium ring-1 ring-primary-200 dark:ring-primary-800'
+                                    : 'px-2 py-0.5 rounded bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-300'
+                                }>{ing}</span>
+                              ))}
+                            </div>
+                          )
+                        })()}
+                      </td>
+                      <td className="align-top px-2 py-2 border-b border-neutral-100 dark:border-neutral-800">
+                        {(() => {
+                          const unique = new Set(compareResult.uniqueToFormula2)
+                          const list = [...compareResult.commonIngredients, ...compareResult.uniqueToFormula2]
+                          if (list.length === 0) return <span className="text-neutral-400">{t('ai.chat.formulaPanel.compareNone')}</span>
+                          return (
+                            <div className="flex flex-wrap gap-1">
+                              {list.map((ing) => (
+                                <span key={ing} className={
+                                  unique.has(ing)
+                                    ? 'px-2 py-0.5 rounded bg-warning-50 dark:bg-warning-900/30 text-warning-700 dark:text-warning-300 font-medium ring-1 ring-warning-200 dark:ring-warning-800'
+                                    : 'px-2 py-0.5 rounded bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-300'
+                                }>{ing}</span>
+                              ))}
+                            </div>
+                          )
+                        })()}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-2 py-2 text-neutral-500 dark:text-neutral-400">
+                        {t('ai.chat.formulaPanel.compareUniqueCount', { count: compareResult.uniqueToFormula1.length })}
+                      </td>
+                      <td className="px-2 py-2 text-neutral-500 dark:text-neutral-400">
+                        {t('ai.chat.formulaPanel.compareUniqueCount', { count: compareResult.uniqueToFormula2.length })}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-900/50">
+                <span className="text-neutral-600 dark:text-neutral-400">{t('ai.chat.formulaPanel.compareOverlap')}</span>
+                <span className="font-semibold text-secondary-600">{Math.round(compareResult.ingredientOverlapRatio * 100)}%</span>
+              </div>
+
+              <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-900/50">
+                <span className="text-neutral-600 dark:text-neutral-400">{t('ai.chat.formulaPanel.compareConfidenceDiff')}</span>
+                <span className="font-semibold text-neutral-700 dark:text-neutral-300">{Math.round(compareResult.confidenceDiff * 100)}%</span>
+              </div>
+            </div>
+
+            <div className="px-5 py-3 border-t border-neutral-200 dark:border-neutral-700 flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={handleExportComparison} icon={<Download size={14} />}>
+                {t('ai.chat.formulaPanel.compareExport')}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => { setCompareResult(null); setComparePair(null) }}>
+                {t('ai.chat.formulaPanel.compareClose')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== 版本历史弹窗 (v8.2) ===== */}
+      {versionPanel && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40" role="dialog" aria-modal="true" aria-label={t('ai.chat.formulaPanel.versionHistory')}>
+          <div className="w-full max-w-md bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+              <h3 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+                <History className="w-5 h-5 text-secondary-600" />
+                {t('ai.chat.formulaPanel.versionHistory')}
+              </h3>
+              <button
+                onClick={() => setVersionPanel(null)}
+                aria-label={t('ai.chat.formulaPanel.closePanel')}
+                className="flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg text-[color:var(--text-muted)] hover:bg-neutral-100 dark:hover:bg-neutral-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 max-h-[60dvh] overflow-y-auto space-y-2">
+              {versionPanel.versions.length === 0 ? (
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center py-6">
+                  {t('ai.chat.formulaPanel.versionEmpty')}
+                </p>
+              ) : (
+                versionPanel.versions.map((v) => (
+                  <div key={v.version} className="flex items-start justify-between gap-3 px-3 py-2.5 rounded-lg bg-neutral-50 dark:bg-neutral-900/50">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                        {t('ai.chat.formulaPanel.versionItem', { version: v.version })}
+                      </div>
+                      <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                        {v.timestamp.toLocaleString(i18n.language || 'zh-CN')}
+                        {v.changeReason ? ` · ${v.changeReason}` : ''}
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={<RotateCw size={14} />}
+                      onClick={() => {
+                        const ok = onRollbackVersion?.(versionPanel.id, v.version)
+                        if (ok) setVersionPanel(null)
+                      }}
+                      className="shrink-0"
+                    >
+                      {t('ai.chat.formulaPanel.versionRollback')}
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="px-5 py-3 border-t border-neutral-200 dark:border-neutral-700 flex justify-end">
+              <Button variant="outline" size="sm" onClick={() => setVersionPanel(null)}>
+                {t('ai.chat.formulaPanel.compareClose')}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
