@@ -1537,8 +1537,11 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
   /**
    * 回滚到指定版本
    *
-   * v8.4 语义修正：快照记录的是「改动前该字段的原值」，若原值为 undefined 表示"当时没有这个字段"。
-   * 因此回滚不能只做浅合并（会把新值残留在对象上），而要先删除这些字段再应用快照值。
+   * v8.4 累积性语义修正：每条 history[i].changes 记录的是「第 i+1 版改动覆盖字段的改动前原值」。
+   * 要还原到「第 version 版改动之前」的完整状态，必须从最新版出发，逆序逐层撤销
+   * version、version+1、…、最新版 的每一条快照（每条把对应字段还原成它改动前的值，undefined 则删除该字段）。
+   * 若只应用 targetVersion 单条快照，version 之后各版引入的新值会残留在对象上，
+   * 得到的并非真正的「version 时刻完整状态」。
    */
   const rollbackToVersion = useCallback((formulaId: string, version: number): boolean => {
     const history = versionHistory.get(formulaId)
@@ -1548,17 +1551,28 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
       return false
     }
 
-    const targetVersion = history[version - 1]
     const restored: AIRecognizedFormula = { ...current }
 
-    Object.entries(targetVersion.changes).forEach(([key, value]) => {
-      if (value === undefined) {
-        // 改动前该字段不存在 → 回滚时应移除，而不是留成 undefined 键
-        delete (restored as unknown as Record<string, unknown>)[key]
-      } else {
-        ;(restored as unknown as Record<string, unknown>)[key] = value
-      }
-    })
+    // 追踪本次回滚涉及的字段，供派生 Set/Map 同步判断
+    let touchFavorite = false
+    let touchPriority = false
+    let touchTags = false
+
+    // 逆序重放：从最新一条快照逐层撤销到第 version 版快照（含）
+    for (let i = history.length - 1; i >= version - 1; i--) {
+      const snap = history[i].changes
+      Object.entries(snap).forEach(([key, value]) => {
+        if (value === undefined) {
+          // 改动前该字段不存在 → 回滚时应移除，而不是留成 undefined 键
+          delete (restored as unknown as Record<string, unknown>)[key]
+        } else {
+          ;(restored as unknown as Record<string, unknown>)[key] = value
+        }
+      })
+      if ('isFavorite' in snap) touchFavorite = true
+      if ('priority' in snap) touchPriority = true
+      if ('tags' in snap) touchTags = true
+    }
     restored.updatedAt = Date.now()
 
     setFormulaIndex(prevIndex => {
@@ -1569,7 +1583,7 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
     })
 
     // 回滚也要让派生 Set/Map 与主数据一致，否则卡片显示的收藏/优先级会和公式列表不符
-    if ('isFavorite' in targetVersion.changes) {
+    if (touchFavorite) {
       setFavorites(prev => {
         const newSet = new Set(prev)
         if (restored.isFavorite) newSet.add(formulaId)
@@ -1577,7 +1591,7 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
         return newSet
       })
     }
-    if ('priority' in targetVersion.changes) {
+    if (touchPriority) {
       setPriorities(prev => {
         const newMap = new Map(prev)
         const p = restored.priority
@@ -1586,7 +1600,7 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
         return newMap
       })
     }
-    if ('tags' in targetVersion.changes) {
+    if (touchTags) {
       setFormulaTags(prev => {
         const newMap = new Map(prev)
         const t = restored.tags
