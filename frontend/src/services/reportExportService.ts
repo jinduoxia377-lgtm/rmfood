@@ -394,25 +394,8 @@ class ReportExportService {
         heightLeft -= pageHeight
       }
 
-      // 添加页脚
-      const totalPages = pdf.getNumberOfPages()
-      for (let i = 1; i <= totalPages; i++) {
-        pdf.setPage(i)
-        pdf.setFontSize(8)
-        pdf.setTextColor(156, 163, 175)
-        pdf.text(
-          '本报告由 AI 配方生成系统自动生成，仅供参考。具体使用请遵医嘱或咨询专业人士。',
-          pageWidth / 2,
-          pageHeight - 8,
-          { align: 'center' },
-        )
-        pdf.text(
-          `第 ${i} 页 / 共 ${totalPages} 页`,
-          pageWidth - 15,
-          pageHeight - 8,
-          { align: 'right' },
-        )
-      }
+      // 页脚免责声明已并入上方 HTML 模板的 .footer（经 html2canvas 截图渲染中文，安全），
+      // 不再用 pdf.text 绘制（helvetica 缺 CJK 字形会乱码）。每页页码随截图内容呈现，不再单独注入。
 
       onProgress?.({
         stage: 'complete',

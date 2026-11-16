@@ -2,7 +2,7 @@
  * ReportExporter.ts - 专业报告多格式导出服务
  *
  * 支持格式：
- * - PDF（使用 jsPDF + jsPDF-AutoTable）
+ * - PDF（方案C：生成 HTML → 复用 pdfPrintExporter 浏览器打印，原生渲染中文）
  * - Word（使用 docx 库）
  * - Excel（使用 ExcelJS）
  *
@@ -13,8 +13,8 @@
  * - 深色模式适配
  */
 
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
+import { exportHtmlAsPdf, wrapPrintHtml } from '@/utils/pdfPrintExporter'
+import { feedbackService } from '@/services/feedbackService'
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx'
 import ExcelJS from 'exceljs'
 import type { ProfessionalReport, ReportSection } from '@/types/ai.types'
@@ -83,375 +83,178 @@ export async function exportReport(options: ExportOptions): Promise<ExportResult
 
 // ==================== PDF Export ====================
 
+/** 品牌色（Forest Green），封面/表头统一使用 */
+const BRAND_GREEN = '#10B981'
+const DARK = '#1f2937'
+const GRAY = '#64748b'
+
+/** 转义用户数据，避免破坏 HTML 结构 / 注入 */
+function escapeHtml(value: string): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 async function exportToPDF(
   report: ProfessionalReport,
   onProgress?: (progress: number) => void,
 ): Promise<ExportResult> {
-  const doc = new jsPDF('p', 'mm', 'a4')
-  const pageWidth = doc.internal.pageSize.getWidth()
-  const pageHeight = doc.internal.pageSize.getHeight()
-  let yPos = 20
-
   // 封面页
   onProgress?.(20)
-  addCoverPage(doc, report, pageWidth, pageHeight)
+  const projectName = report.metadata?.projectName || '配方研发项目'
+  const generatedAt = report.generatedAt ? formatDateCN(report.generatedAt) : '-'
+  const version = report.version || '1.0.0'
+
+  const cover = `
+    <div style="text-align:center;margin:60px 0 40px;">
+      <div style="font-size:28pt;font-weight:bold;color:${DARK};">${escapeHtml(report.title || 'RMFOOD 专业分析报告')}</div>
+      <div style="width:50%;height:2px;background:${BRAND_GREEN};margin:18px auto;"></div>
+      <div style="font-size:12pt;color:${DARK};margin-top:14px;">${escapeHtml(projectName)}</div>
+      <div style="font-size:11pt;color:${GRAY};margin-top:8px;">生成时间: ${escapeHtml(generatedAt)}</div>
+      <div style="font-size:11pt;color:${GRAY};margin-top:4px;">版本: ${escapeHtml(version)}</div>
+      ${report.metadata?.author ? `<div style="font-size:11pt;color:${GRAY};margin-top:4px;">编制: ${escapeHtml(report.metadata.author)}</div>` : ''}
+      <div style="font-size:10pt;color:${GRAY};margin-top:60px;">莱茵（厦门）分子生物科技有限公司</div>
+    </div>`
 
   // 目录页
-  doc.addPage()
-  yPos = 20
-  addTableOfContents(doc, report, yPos)
+  const sortedSections = [...report.sections].sort((a, b) => a.order - b.order)
+  const toc = `
+    <h2>目录</h2>
+    ${sortedSections.map((s) => `<p style="margin:4px 0;">${s.order}. ${escapeHtml(s.title)}</p>`).join('')}`
 
   // 内容章节
   onProgress?.(40)
-  const sortedSections = [...report.sections].sort((a, b) => a.order - b.order)
+  const sectionsHtml = sortedSections
+    .filter((s) => s && s.type !== 'cover')
+    .map((section) => {
+      const body = renderSectionHtml(section)
+      return `<h2>${escapeHtml(section.title)}</h2>${body}`
+    })
+    .join('')
 
-  for (let i = 0; i < sortedSections.length; i++) {
-    const section = sortedSections[i]
+  // 页脚（@page 无法跨浏览器注入页码，改为文末落款）
+  const footer = `<p style="color:${GRAY};font-size:8pt;margin-top:24px;border-top:1px solid #e2e8f0;padding-top:8px;text-align:center;">RMFOOD 专业分析报告 · 莱茵（厦门）分子生物科技有限公司</p>`
 
-    if (!section || section.type === 'cover') {
-      continue
-    }
+  const contentHtml = `
+    <style>
+      .report-container h2 { color: ${BRAND_GREEN}; border-bottom-color: ${BRAND_GREEN}; }
+      .report-container { page-break-before: always; }
+      .report-container > div:first-child { page-break-before: avoid; }
+    </style>
+    ${cover}
+    ${toc}
+    ${sectionsHtml}
+    ${footer}`
 
-    doc.addPage()
-    yPos = 20
-
-    // 章节标题
-    doc.setFontSize(18)
-    doc.setFont('helvetica', 'bold')
-    doc.text(section.title, 14, yPos)
-    yPos += 15
-
-    // 章节内容
-    yPos = addSectionContent(doc, section, yPos, pageWidth, pageHeight)
-
-    onProgress?.(40 + (50 * (i + 1)) / sortedSections.length)
-  }
-
-  // 页脚
-  const totalPages = doc.getNumberOfPages()
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i)
-    doc.setFontSize(8)
-    doc.setFont('helvetica', 'normal')
-    doc.text(
-      `第 ${i} 页 / 共 ${totalPages} 页`,
-      pageWidth / 2,
-      pageHeight - 10,
-      { align: 'center' },
-    )
-  }
-
-  // 保存文件
   const filename = `${report.title || 'RMFOOD报告'}_${formatDate(new Date())}.pdf`
-  doc.save(filename)
+  exportHtmlAsPdf(wrapPrintHtml(contentHtml, filename), {
+    title: filename,
+    onError: (message) => {
+      feedbackService.showError('PDF 导出失败', message)
+    },
+  })
 
   onProgress?.(100)
 
+  // 方案C 由浏览器打印产出 PDF，无法在导出时同步取到字节大小，size 留空
   return {
     success: true,
     filename,
     format: ExportFormat.PDF,
-    size: doc.output('arraybuffer').byteLength,
   }
 }
 
-function addCoverPage(
-  doc: jsPDF,
-  report: ProfessionalReport,
-  width: number,
-  height: number,
-): void {
-  // 标题
-  doc.setFontSize(28)
-  doc.setFont('helvetica', 'bold')
-  doc.text(report.title || 'RMFOOD 专业分析报告', width / 2, height / 3, { align: 'center' })
-
-  // 分隔线
-  doc.setDrawColor(59, 130, 246)
-  doc.setLineWidth(0.5)
-  doc.line(width / 4, height / 3 + 10, (width * 3) / 4, height / 3 + 10)
-
-  // 元信息
-  doc.setFontSize(12)
-  doc.setFont('helvetica', 'normal')
-  doc.text(report.metadata?.projectName || '配方研发项目', width / 2, height / 3 + 25, { align: 'center' })
-  doc.text(`生成时间: ${report.generatedAt ? formatDateCN(report.generatedAt) : '-'}`, width / 2, height / 3 + 35, { align: 'center' })
-  doc.text(`版本: ${report.version || '1.0.0'}`, width / 2, height / 3 + 45, { align: 'center' })
-
-  if (report.metadata?.author) {
-    doc.text(`编制: ${report.metadata.author}`, width / 2, height / 3 + 55, { align: 'center' })
-  }
-
-  // 公司信息
-  doc.setFontSize(10)
-  doc.setTextColor(128, 128, 128)
-  doc.text('莱茵（厦门）分子生物科技有限公司', width / 2, height - 30, { align: 'center' })
-}
-
-function addTableOfContents(doc: jsPDF, report: ProfessionalReport, startY: number): void {
-  doc.setFontSize(16)
-  doc.setFont('helvetica', 'bold')
-  doc.text('目录', 14, startY)
-
-  const sortedSections = [...report.sections].sort((a, b) => a.order - b.order)
-  let y = startY + 15
-
-  sortedSections.forEach((section) => {
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`${section.order}. ${section.title}`, 20, y)
-    y += 8
-  })
-}
-
-function addSectionContent(
-  doc: jsPDF,
-  section: ReportSection,
-  startY: number,
-  pageWidth: number,
-  pageHeight: number,
-): number {
-  let y = startY
+/** 将单个章节渲染为 HTML 片段 */
+function renderSectionHtml(section: ReportSection): string {
+  const content = section.content || {}
 
   switch (section.type) {
-    case 'executive-summary':
-      y = renderExecutiveSummaryPDF(doc, section, y, pageWidth)
-      break
-    case 'formula-details':
-      y = renderFormulaDetailsPDF(doc, section, y, pageWidth, pageHeight)
-      break
-    case 'ingredient-analysis':
-      y = renderIngredientAnalysisPDF(doc, section, y, pageWidth, pageHeight)
-      break
-    case 'synergy-assessment':
-      y = renderSynergyAssessmentPDF(doc, section, y, pageWidth)
-      break
-    case 'recommendations':
-      y = renderRecommendationsPDF(doc, section, y, pageWidth)
-      break
-    case 'appendix':
-      y = renderAppendixPDF(doc, section, y, pageWidth)
-      break
+    case 'executive-summary': {
+      let html = ''
+      if (content.summary) {
+        html += `<p>${escapeHtml(String(content.summary))}</p>`
+      }
+      if (content.keyFindings) {
+        html += `<h3>关键发现:</h3><ul>${(content.keyFindings as string[])
+          .map((f) => `<li>${escapeHtml(f)}</li>`)
+          .join('')}</ul>`
+      }
+      return html || emptySection()
+    }
+    case 'formula-details': {
+      const fd = content.formulaData
+      if (!fd) return emptySection('暂无配方数据')
+      let html = `<p><strong>配方名称:</strong> ${escapeHtml(fd.name || '-')}</p>`
+      if (fd.ingredients && fd.ingredients.length > 0) {
+        html += buildTable(
+          ['成分名称', '用量', '单位', '功效', '注意事项'],
+          fd.ingredients.map((ing: Record<string, unknown>) => [
+            ing.name, ing.dosage, ing.unit, ing.efficacy, ing.notes,
+          ]),
+        )
+      }
+      return html
+    }
+    case 'ingredient-analysis': {
+      const ingredients = content.ingredients
+      if (!ingredients || ingredients.length === 0) return emptySection('暂无成分分析数据')
+      return buildTable(
+        ['成分名称', '来源', '分类', '安全等级', '生物利用度'],
+        ingredients.map((ing: Record<string, unknown>) => [
+          ing.name, ing.source, ing.category, ing.safetyRating, ing.bioavailability,
+        ]),
+      )
+    }
+    case 'synergy-assessment': {
+      const radarData = content.radarData
+      if (!radarData || radarData.length === 0) return emptySection('暂无协同效果评估数据')
+      return `<h3>协同效应分析结果:</h3><ul>${radarData
+        .map((item: any) => `<li>${escapeHtml(item.name)}: ${escapeHtml(item.value || item.score || '-')}</li>`)
+        .join('')}</ul>`
+    }
+    case 'recommendations': {
+      if (!content.recommendations) return emptySection()
+      const recs = Array.isArray(content.recommendations)
+        ? content.recommendations
+        : [content.recommendations]
+      return recs
+        .map((rec: any, index: number) => {
+          const body = rec.description || rec.content || String(rec)
+          return `<h3>${index + 1}. ${escapeHtml(rec.title || rec.category || '建议')}</h3><p>${escapeHtml(body)}</p>`
+        })
+        .join('')
+    }
+    case 'appendix': {
+      let html = ''
+      if (content.references) {
+        html += `<h3>参考文献:</h3><ol>${(content.references as string[])
+          .map((ref) => `<li>${escapeHtml(ref)}</li>`)
+          .join('')}</ol>`
+      }
+      if (content.dataSources) {
+        html += `<h3>数据来源:</h3><p>${escapeHtml(String(content.dataSources))}</p>`
+      }
+      return html || emptySection()
+    }
     default:
-      doc.setFontSize(10)
-      doc.text('该章节暂无内容', 14, y)
-      y += 10
+      return emptySection('该章节暂无内容')
   }
-
-  return y
 }
 
-function renderExecutiveSummaryPDF(
-  doc: jsPDF,
-  section: ReportSection,
-  y: number,
-  width: number,
-): number {
-  if (section.content?.summary) {
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'normal')
-
-    const lines = doc.splitTextToSize(String(section.content.summary), width - 28)
-    doc.text(lines, 14, y)
-    y += lines.length * 6 + 5
-  }
-
-  if (section.content?.keyFindings) {
-    doc.setFontSize(12)
-    doc.setFont('helvetica', 'bold')
-    doc.text('关键发现:', 14, y)
-    y += 8
-
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'normal')
-    ;(section.content.keyFindings as string[]).forEach((finding: string) => {
-      doc.text(`• ${finding}`, 18, y)
-      y += 6
-    })
-  }
-
-  return y
+function emptySection(msg = '该章节暂无内容'): string {
+  return `<p style="color:${GRAY};">${escapeHtml(msg)}</p>`
 }
 
-function renderFormulaDetailsPDF(
-  doc: jsPDF,
-  section: ReportSection,
-  y: number,
-  _width: number,
-  _height: number,
-): number {
-  void _width;
-  void _height;
-  const formulaData = section.content?.formulaData
-
-  if (!formulaData) {
-    doc.setFontSize(10)
-    doc.text('暂无配方数据', 14, y)
-    return y + 10
-  }
-
-  // 配方名称
-  doc.setFontSize(12)
-  doc.setFont('helvetica', 'bold')
-  doc.text(`配方名称: ${formulaData.name || '-'}`, 14, y)
-  y += 10
-
-  // 成分表格
-  if (formulaData.ingredients && formulaData.ingredients.length > 0) {
-    const tableData = formulaData.ingredients.map((ing: Record<string, unknown>) => [
-      ing.name || '-',
-      ing.dosage || '-',
-      ing.unit || '-',
-      ing.efficacy || '-',
-      ing.notes || '-',
-    ])
-
-    autoTable(doc, {
-      startY: y,
-      head: [['成分名称', '用量', '单位', '功效', '注意事项']],
-      body: tableData,
-      margin: { left: 14, right: 14 },
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [59, 130, 246] },
-    })
-
-    y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
-  }
-
-  return y
-}
-
-function renderIngredientAnalysisPDF(
-  doc: jsPDF,
-  section: ReportSection,
-  y: number,
-  _width: number,
-  _height: number,
-): number {
-  void _width;
-  void _height;
-  const ingredients = section.content?.ingredients
-
-  if (!ingredients || ingredients.length === 0) {
-    doc.setFontSize(10)
-    doc.text('暂无成分分析数据', 14, y)
-    return y + 10
-  }
-
-  const tableData = ingredients.map((ing: Record<string, unknown>) => [
-    ing.name || '-',
-    ing.source || '-',
-    ing.category || '-',
-    ing.safetyRating || '-',
-    ing.bioavailability || '-',
-  ])
-
-  autoTable(doc, {
-    startY: y,
-    head: [['成分名称', '来源', '分类', '安全等级', '生物利用度']],
-    body: tableData,
-    margin: { left: 14, right: 14 },
-    styles: { fontSize: 9 },
-    headStyles: { fillColor: [16, 185, 129] },
-  })
-
-  return (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
-}
-
-function renderSynergyAssessmentPDF(
-  doc: jsPDF,
-  section: ReportSection,
-  y: number,
-  _width: number,
-): number {
-  void _width;
-  const radarData = section.content?.radarData
-
-  if (!radarData || radarData.length === 0) {
-    doc.setFontSize(10)
-    doc.text('暂无协同效果评估数据', 14, y)
-    return y + 10
-  }
-
-  doc.setFontSize(11)
-  doc.setFont('helvetica', 'normal')
-  doc.text('协同效应分析结果:', 14, y)
-  y += 8
-
-  radarData.forEach((item: any) => {
-    doc.setFontSize(10)
-    doc.text(`${item.name}: ${item.value || item.score || '-'}`, 18, y)
-    y += 6
-  })
-
-  return y
-}
-
-function renderRecommendationsPDF(
-  doc: jsPDF,
-  section: ReportSection,
-  y: number,
-  width: number,
-): number {
-  if (section.content?.recommendations) {
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'normal')
-
-    const recommendations = Array.isArray(section.content.recommendations)
-      ? section.content.recommendations
-      : [section.content.recommendations]
-
-    recommendations.forEach((rec: any, index: number) => {
-      doc.setFont('helvetica', 'bold')
-      doc.text(`${index + 1}. ${rec.title || rec.category || '建议'}`, 14, y)
-      y += 7
-
-      doc.setFont('helvetica', 'normal')
-      const content = rec.description || rec.content || String(rec)
-      const lines = doc.splitTextToSize(content, width - 36)
-      doc.text(lines, 18, y)
-      y += lines.length * 5 + 5
-    })
-  }
-
-  return y
-}
-
-function renderAppendixPDF(
-  doc: jsPDF,
-  section: ReportSection,
-  y: number,
-  _width: number,
-): number {
-  void _width;
-  if (section.content?.references) {
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'bold')
-    doc.text('参考文献:', 14, y)
-    y += 8
-
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
-    ;(section.content.references as string[]).forEach((ref: string, index: number) => {
-      doc.text(`[${index + 1}] ${ref}`, 18, y)
-      y += 6
-    })
-  }
-
-  if (section.content?.dataSources) {
-    y += 5
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'bold')
-    doc.text('数据来源:', 14, y)
-    y += 8
-
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
-    doc.text(String(section.content.dataSources), 18, y)
-    y += 6
-  }
-
-  return y
+/** 构建原生表格 HTML（中文 + 自动分页由浏览器打印处理） */
+function buildTable(headers: string[], rows: unknown[][]): string {
+  const thead = `<thead><tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>`
+  const tbody = `<tbody>${rows
+    .map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell == null ? '-' : String(cell))}</td>`).join('')}</tr>`)
+    .join('')}</tbody>`
+  return `<table>${thead}${tbody}</table>`
 }
 
 // ==================== Word Export ====================
