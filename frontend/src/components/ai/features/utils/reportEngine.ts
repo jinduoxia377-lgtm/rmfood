@@ -1,4 +1,7 @@
-import type { ProfessionalReport, AIRecognizedFormula, ReportSection, ReportMetadata } from '@/types/ai.types'
+import type { ProfessionalReport, AIRecognizedFormula, ReportSection, ReportMetadata, Ingredient } from '@/types/ai.types'
+import { IngredientSource } from '@/types/ai.types'
+import type { SynergyDimension } from '@/components/ai/components/SynergyRadarChart'
+import { parseDosageToGramsOrZero } from './dosage'
 
 export function generateReportId(): string {
   const timestamp = Date.now().toString(36)
@@ -23,6 +26,26 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
   const ingredients = formula.ingredients || []
   const totalIngredients = ingredients.length
 
+  // 总用量（g）：用 dosage 解析为克后求和，供执行摘要 totalDosage 卡片使用
+  const totalDosage = ingredients.reduce(
+    (sum, ing) => sum + parseDosageToGramsOrZero(ing.dosage),
+    0,
+  )
+
+  // 来源类型分布：统计各成分来源类别（TCM/PEPTIDE/EXCIPIENT），去重后作为来源列表。
+  // RecognizedFormulaIngredient 未声明 source 字段，运行时可能带（来自 rawData），这里用 in 守卫安全读取，缺失兜底为 TCM。
+  const resolveIngredientSource = (ing: unknown): IngredientSource => {
+    if (ing && typeof ing === 'object' && 'source' in ing) {
+      const s = (ing as { source?: unknown }).source
+      if (typeof s === 'string' && Object.values(IngredientSource).includes(s as IngredientSource)) {
+        return s as IngredientSource
+      }
+    }
+    return IngredientSource.TCM
+  }
+  const sources: string[] = [...new Set(ingredients.map(resolveIngredientSource))]
+  if (sources.length === 0) sources.push('AI对话解析')
+
   const allEfficacyTags = ingredients
     .map(ing => ing.efficacy)
     .filter((tag): tag is string => !!tag && tag.trim().length > 0)
@@ -44,6 +67,8 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
     applicableScenarios.push('功能性食品研发', '健康调理方案')
   }
 
+  const synergyScore = totalIngredients > 1 ? Math.min(95, 60 + totalIngredients * 5) : 40
+
   const sections: ReportSection[] = [
     {
       id: 'cover',
@@ -64,16 +89,19 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
       type: 'executive-summary',
       title: '执行摘要',
       content: {
-        summary: `本报告针对"${formula.name}"进行专业分析，该配方包含${totalIngredients}种成分，识别置信度为${(formula.confidence * 100).toFixed(1)}%。${mainEfficacies.length > 0 ? `主要功效包括：${mainEfficacies.join('、')}。` : ''}`,
-        keyPoints: [
+        formulaName: formula.name,
+        keyFindings: [
           `成分总数: ${totalIngredients}种`,
           `识别置信度: ${(formula.confidence * 100).toFixed(1)}%`,
           mainEfficacies.length > 0 ? `核心功效: ${mainEfficacies.join('、')}` : '功效待进一步分析',
           `适用场景: ${applicableScenarios.slice(0, 2).join('、')}`,
-          `分析时间: ${now.toLocaleString('zh-CN')}`,
+          `总用量: ${totalDosage > 0 ? `${totalDosage.toFixed(1)}g` : '待明确'}`,
         ],
-        overallScore: Math.round(formula.confidence * 100),
-        recommendation: formula.confidence >= 0.8 ? '推荐使用' : formula.confidence >= 0.6 ? '建议优化后使用' : '需重新评估',
+        recommendationScore: Math.round(formula.confidence * 100),
+        ingredientCount: totalIngredients,
+        sources,
+        totalDosage,
+        summary: `"${formula.name}"是一个${totalIngredients > 5 ? '复杂' : totalIngredients > 2 ? '中等复杂度' : '简单'}配方，包含${totalIngredients}种成分，综合评估置信度为${(formula.confidence * 100).toFixed(1)}%。${mainEfficacies.length > 0 ? `具有${mainEfficacies.slice(0, 2).join('、')}等潜在功效。` : ''}${applicableScenarios.length > 0 ? `推荐应用于${applicableScenarios[0]}等领域。` : ''}${formula.confidence >= 0.8 ? '整体质量优秀，推荐深入开发。' : formula.confidence >= 0.6 ? '整体质量良好，建议优化后使用。' : '需重新评估配方数据。'}`,
       },
       order: 1,
     },
@@ -82,22 +110,27 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
       type: 'formula-details',
       title: '配方详情',
       content: {
-        formulaName: formula.name,
-        formulaId: formula.id,
-        parsedAt: formula.parsedAt.toLocaleString('zh-CN'),
-        sourceMessageId: formula.sourceMessageId,
-        confidence: formula.confidence,
-        ingredientTable: {
-          headers: ['序号', '成分名称', '用量', '单位', '功效说明'],
-          rows: ingredients.map((ing, idx) => [
-            (idx + 1).toString(),
-            ing.name,
-            ing.dosage || '-',
-            ing.unit || '-',
-            ing.efficacy || '-',
-          ]),
+        // FormulaTableData 形状，直接传给 <FormulaTable data={...}>
+        formulaData: {
+          title: formula.name,
+          ingredients: ingredients.map(ing => ({
+            name: ing.name,
+            amount: parseDosageToGramsOrZero(ing.dosage),
+            unit: ing.unit || 'g',
+            source: resolveIngredientSource(ing),
+            role: ing.efficacy || undefined,
+          })) as Ingredient[],
+          totalAmount: totalDosage,
+          description: mainEfficacies.length > 0 ? `主要功效：${mainEfficacies.join('、')}` : undefined,
+          confidence: formula.confidence,
+          score: Math.round(formula.confidence * 100),
         },
-        rawData: formula.rawData,
+        statistics: {
+          '成分总数': `${totalIngredients} 种`,
+          '总用量': totalDosage > 0 ? `${totalDosage.toFixed(1)} g` : '待明确',
+          '识别置信度': `${(formula.confidence * 100).toFixed(1)}%`,
+          '功效标签': `${uniqueEfficacyTags.length} 项`,
+        },
       },
       order: 2,
     },
@@ -106,20 +139,17 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
       type: 'ingredient-analysis',
       title: '成分分析',
       content: {
-        totalIngredients,
-        ingredientDetails: ingredients.map((ing, idx) => ({
-          index: idx + 1,
+        ingredients: ingredients.map((ing, idx) => ({
           name: ing.name,
-          dosage: ing.dosage,
-          unit: ing.unit,
-          efficacy: ing.efficacy || '待分析',
-          notes: ing.notes || '',
-          role: idx === 0 ? '主成分' : idx < 3 ? '辅助成分' : '添加剂',
+          amount: parseDosageToGramsOrZero(ing.dosage),
+          unit: ing.unit || 'g',
+          description: ing.efficacy || '待进一步分析其药理作用',
+          mechanism: ing.notes || `作为${idx === 0 ? '主成分' : idx < 3 ? '辅助成分' : '配伍成分'}参与配方整体功效的构建`,
+          references: [
+            `来源消息: ${formula.sourceMessageId}`,
+            '成分知识库: RMFOOD 内置药食同源数据库',
+          ],
         })),
-        efficacyDistribution: uniqueEfficacyTags.reduce((acc, tag) => {
-          acc[tag] = (acc[tag] || 0) + 1
-          return acc
-        }, {} as Record<string, number>),
       },
       order: 3,
     },
@@ -128,23 +158,27 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
       type: 'synergy-assessment',
       title: '协同效应评估',
       content: {
-        synergyScore: totalIngredients > 1 ? Math.min(95, 60 + totalIngredients * 5) : 40,
-        assessment: totalIngredients <= 2
-          ? '成分较少，协同效应有限'
-          : totalIngredients <= 5
-            ? '成分搭配合理，存在潜在协同作用'
-            : '成分丰富，需关注相互作用',
-        keySynergies: totalIngredients > 1 ? [
+        // SynergyRadarChart 的 SynergyRadarData[]：{ id, name, scores: { dimension, value }[] }
+        radarData: [
           {
-            combination: ingredients.slice(0, 2).map(i => i.name).join(' + '),
-            effect: '可能产生协同增强效果',
-            evidenceLevel: '理论推测',
+            id: `${formula.id}-synergy`,
+            name: formula.name,
+            scores: [
+              { dimension: 'synergyStrength' as SynergyDimension, value: synergyScore },
+              { dimension: 'bioavailabilityEnhancement' as SynergyDimension, value: Math.min(90, 55 + totalIngredients * 4) },
+              { dimension: 'efficacyMultiplication' as SynergyDimension, value: Math.min(92, 58 + uniqueEfficacyTags.length * 6) },
+              { dimension: 'safetyIndex' as SynergyDimension, value: Math.round(formula.confidence * 100) },
+              { dimension: 'stabilityImprovement' as SynergyDimension, value: Math.min(85, 60 + totalIngredients * 3) },
+              { dimension: 'tasteBalance' as SynergyDimension, value: Math.min(80, 50 + totalIngredients * 4) },
+            ],
           },
-        ] : [],
-        precautions: ingredients.filter(ing => ing.notes).map(ing => ({
-          ingredient: ing.name,
-          note: ing.notes!,
-        })),
+        ],
+        mechanismDescription: totalIngredients <= 2
+          ? `成分较少（${totalIngredients}种），配伍协同效应有限，建议适当增加君臣佐使结构以增强整体功效。`
+          : totalIngredients <= 5
+            ? `成分搭配合理（${totalIngredients}种），各成分功效互补，存在潜在协同增强作用，综合协同评分${synergyScore}。`
+            : `成分丰富（${totalIngredients}种），需关注成分间相互作用，在保证功效倍增的同时监控安全性指标。`,
+        warnings: ingredients.filter(ing => ing.notes).map(ing => `${ing.name}：${ing.notes}`),
       },
       order: 4,
     },
@@ -153,23 +187,19 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
       type: 'recommendations',
       title: '建议与结论',
       content: {
-        usageRecommendations: applicableScenarios.map(scenario => ({
-          scenario,
-          description: `适用于${scenario}的应用场景`,
-          priority: scenario === applicableScenarios[0] ? 'high' : 'medium',
-        })),
-        optimizationSuggestions: formula.confidence < 0.9 ? [
-          '建议补充各成分的具体用量范围',
-          '建议明确各成分的功效机制',
-          '建议添加安全性评估信息',
-        ] : ['当前配方信息完整，可直接用于后续开发'],
-        nextSteps: [
-          '进行小规模实验验证',
-          '开展稳定性测试',
-          '完成安全性评价',
-          '制定生产工艺参数',
+        targetAudience: applicableScenarios,
+        usageInstructions: [
+          `建议单次用量参照配方总量的1/10，每日1-2次${formula.recommendedDosage ? `（推荐剂量：${formula.recommendedDosage}）` : ''}`,
+          '温水冲调或煎煮后服用，建议餐后30分钟食用以促进吸收',
+          '连续服用2-4周为一个观察周期，期间记录身体反应',
+          '如出现不适，立即停用并咨询专业人士',
         ],
-        conclusion: `"${formula.name}"是一个${totalIngredients > 5 ? '复杂' : totalIngredients > 2 ? '中等复杂度' : '简单'}配方，包含${totalIngredients}种成分，综合评估置信度为${(formula.confidence * 100).toFixed(1)}%。${mainEfficacies.length > 0 ? `具有${mainEfficacies.slice(0, 2).join('、')}等潜在功效。` : ''}${applicableScenarios.length > 0 ? `推荐应用于${applicableScenarios[0]}等领域。` : ''}`,
+        storageConditions: '密封、阴凉干燥处保存，避免阳光直射与高温高湿环境；开封后建议冷藏并于30日内用完。',
+        precautions: [
+          ...ingredients.filter(ing => ing.notes).map(ing => `${ing.name}：${ing.notes}`),
+          ...(formula.contraindications ? [formula.contraindications] : []),
+          '本报告由系统自动生成，仅供参考，不能替代医师诊断与治疗；特殊人群（孕妇、儿童、慢病患者）使用前请咨询专业人士。',
+        ],
       },
       order: 5,
     },
@@ -178,18 +208,19 @@ export function generateSingleFormulaReport(formula: AIRecognizedFormula): Profe
       type: 'appendix',
       title: '附录',
       content: {
-        dataSources: [
-          { name: 'AI对话解析', description: `从消息 ${formula.sourceMessageId} 中自动提取` },
-          { name: '配方数据库', description: '基于内置成分知识库匹配' },
+        references: [
+          `AI对话解析：从消息 ${formula.sourceMessageId} 中自动提取`,
+          '配方数据库：基于内置成分知识库匹配（药食同源物质国家标准）',
+          '分析方法：RMFOOD Formula Analyzer v5.0，结合规则引擎与机器学习算法',
+          `数据质量评级：${formula.confidence >= 0.9 ? '优秀' : formula.confidence >= 0.7 ? '良好' : '一般'}（置信度 ${(formula.confidence * 100).toFixed(1)}%）`,
         ],
-        methodology: '本报告采用AI智能识别技术，结合规则引擎和机器学习算法对配方数据进行结构化分析和专业评估。',
-        disclaimer: '本报告由系统自动生成，仅供参考。实际应用前请咨询专业人士并进行实验验证。',
-        versionInfo: {
-          analysisEngine: 'RMFOOD Formula Analyzer v5.0',
-          generatedAt: now.toISOString(),
-          processingTime: '<1s',
-          dataQuality: formula.confidence >= 0.9 ? '优秀' : formula.confidence >= 0.7 ? '良好' : '一般',
-        },
+        glossary: [
+          { term: '君臣佐使', definition: '中医方剂配伍原则，主药为君、辅药为臣、佐使调和，指导配方结构与剂量层级。' },
+          { term: '置信度', definition: 'AI识别配方结构的可信程度（0-1），越高表示解析结果越可靠。' },
+          { term: '协同效应', definition: '多种成分配伍后产生的整体功效大于各成分单独作用之和的现象。' },
+          { term: '药食同源', definition: '既可作为食品又具有药用价值的物质，符合国家食药物质目录。' },
+        ],
+        dataSource: '本报告由 RMFOOD 配方平台 AI 分析引擎自动生成，数据来源为 AI 对话解析结果与内置成分知识库。本报告仅供参考，实际应用前请咨询专业人士并进行实验验证。',
       },
       order: 6,
     },
@@ -361,7 +392,7 @@ export function generateComprehensiveReport(formulas: AIRecognizedFormula[]): Pr
       type: 'recommendations',
       title: '综合建议',
       content: {
-        prioritizedFormulas: formulas
+        prioritizedFormulas: [...formulas]
           .sort((a, b) => b.confidence - a.confidence)
           .map((f, idx) => ({
             rank: idx + 1,
@@ -370,7 +401,7 @@ export function generateComprehensiveReport(formulas: AIRecognizedFormula[]): Pr
             recommendation: f.confidence >= 0.8 ? '优先级高，建议重点开发' : f.confidence >= 0.6 ? '优先级中，适合并行开发' : '优先级低，需要补充验证',
           })),
         strategicRecommendations: [
-          `优先推进置信度最高的配方（${formulas.sort((a, b) => b.confidence - a.confidence)[0]?.name}）进入实验阶段`,
+          `优先推进置信度最高的配方（${[...formulas].sort((a, b) => b.confidence - a.confidence)[0]?.name}）进入实验阶段`,
           `建立成分库管理体系，复用${Math.min(totalIngredients, 10)}种核心成分`,
           uniqueEfficacyTags.length > 3 ? `聚焦${uniqueEfficacyTags.slice(0, 3).join('、')}三大功效方向进行深度开发` : '明确核心功效定位',
           '制定分阶段的产品开发路线图',

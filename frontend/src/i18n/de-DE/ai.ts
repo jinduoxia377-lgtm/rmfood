@@ -2487,6 +2487,8 @@ export default {
       retry: 'Erneut versuchen',
       toc: 'Inhaltsverzeichnis',
       footerGeneratedAt: 'Bericht erstellt am',
+      companyName: 'Rhein (Xiamen) Molecular Biotechnology Co., Ltd.',
+      footerCopyright: '© {{year}} Rhein (Xiamen) Molecular Biotechnology Co., Ltd. | RMFOOD Formelentwicklungsplattform',
       section: {
         cover: 'Titelseite', executiveSummary: 'Zusammenfassung', formulaDetails: 'Formeldetails', ingredientAnalysis: 'Inhaltsstoffanalyse',
         synergyAssessment: 'Synergiebewertung', recommendations: 'Empfehlungen', appendix: 'Anhang',

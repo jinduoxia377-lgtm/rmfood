@@ -2487,6 +2487,8 @@ export default {
       retry: '重试',
       toc: '目录导航',
       footerGeneratedAt: '报告生成时间',
+      companyName: '莱茵（厦门）分子生物科技有限公司',
+      footerCopyright: '© {{year}} 莱茵（厦门）分子生物科技有限公司 | RMFOOD 配方设计平台',
       section: {
         cover: '封面', executiveSummary: '执行摘要', formulaDetails: '配方详情', ingredientAnalysis: '成分分析',
         synergyAssessment: '协同效果评估', recommendations: '应用建议', appendix: '附录',

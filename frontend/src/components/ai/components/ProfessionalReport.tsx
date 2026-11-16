@@ -10,12 +10,13 @@
  */
 
 import { logger } from '@/utils/safeLogger'
+import { useTranslation } from 'react-i18next'
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import {
   X, FileText, FileSpreadsheet, Printer,
   Edit3, Check, Loader2, AlertCircle, ChevronRight,
   BookOpen, BarChart3, FlaskConical, Network, Lightbulb,
-  Archive, Target, Star, Users, ClipboardList,
+  Archive, Target, Star, Users, ClipboardList, Sparkles,
 } from 'lucide-react'
 import type { ReportSection, ReportSectionType } from '@/types/ai.types'
 // 导入枚举值和接口（不仅是类型）
@@ -56,13 +57,13 @@ const SECTION_ICONS: Record<ReportSectionType, React.ReactNode> = {
 }
 
 const SECTION_TITLES: Record<ReportSectionType, string> = {
-  'cover': '封面',
-  'executive-summary': '执行摘要',
-  'formula-details': '配方详情',
-  'ingredient-analysis': '成分分析',
-  'synergy-assessment': '协同效果评估',
-  'recommendations': '应用建议',
-  'appendix': '附录',
+  'cover': 'ai.report.professional.section.cover',
+  'executive-summary': 'ai.report.professional.section.executiveSummary',
+  'formula-details': 'ai.report.professional.section.formulaDetails',
+  'ingredient-analysis': 'ai.report.professional.section.ingredientAnalysis',
+  'synergy-assessment': 'ai.report.professional.section.synergyAssessment',
+  'recommendations': 'ai.report.professional.section.recommendations',
+  'appendix': 'ai.report.professional.section.appendix',
 }
 
 const EXPORT_FORMAT_CONFIG: Record<ExportFormat, { icon: React.ReactNode; label: string; color: string }> = {
@@ -84,6 +85,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
   onClose,
   editable = false,
 }) => {
+  const { t } = useTranslation();
   // State
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState('')
@@ -175,10 +177,10 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
         isExporting: false,
         format: null,
         progress: 0,
-        error: err instanceof Error ? err.message : '导出失败',
+        error: err instanceof Error ? err.message : t('ai.report.professional.exportFailed'),
       })
     }
-  }, [onExport, exportState.isExporting])
+  }, [onExport, exportState.isExporting, t])
 
   const handlePrint = useCallback(() => {
     window.print()
@@ -211,7 +213,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
       case 'appendix':
         return renderAppendix(section)
       default:
-        return <div className="p-8 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">未知章节类型</div>
+        return <div className="p-8 text-center text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{t('ai.report.professional.unknownSection')}</div>
     }
   }
 
@@ -219,17 +221,17 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
     <div className="min-h-[600px] flex flex-col items-center justify-center bg-gradient-to-br from-secondary-50 to-accent-100 dark:from-neutral-800 dark:to-neutral-900 rounded-lg p-12">
       <div className="text-center space-y-6">
         <h1 className="text-4xl font-bold text-neutral-900 dark:text-white">
-          {report?.title || 'RMFOOD 专业分析报告'}
+          {report?.title || t('ai.report.professional.defaultTitle')}
         </h1>
         <div className="w-32 h-1 bg-secondary-600 mx-auto rounded"></div>
         <div className="space-y-2 text-neutral-600 dark:text-neutral-300">
-          <p className="text-lg">{report?.metadata?.projectName || '配方研发项目'}</p>
-          <p>生成时间：{report?.generatedAt ? new Date(report.generatedAt).toLocaleString('zh-CN') : '-'}</p>
-          <p>报告版本：{report?.version || '1.0.0'}</p>
-          {report?.metadata?.author && <p>编制：{report.metadata.author}</p>}
+          <p className="text-lg">{report?.metadata?.projectName || t('ai.report.professional.defaultProject')}</p>
+          <p>{t('ai.report.professional.generatedAt')}：{report?.generatedAt ? new Date(report.generatedAt).toLocaleString('zh-CN') : '-'}</p>
+          <p>{t('ai.report.professional.reportVersion')}：{report?.version || '1.0.0'}</p>
+          {report?.metadata?.author && <p>{t('ai.report.professional.author')}：{report.metadata.author}</p>}
         </div>
         <div className="pt-8 text-sm text-neutral-500 dark:text-neutral-400">
-          莱茵（厦门）分子生物科技有限公司
+          {t('ai.report.professional.companyName')}
         </div>
       </div>
     </div>
@@ -237,7 +239,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
   const renderExecutiveSummary = (section: ReportSection) => {
     const content = section.content || {}
-    const formulaName = content.formulaName || '待补充'
+    const formulaName = content.formulaName || t('ai.report.professional.toBeFilled')
     const ingredientCount = content.ingredientCount ?? 0
     const sources = content.sources || []
     const totalDosage = content.totalDosage ?? 0
@@ -245,7 +247,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
     const recommendationScore = content.recommendationScore ?? 85
 
     if (process.env.NODE_ENV === 'development') {
-      logger.log('[ProfessionalReport] 📊 渲染执行摘要', {
+      logger.log('[ProfessionalReport] 渲染执行摘要', {
         formulaName,
         ingredientCount,
         sourcesCount: sources.length,
@@ -259,18 +261,18 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             {
-              label: '配方名称',
+              label: t('ai.report.professional.formulaName'),
               value: formulaName,
               icon: <Lightbulb className="w-6 h-6 text-warning-500" />,
               highlight: true,
             },
             {
-              label: '核心发现',
-              value: keyFindings.length > 0 ? keyFindings[0] : '基于AI分析的配方优化方案',
+              label: t('ai.report.professional.keyFinding'),
+              value: keyFindings.length > 0 ? keyFindings[0] : t('ai.report.professional.defaultFinding'),
               icon: <Target className="w-6 h-6 text-error-500" />,
             },
             {
-              label: '推荐指数',
+              label: t('ai.report.professional.recommendationIndex'),
               value: `${recommendationScore}%`,
               icon: <Star className="w-6 h-6 text-warning-500" />,
             },
@@ -286,30 +288,30 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
         </div>
 
         <div className="bg-secondary-50 dark:bg-neutral-800 p-6 rounded-lg border-l-4 border-secondary-500">
-          <h4 className="font-semibold mb-3 text-secondary-900 dark:text-secondary-200">📋 配方概览</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <h4 className="font-semibold mb-3 text-secondary-900 dark:text-secondary-200 flex items-center gap-2"><ClipboardList className="w-5 h-5" aria-hidden="true" />{t('ai.report.professional.formulaOverview')}</h4>
+          <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="text-center">
               <p className="text-3xl font-bold text-secondary-600 dark:text-secondary-700">{ingredientCount}</p>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">成分数量</p>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{t('ai.report.professional.ingredientCount')}</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-success-600 dark:text-success-600">{sources.length}</p>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">来源类型</p>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{t('ai.report.professional.sourceTypes')}</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-accent-600 dark:text-accent-700">{totalDosage > 0 ? totalDosage.toFixed(1) : 'N/A'}</p>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">总用量</p>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{t('ai.report.professional.totalDosage')}</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-warning-600 dark:text-warning-700">{recommendationScore}%</p>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">推荐度</p>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{t('ai.report.professional.recommendation')}</p>
             </div>
           </div>
 
           {sources.length > 0 && (
             <div className="mt-3 pt-3 border-t border-secondary-200 dark:border-secondary-800">
               <p className="text-sm text-secondary-800 dark:text-secondary-200">
-                <strong>成分来源分布：</strong>{sources.join('、') || '待分析'}
+                <strong>{t('ai.report.professional.sourceDistribution')}：</strong>{sources.join('、') || t('ai.report.professional.toBeAnalyzed')}
               </p>
             </div>
           )}
@@ -317,9 +319,9 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
         {(keyFindings.length > 0 || content.summary) && (
           <div className="bg-gradient-to-r from-success-50 to-success-50 dark:from-neutral-800 dark:to-neutral-800 p-6 rounded-lg border-l-4 border-success-500">
-            <h4 className="font-semibold mb-2 text-success-900 dark:text-success-200">✨ 摘要概述</h4>
+            <h4 className="font-semibold mb-2 text-success-900 dark:text-success-200 flex items-center gap-2"><Sparkles className="w-5 h-5" aria-hidden="true" />{t('ai.report.professional.summaryOverview')}</h4>
             <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-              {content.summary || `本报告针对"${formulaName}"进行了全面分析，包含${ingredientCount}种有效成分。`}
+              {content.summary || t('ai.report.professional.defaultSummary', { name: formulaName, count: ingredientCount })}
             </p>
 
             {keyFindings.length > 0 && (
@@ -343,7 +345,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
     const statistics = section.content?.statistics || {}
 
     if (process.env.NODE_ENV === 'development') {
-      logger.log('[ProfessionalReport] 🧪 渲染配方详情', {
+      logger.log('[ProfessionalReport] 渲染配方详情', {
         hasFormulaData: !!formulaData,
         formulaName: formulaData?.name,
         ingredientCount: formulaData?.ingredients?.length,
@@ -358,7 +360,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             <div className="bg-gradient-to-r from-secondary-50 to-accent-50 dark:from-neutral-800 dark:to-neutral-800 p-4 rounded-lg border border-secondary-200 dark:border-secondary-800">
               <h3 className="font-bold text-lg text-secondary-900 dark:text-secondary-200 mb-2 flex items-center gap-2">
                 <FlaskConical className="w-5 h-5" />
-                {formulaData.name || '未命名配方'}
+                {formulaData.name || t('ai.report.professional.unnamedFormula')}
               </h3>
               {formulaData.description && (
                 <p className="text-sm text-neutral-700 dark:text-neutral-300 mt-2">{formulaData.description}</p>
@@ -368,7 +370,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             <FormulaTable data={formulaData} isLoading={false} />
 
             {statistics && Object.keys(statistics).length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-4">
                 {Object.entries(statistics).map(([key, value]) => (
                   <div key={key} className="bg-white dark:bg-neutral-800 p-4 rounded-lg shadow text-center border border-neutral-200 dark:border-neutral-700">
                     <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-700">{String(value)}</p>
@@ -380,27 +382,27 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
             {formulaData.ingredients && formulaData.ingredients.length > 0 && (
               <div className="bg-warning-50 dark:bg-neutral-800 p-4 rounded-lg border-l-4 border-warning-500">
-                <h4 className="font-semibold mb-2 text-warning-900 dark:text-warning-200">📊 成分统计</h4>
+                <h4 className="font-semibold mb-2 text-warning-900 dark:text-warning-200 flex items-center gap-2"><BarChart3 className="w-5 h-5" aria-hidden="true" />{t('ai.report.professional.ingredientStats')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                   <div>
-                    <span className="text-neutral-600 dark:text-neutral-400">总成分数：</span>
-                    <strong className="text-warning-800 dark:text-warning-200">{formulaData.ingredients.length} 种</strong>
+                    <span className="text-neutral-600 dark:text-neutral-400">{t('ai.report.professional.totalIngredients')}：</span>
+                    <strong className="text-warning-800 dark:text-warning-200">{formulaData.ingredients.length} {t('ai.report.professional.kind')}</strong>
                   </div>
                   <div>
-                    <span className="text-neutral-600 dark:text-neutral-400">唯一成分：</span>
-                    <strong className="text-warning-800 dark:text-warning-200">{new Set(formulaData.ingredients.map((i: { name: string }) => i.name)).size} 种</strong>
+                    <span className="text-neutral-600 dark:text-neutral-400">{t('ai.report.professional.uniqueIngredients')}：</span>
+                    <strong className="text-warning-800 dark:text-warning-200">{new Set(formulaData.ingredients.map((i: { name: string }) => i.name)).size} {t('ai.report.professional.kind')}</strong>
                   </div>
                   <div>
-                    <span className="text-neutral-600 dark:text-neutral-400">来源数：</span>
+                    <span className="text-neutral-600 dark:text-neutral-400">{t('ai.report.professional.sourceCount')}：</span>
                     <strong className="text-warning-800 dark:text-warning-200">
-                      {[...new Set(formulaData.ingredients.map((i: any) => i.source).filter(Boolean))].length} 类
+                      {[...new Set(formulaData.ingredients.map((i: any) => i.source).filter(Boolean))].length} {t('ai.report.professional.category')}
                     </strong>
                   </div>
                 </div>
 
                 {formulaData.confidence && (
                   <div className="mt-3 pt-3 border-t border-warning-200 dark:border-warning-800">
-                    <span className="text-neutral-600 dark:text-neutral-400">解析置信度：</span>
+                    <span className="text-neutral-600 dark:text-neutral-400">{t('ai.report.professional.parseConfidence')}：</span>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-success-100 dark:bg-success-300/25 text-success-800 dark:text-success-200 rounded-full text-xs font-medium">
                       {(formulaData.confidence * 100).toFixed(0)}%
                       <Star className="w-3 h-3" />
@@ -413,10 +415,11 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
         ) : (
           <div className="bg-warning-50 dark:bg-neutral-800 p-8 rounded-lg text-center">
             <AlertCircle className="w-16 h-16 mx-auto mb-4 text-warning-500" />
-            <h3 className="text-lg font-semibold text-neutral-700 dark:text-neutral-300 mb-2">暂无配方数据</h3>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-4">请在对话中生成配方后查看详细数据</p>
-            <div className="inline-block bg-warning-100 dark:bg-warning-300/25 px-4 py-2 rounded-lg text-sm text-warning-800 dark:text-warning-200">
-              💡 提示：可以让AI以表格形式提供配方信息
+            <h3 className="text-lg font-semibold text-neutral-700 dark:text-neutral-300 mb-2">{t('ai.report.professional.noFormulaData')}</h3>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-4">{t('ai.report.professional.noFormulaHint')}</p>
+            <div className="inline-flex items-center gap-2 bg-warning-100 dark:bg-warning-300/25 px-4 py-2 rounded-lg text-sm text-warning-800 dark:text-warning-200">
+              <Lightbulb className="w-4 h-4 shrink-0" aria-hidden="true" />
+              {t('ai.report.professional.tableHint')}
             </div>
           </div>
         )}
@@ -428,7 +431,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
     <div className="space-y-4">
       {(section.content?.ingredients || []).map((ingredient: any, idx: number) => (
         <details key={idx} className="bg-white dark:bg-neutral-800 rounded-lg shadow border border-neutral-200 dark:border-neutral-700 group">
-          <summary className="p-4 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-750 flex items-center justify-between">
+          <summary className="p-4 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <ChevronRight className="w-5 h-5 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] group-open:rotate-90 transition-transform" />
               <div>
@@ -442,13 +445,13 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
           </summary>
           <div className="p-4 pt-0 border-t border-neutral-200 dark:border-neutral-700 space-y-3">
             {ingredient.description && (
-              <p className="text-neutral-700 dark:text-neutral-300"><strong>药理作用：</strong>{ingredient.description}</p>
+              <p className="text-neutral-700 dark:text-neutral-300"><strong>{t('ai.report.professional.pharmacology')}：</strong>{ingredient.description}</p>
             )}
             {ingredient.mechanism && (
-              <p className="text-neutral-700 dark:text-neutral-300"><strong>作用机制：</strong>{ingredient.mechanism}</p>
+              <p className="text-neutral-700 dark:text-neutral-300"><strong>{t('ai.report.professional.mechanism')}：</strong>{ingredient.mechanism}</p>
             )}
             {ingredient.references && (
-              <div><strong>参考文献：</strong>
+              <div><strong>{t('ai.report.professional.references')}：</strong>
                 <ul className="list-disc list-inside text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                   {ingredient.references.map((ref: string, i: number) => <li key={i}>{ref}</li>)}
                 </ul>
@@ -467,16 +470,16 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
           <SynergyRadarChart data={section.content.radarData} height={400} showLegend interactive />
 
           <div className="bg-success-50 dark:bg-neutral-800 p-6 rounded-lg border-l-4 border-success-500">
-            <h4 className="font-semibold mb-2 text-success-900 dark:text-success-200">协同机制说明</h4>
+            <h4 className="font-semibold mb-2 text-success-900 dark:text-success-200">{t('ai.report.professional.synergyMechanism')}</h4>
             <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
-              {section.content.mechanismDescription || '各成分间存在显著的协同增效作用，能够提升整体配方的生物利用度和功效表现。'}
+              {section.content.mechanismDescription || t('ai.report.professional.defaultSynergyMechanism')}
             </p>
           </div>
 
           {section.content?.warnings && section.content.warnings.length > 0 && (
             <div className="bg-error-50 dark:bg-neutral-800 p-6 rounded-lg border-l-4 border-error-500">
               <h4 className="font-semibold mb-2 text-error-900 dark:text-error-200 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5" /> 潜在相互作用警告
+                <AlertCircle className="w-5 h-5" /> {t('ai.report.professional.potentialInteractions')}
               </h4>
               <ul className="list-disc list-inside space-y-1 text-error-800 dark:text-error-600">
                 {section.content.warnings.map((warning: string, idx: number) => (
@@ -489,7 +492,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
       ) : (
         <div className="bg-warning-50 dark:bg-neutral-800 p-6 rounded-lg text-center">
           <Network className="w-12 h-12 mx-auto mb-3 text-warning-500" />
-          <p className="text-neutral-600 dark:text-neutral-400">暂无协同分析数据</p>
+          <p className="text-neutral-600 dark:text-neutral-400">{t('ai.report.professional.noSynergyData')}</p>
         </div>
       )}
     </div>
@@ -500,7 +503,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
       {section.content?.targetAudience && (
         <div>
           <h4 className="font-semibold mb-3 text-neutral-900 dark:text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-accent-500" /> 目标人群
+            <Users className="w-5 h-5 text-accent-500" /> {t('ai.report.professional.targetAudience')}
           </h4>
           <div className="flex flex-wrap gap-2">
             {section.content.targetAudience.map((audience: string, idx: number) => (
@@ -515,7 +518,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
       {section.content?.usageInstructions && (
         <div>
           <h4 className="font-semibold mb-3 text-neutral-900 dark:text-white flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-secondary-500" /> 使用方法
+            <ClipboardList className="w-5 h-5 text-secondary-500" /> {t('ai.report.professional.usageMethod')}
           </h4>
           <ol className="list-decimal list-inside space-y-2 text-neutral-700 dark:text-neutral-300">
             {section.content.usageInstructions.map((step: string, idx: number) => (
@@ -527,14 +530,14 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
       {section.content?.storageConditions && (
         <div className="bg-secondary-50 dark:bg-neutral-800 p-4 rounded-lg">
-          <h4 className="font-semibold mb-2 text-secondary-900 dark:text-secondary-200">储存条件</h4>
+          <h4 className="font-semibold mb-2 text-secondary-900 dark:text-secondary-200">{t('ai.report.professional.storageConditions')}</h4>
           <p className="text-neutral-700 dark:text-neutral-300">{section.content.storageConditions}</p>
         </div>
       )}
 
       {section.content?.precautions && (
         <div className="bg-warning-50 dark:bg-neutral-800 p-4 rounded-lg border-l-4 border-warning-500">
-          <h4 className="font-semibold mb-2 text-warning-900 dark:text-warning-200">注意事项</h4>
+          <h4 className="font-semibold mb-2 text-warning-900 dark:text-warning-200">{t('ai.report.professional.precautions')}</h4>
           <ul className="list-disc list-inside space-y-1 text-warning-800 dark:text-warning-700">
             {section.content.precautions.map((precaution: string, idx: number) => (
               <li key={idx}>{precaution}</li>
@@ -549,7 +552,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
     <div className="space-y-6">
       {section.content?.references && section.content.references.length > 0 && (
         <div>
-          <h4 className="font-semibold mb-3 text-neutral-900 dark:text-white">参考文献</h4>
+          <h4 className="font-semibold mb-3 text-neutral-900 dark:text-white">{t('ai.report.professional.references')}</h4>
           <ol className="list-decimal list-inside space-y-2 text-sm text-neutral-700 dark:text-neutral-300">
             {section.content.references.map((ref: string, idx: number) => (
               <li key={idx} className="leading-relaxed">{ref}</li>
@@ -560,7 +563,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
       {section.content?.glossary && section.content.glossary.length > 0 && (
         <div>
-          <h4 className="font-semibold mb-3 text-neutral-900 dark:text-white">术语表</h4>
+          <h4 className="font-semibold mb-3 text-neutral-900 dark:text-white">{t('ai.report.professional.glossary')}</h4>
           <div className="grid gap-3">
             {section.content.glossary.map((term: any, idx: number) => (
               <div key={idx} className="flex gap-3 bg-neutral-50 dark:bg-neutral-800 p-3 rounded">
@@ -574,7 +577,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
       {section.content?.dataSource && (
         <div className="text-sm text-neutral-500 dark:text-neutral-400 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-          <strong>数据来源：</strong>{section.content.dataSource}
+          <strong>{t('ai.report.professional.dataSource')}：</strong>{section.content.dataSource}
         </div>
       )}
     </div>
@@ -588,13 +591,13 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
         <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-7xl h-[90vh] flex items-center justify-center">
           <div className="text-center space-y-4">
             <Loader2 className="w-16 h-16 animate-spin text-secondary-600 mx-auto" />
-            <p className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">正在生成专业报告...</p>
-            <p className="text-neutral-500 dark:text-neutral-400">请稍候，正在整合分析数据</p>
+            <p className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">{t('ai.report.professional.generating')}</p>
+            <p className="text-neutral-500 dark:text-neutral-400">{t('ai.report.professional.generatingHint')}</p>
             <div className="mt-4 space-y-2 text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">
-              <p>✓ 提取配方数据</p>
-              <p>✓ 分析成分信息</p>
-              <p>✓ 评估协同效应</p>
-              <p>✓ 生成报告章节</p>
+              <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-success-500" aria-hidden="true" />{t('ai.report.professional.step.extract')}</p>
+              <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-success-500" aria-hidden="true" />{t('ai.report.professional.step.analyze')}</p>
+              <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-success-500" aria-hidden="true" />{t('ai.report.professional.step.assess')}</p>
+              <p className="flex items-center gap-2"><Check className="w-4 h-4 shrink-0 text-success-500" aria-hidden="true" />{t('ai.report.professional.step.generate')}</p>
             </div>
           </div>
         </div>
@@ -607,15 +610,15 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
       <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
         <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl p-8 text-center">
           <AlertCircle className="w-16 h-16 text-error-500 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">无法加载报告</h3>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-6">{error || '暂无报告数据。请先在对话中获取配方或分析数据，然后生成报告。'}</p>
+          <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('ai.report.professional.loadFailed')}</h3>
+          <p className="text-neutral-600 dark:text-neutral-400 mb-6">{error || t('ai.report.professional.noReportData')}</p>
           <div className="flex items-center justify-center gap-3">
             <button onClick={handleClose} className="px-6 py-2 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors">
-              关闭
+              {t('ai.report.professional.close')}
             </button>
             {onClose && (
               <button onClick={() => { onClose?.(); setTimeout(() => window.location.reload(), 100) }} className="px-6 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
-                刷新页面
+                {t('ai.report.professional.refresh')}
               </button>
             )}
           </div>
@@ -632,22 +635,22 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
       <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
         <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl p-8 text-center">
           <AlertCircle className="w-16 h-16 text-warning-500 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">报告数据不完整</h3>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-4">生成的报告缺少必要的数据内容。</p>
+          <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('ai.report.professional.incompleteData')}</h3>
+          <p className="text-neutral-600 dark:text-neutral-400 mb-4">{t('ai.report.professional.incompleteDataDesc')}</p>
           <div className="bg-warning-50 dark:bg-warning-300/20 rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm text-warning-800 dark:text-warning-200"><strong>可能的原因：</strong></p>
+            <p className="text-sm text-warning-800 dark:text-warning-200"><strong>{t('ai.report.professional.possibleCauses')}：</strong></p>
             <ul className="list-disc list-inside mt-2 text-sm text-warning-700 dark:text-warning-700 space-y-1">
-              <li>对话中尚未包含配方或分析内容</li>
-              <li>AI回复中的数据格式无法识别</li>
-              <li>网络请求失败导致数据丢失</li>
+              <li>{t('ai.report.professional.cause.noFormula')}</li>
+              <li>{t('ai.report.professional.cause.unrecognized')}</li>
+              <li>{t('ai.report.professional.cause.network')}</li>
             </ul>
           </div>
           <div className="flex items-center justify-center gap-3">
             <button onClick={handleClose} className="px-6 py-2 bg-secondary-container text-secondary-main rounded-lg hover:bg-secondary-container transition-colors">
-              关闭
+              {t('ai.report.professional.close')}
             </button>
             <button onClick={() => window.location.reload()} className="px-6 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
-              重试生成
+              {t('ai.report.professional.retryGenerate')}
             </button>
           </div>
         </div>
@@ -671,7 +674,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
                   className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-secondary-500"
-                  placeholder="输入报告标题..."
+                  placeholder={t('ai.report.professional.titlePlaceholder')}
                 />
                 <button onClick={handleSaveTitle} className="p-2 text-success-600 hover:bg-success-50 dark:hover:bg-success-900 rounded-lg">
                   <Check className="w-5 h-5" />
@@ -692,7 +695,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
                 onClick={() => handleExport(format as ExportFormat)}
                 disabled={exportState.isExporting}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${config.color} disabled:opacity-50`}
-                title={`导出为${config.label}格式`}
+                title={t('ai.report.professional.exportAs', { format: config.label })}
               >
                 {config.icon}
                 <span className="hidden sm:inline">{config.label}</span>
@@ -700,19 +703,19 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             ))}
 
             {/* Print Button */}
-            <button onClick={handlePrint} className="p-2 text-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg" title="打印">
+            <button onClick={handlePrint} className="p-2 text-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg" title={t('ai.report.professional.print')}>
               <Printer className="w-5 h-5" />
             </button>
 
             {/* Edit Toggle */}
             {editable && (
-              <button onClick={handleToggleEdit} className={`p-2 rounded-lg ${isEditing ? 'text-success-600 bg-success-50' : 'text-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`} title={isEditing ? '保存' : '编辑'}>
+              <button onClick={handleToggleEdit} className={`p-2 rounded-lg ${isEditing ? 'text-success-600 bg-success-50' : 'text-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`} title={isEditing ? t('ai.report.professional.save') : t('ai.report.professional.edit')}>
                 <Edit3 className="w-5 h-5" />
               </button>
             )}
 
             {/* Close Button */}
-            <button onClick={handleClose} className="p-2 text-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg" title="关闭">
+            <button onClick={handleClose} className="p-2 text-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg" title={t('ai.report.professional.close')}>
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -724,7 +727,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             <div className="flex items-center gap-3">
               <Loader2 className="w-5 h-5 animate-spin text-secondary-600" />
               <span className="text-sm text-secondary-800 dark:text-secondary-200 font-medium">
-                正在导出为{EXPORT_FORMAT_CONFIG[exportState.format!]?.label || exportState.format}格式...
+                {t('ai.report.professional.exportingAs', { format: EXPORT_FORMAT_CONFIG[exportState.format!]?.label || exportState.format })}
               </span>
               <span className="text-sm font-bold text-secondary-600">{exportState.progress}%</span>
               <div className="flex-1 bg-secondary-200 dark:bg-secondary-900 rounded-full h-2.5 overflow-hidden">
@@ -735,10 +738,10 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
               </div>
             </div>
             <p className="text-xs text-secondary-600 dark:text-secondary-700 mt-2 ml-8">
-              {exportState.progress < 30 && '📊 正在准备数据...'}
-              {exportState.progress >= 30 && exportState.progress < 60 && '✍️ 正在生成文档内容...'}
-              {exportState.progress >= 60 && exportState.progress < 90 && '📦 正在打包文件...'}
-              {exportState.progress >= 90 && '⬇️ 准备下载...'}
+              {exportState.progress < 30 && t('ai.report.professional.progress.prepare')}
+              {exportState.progress >= 30 && exportState.progress < 60 && t('ai.report.professional.progress.generate')}
+              {exportState.progress >= 60 && exportState.progress < 90 && t('ai.report.professional.progress.package')}
+              {exportState.progress >= 90 && t('ai.report.professional.progress.download')}
             </p>
           </div>
         )}
@@ -749,13 +752,13 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-success-600" />
               <span className="text-sm font-medium text-success-800 dark:text-success-200 flex-1">
-                ✅ 导出成功！文件已开始下载
+                {t('ai.report.professional.exportSuccess')}
               </span>
               <button
                 onClick={() => setExportState({ isExporting: false, format: null, progress: 0, error: null })}
                 className="text-xs text-success-700 hover:text-success-900 underline"
               >
-                关闭提示
+                {t('ai.report.professional.dismissNotice')}
               </button>
             </div>
           </div>
@@ -767,7 +770,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
             <p className="text-sm text-error-800 dark:text-error-200 flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />
               {exportState.error}
-              <button onClick={() => handleExport(exportState.format!)} className="underline ml-2">重试</button>
+              <button onClick={() => handleExport(exportState.format!)} className="underline ml-2">{t('ai.report.professional.retry')}</button>
             </p>
           </div>
         )}
@@ -777,7 +780,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
           {/* Left Sidebar Navigation */}
           <nav className="w-56 bg-neutral-50 dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700 overflow-y-auto print:hidden">
             <div className="p-4">
-              <h3 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3">目录导航</h3>
+              <h3 className="text-xs font-semibold text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] uppercase tracking-wider mb-3">{t('ai.report.professional.toc')}</h3>
               <ul className="space-y-1">
                 {sortedSections.map((section) => (
                   <li key={section.type}>
@@ -790,7 +793,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
                       }`}
                     >
                       {SECTION_ICONS[section.type]}
-                      <span>{SECTION_TITLES[section.type]}</span>
+                      <span>{t(SECTION_TITLES[section.type])}</span>
                     </button>
                   </li>
                 ))}
@@ -810,7 +813,7 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
                 >
                   <h2 className="h2 text-neutral-900 dark:text-white mb-6 pb-3 border-b-2 border-neutral-200 dark:border-neutral-700 flex items-center gap-3">
                     {SECTION_ICONS[section.type]}
-                    {section.title || SECTION_TITLES[section.type]}
+                    {section.title || t(SECTION_TITLES[section.type])}
                   </h2>
                   {renderSectionContent(section)}
                 </section>
@@ -819,8 +822,8 @@ export const ProfessionalReport: React.FC<ProfessionalReportProps> = ({
 
             {/* Footer */}
             <footer className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-700 text-center text-sm text-neutral-500 dark:text-neutral-400 print:hidden">
-              <p>© 2026 莱茵（厦门）分子生物科技有限公司 | RMFOOD 配方设计平台</p>
-              <p className="mt-1">报告生成时间：{new Date().toLocaleString('zh-CN')}</p>
+              <p>{t('ai.report.professional.footerCopyright', { year: new Date().getFullYear() })}</p>
+              <p className="mt-1">{t('ai.report.professional.footerGeneratedAt')}：{new Date().toLocaleString('zh-CN')}</p>
             </footer>
           </main>
         </div>
