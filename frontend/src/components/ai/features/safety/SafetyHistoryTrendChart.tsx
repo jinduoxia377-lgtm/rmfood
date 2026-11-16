@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { useBreakpoint } from '@/hooks/useMobile'
 import { Clock, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import type { SafetyHistoryEntry } from '../SafetyTab'
 
@@ -11,6 +12,8 @@ interface SafetyHistoryTrendChartProps {
 
 export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHistoryTrendChartProps) {
   const { t } = useTranslation()
+  const { isMobile } = useBreakpoint()
+  const chartHeight = isMobile ? 130 : 160
   const [, setHoveredIndex] = useState<number | null>(null)
 
   const chartData = React.useMemo(() => {
@@ -56,7 +59,7 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
           <Clock className="w-4 h-4 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]" />
           <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">{t('ai.safety.trend.title')}</span>
         </div>
-        <p className="text-sm text-neutral-400 dark:text-neutral-400 py-8 text-center">
+        <p className="text-sm text-muted-foreground dark:text-neutral-400 py-8 text-center">
           至少需要 2 条历史记录才能显示趋势
         </p>
       </div>
@@ -78,7 +81,7 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
           </span>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={160}>
+      <ResponsiveContainer width="100%" height={chartHeight}>
         <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="safetyTrendGrad" x1="0" y1="0" x2="0" y2="1">

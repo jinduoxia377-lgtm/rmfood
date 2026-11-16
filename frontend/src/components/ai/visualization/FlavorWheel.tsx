@@ -201,9 +201,7 @@ export function FlavorWheel({
                     y={pos.y}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    className={`text-xs font-bold select-none ${
-                      isHovered ? 'fill-white' : 'fill-white'
-                    }`}
+                    className="text-xs font-bold select-none fill-white"
                     style={{
                       textShadow: isHovered
                         ? '0 1px 3px rgba(0,0,0,0.5)'
@@ -266,7 +264,7 @@ export function FlavorWheel({
                     ? 'font-bold scale-110'
                     : ''
                 }`}
-                fill={sector.color}
+                fill="var(--text-primary)"
                 style={{
                   fontSize: isHovered ? '16px' : '14px',
                   transition: 'all 0.2s ease',

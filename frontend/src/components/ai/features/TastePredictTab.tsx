@@ -14,7 +14,9 @@ import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { aiApi } from '@/api/ai';
 import { Button, Card, Select, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
-import { Cherry, FlaskConical, BarChart3, Table2, Lightbulb, RotateCcw, History } from 'lucide-react';
+import { Cherry, FlaskConical, BarChart3, Table2, Lightbulb, RotateCcw, History, AlertTriangle } from 'lucide-react';
+import { logger } from '@/utils/safeLogger';
+import { toFriendlyErrorMessage } from './utils/friendlyError';
 
 import { FlavorWheel } from '@/components/ai/visualization/FlavorWheel';
 import { TasteRadarChart } from '@/components/ai/visualization/TasteRadarChart';
@@ -61,12 +63,14 @@ export function TastePredictTab() {
   const [algorithmMode, setAlgorithmMode] = useState<'weighted' | 'synergy'>('weighted');
   const [tasteResult, setTasteResult] = useState<TastePrediction | null>(null);
   const [historyResults, setHistoryResults] = useState<TastePrediction[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: async (names: string[]) => {
       return await aiApi.tastePredict(names.map((name) => ({ name })));
     },
     onSuccess: (data) => {
+      setErrorMessage(null);
       const names = tasteInput.split(/[,，\n]/).map((s) => s.trim()).filter(Boolean);
       const mapped: TastePrediction = {
         score: data.overall_score,
@@ -103,6 +107,13 @@ export function TastePredictTab() {
         setHistoryResults((prev) => [mapped, ...prev].slice(0, 5));
       }
     },
+    onError: (error: unknown) => {
+      // AI 口感预测失败此前完全静默：仅 onSuccess，失败时按钮 loading 复位、界面无变化。
+      // 仿 SynergyTab 补 onError → toFriendlyErrorMessage → errorMessage UI，给用户可见反馈。
+      const friendly = toFriendlyErrorMessage(error);
+      setErrorMessage(friendly);
+      logger.error('口感预测失败:', error);
+    },
   });
 
   const handlePredict = useCallback(() => {
@@ -138,6 +149,7 @@ export function TastePredictTab() {
     });
 
     setTasteResult(result);
+    setErrorMessage(null);
     if (!historyResults.find((r) => r.score === result.score)) {
       setHistoryResults((prev) => [result, ...prev].slice(0, 5));
     }
@@ -148,6 +160,7 @@ export function TastePredictTab() {
     setIngredients([]);
     setTasteResult(null);
     setProcessingMethod('');
+    setErrorMessage(null);
   }, []);
 
   const parsedIngredients = useMemo(() => {
@@ -170,11 +183,11 @@ export function TastePredictTab() {
       {/* 左侧：输入控制面板 — 玻璃态设计 */}
       <div className="col-span-12 lg:col-span-4 space-y-4">
         <div className="relative group">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-warning-500 to-danger-500 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur" />
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur" />
           <Card className="relative p-6 space-y-5 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm rounded-2xl">
             {/* 标题区 */}
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-warning-500 to-danger-600 flex items-center justify-center shadow-md flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-600 flex items-center justify-center shadow-md flex-shrink-0">
                 <Cherry className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
@@ -199,7 +212,7 @@ export function TastePredictTab() {
                 rows={4}
                 className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700
                            rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800/50
-                           focus:ring-2 focus:ring-warning-200 dark:focus:ring-warning-800 focus:border-warning-400
+                           focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-800 focus:border-primary-400
                            resize-none transition-all duration-200"
               />
             </div>
@@ -237,23 +250,23 @@ export function TastePredictTab() {
                     onClick={() => setAlgorithmMode('weighted')}
                     className={`flex-1 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 border ${
                       algorithmMode === 'weighted'
-                        ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-300 dark:border-warning-700 text-warning-700 dark:text-warning-700 shadow-sm'
-                        : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-warning-200'
+                        ? 'bg-primary-50 dark:bg-primary-300/20 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300 shadow-sm'
+                        : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-primary-200'
                     }`}
                   >
                     <div className="font-semibold">{t('ai.taste.algorithm.weighted.title')}</div>
-                    <div className="text-xs opacity-70 mt-0.5">{t('ai.taste.algorithm.weighted.subtitle')}</div>
+                    <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{t('ai.taste.algorithm.weighted.subtitle')}</div>
                   </button>
                   <button
                     onClick={() => setAlgorithmMode('synergy')}
                     className={`flex-1 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 border ${
                       algorithmMode === 'synergy'
-                        ? 'bg-warning-50 dark:bg-warning-300/20 border-warning-300 dark:border-warning-700 text-warning-700 dark:text-warning-700 shadow-sm'
-                        : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-warning-200'
+                        ? 'bg-primary-50 dark:bg-primary-300/20 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300 shadow-sm'
+                        : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-primary-200'
                     }`}
                   >
                     <div className="font-semibold">{t('ai.taste.algorithm.synergy.title')}</div>
-                    <div className="text-xs opacity-70 mt-0.5">{t('ai.taste.algorithm.synergy.subtitle')}</div>
+                    <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mt-0.5">{t('ai.taste.algorithm.synergy.subtitle')}</div>
                   </button>
                 </div>
               </div>
@@ -293,16 +306,26 @@ export function TastePredictTab() {
           </Card>
         </div>
 
+        {/* AI 预测错误反馈（仿 SynergyTab 错误态，避免静默失败） */}
+        {mutation.isError && errorMessage && (
+          <Card className="p-4 rounded-xl bg-danger-50 dark:bg-danger-500/10 border border-danger-200 dark:border-danger-500/20">
+            <div className="flex items-start gap-3 text-sm text-danger-600 dark:text-danger-300">
+              <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5 text-danger-500" />
+              <span>{errorMessage}</span>
+            </div>
+          </Card>
+        )}
+
         {/* 成分预览卡片 */}
         {ingredientProfiles.length > 0 && (
           <Card className="p-4 rounded-lg">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                <div className="w-6 h-6 rounded-lg bg-warning-100 dark:bg-warning-300/25 flex items-center justify-center">
-                  <Table2 className="w-3.5 h-3.5 text-warning-600 dark:text-warning-700" />
+                <div className="w-6 h-6 rounded-lg bg-primary-100 dark:bg-primary-300/25 flex items-center justify-center">
+                  <Table2 className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
                 </div>
                 {t('ai.taste.ingredients.title')}
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning-100 dark:bg-warning-300/25 text-warning-600 dark:text-warning-700">
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary-100 dark:bg-primary-300/25 text-primary-600 dark:text-primary-400">
                   {ingredientProfiles.length}
                 </span>
               </h3>
@@ -329,10 +352,10 @@ export function TastePredictTab() {
         {!tasteResult ? (
           <Card
             className="h-full flex items-center justify-center bg-gradient-to-br
-                           from-error-50 to-warning-50 dark:from-neutral-800 dark:to-neutral-900"
+                           from-neutral-50 to-primary-50 dark:from-neutral-800 dark:to-neutral-900"
           >
             <div className="text-center space-y-3 p-8">
-              <Cherry className="w-16 h-16 mx-auto text-error-300 dark:text-error-600" />
+              <Cherry className="w-16 h-16 mx-auto text-primary-300 dark:text-primary-400" />
               <h3 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300">{t('ai.taste.emptyState.title')}</h3>
               <p className="text-sm text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] max-w-md">
                 {t('ai.taste.emptyState.description')}
@@ -366,10 +389,10 @@ export function TastePredictTab() {
                     <div>
                       <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{t('ai.taste.result.overallScore')}</h3>
                       <div className="flex items-baseline gap-2 mt-1">
-                        <span className="text-4xl font-bold text-secondary-600">{(tasteResult.score * 100).toFixed(0)}</span>
+                        <span className="text-4xl font-bold text-secondary-600 dark:text-secondary-400">{(tasteResult.score * 100).toFixed(0)}</span>
                         <span className="text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">/ 100</span>
                       </div>
-                      <p className="text-sm text-neutral-600 mt-2">{tasteResult.description}</p>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-2">{tasteResult.description}</p>
                     </div>
 
                     <div>
@@ -449,7 +472,7 @@ export function TastePredictTab() {
                               {contrib.profile[taste].toFixed(0)}
                             </td>
                           ))}
-                          <td className="text-right py-2 px-3 text-neutral-600">
+                          <td className="text-right py-2 px-3 text-neutral-600 dark:text-neutral-300">
                             {(contrib.percentage || 0).toFixed(1)}%
                           </td>
                         </tr>
@@ -464,7 +487,7 @@ export function TastePredictTab() {
             <TabsContent value="suggestions" className="mt-0">
               <Card className="p-6 space-y-4">
                 <h3 className="font-semibold flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5 text-warning-500" />
+                  <Lightbulb className="w-5 h-5 text-primary-500" />
                   {t('ai.taste.suggestions.title')}
                 </h3>
 
@@ -472,12 +495,12 @@ export function TastePredictTab() {
                   {tasteResult.suggestions.map((suggestion, index) => (
                     <div
                       key={index}
-                      className="flex gap-3 p-3 rounded-lg bg-warning-50 dark:bg-warning-300/20
-                                 border border-warning-200 dark:border-warning-800"
+                      className="flex gap-3 p-3 rounded-lg bg-primary-50 dark:bg-primary-300/20
+                                 border border-primary-200 dark:border-primary-800"
                     >
                       <span
-                        className="flex-shrink-0 w-6 h-6 rounded-full bg-warning-200
-                                      dark:bg-warning-800 text-warning-800 dark:text-warning-200
+                        className="flex-shrink-0 w-6 h-6 rounded-full bg-primary-200
+                                      dark:bg-primary-700 text-primary-800 dark:text-primary-100
                                       flex items-center justify-center text-sm font-bold"
                       >
                         {index + 1}
@@ -498,9 +521,9 @@ export function TastePredictTab() {
                         <button
                           key={idx}
                           onClick={() => setTasteResult(result)}
-                          className="px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800
+                          className="min-h-[44px] min-w-[44px] px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800
                                      hover:bg-neutral-200 dark:hover:bg-neutral-700
-                                     text-xs whitespace-nowrap transition-colors"
+                                     text-xs whitespace-nowrap transition-colors flex items-center justify-center"
                         >
                           {t('ai.taste.history.score', { index: idx + 1, score: (result.score * 100).toFixed(0) })}
                         </button>

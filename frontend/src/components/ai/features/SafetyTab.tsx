@@ -683,10 +683,10 @@ export function SafetyTab({
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="w-5 h-5 text-danger-700 dark:text-danger-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-bold text-danger-800 dark:text-danger-300">
-                        ⚠️ 检出剧毒成分，严禁使用（医疗红线）
+                      <p className="font-bold text-danger-800 dark:text-danger-200">
+                        检出剧毒成分，严禁使用（医疗红线）
                       </p>
-                      <p className="text-sm text-danger-700 dark:text-danger-400 mt-1">
+                      <p className="text-sm text-danger-700 dark:text-danger-200 mt-1">
                         以下成分含剧毒生物碱（乌头碱/士的宁等），药食同源配方禁止口服，无论剂量多少均不安全：
                         <span className="font-semibold"> {toxicNames.join('、')}</span>
                       </p>
@@ -822,17 +822,27 @@ export function SafetyTab({
 
           {/* 历史记录列表（简化版） */}
           <div className="space-y-2 max-h-60 overflow-y-auto">
-            {history.slice(0, 5).map(entry => (
+            {history.slice(0, 5).map(entry => {
+              // 历史条目 role=button：点击与键盘激活（Enter/Space）走同一处理，
+              // 否则键盘用户无法查看历史/导出报告（a11y 缺口）。
+              const activate = () => {
+                setSafetyResult(entry.result)
+                // 同步导出报告所用的成分列表，否则点击历史条目后导出的
+                // 仍是上一次实际检查的成分，报告内容与所看结果不符。
+                setLastCheckedIngredients([...entry.ingredients])
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }
+              return (
               <div
                 key={entry.id}
                 className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                 role="button" tabIndex={0} onClick={() => {
-                  setSafetyResult(entry.result)
-                 // 同步导出报告所用的成分列表，否则点击历史条目后导出的
-                 // 仍是上一次实际检查的成分，报告内容与所看结果不符。
-                  setLastCheckedIngredients([...entry.ingredients])
-                  window.scrollTo({ top: 0, behavior: 'smooth' })
-                }}
+                 role="button" tabIndex={0} onClick={activate}
+                 onKeyDown={(e) => {
+                   if (e.key === 'Enter' || e.key === ' ') {
+                     e.preventDefault()
+                     activate()
+                   }
+                 }}
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
@@ -849,7 +859,8 @@ export function SafetyTab({
                   {entry.complianceRate}%
                 </Badge>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
