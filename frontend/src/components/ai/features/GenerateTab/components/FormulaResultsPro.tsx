@@ -116,6 +116,12 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
   const topCandidate = generateResult?.[0] ?? null
   // P1：rag_evidence 为响应级字段（归一化层已透传到每个候选），取顶部候选即可
   const ragEvidence = topCandidate?.rag_evidence
+  // P0 防御（根因见下方 RAG 区注释）：rag_evidence 可能为 truthy 但缺数组字段（后端未回全），
+  // 归一化时统一兜底为空数组，避免下方直接读 `.chunks.length` / `.whitelist.length` / `.blacklist.length`
+  // 在字段缺失/非数组时抛 TypeError 导致整块结果面板崩溃（ErrorBoundary 接管，用户看不到候选）。
+  const ragChunks = Array.isArray(ragEvidence?.chunks) ? ragEvidence.chunks : []
+  const ragWhitelist = Array.isArray(ragEvidence?.whitelist) ? ragEvidence.whitelist : []
+  const ragBlacklist = Array.isArray(ragEvidence?.blacklist) ? ragEvidence.blacklist : []
 
   const mappedIngredients = useMemo(() => {
     if (!topCandidate) return []
@@ -224,9 +230,10 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
                   {t('ai.formula.generateTab.ragEvidenceDisabled')}
                 </Badge>
               )}
-              {ragEvidence.chunks.length > 0 && (
+              {/* P0 防御：用归一化后的空数组兜底，字段缺失/非数组时安全降级为「无知识块」 */}
+              {ragChunks.length > 0 && (
                 <span className="text-caption text-muted-foreground">
-                  {t('ai.formula.generateTab.ragEvidenceChunks', { count: ragEvidence.chunks.length })}
+                  {t('ai.formula.generateTab.ragEvidenceChunks', { count: ragChunks.length })}
                 </span>
               )}
             </div>
@@ -235,22 +242,22 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
                 {t('ai.formula.generateTab.ragEvidenceQuery', { query: ragEvidence.query })}
               </p>
             )}
-            {ragEvidence.whitelist.length > 0 && (
+            {ragWhitelist.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
                 <span className="text-caption text-muted-foreground mr-1">
                   {t('ai.formula.generateTab.ragEvidenceWhitelist')}
                 </span>
-                {ragEvidence.whitelist.map((name) => (
+                {ragWhitelist.map((name) => (
                   <Badge key={`rag-wl-${name}`} variant="success" className="text-caption">{name}</Badge>
                 ))}
               </div>
             )}
-            {ragEvidence.blacklist.length > 0 && (
+            {ragBlacklist.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
                 <span className="text-caption text-muted-foreground mr-1">
                   {t('ai.formula.generateTab.ragEvidenceBlacklist')}
                 </span>
-                {ragEvidence.blacklist.map((name) => (
+                {ragBlacklist.map((name) => (
                   <Badge key={`rag-bl-${name}`} variant="destructive" className="text-caption">{name}</Badge>
                 ))}
               </div>

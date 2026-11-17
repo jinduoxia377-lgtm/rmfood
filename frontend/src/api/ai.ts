@@ -971,11 +971,49 @@ export function normalizeGenerateCandidate(rawCandidate: unknown, index = 0): AI
   }
 }
 
+/**
+ * 运行时校验/归一化 rag_evidence（P0 崩溃修复）。
+ *
+ * 根因：后端 formula_generation_service 注入的 rag_evidence 可能为 truthy 但缺
+ * chunks/whitelist/blacklist 数组字段；旧代码 `as RAGEvidence` 强转绕过运行时校验，
+ * 残缺对象透传到 FormulaResultsPro 后读 `.length` 抛 TypeError → 整块结果面板崩溃。
+ *
+ * 策略：
+ * - rag_evidence 非对象（含 null/数组/标量）→ 返回 undefined，UI 走「暂无知识库证据」空态；
+ * - chunks/whitelist/blacklist 非数组 → 兜底为 []，保证下游 `.length` / `.map` 永不崩；
+ * - enabled 收敛为 boolean；query/summary 收敛为 string；error 保留 string 或 undefined。
+ * 保持 RAGEvidence 类型定义不变（渲染层另用 Array.isArray 兜底，双层防御）。
+ */
+function normalizeRagEvidence(value: unknown): RAGEvidence | undefined {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined
+  }
+  const rec = value as UnknownRecord
+  const arr = (v: unknown): RAGEvidence['chunks'] =>
+    Array.isArray(v) ? (v as RAGEvidence['chunks']) : []
+  const strArr = (v: unknown): string[] =>
+    Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []
+  const str = (v: unknown): string => (typeof v === 'string' ? v : '')
+  return {
+    enabled: rec.enabled === true,
+    query: str(rec.query),
+    chunks: arr(rec.chunks),
+    whitelist: strArr(rec.whitelist),
+    blacklist: strArr(rec.blacklist),
+    summary: str(rec.summary),
+    error: typeof rec.error === 'string' ? rec.error : undefined,
+  }
+}
+
 /** 归一化 /ai/generate 主端点响应。 */
 export function normalizeGenerateResponse(rawData: unknown): AdvancedGenerateResponse {
   const data = asRecord(rawData)
   const rawCandidates = Array.isArray(data.candidates) ? data.candidates : []
-  const ragEvidence = (data.rag_evidence ?? undefined) as RAGEvidence | undefined
+  // P0 防御（根因）：rag_evidence 由后端 formula_generation_service 注入，可能为 truthy 但缺
+  // chunks/whitelist/blacklist 数组字段。原先裸 `as RAGEvidence` 强转绕过运行时形状校验，把残缺数据
+  // 当完整用，下游 FormulaResultsPro 读 `.chunks.length` 时抛 TypeError 导致整块结果面板崩溃。
+  // 现改为运行时校验/归一化：非对象→undefined；数组字段非数组→[]；标量字段类型收敛。
+  const ragEvidence = normalizeRagEvidence(data.rag_evidence)
   // P1：响应级 rag_evidence 透传到每个候选（FormulaResultsPro 只持有 generateResult，
   // 从候选读取；同时保留到响应级便于 AdvancedGeneratePanel 直接消费）
   const candidates = rawCandidates.map((c, i) => {
