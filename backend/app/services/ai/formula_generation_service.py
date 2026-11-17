@@ -101,18 +101,119 @@ EFFECT_LABEL_TO_TCM_KEYWORD: dict[str, list[str]] = {
 }
 
 
+# ════════════════════════════════════════════
+# R3：缺失映射词 → DB 真实功效键 归一（2026-11-17）
+# ════════════════════════════════════════════
+# 问题：EFFECT_LABEL_TO_TCM_KEYWORD / EFFECT_ALIAS_TO_KEYS 展开后有 61 个词在
+#   tcm_herbs.extra_knowledge.efficacy_scores（DB 实际 98 个功效键）中并不存在，
+#   如 利湿 / 消食 / 疏肝理气 / 祛痰 / 益精 / 活血化瘀 / 降血脂…。
+#   后果：①这些关键词在 DB 全库命中 = 0，GA 无法据此选药，候选池骤窄；
+#         ②自愈闸把"关键词零命中"当作功效数据异常，每请求强制重载（性能浪费）。
+# 修复：在关键词展开后统一做一次**同义词归一**，映射到 DB 真实存在的键。
+#   这是词表对齐（synonym normalization），不是伪造功效数据：映射目标均为 DB 真实键，
+#   语义相近且保守（宁少不多），绝不凭空造出 DB 没有的功效。
+# 依据：docs/reviews/_R3缺失映射词清单.txt（DB 98 键实测词表）。
+_TCM_KEYWORD_TO_DB_KEY: dict[str, list[str]] = {
+    # ── 湿/水液 ──
+    "利湿": ["祛湿", "利尿"],
+    "清热利湿": ["清热", "祛湿"],
+    "清暑利湿": ["清暑利湿"],
+    # ── 消化 ──
+    "消食": ["消食化积"],
+    "助消化": ["促进消化"],
+    "和胃": ["行气和胃", "健脾"],
+    "健脾养胃": ["健脾"],
+    "健脾和胃": ["健脾", "行气和胃"],
+    "健脾益气": ["健脾", "益气健脾"],
+    "调理脾胃": ["健脾", "行气和胃"],
+    # ── 气/血/理气 ──
+    "疏肝理气": ["理气"],
+    "活血化瘀": ["活血"],
+    "化瘀": ["活血"],
+    "养血": ["养血"],
+    "补气养血": ["补气", "养血"],
+    "补气补血": ["补气", "补血"],
+    "补血养血": ["补血", "养血"],
+    "滋养肝血": ["补血", "养血"],
+    # ── 呼吸/咽喉 ──
+    "祛痰": ["化痰", "止咳化痰"],
+    "润肺止咳": ["润肺", "止咳化痰"],
+    "润喉": ["利咽"],
+    "清咽利喉": ["利咽"],
+    "清热生津": ["清热", "生津"],
+    # ── 肾/精/骨 ──
+    "益精": ["补肾"],
+    "滋阴补肾": ["补肾"],
+    "补肾益精": ["补肾"],
+    "补肝肾": ["补益肝肾"],
+    "壮骨": ["强筋骨"],
+    "强健筋骨": ["强筋骨"],
+    "强筋健骨": ["强筋骨"],
+    "补钙健骨": ["强筋骨", "补益肝肾"],
+    # ── 心/神/眠 ──
+    "宁心": ["养心", "清心安神"],
+    "定志": ["安神"],
+    "安神定志": ["安神"],
+    "改善睡眠": ["安神"],
+    "缓解焦虑": ["安神", "理气"],
+    # ── 免疫/扶正 ──
+    "增强免疫": ["免疫调节"],
+    "提高抵抗力": ["免疫调节", "补气"],
+    "益气固表": ["补气"],
+    "扶正": ["补气"],
+    # ── 肝/目 ──
+    "养肝": ["护肝"],
+    "清肝": ["清热平肝", "清利头目"],
+    "保肝护肝": ["护肝"],
+    "明目护眼": ["明目"],
+    "缓解眼疲劳": ["明目"],
+    # ── 血管/循环 ──
+    "保护血管": ["心血管保护"],
+    "促进循环": ["活血"],
+    "改善微循环": ["活血"],
+    "温通经脉": ["活血"],
+    "通络": ["祛风通络"],
+    # ── 代谢 ──
+    "降血脂": ["降脂"],
+    "辅助降血脂": ["降脂"],
+    "调节代谢": ["降脂", "降血糖"],
+    "控制体重": ["降脂", "消食化积"],
+    "降尿酸": ["利尿", "祛湿"],
+    "辅助降尿酸": ["利尿", "祛湿"],
+    # ── 抗衰/美容 ──
+    "延缓衰老": ["抗衰老"],
+    "清除自由基": ["抗氧化"],
+    "润肤": ["美容", "养阴润燥"],
+    "护肤保湿": ["养阴润燥", "美容"],
+    "滋阴润燥": ["养阴润燥", "生津润燥"],
+    # ── 体力 ──
+    "缓解疲劳": ["抗疲劳"],
+}
+
+
+def _normalize_to_db_keys(keyword: str) -> list[str]:
+    """把单个关键词归一到 DB 真实功效键；无映射则原样返回。"""
+    mapped = _TCM_KEYWORD_TO_DB_KEY.get(keyword)
+    return mapped if mapped else [keyword]
+
+
 def build_tcm_keywords(frontend_labels: list[str]) -> list[str]:
-    """将前端功效标签集合转换为 TCM 关键词列表"""
+    """将前端功效标签集合转换为 TCM 关键词列表（含缺失词→DB 真实键归一）。
+
+    R3：展开后再做同义词归一，确保结果里每个关键词都是 DB efficacy_scores 真实存在的键，
+    避免"零命中 → 候选池骤窄 + 自愈闸每请求重载"。
+    """
     keywords: list[str] = []
     for label in frontend_labels:
         keywords.extend(EFFECT_LABEL_TO_TCM_KEYWORD.get(label, [label]))
-    # 去重并保持顺序
+    # 去重并保持顺序（含 R3 归一展开）
     seen: set[str] = set()
     result: list[str] = []
     for kw in keywords:
-        if kw not in seen:
-            seen.add(kw)
-            result.append(kw)
+        for db_key in _normalize_to_db_keys(kw):
+            if db_key not in seen:
+                seen.add(db_key)
+                result.append(db_key)
     return result
 
 
@@ -147,6 +248,73 @@ def _build_fallback_pool() -> dict[str, list[str]]:
 
 
 _FALLBACK_HERB_POOL: dict[str, list[str]] = _build_fallback_pool()
+
+
+def _compute_real_efficacy(
+    herb_combo: list[dict[str, Any]], tcm_keywords: list[str]
+) -> float | None:
+    """按 GA 同款逻辑计算规则引擎候选的**真实**功效分（绝不伪造）。
+
+    输入 herb_combo：[{"name":..,"dosage":"Xg","role":..}, ...]（真实药材+克重）。
+    从 herb_knowledge 读取每味药材的真实 efficacy_scores（DB 功效键），
+    按「剂量比 + 关键词命中」聚合，只对有贡献(s>0)的药材取平均（避免稀释）。
+    返回 None 表示无法得到任何真实功效数据（前端显示「待实测」），绝不返回编造值。
+    """
+    try:
+        from .algorithms.herb_knowledge_service import get_global_herb_knowledge
+
+        hk = get_global_herb_knowledge()
+        herbs = hk.get_herbs() if hk else {}
+        if not herbs or not tcm_keywords:
+            return None
+
+        # 建 name→herb 索引。HerbParameter 的中文名字段是 name_cn（不是 .name），
+        # 同时索引 DB 原名与其 canonical 归一名，兼容 fallback 池用药典正名（如"枣"）。
+        from .safety.canonical_names import canonicalize_herb_name
+
+        name_to_herb: dict[str, Any] = {}
+        for h in herbs.values():
+            cn = getattr(h, "name_cn", None) or getattr(h, "name", None)
+            if not cn:
+                continue
+            name_to_herb.setdefault(cn, h)
+            try:
+                name_to_herb.setdefault(canonicalize_herb_name(cn), h)
+            except Exception:
+                pass
+
+        per_effect: list[float] = []
+        any_hit = False
+        for effect in tcm_keywords:
+            score = 0.0
+            contributors = 0
+            for item in herb_combo:
+                herb = name_to_herb.get(item.get("name"))
+                if herb is None:
+                    continue
+                s = (getattr(herb, "efficacy_scores", {}) or {}).get(effect, 0)
+                if s > 0:
+                    contributors += 1
+                    any_hit = True
+                # 剂量比：从 "Xg" 解析克重，与 dosage_min/max 比较得强度系数
+                try:
+                    dosage = float(str(item.get("dosage", "")).replace("g", "").strip())
+                    ratio = (dosage - herb.dosage_min) / max(1, herb.dosage_max - herb.dosage_min)
+                    ratio = max(0.0, min(1.0, ratio))
+                except Exception:
+                    ratio = 0.5
+                score += s * (0.5 + 0.5 * ratio)
+            per_effect.append(score / contributors if contributors > 0 else 0.05)
+
+        if not any_hit:
+            return None  # 全库无任何真实功效命中 → 诚实返回 None（待实测）
+        # 几何平均（对齐 GA）
+        import math
+
+        return round(math.prod(per_effect) ** (1.0 / max(1, len(per_effect))), 4)
+    except Exception as e:
+        logger.warning(f"[FallbackGate] 真实功效计算失败，返回待实测: {e}")
+        return None
 
 
 def _fallback_rule_engine(
@@ -276,20 +444,26 @@ def _fallback_rule_engine(
         safety_passed = verdict.is_safe_for_display  # 仅 status == "PASS" 为 True
         safety_score = round(verdict.score / 100.0, 4) if verdict.is_verified else None
 
+        # ── R2 真实评分：绝不伪造 ──
+        # efficacy：用真实药材功效数据计算（_compute_real_efficacy），无真实数据则 None（前端显示「待实测」）
+        real_efficacy = _compute_real_efficacy(herb_combo, tcm_keywords)
+        # synergy/taste/stability/cost：规则引擎无真实协同/口感/稳定性/成本计算逻辑，
+        #   一律 None（遵循「缺失即缺失，不补 0」原则，前端显示「待实测」），绝不硬编码 0.65/0.70 冒充。
+        # overall：规则引擎未经 GA 真实多目标优化，且缺其余维度真实分，无法合成 → None。
         candidate: dict[str, Any] = {
             "id": f"rule_candidate_{int(time.time())}_{i}",
             "formula_name": f"规则配方-{i + 1}",
             "name": f"配方方案{i + 1}",
             "herb_combination": herb_combo,
             "peptide_candidates": [],
-            "synergy_score": round(0.5 + 0.15 * (i % 3), 4),
-            "taste_score": 0.65,
-            "stability_score": 0.70,
+            "synergy_score": None,
+            "taste_score": None,
+            "stability_score": None,
             # ★ 真实安全分：来自 check_compliance，未校验时为 None（前端显示"未校验"）★
             "safety_score": safety_score,
-            "cost_score": 0.70,
-            "efficacy_score": 0.60,
-            "overall_score": round(0.6 + 0.08 * (i % 3), 4),
+            "cost_score": None,
+            "efficacy_score": real_efficacy,
+            "overall_score": None,
             "effects": target_effects,
             "generated_by": "rule_engine_fallback",
             "generated_at": datetime.datetime.now().isoformat(),
@@ -318,7 +492,8 @@ def _fallback_rule_engine(
         "generator": "rule_engine_fallback",
         "execution_time_ms": 0.0,
         "strategy": "rule_fallback",
-        "best_score": max((c["overall_score"] for c in formatted), default=0),
+        # overall_score 现为真实/None（R2），过滤 None 后取 max，全 None 则 0
+        "best_score": max((c["overall_score"] for c in formatted if c["overall_score"] is not None), default=0),
         # ★ 降级标记：前端必须展示「本次由规则引擎兜底，未经 GA 优化」★
         "degraded": True,
         "fallback_reason": "GA 引擎不可用，本次由规则引擎兜底生成，结果未经多目标优化，仅供参考",

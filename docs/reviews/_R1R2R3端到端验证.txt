@@ -1,0 +1,70 @@
+LOGIN HTTP/1.1 200 OK
+
+=== 端到端验证 R1(目录化)+R2(不伪造)+R3(缺失词归一) ===
+
+### 增强免疫（基线）  HTTP 200  generator=ga_optimizer degraded=None
+    candidates=3
+    - 配方方案1: efficacy=0.4636 overall=0.7338 syn=0.5442 taste=1.0 stab=0.8494 cost=0.871 safety=0.98 by=ga_optimizer
+      herbs=['黄芪', '茯苓', '甘草', '菊花', '党参']
+    - 配方方案2: efficacy=0.464 overall=0.7334 syn=0.5184 taste=1.0 stab=0.8708 cost=0.8906 safety=0.98 by=ga_optimizer
+      herbs=['茯苓', '当归', '党参', '大枣', '生姜', '甘草']
+    - 配方方案3: efficacy=0.6004 overall=0.7321 syn=0.5226 taste=1.0 stab=0.8851 cost=0.7664 safety=0.98 by=ga_optimizer
+      herbs=['薏苡仁', '大枣', '金银花', '葛根', '白扁豆']
+
+### 改善睡眠（基线）  HTTP 200  generator=ga_optimizer degraded=None
+    candidates=3
+    - 配方方案1: efficacy=0.4055 overall=0.7132 syn=0.5218 taste=0.9632 stab=0.8342 cost=0.8631 safety=0.98 by=ga_optimizer
+      herbs=['茯苓', '百合', '大枣', '菊花', '阿胶']
+    - 配方方案2: efficacy=0.4148 overall=0.7132 syn=0.5291 taste=0.9544 stab=0.8394 cost=0.8507 safety=0.98 by=ga_optimizer
+      herbs=['枸杞子', '百合', '大枣', '麦冬', '菊花']
+    - 配方方案3: efficacy=0.4103 overall=0.7071 syn=0.5213 taste=0.9102 stab=0.8314 cost=0.8453 safety=0.98 by=ga_optimizer
+      herbs=['枸杞子', '百合', '麦冬', '大枣', '菊花']
+
+### 缓解焦虑（R1目标）  HTTP 200  generator=ga_optimizer degraded=None
+    candidates=3
+    - 配方方案1: efficacy=0.6136 overall=0.6994 syn=0.5233 taste=0.5791 stab=0.8439 cost=0.7856 safety=0.975 by=ga_optimizer
+      herbs=['薏苡仁', '马齿苋', '酸枣仁', '化橘红', '菊花']
+    - 配方方案2: efficacy=0.4506 overall=0.6982 syn=0.505 taste=0.8938 stab=0.8109 cost=0.8359 safety=0.98 by=ga_optimizer
+      herbs=['黄芪', '荷叶', '茯苓', '大枣', '藿香']
+    - 配方方案3: efficacy=0.4267 overall=0.6908 syn=0.517 taste=0.8277 stab=0.8322 cost=0.8166 safety=0.98 by=ga_optimizer
+      herbs=['黄芪', '百合', '荷叶', '金银花', '大枣']
+
+### 促进消化（R1目标）  HTTP 200  generator=ga_optimizer degraded=None
+    candidates=3
+    - 配方方案1: efficacy=0.2879 overall=0.6772 syn=0.5176 taste=1.0 stab=0.8606 cost=0.8606 safety=0.98 by=ga_optimizer
+      herbs=['麦芽', '茯苓', '枸杞子', '陈皮']
+    - 配方方案2: efficacy=0.2673 overall=0.675 syn=0.52 taste=0.9972 stab=0.8584 cost=0.8877 safety=0.975 by=ga_optimizer
+      herbs=['茯苓', '麦芽', '党参', '菊花', '甘草', '陈皮']
+    - 配方方案3: efficacy=0.2658 overall=0.6717 syn=0.5243 taste=1.0 stab=0.8522 cost=0.8686 safety=0.98 by=ga_optimizer
+      herbs=['茯苓', '麦芽', '党参', '枸杞子', '菊花', '陈皮']
+
+### 润肺止咳（R1目标）  HTTP 200  generator=ga_optimizer degraded=None
+    candidates=3
+    - 配方方案1: efficacy=0.3988 overall=0.6854 syn=0.5121 taste=1.0 stab=0.8386 cost=0.8574 safety=0.98 by=ga_optimizer
+      herbs=['党参', '茯苓', '桑叶', '甘草', '西洋参']
+    - 配方方案2: efficacy=0.3682 overall=0.6832 syn=0.5363 taste=0.9691 stab=0.8038 cost=0.8622 safety=0.98 by=ga_optimizer
+      herbs=['党参', '茯苓', '甘草', '桑叶', '薄荷']
+    - 配方方案3: efficacy=0.3598 overall=0.6806 syn=0.5284 taste=1.0 stab=0.8005 cost=0.8148 safety=0.98 by=ga_optimizer
+      herbs=['党参', '薏苡仁', '黄芪', '桑叶']
+
+### 提升精力（R1目标）  HTTP 200  generator=ga_optimizer degraded=None
+    candidates=3
+    - 配方方案1: efficacy=0.5041 overall=0.7381 syn=0.5159 taste=0.9858 stab=0.8427 cost=0.8309 safety=0.98 by=ga_optimizer
+      herbs=['黄芪', '莲子', '茯苓', '菊花']
+    - 配方方案2: efficacy=0.5629 overall=0.7372 syn=0.5011 taste=0.8753 stab=0.8589 cost=0.849 safety=0.975 by=ga_optimizer
+      herbs=['黄芪', '大枣', '菊花', '丁香', '西洋参']
+    - 配方方案3: efficacy=0.5784 overall=0.7364 syn=0.4882 taste=0.8626 stab=0.8382 cost=0.8351 safety=0.975 by=ga_optimizer
+      herbs=['黄芪', '莲子', '菊花', '丁香', '西洋参']
+
+### 清热祛湿（R1目标）  HTTP 200  generator=ga_optimizer degraded=None
+    candidates=3
+    - 配方方案1: efficacy=0.6612 overall=0.7287 syn=0.5043 taste=0.706 stab=0.8065 cost=0.7984 safety=0.98 by=ga_optimizer
+      herbs=['黄芪', '薏苡仁', '葛根', '桔梗']
+    - 配方方案2: efficacy=0.5883 overall=0.7275 syn=0.5059 taste=0.8139 stab=0.8062 cost=0.8441 safety=0.98 by=ga_optimizer
+      herbs=['黄芪', '荷叶', '薏苡仁', '淡竹叶', '菊花', '桔梗']
+    - 配方方案3: efficacy=0.5996 overall=0.723 syn=0.5119 taste=0.7227 stab=0.8112 cost=0.8534 safety=0.975 by=ga_optimizer
+      herbs=['黄芪', '荷叶', '金银花', '淡竹叶', '菊花', '桔梗']
+
+=== 汇总 ===
+降级(degraded)用例数: 0/7
+R2 伪造评分违规数: 0（期望 0）
