@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { whitelistApi, type WhitelistStatusResult } from '@/api/whitelist'
 
 /**
- * 底部折叠区：输入状态 token 查询申请进度（审核中/通过/拒绝/过期）。
+ * 底部折叠区：输入状态 token / 申请编号查询申请进度（审核中/通过/拒绝/过期）。
+ * defaultToken 用于本人申请一键查询（预填状态 token）。
  */
-export function StatusLookupSection() {
+export function StatusLookupSection({ defaultToken }: { defaultToken?: string }) {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
-  const [token, setToken] = useState('')
+  const [token, setToken] = useState(defaultToken ?? '')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<WhitelistStatusResult | null>(null)
   const [error, setError] = useState('')
