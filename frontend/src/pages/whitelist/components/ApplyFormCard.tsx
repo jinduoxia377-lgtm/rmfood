@@ -5,8 +5,8 @@ import { whitelistApi } from '@/api/whitelist'
 
 export interface ApplyFormValues {
   email: string
-  fullName?: string
-  organization?: string
+  fullName: string
+  organization: string
   reason?: string
   captchaId: string
   captchaAnswer: string
@@ -21,7 +21,7 @@ interface ApplyFormCardProps {
 }
 
 /**
- * 单页申请表单（人机验证码 + 邮箱必填 + 姓名/单位/申请理由选填 + 隐私同意）。
+ * 单页申请表单（人机验证码 + 邮箱/姓名/单位必填 + 申请理由选填 + 隐私同意）。
  * 校验错误使用 aria-invalid + aria-describedby（对齐登录页先例）。
  */
 export function ApplyFormCard({ submitting, error, quotaFull = false, onSubmit }: ApplyFormCardProps) {
@@ -32,6 +32,8 @@ export function ApplyFormCard({ submitting, error, quotaFull = false, onSubmit }
   const [reason, setReason] = useState('')
   const [consent, setConsent] = useState(false)
   const [emailErr, setEmailErr] = useState('')
+  const [fullNameErr, setFullNameErr] = useState('')
+  const [organizationErr, setOrganizationErr] = useState('')
   const [consentErr, setConsentErr] = useState('')
 
   // ── 人机验证码 ──
@@ -71,6 +73,18 @@ export function ApplyFormCard({ submitting, error, quotaFull = false, onSubmit }
     } else {
       setEmailErr('')
     }
+    if (!fullName.trim()) {
+      setFullNameErr(t('pages.whitelist.form.fullNameRequired'))
+      valid = false
+    } else {
+      setFullNameErr('')
+    }
+    if (!organization.trim()) {
+      setOrganizationErr(t('pages.whitelist.form.organizationRequired'))
+      valid = false
+    } else {
+      setOrganizationErr('')
+    }
     if (!captchaAnswer.trim()) {
       setCaptchaErr(t('pages.whitelist.form.captchaRequired'))
       valid = false
@@ -86,8 +100,8 @@ export function ApplyFormCard({ submitting, error, quotaFull = false, onSubmit }
     if (!valid) return
     onSubmit({
       email: trimmed,
-      fullName: fullName.trim() || undefined,
-      organization: organization.trim() || undefined,
+      fullName: fullName.trim(),
+      organization: organization.trim(),
       reason: reason.trim() || undefined,
       captchaId,
       captchaAnswer: captchaAnswer.trim(),
@@ -177,34 +191,42 @@ export function ApplyFormCard({ submitting, error, quotaFull = false, onSubmit }
 
             <div className="whitelist-form-group">
               <label htmlFor="wl-name" className="whitelist-label">
-                {t('pages.whitelist.form.fullName')}
+                {t('pages.whitelist.form.fullName')} <span className="whitelist-label-opt">*</span>
               </label>
               <input
                 id="wl-name"
                 type="text"
                 autoComplete="name"
-                className="whitelist-input"
+                className={`whitelist-input${fullNameErr ? ' error' : ''}`}
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => { setFullName(e.target.value); if (fullNameErr) setFullNameErr('') }}
                 placeholder={t('pages.whitelist.form.fullNamePlaceholder')}
+                aria-required="true"
+                aria-invalid={!!fullNameErr}
+                aria-describedby={fullNameErr ? 'wl-name-err' : undefined}
                 disabled={submitting}
               />
+              {fullNameErr && <p id="wl-name-err" className="whitelist-error-text" role="alert">{fullNameErr}</p>}
             </div>
 
             <div className="whitelist-form-group">
               <label htmlFor="wl-org" className="whitelist-label">
-                {t('pages.whitelist.form.organization')}
+                {t('pages.whitelist.form.organization')} <span className="whitelist-label-opt">*</span>
               </label>
               <input
                 id="wl-org"
                 type="text"
                 autoComplete="organization"
-                className="whitelist-input"
+                className={`whitelist-input${organizationErr ? ' error' : ''}`}
                 value={organization}
-                onChange={(e) => setOrganization(e.target.value)}
+                onChange={(e) => { setOrganization(e.target.value); if (organizationErr) setOrganizationErr('') }}
                 placeholder={t('pages.whitelist.form.organizationPlaceholder')}
+                aria-required="true"
+                aria-invalid={!!organizationErr}
+                aria-describedby={organizationErr ? 'wl-org-err' : undefined}
                 disabled={submitting}
               />
+              {organizationErr && <p id="wl-org-err" className="whitelist-error-text" role="alert">{organizationErr}</p>}
             </div>
 
             <div className="whitelist-form-group">
