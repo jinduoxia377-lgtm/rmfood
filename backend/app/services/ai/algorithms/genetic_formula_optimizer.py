@@ -401,6 +401,15 @@ class GeneticFormulaOptimizer:
         self._herbs = {}                              # 优先从数据库加载
         self._efficacy_index = {}
         self._herb_knowledge_loaded = False            # 标记是否已尝试加载 HerbKnowledgeService
+        # L0 药材准入缓存（R1 治本）：每次 optimize() 重建一次。
+        #   _admitted_name_cache: {原始 name_cn → 是否通过 check_herb_admission}
+        #   _admitted_herbs:      通过准入的 herb_id 集合（候选池过滤直接用）
+        # 目的：GA 候选池只保留 106 种药食同源目录内药材，避免下游安全闸门
+        # 整候选拒绝导致 0 候选降级。准入判定按 name 缓存，全代全种群复用，
+        # 不再每代每体重复调用准入检查。
+        self._admitted_name_cache: Dict[str, bool] = {}
+        self._admitted_herbs: frozenset = frozenset()
+        self._last_admission_removed: List[str] = []  # 最近一次候选池过滤被剔除的药材名
         # 归一化后的目标权重；None 表示用 Individual.DEFAULT_OBJECTIVE_WEIGHTS
         self._weight_vector: Optional[Dict[str, float]] = (
             self._normalize_objective_weights(self.config.objective_weights)
@@ -518,6 +527,37 @@ class GeneticFormulaOptimizer:
             logger.error(f"[数据完整性] 数据库加载失败: {e}")
             raise
 
+    def _build_admitted_herb_set(self) -> frozenset:
+        """R1 治本：一次性构建通过 L0 准入（106 药食同源目录）的 herb_id 集合。
+
+        单一事实源：直接复用 safety_gate.check_herb_admission（内部已做
+        canonical 归一 + 黑名单 + 106 目录判定），本方法**不另抄 106 名单**。
+        性能：按 name_cn 缓存准入判定（_admitted_name_cache），整个药材库
+        每次 optimize() 只做一轮准入检查（~590 次），结果被全代全种群复用；
+        同名药材（多个 herb_id）命中同一缓存，不重复调用准入服务。
+
+        Returns:
+            通过准入的 herb_id 的 frozenset（不可变，供候选池过滤直接使用）。
+        """
+        admitted: set = set()
+        for hid, herb in self._herbs.items():
+            name_cn = getattr(herb, "name_cn", "") or hid
+            cached = self._admitted_name_cache.get(name_cn)
+            if cached is None:
+                # check_herb_admission 内部已 canonicalize，直接传原始 name_cn 即可
+                try:
+                    from app.services.ai.safety.safety_gate import check_herb_admission
+                    cached = bool(check_herb_admission(name_cn).admitted)
+                except Exception as e:  # pragma: no cover - 准入服务异常时保守放行
+                    logger.warning(
+                        f"[GeneticAlgorithm] 准入检查异常（{name_cn}）按不通过处理: {e}"
+                    )
+                    cached = False
+                self._admitted_name_cache[name_cn] = cached
+            if cached:
+                admitted.add(hid)
+        return frozenset(admitted)
+
     def optimize(self, target_effects: List[str], exclude_herbs: Optional[set] = None,
                  _cancel_signal: Optional[threading.Event] = None,
                  progress_callback: Optional[callable] = None,
@@ -572,44 +612,19 @@ class GeneticFormulaOptimizer:
             random.seed(self.config.seed)
             logger.info(f"[GeneticAlgorithm] 设置随机种子: {self.config.seed}")
 
-        # Step 1: 选择候选药材（支持排除药材 + 特殊人群硬排除）
+        # Step 1: 选择候选药材（支持排除药材 + 特殊人群硬排除 + L0 目录准入过滤）
+        # R1 治本：先一次性构建"106 目录准入"缓存集合，再在 _select_herbs 内部
+        # 于截断（[:25]）之前过滤候选池。旧实现在截断后才过滤，非目录药材已挤占
+        # 25 个名额，导致目录内药材被挤出、池规模骤减甚至 <3 而直接降级。
+        # 准入集合按 name 缓存，整轮 optimize 只构建一次，全代全种群复用。
+        self._admitted_herbs = self._build_admitted_herb_set()
+        logger.info(
+            f"[GeneticAlgorithm] L0 准入缓存构建：药材库 {len(self._herbs)} 种，"
+            f"通过 106 目录准入 {len(self._admitted_herbs)} 种"
+        )
+
         candidates = self._select_herbs(target_effects, exclude_herbs=population_exclude,
                                          include_herbs=include_herbs)
-
-        # 阶段1 治本：L0 药材准入网关 —— GA 候选池只保留通过准入的药食同源药材。
-        # 根治审计缺陷：旧 GA 池含非目录药用药材（连翘/人参/大枣等），下游安全
-        # 闸门被迫整候选拒绝，导致 0 候选。现源头约束候选池到 106 种药食同源目录，
-        # 与兜底路径共用同一准入判定（safety_gate.check_herb_admission）。
-        #
-        # ★ 命名规范化（2026-11-09 深化）★：check_herb_admission 用 name_cn **精确匹配**
-        # FOOD_HERB_MAX_DOSAGE（106 目录键=药典正名），但 GA 药材库 name_cn 常用俗名/异名
-        # （大枣/桑葚/陈皮/枸杞…）。精确匹配失败 → 真药食同源药材被误剔除。
-        # 修法：准入前先 canonicalize_herb_name 归一（俗名→正名），再准入判定。
-        #   - 大枣→枣、桑葚→桑椹、陈皮→橘皮、枸杞→枸杞子、红枣→枣 等保留在池中 ✅
-        #   - 虫草系歧义按最严处置（canonical 归一到「冬虫夏草」=黑名单）→ 准入失败 ✅
-        #   - 连翘/人参等非目录药 canonical 后仍不在 106 目录 → 照旧剔除 ✅
-        try:
-            from app.services.ai.safety.safety_gate import check_herb_admission
-            from app.services.ai.safety.canonical_names import canonicalize_herb_name
-            admitted_candidates = []
-            rejected_names = []
-            for hid in candidates:
-                herb = self._herbs.get(hid)
-                name_cn = (getattr(herb, "name_cn", "") or hid) if herb else hid
-                # 命名规范化：俗名/异名 → 106 目录药典正名后再准入
-                canonical_name = canonicalize_herb_name(name_cn)
-                if check_herb_admission(canonical_name).admitted:
-                    admitted_candidates.append(hid)
-                else:
-                    rejected_names.append(f"{name_cn}(→{canonical_name})")
-            if rejected_names:
-                logger.info(
-                    f"[GeneticAlgorithm] L0 准入过滤：剔除 {len(rejected_names)} 味非目录药材 "
-                    f"{rejected_names[:10]}（受保护物种/药用/超目录；括号内为 canonical 正名）"
-                )
-            candidates = admitted_candidates
-        except Exception as _adm_err:  # pragma: no cover - 防御性，准入服务异常时不阻塞
-            logger.warning(f"[GeneticAlgorithm] L0 准入过滤异常，跳过（使用原候选池）: {_adm_err}")
 
         if len(candidates) < 3:
             logger.warning(f"候选药材不足 ({len(candidates)})")
@@ -1067,6 +1082,47 @@ class GeneticFormulaOptimizer:
         if exclude_herbs:
             sorted_h = [h for h in sorted_h if h not in exclude_herbs]
 
+        # R1 治本：L0 目录准入过滤（在截断 [:25] **之前**，避免非目录药挤占名额）。
+        # 仅保留通过 check_herb_admission 的 herb_id（_admitted_herbs 由 optimize()
+        # 每次 optimize 一次性构建并缓存，此处只做 set 查询，无重复准入调用）。
+        # 语义：include_herbs（用户强制包含）不受准入过滤约束，尊重其强制语义，
+        # 但这类药材最终仍会被下游 check_formula_safety 复核。
+        admitted = getattr(self, "_admitted_herbs", frozenset())
+        if admitted:
+            before = len(sorted_h)
+            filtered_h = [h for h in sorted_h if h in admitted or h in include_herbs_set]
+            removed = before - len(filtered_h)
+            if removed > 0:
+                removed_names = []
+                for hid in sorted_h:
+                    if hid not in admitted and hid not in include_herbs_set:
+                        herb = self._herbs.get(hid)
+                        removed_names.append(getattr(herb, "name_cn", "") or hid)
+                self._last_admission_removed = removed_names
+                logger.info(
+                    f"[GeneticAlgorithm] L0 目录准入过滤（截断前）：候选池 {before} → "
+                    f"{len(filtered_h)}，剔除 {removed} 味非 106 目录药材 "
+                    f"{removed_names[:20]}"
+                )
+            sorted_h = filtered_h
+
+        # 退避保护：过滤后某功效候选池 <3 味时，退回不过滤的池并告警，
+        # 避免 GA 完全无解（该情形由上层降级处理）。仅在过滤真的导致不足时触发。
+        if len(sorted_h) < 3:
+            # 重新计算未过滤池（排除药材仍然生效，但不做准入过滤）
+            candidate_ids = set(candidate_set.keys()) - set(exclude_herbs or set())
+            if len(candidate_ids) >= 3 and len(candidate_ids) > len(sorted_h):
+                logger.warning(
+                    f"[GeneticAlgorithm] L0 准入过滤后候选池不足 ({len(sorted_h)} < 3)，"
+                    f"退回未过滤池（{len(candidate_ids)} 味）——该功效目录内药材稀缺，"
+                    f"上层将按降级处理"
+                )
+                return sorted(
+                    candidate_ids,
+                    key=lambda x: candidate_set[x],
+                    reverse=True,
+                )[:25]
+
         return sorted_h[:25]  # 从15增加到25，提供更多多样性
 
     def _init_population(self, candidates: List[str], exclude_herbs: Optional[set] = None) -> List[Individual]:
@@ -1080,6 +1136,11 @@ class GeneticFormulaOptimizer:
         herbs = self._herbs
         population = []
         n = len(candidates)
+        # R1 治本：候选池已通过 L0 目录准入过滤，经典方剂种子只能复用池内药材。
+        # 旧逻辑用 `hid in herbs`（全药材库）判定，导致四君子汤的白术(bq)等
+        # 非目录药材经种子重新混入种群，绕过准入过滤、下游被安全闸门整候选淘汰。
+        # 改为 `hid in candidate_pool`（= 准入后的 candidates），种子与候选池同源。
+        candidate_pool = set(candidates)
 
         # ═══ 种子 1: TCM 经典方剂 ═══
         # 格式: {herb_id: dosage} — 仅保留候选池中存在的药材
@@ -1097,7 +1158,7 @@ class GeneticFormulaOptimizer:
             for hid, dosage in formula_herbs.items():
                 if exclude_herbs and hid in exclude_herbs:
                     continue  # 跳过排除的药材
-                if hid in herbs:
+                if hid in candidate_pool and hid in herbs:
                     # 将经典剂量缩放到 herb 的合法范围内
                     herb = herbs[hid]
                     clamped = max(herb.dosage_min, min(herb.dosage_max, dosage))
