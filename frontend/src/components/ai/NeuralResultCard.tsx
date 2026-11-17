@@ -8,6 +8,7 @@ import { ContraindicationWarning } from './components/ContraindicationWarning';
 import { EditIndicator } from './components/EditIndicator';
 import { SimpleEditToolbar } from './components/SimpleEditToolbar';
 import { CardHeader } from './components/CardHeader';
+import { SafetyVerdictDetails } from './components/SafetyVerdictDetails';
 import { ActionButtons } from './components/ActionButtons';
 import { useNeuralResultCard } from './hooks/useNeuralResultCard';
 import { FormulaValidationModal } from '@/components/ai/features/components/FormulaValidationModal';
@@ -100,12 +101,14 @@ export function NeuralResultCard({
         <CardHeader
           isEditing={isEditing}
           editedName={editedName}
-          safetyPassed={candidate.safety_passed ?? false}
+          safetyVerdict={candidate.safety_verdict}
           overallScore={candidate.overall_score}
           nameInputRef={nameInputRef as React.RefObject<HTMLInputElement>}
           onNameChange={handleNameChange}
           generatorType={generatorType}
         />
+        {/* 安全合规三态明细（violations 红 / warnings 黄），与 CardHeader 徽章同源 deriveSafetyVerdict */}
+        <SafetyVerdictDetails verdict={candidate.safety_verdict} />
         {isEditing ? (
           <div className="space-y-3">
             <SimpleEditToolbar

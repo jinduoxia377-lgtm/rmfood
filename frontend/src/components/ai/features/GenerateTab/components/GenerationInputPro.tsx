@@ -10,8 +10,9 @@ import {
   Target, FileText, MessageSquare, Sparkles, Send,
   X, ChevronDown, ChevronUp, Zap, Loader2,
   Lightbulb, Settings, CheckCircle,
-  Shield,
+  Shield, Moon, CupSoda, HeartPulse,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { GenerationProgressPanel } from '@/components/ai/GenerationProgressPanel'
 import { FormulaInputWindow } from '@/components/ai/FormulaInputWindow'
@@ -26,15 +27,16 @@ import { AlgorithmConfigPanel } from './AlgorithmConfigPanel'
 import { ConstraintPanel } from './ConstraintPanel'
 import type { AlgorithmConfig } from './AlgorithmConfigPanel'
 import type { PersonalConstraints } from './ConstraintPanel'
+import { personalConstraintsToApi } from '../utils/constraints'
 
-// Quick templates
-const QUICK_TEMPLATES = [
-  { id: 'immune', nameKey: 'ai.formula.generateTab.templateImmune', icon: '🛡️', effects: ['immune_enhancement', 'resistance_boost'] },
-  { id: 'fatigue', nameKey: 'ai.formula.generateTab.templateAntiFatigue', icon: '⚡', effects: ['anti_fatigue', 'energy_boost'] },
-  { id: 'sleep', nameKey: 'ai.formula.generateTab.templateSleep', icon: '😴', effects: ['sleep_improvement', 'calm_mind'] },
-  { id: 'digestion', nameKey: 'ai.formula.generateTab.templateDigestion', icon: '🍵', effects: ['spleen_stomach', 'digestion_promotion'] },
-  { id: 'beauty', nameKey: 'ai.formula.generateTab.templateBeauty', icon: '✨', effects: ['beauty_skin', 'antioxidant'] },
-  { id: 'cardio', nameKey: 'ai.formula.generateTab.templateCardio', icon: '❤️', effects: ['blood_lipid', 'vascular_protection'] },
+// Quick templates — 图标统一使用 lucide-react，严禁 emoji 作为 UI 图标
+const QUICK_TEMPLATES: { id: string; nameKey: string; icon: LucideIcon; effects: string[] }[] = [
+  { id: 'immune', nameKey: 'ai.formula.generateTab.templateImmune', icon: Shield, effects: ['immune_enhancement', 'resistance_boost'] },
+  { id: 'fatigue', nameKey: 'ai.formula.generateTab.templateAntiFatigue', icon: Zap, effects: ['anti_fatigue', 'energy_boost'] },
+  { id: 'sleep', nameKey: 'ai.formula.generateTab.templateSleep', icon: Moon, effects: ['sleep_improvement', 'calm_mind'] },
+  { id: 'digestion', nameKey: 'ai.formula.generateTab.templateDigestion', icon: CupSoda, effects: ['spleen_stomach', 'digestion_promotion'] },
+  { id: 'beauty', nameKey: 'ai.formula.generateTab.templateBeauty', icon: Sparkles, effects: ['beauty_skin', 'antioxidant'] },
+  { id: 'cardio', nameKey: 'ai.formula.generateTab.templateCardio', icon: HeartPulse, effects: ['blood_lipid', 'vascular_protection'] },
 ]
 
 /**
@@ -219,8 +221,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
       if (matchedLabels.length === 0) {
         logger.info('[GenerationInputPro] 无法从聊天文本解析功效标签', { intent, userMessage })
         const guidance =
-          '抱歉，我无法从您的描述中识别出明确的功效方向。请切换到「功效模式」直接选择功效标签，' +
-          '或在聊天中描述具体功效，例如：「增强免疫」「改善睡眠」「抗疲劳」。'
+          t('ai.formula.generateTab.chatReply.noEffectGuidance')
         setChatHistory(prev => [...prev, {
           role: 'assistant',
           content: guidance,
@@ -229,14 +230,20 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
         return
       }
 
-      // 用解析出的功效标签（而非原始自由文本）调用真实后端生成
-      const result = await aiApi.generate(matchedLabels, undefined, false)
+      // 用解析出的功效标签（而非原始自由文本）调用真实后端生成。
+      // P0-F3 个性化必须真实：聊天模式同样带上用户个人约束（过敏原/禁忌/体质等）
+      // 与 use_llm 开关，不再丢约束伪装个性化。
+      const result = await aiApi.generate(
+        matchedLabels,
+        personalConstraintsToApi(constraints),
+        useLlm,
+      )
 
       const candidates: AICandidate[] = result?.candidates ?? []
       if (candidates.length === 0) {
         setChatHistory(prev => [...prev, {
           role: 'assistant',
-          content: '未生成候选配方，请稍后重试或更换描述。',
+          content: t('ai.formula.generateTab.chatReply.noCandidates'),
           timestamp: Date.now(),
         }])
         return
@@ -261,15 +268,20 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
       // 用真实候选驱动配方展示
       const candidateLines = candidates.map((candidate, index) => {
         const herbs = (candidate.herb_combination ?? [])
-          .map(h => `${h.name || '未知药材'}${h.dosage ? ` ${h.dosage}` : ''}`)
+          .map(h => `${h.name || t('ai.formula.generateTab.chatReply.unknownHerb')}${h.dosage ? ` ${h.dosage}` : ''}`)
           .join('、')
         const score = typeof candidate.overall_score === 'number'
-          ? `（综合评分 ${candidate.overall_score.toFixed(4)}）`
+          ? t('ai.formula.generateTab.chatReply.compositeScore', { score: candidate.overall_score.toFixed(4) })
           : ''
-        return `${index + 1}. ${candidate.formula_name || candidate.name || '候选配方'}${score}${herbs ? `\n   ${herbs}` : ''}`
+        return `${index + 1}. ${candidate.formula_name || candidate.name || t('ai.formula.generateTab.chatReply.candidateFallback')}${score}${herbs ? `\n   ${herbs}` : ''}`
       })
 
-      const assistantMessage = `已根据您的需求「${userMessage}」识别功效方向「${matchedLabels.join('、')}」，生成 ${candidates.length} 个候选配方：\n${candidateLines.join('\n')}`
+      const assistantMessage = t('ai.formula.generateTab.chatReply.summary', {
+        message: userMessage,
+        labels: matchedLabels.join('、'),
+        count: candidates.length,
+        lines: candidateLines.join('\n'),
+      })
 
       setChatHistory(prev => [...prev, { role: 'assistant', content: assistantMessage, timestamp: Date.now() }])
 
@@ -277,12 +289,12 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
       onChatCandidates?.(candidates)
     } catch (error) {
       logger.error('[GenerationInputPro] Chat processing failed:', error)
-      const errorMsg = error instanceof Error ? error.message : '生成失败，请稍后重试。'
-      setChatHistory(prev => [...prev, { role: 'assistant', content: `出错了：${errorMsg}`, timestamp: Date.now() }])
+      const errorMsg = error instanceof Error ? error.message : t('ai.formula.generateTab.chatReply.generateFailed')
+      setChatHistory(prev => [...prev, { role: 'assistant', content: t('ai.formula.generateTab.chatReply.errorPrefix', { message: errorMsg }), timestamp: Date.now() }])
     } finally {
       setIsChatProcessing(false)
     }
-  }, [chatInput, isChatProcessing, onSetSelectedEffects, onChatCandidates])
+  }, [chatInput, isChatProcessing, onSetSelectedEffects, onChatCandidates, constraints, useLlm, t])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     // 回车（含 Ctrl+Enter）发送聊天：阻止冒泡，避免同时触发顶层文档级
@@ -314,7 +326,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
                 <button
                   key={mode}
                   onClick={() => onInputModeChange(mode)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-body-sm font-medium transition-all
+                  className={`flex items-center justify-center gap-1.5 px-3 min-h-[44px] rounded-md text-body-sm font-medium transition-all
                     ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -325,7 +337,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
           </div>
         </div>
         {selectedEffects.length > 0 && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
+          <div className="flex items-center gap-2 px-3 min-h-[36px] bg-primary/10 rounded-full border border-primary/20 dark:border-primary/30">
             <CheckCircle className="w-3.5 h-3.5 text-primary" />
             <span className="text-body-sm font-medium text-primary">{selectionCount}/{VALIDATION.maxEffectSelection}</span>
           </div>
@@ -342,21 +354,29 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
                   <Lightbulb className="w-4 h-4 text-warning" />
                   <span className="text-body-sm font-semibold">{t('ai.formula.generateTab.quickStart')}</span>
                 </div>
-                <button onClick={() => setShowQuickTemplates(false)} className="p-1 text-muted-foreground hover:text-foreground">
+                <button
+                  onClick={() => setShowQuickTemplates(false)}
+                  aria-label={t('ai.formula.generateTab.close')}
+                  className="flex items-center justify-center w-11 h-11 -mr-1 text-muted-foreground hover:text-foreground rounded-md transition-all"
+                >
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-6 gap-2">
-                {QUICK_TEMPLATES.map((template) => (
-                  <button
-                    key={template.id}
-                    onClick={() => handleQuickTemplateClick(template)}
-                    className="flex flex-col items-center gap-1.5 p-3 bg-background rounded-lg border border-border hover:border-primary/40 transition-all"
-                  >
-                    <span className="text-xl">{template.icon}</span>
-                    <span className="text-caption font-medium text-center">{t(template.nameKey)}</span>
-                  </button>
-                ))}
+              {/* 修正：sm: 前缀曾重复（sm:grid-cols-3 sm:grid-cols-6 后者覆盖前者）→ 合理断点梯度 */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                {QUICK_TEMPLATES.map((template) => {
+                  const TemplateIcon = template.icon
+                  return (
+                    <button
+                      key={template.id}
+                      onClick={() => handleQuickTemplateClick(template)}
+                      className="flex flex-col items-center justify-center gap-1.5 min-h-[64px] p-3 bg-background dark:bg-slate-900 rounded-lg border border-border dark:border-slate-700 hover:border-primary/40 transition-all"
+                    >
+                      <TemplateIcon className="w-5 h-5 text-primary" aria-hidden="true" />
+                      <span className="text-caption font-medium text-center">{t(template.nameKey)}</span>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -386,7 +406,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
               {isChatProcessing && (
                 <div className="flex justify-start">
                   <div className="bg-muted px-3 py-2 rounded-xl rounded-bl-sm">
-                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-primary" />
                   </div>
                 </div>
               )}
@@ -406,7 +426,8 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
               <button
                 onClick={handleChatSend}
                 disabled={!chatInput.trim() || isChatProcessing}
-                className="px-3 py-2 bg-primary hover:bg-primary-hover disabled:bg-muted text-primary-foreground rounded-lg transition-all"
+                aria-label={t('ai.formula.generateTab.chatModeShort')}
+                className="flex items-center justify-center w-11 h-11 bg-primary hover:bg-primary-hover disabled:bg-muted text-primary-foreground rounded-lg transition-all"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -419,7 +440,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
                 <CheckCircle className="w-3.5 h-3.5" />{t('ai.formula.generateTab.aiSelected')}
               </span>
               {selectedEffects.map((effect) => (
-                <span key={effect.id} className="text-caption px-2 py-0.5 bg-success/10 text-success rounded-full font-medium">
+                <span key={effect.id} className="flex items-center min-h-[28px] text-caption px-2.5 bg-success/10 text-success rounded-full font-medium dark:bg-success/15">
                   {t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
                 </span>
               ))}
@@ -440,8 +461,8 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
-                  className={`px-3 py-1.5 rounded-full text-caption font-medium transition-all
-                    ${activeCategory === category ? 'bg-primary text-primary-foreground' : hasSelected ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground hover:bg-background'}`}
+                  className={`px-3 min-h-[44px] rounded-full text-caption font-medium transition-all
+                    ${activeCategory === category ? 'bg-primary text-primary-foreground' : hasSelected ? 'bg-primary/10 text-primary border border-primary/20 dark:border-primary/30' : 'bg-muted text-muted-foreground hover:bg-background'}`}
                 >
                   {t(`ai.formula.effects.categories.${categoryKeyMap[category]}`, { defaultValue: category })} <span className="opacity-70 ml-1">{count}</span>
                 </button>
@@ -452,20 +473,21 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
           {/* Effects grid */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-title-sm font-semibold flex items-center gap-2">
+              <h4 className="text-h4 font-semibold flex items-center gap-2">
                 <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center">
                   <Target className="w-3 h-3 text-primary" />
                 </div>
                 {t('ai.formula.generateTab.selectEffects')}
-                <span className="text-caption font-medium px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs">
+                <span className="text-caption font-medium px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
                   {selectionCount}/{VALIDATION.maxEffectSelection}
                 </span>
-              </h3>
+              </h4>
               {selectedEffects.length > 0 && (
-                <button onClick={onClearEffects} className="text-caption text-muted-foreground hover:text-error">{t('ai.formula.generateTab.clear')}</button>
+                <button onClick={onClearEffects} className="flex items-center min-h-[44px] px-3 text-caption text-muted-foreground hover:text-error transition-all">{t('ai.formula.generateTab.clear')}</button>
               )}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+            {/* 修正：sm: 前缀曾重复（sm:grid-cols-3 sm:grid-cols-4 后者覆盖前者）→ 合理断点梯度 */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
               {filteredEffects.map((effect) => {
                 const isSelected = selectedEffects.some(e => e.id === effect.id)
                 return (
@@ -473,8 +495,8 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
                     key={effect.id}
                     onClick={() => onToggleEffect(effect)}
                     disabled={!isSelected && !canSelectMore}
-                    className={`px-3 py-2 rounded-lg text-body-sm font-medium transition-all border
-                      ${isSelected ? 'bg-primary text-primary-foreground border-primary' : !isSelected && !canSelectMore ? 'opacity-40 cursor-not-allowed bg-muted border-transparent' : 'bg-background border-border hover:border-primary/40'}`}
+                    className={`flex items-center min-h-[44px] px-3 rounded-lg text-body-sm font-medium transition-all border
+                      ${isSelected ? 'bg-primary text-primary-foreground border-primary' : !isSelected && !canSelectMore ? 'opacity-40 cursor-not-allowed bg-muted border-transparent' : 'bg-background dark:bg-slate-900 border-border dark:border-slate-700 hover:border-primary/40'}`}
                   >
                     <span className="flex items-center gap-1.5">
                       {t(`ai.formula.effects.labels.${effect.labelKey}`, { defaultValue: effect.label })}
@@ -489,7 +511,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
 
           {/* Parameters */}
           <div className="border-t border-border pt-3">
-            <button onClick={onToggleParamPanel} className="flex items-center gap-2 text-body-sm font-medium text-muted-foreground hover:text-foreground">
+            <button onClick={onToggleParamPanel} className="flex items-center min-h-[44px] gap-2 text-body-sm font-medium text-muted-foreground hover:text-foreground">
               <Settings className="w-4 h-4" />
               {t('ai.formula.generateTab.algorithmParams')}
               {paramPanelExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -574,7 +596,7 @@ export const GenerationInputPro: React.FC<GenerationInputProProps> = ({
             <kbd className="px-1.5 py-0.5 bg-muted rounded border border-border font-mono text-xs">Ctrl+Enter</kbd>
             <span>{t('ai.formula.generateTab.generateFormula')}</span>
           </div>
-          <button onClick={onFullReset} className="px-3 py-1.5 text-body-sm text-muted-foreground hover:text-foreground">{t('ai.formula.generateTab.reset')}</button>
+          <button onClick={onFullReset} className="flex items-center min-h-[44px] px-3 text-body-sm text-muted-foreground hover:text-foreground transition-all">{t('ai.formula.generateTab.reset')}</button>
         </div>
       </div>
     </div>

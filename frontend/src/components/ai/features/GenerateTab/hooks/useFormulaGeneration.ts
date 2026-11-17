@@ -9,6 +9,7 @@ import { DEFAULTS, ERROR_MESSAGES } from '@/config'
 import { logger } from '@/utils/safeLogger'
 import { AppError, ErrorFactory } from '@/utils/errorHandler'
 import { getUserMessage } from '@/constants/errorCodes'
+import i18n from '@/i18n'
 
 type GeneratorType = GenerationGeneratorType
 
@@ -205,7 +206,7 @@ export function useFormulaGeneration({
           }
         } else if (typeof error === 'object' && error !== null) {
           const errorObj = error as Record<string, unknown>
-          const message = String(errorObj.message || errorObj.detail || errorObj.error || getUserMessage('COMMON_UNKNOWN'))
+          const message = String(errorObj.message || errorObj.detail || errorObj.error || getUserMessage('COMMON_UNKNOWN', i18n.language))
           enhancedError = new AppError({ code: 'COMMON_UNKNOWN', message, originalError: error })
         } else {
           enhancedError = ErrorFactory.ai.generationFailed()

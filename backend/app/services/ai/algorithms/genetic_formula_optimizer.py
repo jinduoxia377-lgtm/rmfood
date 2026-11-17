@@ -160,15 +160,27 @@ class Individual:
         else:
             eff_scores = []
             for effect in target_effects:
+                # P1 稀释修复：分母改为「对该关键词有真实贡献(s>0)的药材数」，而非总基因数。
+                # 旧实现 `score/len(self.genes)` 让「多加一味无此功效的药材」摊薄整体分，
+                # 反向激励「药味越多分越低」。改为只除以贡献者数，使评分反映
+                # 「命中此功效的药材平均贡献强度」，鼓励纳入真正对症的药材。
                 score = 0.0
+                contributors = 0
                 for hid, dosage in self.genes.items():
                     if hid in herbs:
                         herb = herbs[hid]
                         s = herb.efficacy_scores.get(effect, 0)
+                        if s > 0:
+                            contributors += 1
                         ratio = (dosage - herb.dosage_min) / max(1, herb.dosage_max - herb.dosage_min)
                         score += s * (0.5 + 0.5 * ratio)
-                eff_scores.append(score / max(1, len(self.genes)))
-            self.efficacy = (math.prod(max(0.01, s) for s in eff_scores)) ** (1.0 / max(1, len(eff_scores)))
+                if contributors > 0:
+                    eff_scores.append(score / contributors)
+                else:
+                    # 该关键词全库（在当前个体内）无任何药材贡献 → 真实地板 0.05，
+                    # 仅在完全无命中时启用，避免有真实命中的关键词被旧地板(0.01)压低。
+                    eff_scores.append(0.05)
+            self.efficacy = (math.prod(eff_scores)) ** (1.0 / max(1, len(eff_scores)))
 
         # 安全
         safe = 0.0

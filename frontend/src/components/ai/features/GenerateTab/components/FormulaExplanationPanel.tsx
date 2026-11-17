@@ -5,11 +5,12 @@
  * @version 1.0.0
  */
 import { useState, useEffect } from 'react'
-import { Loader2, FlaskConical, Shield, Lightbulb, Clock, RefreshCw } from 'lucide-react'
+import { Loader2, FlaskConical, Shield, Lightbulb, Clock, RefreshCw, BookOpen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { aiApi } from '@/api/ai'
 import type { AICandidate } from '@/api/ai'
 import { Card } from '@/components/ui'
+import MarkdownRenderer from '@/components/ai/features/components/pro/MarkdownRenderer'
 import { MechanismNetworkPanel } from './MechanismNetworkPanel'
 
 interface FormulaExplanationPanelProps {
@@ -20,12 +21,56 @@ interface FormulaExplanationPanelProps {
 
 type Interpretation = {
   constitution?: string
+  /** 方解与机理主文本（后端 L4 mechanism.explanation，Markdown 散文） */
+  explanation?: string
   mechanism?: Array<{ herb: string; effects: string[]; compounds: Array<{ name: string; mol_weight?: string | number }>; targets: string[]; diseases: string[]; note: string }>
   synergy?: string
   safety?: { food_homology_ratio: string; risk_level: string; notes: string[] }
   usage?: { form: string; dosage_summary: string; frequency: string; course: string; adjustment_hint: string }
   monitoring?: Array<{ effect: string; metric: string; frequency: string }>
   disclaimer?: string
+}
+
+/** 归一化 mech.safety（后端字段 food_homology_ratio / risk_level / notes） */
+function adaptSafety(raw: unknown): Interpretation['safety'] {
+  if (!raw || typeof raw !== 'object') return undefined
+  const r = raw as Record<string, unknown>
+  const notes = Array.isArray(r.notes) ? r.notes.filter((n): n is string => typeof n === 'string') : []
+  const ratio = typeof r.food_homology_ratio === 'string' ? r.food_homology_ratio : ''
+  const level = typeof r.risk_level === 'string' ? r.risk_level : ''
+  if (!ratio && !level && notes.length === 0) return undefined
+  return { food_homology_ratio: ratio, risk_level: level, notes }
+}
+
+/** 归一化 mech.usage（后端字段 form / dosage_summary / frequency / course / adjustment_hint） */
+function adaptUsage(raw: unknown): Interpretation['usage'] {
+  if (!raw || typeof raw !== 'object') return undefined
+  const r = raw as Record<string, unknown>
+  const str = (k: string) => (typeof r[k] === 'string' ? (r[k] as string) : '')
+  const form = str('form')
+  const dosageSummary = str('dosage_summary')
+  const frequency = str('frequency')
+  const course = str('course')
+  const adjustmentHint = str('adjustment_hint')
+  if (!form && !dosageSummary && !frequency && !course && !adjustmentHint) return undefined
+  return { form, dosage_summary: dosageSummary, frequency, course, adjustment_hint: adjustmentHint }
+}
+
+/** 归一化 mech.monitoring（后端 Array<{effect,metric,frequency}>） */
+function adaptMonitoring(raw: unknown): Interpretation['monitoring'] {
+  if (!Array.isArray(raw)) return undefined
+  const items = raw
+    .map((m) => {
+      if (!m || typeof m !== 'object') return null
+      const r = m as Record<string, unknown>
+      const effect = typeof r.effect === 'string' ? r.effect : ''
+      const metric = typeof r.metric === 'string' ? r.metric : ''
+      const frequency = typeof r.frequency === 'string' ? r.frequency : ''
+      if (!effect && !metric) return null
+      return { effect, metric, frequency }
+    })
+    .filter((x): x is { effect: string; metric: string; frequency: string } => x !== null)
+  return items.length > 0 ? items : undefined
 }
 
 export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: FormulaExplanationPanelProps) {
@@ -49,6 +94,8 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
         if (mech && (mech.explanation || mech.mechanisms?.length || mech.synergy)) {
           const adapted: Interpretation = {
             constitution: mech.constitution,
+            // 方解与机理散文（含具体药材+活性成分+靶点通路），Markdown 渲染
+            explanation: mech.explanation,
             mechanism: (mech.mechanisms || []).map((m) => ({
               herb: m.herb || '',
               effects: m.effects ? [m.effects] : [],
@@ -58,9 +105,10 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
               note: m.note || '',
             })),
             synergy: mech.synergy,
-            safety: undefined,
-            usage: undefined,
-            monitoring: undefined,
+            // 用法/安全/监测：后端 mech.usage / mech.safety / mech.monitoring 存在即展示
+            safety: adaptSafety(mech.safety),
+            usage: adaptUsage(mech.usage),
+            monitoring: adaptMonitoring(mech.monitoring),
             disclaimer: mech.disclaimer,
           }
           if (!cancelled) {
@@ -96,6 +144,7 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
   const isInterpEmpty = !!interp && (
     !interp.constitution &&
     !interp.synergy &&
+    !interp.explanation &&
     !interp.safety &&
     !interp.usage &&
     !interp.disclaimer &&
@@ -140,6 +189,16 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
             <div>
               <h4 className="text-h6 font-semibold text-primary mb-1 flex items-center gap-1"><Lightbulb className="w-3 h-3" />{t('ai.formula.generateTab.monarchMinisterStructure')}</h4>
               <p className="text-muted-foreground">{interp.constitution}</p>
+            </div>
+          )}
+
+          {/* 方解与机理散文（后端 L4 mechanism.explanation）—— Markdown 渲染正文 */}
+          {interp.explanation && (
+            <div>
+              <h4 className="text-h6 font-semibold text-primary mb-1 flex items-center gap-1"><BookOpen className="w-3 h-3" />{t('ai.formula.generateTab.formulaExplanationProse')}</h4>
+              <div className="text-muted-foreground">
+                <MarkdownRenderer content={interp.explanation} />
+              </div>
             </div>
           )}
 

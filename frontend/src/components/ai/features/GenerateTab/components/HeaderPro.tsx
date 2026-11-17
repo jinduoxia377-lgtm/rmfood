@@ -81,12 +81,17 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
           </div>
 
           <div>
-            <div className="flex items-center gap-2.5">
-              <h2 className="text-headline-sm font-semibold text-foreground">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="h2 font-semibold text-foreground">
                 {t('ai.formula.title')}
               </h2>
+              {/* 专业版标识：从 GenerateTab 顶部浮层徽章迁移至此，避免与标题/按钮重叠 */}
+              <Badge variant="neutral" className="text-overline font-semibold gap-1">
+                <Sparkles className="w-3 h-3" aria-hidden="true" />
+                {t('ai.formula.generateTab.professional')}
+              </Badge>
               {llmAvailable && (
-                <Badge variant="success" className="text-label-sm font-semibold">
+                <Badge variant="success" className="text-overline font-semibold">
                   {t('ai.formula.generateTab.aiReady')}
                 </Badge>
               )}
@@ -97,45 +102,51 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
           </div>
         </div>
 
-        {/* Right: Action buttons */}
+        {/* Right: Action buttons — 状态分组 + 图标化次要操作 + 主操作，避免拥挤换行 */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Generator status */}
+          {/* Generator status（状态信息，非操作） */}
           {generator && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-muted/60 rounded-xl border border-border">
+            <div className="flex items-center gap-2 px-3 py-2 bg-muted/60 dark:bg-muted/40 rounded-xl border border-border dark:border-border">
               <span className="text-caption text-muted-foreground font-medium">{t('ai.formula.generateTab.generationEngine')}:</span>
-              <Badge variant={getGeneratorColor(generator) as "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "danger" | "neutral" | "primary"} className="text-label-sm font-semibold">
+              <Badge variant={getGeneratorColor(generator) as "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "danger" | "neutral" | "primary"} className="text-overline font-semibold">
                 {getGeneratorLabel(generator)}
               </Badge>
             </div>
           )}
 
-          {/* Switch to chat mode */}
-          {onSwitchToChat && (
-            <button
-              onClick={onSwitchToChat}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-body-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-fast"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('ai.formula.generateTab.chatMode')}</span>
-            </button>
-          )}
+          {/* Secondary actions group（图标按钮，≥44×44 触摸目标） */}
+          <div className="flex items-center gap-1.5">
+            {/* Switch to chat mode */}
+            {onSwitchToChat && (
+              <button
+                onClick={onSwitchToChat}
+                aria-label={t('ai.formula.generateTab.chatMode')}
+                title={t('ai.formula.generateTab.chatMode')}
+                className="flex items-center justify-center w-11 h-11 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/40 transition-all duration-fast"
+              >
+                <MessageSquare className="w-5 h-5" />
+              </button>
+            )}
 
-          {/* History */}
-          {historyCount > 0 && (
-            <button
-              onClick={onViewHistory}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-body-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              title={t('ai.formula.generateTab.viewHistory')}
-            >
-              <History className="w-4 h-4" />
-              <span className="hidden sm:inline font-medium">{historyCount}</span>
-              <Badge variant="neutral" className="text-label-sm font-semibold ml-1">{historyCount}</Badge>
-            </button>
-          )}
+            {/* History（去重：仅保留一处计数显示 + sr-only 完整标签） */}
+            {historyCount > 0 && (
+              <button
+                onClick={onViewHistory}
+                className="relative flex items-center justify-center w-11 h-11 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted/40 transition-colors"
+                title={t('ai.formula.generateTab.viewHistory')}
+              >
+                <History className="w-5 h-5" />
+                <span className="sr-only">{t('ai.formula.generateTab.viewHistory')}</span>
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-tiny font-semibold font-mono">
+                  {historyCount}
+                </span>
+              </button>
+            )}
+          </div>
 
-          {/* AI enhancement toggle */}
+          {/* AI enhancement toggle（保持语义不变，触摸目标 ≥44px） */}
           {llmAvailable && (
-            <label className="flex items-center gap-2.5 text-body-sm cursor-pointer select-none group px-4 py-2 rounded-xl hover:bg-muted transition-colors">
+            <label className="flex items-center gap-2.5 text-body-sm cursor-pointer select-none group min-h-[44px] px-3 rounded-xl hover:bg-muted dark:hover:bg-muted/40 transition-colors">
               <div className="relative">
                 <input
                   type="checkbox"
@@ -148,7 +159,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
               <span className="text-muted-foreground group-hover:text-foreground transition-colors font-medium">
                 {t('ai.formula.generateTab.aiEnhanced')}
               </span>
-              <Badge variant="neutral" className="text-label-sm font-semibold">
+              <Badge variant="neutral" className="text-overline font-semibold">
                 {modelStatus?.llm?.provider || t('ai.formula.generateTab.localProvider')}
               </Badge>
             </label>
@@ -157,10 +168,11 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
           {/* Advanced mode toggle */}
           <button
             onClick={onToggleAdvancedMode}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-body-sm font-semibold transition-all duration-fast
+            aria-pressed={advancedMode}
+            className={`flex items-center gap-2 min-h-[44px] px-3 rounded-xl text-body-sm font-semibold transition-all duration-fast
               ${advancedMode
                 ? 'bg-accent/10 text-accent border border-accent/20'
-                : 'bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-background border border-border'
+                : 'bg-muted/60 dark:bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-background dark:hover:bg-surface-elevated border border-border dark:border-border'
               }`}
           >
             <Brain className="w-4 h-4" />
@@ -177,7 +189,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
               size="sm"
               icon={<RefreshCw className="w-4 h-4" />}
               onClick={onFullReset}
-              className="rounded-xl font-semibold"
+              className="rounded-xl font-semibold min-h-[44px]"
             >
               {t('ai.formula.generateTab.regenerate')}
             </Button>

@@ -22,6 +22,33 @@ from ..domain.herb_ports import HerbKnowledgePort, HerbProfile
 
 logger = logging.getLogger(__name__)
 
+
+def _normalize_efficacy_key(key: str) -> str:
+    """修复 extra_knowledge 功效键的 mojibake（非 UTF-8 默认编码解析导致）。
+
+    服务进程若未设 PYTHONUTF8，json 解析出的中文键可能被误码成 latin-1/cp1252
+    可解码的字符序列（如 'å…ç–«è°ƒèŠ'）。此函数检测并还原：把误码串按原编码
+    编回字节，再用 UTF-8 解码；已是正常中文/ASCII 则原样返回。绝不伪造数据。
+    """
+    if not isinstance(key, str) or not key:
+        return key
+    # 已含正常 CJK → 视为正常，直接返回
+    if any("\u4e00" <= ch <= "\u9fff" for ch in key):
+        return key
+    for wrong_codec in ("latin-1", "cp1252"):
+        try:
+            restored = key.encode(wrong_codec)
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            continue
+        try:
+            candidate = restored.decode("utf-8")
+        except UnicodeDecodeError:
+            continue
+        # 还原后应出现 CJK 才认定为 mojibake 修复成功
+        if any("\u4e00" <= ch <= "\u9fff" for ch in candidate):
+            return candidate
+    return key
+
 # ── TCMHerb name → herb_id 映射（来自 knowledge_base + _BUILTIN_HERBS）──
 _HERB_NAME_TO_ID: Dict[str, str] = {
     "黄芪": "hq", "党参": "ds", "枸杞子": "gz", "人参": "rs",
@@ -206,6 +233,17 @@ class TCMSPHerbKnowledgeAdapter(HerbKnowledgePort):
                 efficacy_scores = {k: float(v) for k, v in raw.items()}
             elif isinstance(raw, list):
                 efficacy_scores = {e: 0.7 for e in raw}
+
+        # ★ P0 编码鲁棒修复（2026-11-16 efficacy 恒 0.05 地板排查）★
+        # 现象：服务进程 get_herbs() 返回 562 味带非空 efficacy_scores，但 GA 用
+        # TCM 关键词（免疫调节/补气/抗炎/抗氧化）逐味 .get(kw,0) 全部命中 0 → 评分
+        # 退化为地板值。根因：服务进程未设 PYTHONUTF8，extra_knowledge JSON 以非 UTF-8
+        # 默认编码（如 cp936/latin-1）解析 → 功效键变 mojibake（计数保留但字符损坏，
+        # 与关键词不相等）。直连/离线用 UTF-8 解析则键正常（免疫调节…）。
+        # 修法：检测并修复 mojibake 键——把被误码的 str 用 latin-1/cp1252 还原成
+        # 原始 UTF-8 字节再正确解码；已是正常中文则原样保留。绝不伪造数据。
+        if efficacy_scores:
+            efficacy_scores = {_normalize_efficacy_key(k): v for k, v in efficacy_scores.items()}
 
         # safety_index
         safety_index = float(extra.get("safety_index", getattr(orm, "safety_index", 0.9) or 0.9))

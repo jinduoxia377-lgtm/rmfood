@@ -1677,6 +1677,16 @@ export default {
       suggestedValue: '（建议值：{{value}}）',
       optimizationRecorded: '已记录优化建议：{{title}}{{value}}',
       exportPdf: '导出 PDF',
+
+      // ===== 安全合规三态明细（SafetyVerdictDetails）=====
+      safetyVerdictDetailsTitle: '安全合规裁定明细',
+      safetyPassedHint: '后端安全合规闸门校验通过，未发现真违规。',
+      safetyPassedWithWarningsHint: '校验通过，但存在咨询级提示（非违规），请酌情参考。',
+      safetyNeedsAttentionHint: '存在需关注的配伍/用量问题，请查看下方明细。',
+      safetyUnverifiedHint: '本次未执行安全合规校验（无裁定），不构成安全结论。',
+      safetyViolationsLabel: '真违规（{{count}}）',
+      safetyWarningsLabel: '咨询级提示（{{count}}）',
+      formulaExplanationProse: '方解与机理',
     },
 
     // ===== GenerateTab UI 新增文案（第二轮 i18n） =====
