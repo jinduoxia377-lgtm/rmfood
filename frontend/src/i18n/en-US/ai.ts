@@ -1677,6 +1677,16 @@ export default {
       suggestedValue: ' (suggested value: {{value}})',
       optimizationRecorded: 'Optimization suggestion recorded: {{title}}{{value}}',
       exportPdf: 'Export PDF',
+
+      // ===== Safety verdict details (SafetyVerdictDetails) =====
+      safetyVerdictDetailsTitle: 'Safety Verdict Details',
+      safetyPassedHint: 'Backend safety compliance gate passed. No real violations found.',
+      safetyPassedWithWarningsHint: 'Compliance passed, but advisory-level notices exist (not violations). Consider them as reference.',
+      safetyNeedsAttentionHint: 'There are compatibility/dosage issues that need attention. See details below.',
+      safetyUnverifiedHint: 'No safety compliance check was performed this time (no verdict). This does not constitute a safety conclusion.',
+      safetyViolationsLabel: 'Violations ({{count}})',
+      safetyWarningsLabel: 'Advisory notices ({{count}})',
+      formulaExplanationProse: 'Formula Explanation & Mechanism',
     },
 
     // ===== GenerateTab UI additional copy (round 2 i18n) =====

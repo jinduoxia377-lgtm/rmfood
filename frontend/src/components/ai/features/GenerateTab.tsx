@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { useUserPreferenceStore } from '@/stores/userPreferenceStore';
@@ -9,6 +9,7 @@ import { logger } from '@/utils/safeLogger';
 import type { AICandidate } from '@/api/ai';
 import { validateAiFormula, type AiFormulaValidationRequest, type AiFormulaValidationResponse } from '@/api/ai';
 import { formulaApi } from '@/api/formula';
+import { X, Database } from 'lucide-react';
 import type { FormulaCreatePayload } from '@/types/formula';
 import { FormulaValidationModal } from './components/FormulaValidationModal'
 import { parseDosageToGramsOrZero } from './utils/dosage';
@@ -37,6 +38,7 @@ import { FormulaResultsPro } from './GenerateTab/components/FormulaResultsPro';
 import { ErrorMessage } from './GenerateTab/components/ErrorMessage';
 import { SuccessMessage } from './GenerateTab/components/SuccessMessage';
 import { FormulaComparePanel } from './GenerateTab/components/FormulaComparePanel';
+import { personalConstraintsToApi } from './GenerateTab/utils/constraints';
 
 // Lazy components
 const AdvancedGeneratePanel = lazy(() => import('@/components/ai/AdvancedGeneratePanel'));
@@ -226,24 +228,12 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   const algorithmHook = useAlgorithmConfig();
 
   // P0 可信呈现·原则3：个人约束与回显同源 —— 直接取自 algorithmHook.constraints
-  // （ConstraintPanel 编辑/回显的同一状态），展开为单层键发送后端。空数组/未填项不发送，
-  // 避免用空值覆盖后端默认或伪装个性化。
-  const personalConstraints = useMemo(() => {
-    const c = algorithmHook.constraints;
-    const out: Record<string, unknown> = {};
-    if (c.ageGroup) out.age_group = c.ageGroup;
-    if (c.gender) out.gender = c.gender;
-    if (typeof c.weight === 'number' && c.weight > 0) out.weight = c.weight;
-    if (typeof c.height === 'number' && c.height > 0) out.height = c.height;
-    if (c.allergies?.length) out.allergies = c.allergies;
-    if (c.contraindications?.length) out.contraindications = c.contraindications;
-    if (c.dietaryRestrictions?.length) out.dietary_restrictions = c.dietaryRestrictions;
-    if (c.conditions?.length) out.conditions = c.conditions;
-    if (c.currentMedications?.length) out.current_medications = c.currentMedications;
-    if (c.cookingMethod) out.cooking_method = c.cookingMethod;
-    if (typeof c.cookingTime === 'number' && c.cookingTime > 0) out.cooking_time = c.cookingTime;
-    return out;
-  }, [algorithmHook.constraints]);
+  // （ConstraintPanel 编辑/回显的同一状态），用共享映射 personalConstraintsToApi 展开为
+  // 单层键发送后端。空数组/未填项不发送，避免用空值覆盖后端默认或伪装个性化。
+  const personalConstraints = useMemo(
+    () => personalConstraintsToApi(algorithmHook.constraints),
+    [algorithmHook.constraints],
+  );
 
   // UI State
   const [useLlm, setUseLlm] = usePersistentState<boolean>(STORAGE_KEYS.GENERATE_USE_LLM, false);
@@ -492,58 +482,46 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
 
   return (
     <Card className="overflow-hidden relative">
-      {/* Theme indicator - Professional (unified) */}
-      <div className="absolute top-4 right-4 z-10">
-        <div className="px-3 py-1.5 rounded-full text-caption font-medium bg-primary/10 text-primary border border-primary/20">
-          专业版
-        </div>
-      </div>
-
-      {/* Keyboard shortcuts hint */}
-      <div className="hidden lg:flex items-center gap-4 px-6 py-2 bg-muted/50 border-b border-border text-caption text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <kbd className="px-1.5 py-0.5 bg-background rounded border border-border font-mono">
-            Ctrl+Enter
-          </kbd>
-          生成
-        </span>
-        <span className="flex items-center gap-1">
-          <kbd className="px-1.5 py-0.5 bg-background rounded border border-border font-mono">
-            Esc
-          </kbd>
-          取消
-        </span>
-        <span className="flex items-center gap-1">
-          <kbd className="px-1.5 py-0.5 bg-background rounded border border-border font-mono">
-            Ctrl+K
-          </kbd>
-          聊天
-        </span>
+      {/* Cache toggle chip（原位于已删除的顶部快捷键条，迁移至此保持功能可达） */}
+      <div className="flex justify-end px-6 pt-4">
         <button
           onClick={() => setShowCacheInfo(!showCacheInfo)}
-          className="ml-auto flex items-center gap-1.5 hover:text-foreground transition-colors"
+          aria-expanded={showCacheInfo}
+          aria-label="缓存信息"
+          className="flex items-center gap-1.5 min-h-[44px] px-3 rounded-md text-caption text-muted-foreground hover:text-foreground hover:bg-muted border border-border dark:border-border transition-colors"
         >
-          缓存: {cacheStats.size}/{cacheStats.maxSize}
+          <Database className="w-3.5 h-3.5" aria-hidden="true" />
+          <span className="font-mono">{cacheStats.size}/{cacheStats.maxSize}</span>
         </button>
       </div>
 
-      {/* Cache info panel */}
+      {/* Cache info panel（原顶部快捷键提示条与 HeaderPro 底部重复，已删除；缓存开关迁至上方案块） */}
       {showCacheInfo && (
-        <div className="px-6 py-3 bg-info/5 border-b border-info/10">
-          <div className="flex items-center justify-between">
-            <div className="text-body-sm text-info-foreground">
+        <div className="px-6 py-3 bg-info/5 dark:bg-info/10 border-b border-info/10 dark:border-info/20">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-body-sm text-info-foreground">
+              <Database className="w-4 h-4 text-info" aria-hidden="true" />
               <strong>缓存统计</strong>
               <span className="ml-2 text-info-foreground/70">
-                TTL: {Math.round(cacheStats.ttl / 1000 / 60)}分钟 | 
+                TTL: {Math.round(cacheStats.ttl / 1000 / 60)}分钟 |
                 条目: {cacheStats.size}
               </span>
             </div>
-            <button
-              onClick={clearCache}
-              className="text-caption text-info hover:underline"
-            >
-              清除缓存
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={clearCache}
+                className="min-h-[44px] px-3 text-caption text-info hover:underline"
+              >
+                清除缓存
+              </button>
+              <button
+                onClick={() => setShowCacheInfo(false)}
+                className="flex items-center justify-center w-11 h-11 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                aria-label="关闭缓存信息"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -668,7 +646,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
       {/* Academic Report Modal */}
       {selectedReport && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50"
           role="button" tabIndex={0}
           onClick={() => setSelectedReport(null)}
           onKeyDown={(e) => {
@@ -695,7 +673,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
       {/* Version Compare Modal */}
       {compareVersions && versionsHook.formulaVersions.length >= 2 && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50"
           role="button" tabIndex={0}
           onClick={() => setCompareVersions(null)}
           onKeyDown={(e) => {
@@ -725,7 +703,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
       {/* Version History Modal — P3-2：HeaderPro 历史按钮接入版本历史面板 */}
       {showVersionHistory && versionsHook.formulaVersions.length > 0 && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50"
           role="button" tabIndex={0}
           onClick={() => setShowVersionHistory(false)}
           onKeyDown={(e) => {
@@ -735,16 +713,16 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
           }}
         >
           <div
-            className="bg-surface rounded-xl max-w-4xl w-full max-h-[85vh] overflow-y-auto shadow-2xl border border-border"
+            className="bg-surface rounded-xl max-w-4xl w-full max-h-[85dvh] overflow-y-auto shadow-2xl border border-border"
             role="button" tabIndex={0}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-surface z-10">
-              <h3 className="text-title-md font-semibold">配方版本历史</h3>
+              <h3 className="text-h4 font-semibold">配方版本历史</h3>
               <button
                 onClick={() => setShowVersionHistory(false)}
-                className="text-caption text-muted-foreground hover:text-foreground"
+                className="flex items-center justify-center w-11 h-11 rounded-md text-caption text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 aria-label="关闭版本历史"
               >
                 关闭
@@ -762,7 +740,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
       {/* Enhanced Version Compare Modal — 六维评分 + 药材组成对比 */}
       {compareVersionsEnhanced && selectedCandidate && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50"
           role="button" tabIndex={0}
           onClick={() => setCompareVersionsEnhanced(false)}
           onKeyDown={(e) => {
@@ -772,14 +750,14 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
           }}
         >
           <div
-            className="bg-surface rounded-xl max-w-5xl w-full mx-4 overflow-y-auto max-h-[80vh] shadow-2xl border border-border p-6"
+            className="bg-surface rounded-xl max-w-5xl w-full mx-4 overflow-y-auto max-h-[80dvh] shadow-2xl border border-border p-6"
             role="button" tabIndex={0}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-title-md font-semibold">配方对比分析</h3>
-              <button onClick={() => setCompareVersionsEnhanced(false)} className="text-caption text-muted-foreground hover:text-foreground">
+              <h3 className="text-h4 font-semibold">配方对比分析</h3>
+              <button onClick={() => setCompareVersionsEnhanced(false)} className="flex items-center justify-center min-h-[44px] px-3 rounded-md text-caption text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                 关闭
               </button>
             </div>
@@ -800,7 +778,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
           className="mx-6 mb-4 px-3 py-2 rounded-lg text-xs font-medium bg-info/10 text-info-foreground border border-info/20 flex items-center justify-between"
         >
           <span>{batchNotice}</span>
-          <button onClick={() => setBatchNotice(null)} className="ml-3 text-info-foreground/70 hover:text-info-foreground" aria-label="关闭提示">✕</button>
+          <button onClick={() => setBatchNotice(null)} className="ml-3 flex items-center justify-center w-11 h-11 -my-1 rounded-md text-info-foreground/70 hover:text-info-foreground hover:bg-info/10 transition-colors" aria-label="关闭提示"><X className="w-4 h-4" /></button>
         </div>
       )}
 

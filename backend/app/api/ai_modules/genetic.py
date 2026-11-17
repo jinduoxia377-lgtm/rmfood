@@ -242,6 +242,109 @@ async def _check_ai_quota(db: AsyncSession, user_id: int) -> None:
         raise HTTPException(status_code=403, detail=str(e))
 
 
+async def _assure_herb_knowledge(tcm_keywords: Optional[List[str]] = None) -> bool:
+    """GA/MO 路由的前置自愈闸：确保 HerbKnowledgeService 已就绪且功效数据完整。
+
+    根因（运行时实测）：genetic/unified/multi-objective 三条路由直接调 optimize()，
+    而 GA 的 _select_herbs 依赖 HerbKnowledgeService 注入的 _efficacy_index。
+    若启动时序导致「全局服务已存在但药材/功效索引未送达」，GA 会在
+    genetic_formula_optimizer.py:602-604 命中 `len(candidates) < 3` 早退 → 恒空结果
+    （2.5ms 返回 candidates:[]、total_generations:0）。NSGA 路径更会在
+    FormulaEvaluator._load_herbs_sync() 直接 raise RuntimeError → 路由无兜底 → 500。
+
+    主路径 /ai/generate 之所以正常，是 formula_generation_service.py:626-668 有
+    「功效索引空强制重载」自愈。本函数把等价自愈搬到 GA/MO 路由侧（不碰算法内核）：
+    检测到服务缺失 / 药材不足 / 带功效分药材为 0 时，await load_herbs(force_reload=True)
+    强制重载一次并复检。返回 True=自愈后数据可用；False=仍不可用（调用方走 degraded）。
+
+    注意：本函数只读/重载 HerbKnowledgeService，不修改任何算法文件。
+    """
+    from ...services.ai.algorithms.herb_knowledge_service import get_global_herb_knowledge
+
+    hk = get_global_herb_knowledge()
+    if hk is None:
+        logger.error("[GA-Preflight] HerbKnowledgeService 未初始化，无法生成候选")
+        return False
+
+    def _healthy(service) -> bool:
+        herbs_now = service.get_herbs() or {}
+        if len(herbs_now) < 20:
+            return False
+        # 带功效分药材数=0 → GA 逐味打分全 0 → 候选池偏窄/为空。与主路径同判据。
+        with_efficacy = sum(
+            1 for h in herbs_now.values() if getattr(h, "efficacy_scores", None)
+        )
+        if with_efficacy == 0:
+            return False
+        # 若传入了本次目标关键词，进一步校验是否至少有一个关键词命中带功效分药材；
+        # 全部关键词零命中同样是「功效数据未送达」的信号，触发重载。
+        if tcm_keywords:
+            any_hit = any(
+                (getattr(h, "efficacy_scores", {}) or {}).get(kw, 0) > 0
+                for kw in tcm_keywords
+                for h in herbs_now.values()
+            )
+            if not any_hit:
+                return False
+        return True
+
+    if _healthy(hk):
+        return True
+
+    # 自愈：强制重载一次并复检（与主路径 load_herbs(force_reload=True) 同源）
+    try:
+        logger.warning(
+            "[GA-Preflight] 功效数据未就绪（药材=%d），强制 reload_herbs 复检",
+            len(hk.get_herbs() or {}),
+        )
+        await hk.load_herbs(force_reload=True)
+    except Exception as e:
+        logger.error("[GA-Preflight] 强制重载 HerbKnowledge 失败: %s", e)
+        return False
+
+    ok = _healthy(hk)
+    if not ok:
+        logger.error("[GA-Preflight] 强制重载后功效数据仍不可用，将走降级返回")
+    return ok
+
+
+def _build_mo_degraded_response(req: "MultiObjectiveRequest", objectives: List[Any],
+                                mode: str, reason: str) -> Dict[str, Any]:
+    """构造 multi-objective 的降级响应（HTTP 200 + degraded:true），杜绝 500。
+
+    遵循「诚实>好看」：绝不伪造候选，返回空候选集 + 结构化降级标志 +
+    fallback_reason，前端可据此提示用户调整目标功效或约束后重试。
+    """
+    return {
+        "run_id": f"mo-{int(time.time())}-{uuid.uuid4().hex[:6]}",
+        "candidates": [],
+        "pareto_front": [],
+        "best_by_objective": [],
+        "objectives_config": [
+            {"name": getattr(o, "name", ""), "key": getattr(o, "key", ""),
+             "direction": getattr(o, "direction", "maximize"),
+             "weight": getattr(o, "weight", 0.0)}
+            for o in objectives
+        ],
+        "total_candidates": 0,
+        "total_generations": 0,
+        "total_evaluations": 0,
+        "best_score": 0.0,
+        "execution_time_ms": 0.0,
+        "stop_reason": "degraded",
+        "convergence_generation": 0,
+        "history": [],
+        "algorithm": "nsga2_genetic_algorithm",
+        "mode": mode,
+        "hybrid_mode": False,
+        # 结构化降级标志：与主路径（degraded + fallback_reason）口径一致，
+        # 供前端统一识别降级，而不是依赖 message 文本解析。
+        "degraded": True,
+        "fallback_reason": reason,
+        "message": f"多目标优化暂不可用：{reason}。请调整目标功效或约束后重试。",
+    }
+
+
 def _estimate_confidence(fitness: float, history: List[Dict]) -> float:
     """基于适应度与种群收敛度估算 0-1 置信度。
 
@@ -735,6 +838,21 @@ async def generate_genetic(
         GAConfig,
         GeneticFormulaOptimizer,
     )
+    from ...services.ai.formula_generation_service import build_tcm_keywords
+
+    # ── 修复缺陷 2（genetic 恒空结果）─────────────────────────────────────────
+    # 根因：前端传来的 target_effects 是原始 label（如「增强免疫」），直接传给 optimize
+    # 时 GA 按 label 查功效索引命中 <3 味 → genetic_formula_optimizer.py:602-604
+    # 早退返回空。主路径之所以正常，是它先用 build_tcm_keywords() 把 label 展开为
+    # 多个 TCM 关键词（增强免疫 → [免疫调节,补气,抗炎,抗氧化]），GA 才能按关键词命中候选池。
+    # build_tcm_keywords 对「已是 TCM 词」的入参原样保留（EFFECT_LABEL_TO_TCM_KEYWORD
+    # 未命中时 fallback [label]），因此调用方显式传 TCM 词也兼容。
+    tcm_keywords = build_tcm_keywords(req.target_effects)
+    logger.info("[Genetic] target_effects=%s → tcm_keywords=%s", req.target_effects, tcm_keywords)
+
+    # ── 前置自愈闸：确保 HerbKnowledgeService 功效数据已送达 GA ───────────────
+    # 否则 GA 的 _efficacy_index 为空 → _select_herbs 候选<3 → 恒空结果。
+    herb_ok = await _assure_herb_knowledge(tcm_keywords)
 
     config = GAConfig(
         population_size=req.population_size,
@@ -743,18 +861,41 @@ async def generate_genetic(
         crossover_rate=req.crossover_rate,
         elite_ratio=req.elite_ratio,
         tournament_size=req.tournament_size,
-        target_effects=req.target_effects,
+        target_effects=tcm_keywords,
         seed=req.seed,
         objective_weights=req.objective_weights,
     )
     optimizer = GeneticFormulaOptimizer(config=config)
     start = time.perf_counter()
 
-    candidates, history = optimizer.optimize(
-        target_effects=req.target_effects,
-        exclude_herbs=set(req.constraints.get("exclude_herbs", [])) if req.constraints else None,
-        include_herbs=req.include_herbs,
-    )
+    try:
+        candidates, history = optimizer.optimize(
+            target_effects=tcm_keywords,
+            exclude_herbs=set(req.constraints.get("exclude_herbs", [])) if req.constraints else None,
+            include_herbs=req.include_herbs,
+        )
+    except Exception as e:
+        # 防御式兜底：optimize 内部（含 NSGA 同步加载/评估）抛异常时不再 500，
+        # 而是返回 degraded 空候选结构（诚实>好看，绝不伪造候选）。
+        logger.error("[Genetic] 优化失败: %s", e, exc_info=True)
+        reason = "GA 引擎内部异常" + ("" if herb_ok else "（药材知识未就绪）")
+        return {
+            "run_id": f"ga-{int(time.time())}-{uuid.uuid4().hex[:6]}",
+            "candidates": [],
+            "total_candidates": 0,
+            "total_generations": 0,
+            "total_evaluations": 0,
+            "best_score": 0.0,
+            "execution_time_ms": round((time.perf_counter() - start) * 1000, 2),
+            "stop_reason": "degraded",
+            "convergence_generation": 0,
+            "history": [],
+            "algorithm": "genetic_algorithm",
+            "hybrid_mode": req.hybrid_mode,
+            "degraded": True,
+            "fallback_reason": reason,
+            "message": f"遗传算法暂不可用：{reason}。请调整目标功效或约束后重试。",
+        }
     elapsed_ms = (time.perf_counter() - start) * 1000
     herb_id_to_name = _build_herb_id_to_name(optimizer)
 
@@ -1163,6 +1304,12 @@ async def generate_unified(
     from ...services.ai.formula_generation_service import build_tcm_keywords
 
     tcm_keywords = build_tcm_keywords(req.target_effects)
+    # ── 修复缺陷 2（unified 恒空结果 + 缺陷 3 误导文案）──────────────────────
+    # unified 原先已用 build_tcm_keywords 展开关键词，但 GA 仍恒空（2.5ms 早退），
+    # 根因是 HerbKnowledgeService 在 async 请求上下文里功效数据未送达 GA
+    # （_efficacy_index 空 → _select_herbs 候选<3 → 早退）。与主路径
+    # formula_generation_service.py:626-668 的自愈闸同源，这里调用前置自愈。
+    herb_ok = await _assure_herb_knowledge(tcm_keywords)
     config = GAConfig(
         population_size=req.population_size,
         generations=req.generations,
@@ -1195,6 +1342,35 @@ async def generate_unified(
         )
         generator = "ga_optimizer"
         strategy = "ga"
+        # ── 修复缺陷 2+3（unified 恒空 + 误导文案）──────────────────────────
+        # GA 在候选<3 时 optimize() 返回 ([], []) 而**不抛异常**，原先会直接落到
+        # 下方 success 路径，产出 total:0 却 message「已排序」的自相矛盾响应。
+        # 此处显式拦截空结果：回退规则引擎兜底（与 except 分支同源 run_ga_generation），
+        # 诚实告知候选不足，绝不伪造候选。
+        if not candidates:
+            logger.warning(
+                "[Unified] GA 返回 0 候选（候选池不足/功效数据未命中），回退规则引擎兜底"
+            )
+            from ...services.ai.formula_generation_service import run_ga_generation
+            fallback = await run_ga_generation(req.target_effects, constraints, user_id=str(current_user.id))
+            return {
+                "run_id": f"unified-{int(time.time())}-{uuid.uuid4().hex[:6]}",
+                "candidates": fallback.get("candidates", []),
+                "total": fallback.get("total", 0),
+                "strategy": "rule_fallback",
+                "algorithm": "unified_fallback",
+                "generator": fallback.get("generator", "rule_engine_fallback"),
+                "history": [],
+                "total_generations": 0,
+                "total_evaluations": 0,
+                "best_score": fallback.get("best_score", 0),
+                "execution_time_ms": fallback.get("execution_time_ms", 0.0),
+                "convergence_generation": 0,
+                "hybrid_mode": False,
+                "degraded": True,
+                "fallback_reason": "遗传算法候选不足（目标功效未命中足够药材），已返回规则引擎兜底配方。",
+                "message": "候选不足，未能生成配方，请调整目标功效或约束。",
+            }
     except Exception as e:
         logger.warning("[Unified] GA 引擎失败，回退统一生成服务: %s", e)
         from ...services.ai.formula_generation_service import run_ga_generation
@@ -1332,13 +1508,37 @@ async def generate_multi_objective(
         elite_ratio=req.elite_ratio,
         candidate_count=req.count,
     )
+    # ── 修复缺陷 1（multi-objective 稳定 500）────────────────────────────────
+    # 根因：NSGA 路径在 optimize() 内部走 _try_load_herb_knowledge() →
+    # FormulaEvaluator._load_herbs_sync()（evaluator.py:122-144），药材不足/异常时
+    # 直接 raise RuntimeError，而本路由原先对 optimize() 无任何 try/except → 500。
+    # 主路径 /ai/generate 之所以正常，是 formula_generation_service.py:626-668 有
+    # 「功效索引空强制重载」自愈；NSGA 路径没有。
+    #
+    # 修法（防御式，不动算法内核）：
+    # ① 调用前用 _assure_herb_knowledge() 触发一次 herb knowledge 加载/自愈；
+    # ② optimize() 包 try/except，仍失败则返回 degraded:true + fallback_reason 的
+    #    空候选结构（HTTP 200），并 logger.error 记录原始异常——保证不 500、
+    #    给前端可处理的 degraded 响应。诚实>好看：绝不伪造候选。
+    from ...services.ai.formula_generation_service import build_tcm_keywords
+    mo_keywords = build_tcm_keywords(req.target_effects or ["免疫调节"])
+    herb_ok = await _assure_herb_knowledge(mo_keywords)
+
     optimizer = NSGAIIOptimizer(config=config)
     start = time.perf_counter()
 
-    candidates, history = optimizer.optimize(
-        target_effects=req.target_effects or ["免疫调节"],
-        constraints={**(req.constraints or {}), "include_herbs": req.include_herbs or []},
-    )
+    try:
+        candidates, history = optimizer.optimize(
+            target_effects=mo_keywords,
+            constraints={**(req.constraints or {}), "include_herbs": req.include_herbs or []},
+        )
+    except Exception as e:
+        # 捕获 NSGA 内部异常（含同步加载 RuntimeError），降级返回而非 500。
+        logger.error("[MultiObjective] NSGA-II 优化失败，降级返回: %s", e, exc_info=True)
+        reason = "NSGA-II 引擎内部异常（药材知识加载/评估失败）" + (
+            "" if herb_ok else "；且药材知识预加载未就绪"
+        )
+        return _build_mo_degraded_response(req, objectives, mode, reason)
     elapsed_ms = (time.perf_counter() - start) * 1000
     herb_id_to_name = _build_herb_id_to_name(optimizer)
 
@@ -1379,7 +1579,11 @@ async def generate_multi_objective(
             "generations": req.generations,
             "mutation_rate": req.mutation_rate,
             "crossover_rate": req.crossover_rate,
-            "objective_weights": req.objective_weights,
+            # 防御：MultiObjectiveRequest 无 objective_weights 字段（仅 GeneticRequest 有）。
+            # 原先直接 req.objective_weights 会 AttributeError，虽被 _save_ga_run 内部
+            # try/except 吞掉（仅 warning），但会让落库的 algorithm_params 丢失。
+            # 改用 getattr 兜底，与下方 seed/constraints 的防御口径一致。
+            "objective_weights": getattr(req, "objective_weights", None),
             "seed": getattr(req, "seed", None),
         },
         objectives_config=[

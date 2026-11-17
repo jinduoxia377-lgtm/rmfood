@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { BookOpen, ShieldCheck, AlertCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui'
@@ -60,7 +60,7 @@ export function FormulaExplanationModal({ candidate, isOpen, onClose }: FormulaE
 
   return (
     <Dialog open={isOpen} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-2xl max-h-[85dvh] overflow-hidden flex flex-col">
         <DialogHeader className="pb-3 border-b">
           <DialogTitle className="flex items-center gap-2 text-h4">
             <BookOpen className="w-5 h-5 text-primary" />

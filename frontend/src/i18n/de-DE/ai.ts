@@ -1677,6 +1677,16 @@ export default {
       suggestedValue: ' (Empfehlungswert: {{value}})',
       optimizationRecorded: 'Optimierungsvorschlag aufgezeichnet: {{title}}{{value}}',
       exportPdf: 'PDF exportieren',
+
+      // ===== Details zur Sicherheitsbewertung (SafetyVerdictDetails) =====
+      safetyVerdictDetailsTitle: 'Details zur Sicherheitsbewertung',
+      safetyPassedHint: 'Das Sicherheits-Gate des Backends wurde bestanden. Keine echten Verstöße gefunden.',
+      safetyPassedWithWarningsHint: 'Konformität bestanden, aber es liegen Hinweise auf Beratungsebene vor (keine Verstöße). Bitte als Referenz betrachten.',
+      safetyNeedsAttentionHint: 'Es liegen Verträglichkeits-/Dosierungsprobleme vor, die Aufmerksamkeit erfordern. Details siehe unten.',
+      safetyUnverifiedHint: 'Diesmal wurde keine Sicherheits-/Konformitätsprüfung durchgeführt (keine Bewertung). Dies stellt keine Sicherheitsaussage dar.',
+      safetyViolationsLabel: 'Verstöße ({{count}})',
+      safetyWarningsLabel: 'Hinweise auf Beratungsebene ({{count}})',
+      formulaExplanationProse: 'Formelerklärung & Mechanismus',
     },
 
     // ===== GenerateTab-UI zusätzliche Texte (Runde 2 i18n) =====

@@ -445,6 +445,8 @@ def _format_ga_candidates(
     max_candidates: int,
     start_ts: float,
     total_dosage_g: float = 100.0,
+    tcm_keywords: Optional[list[str]] = None,
+    include_debug: bool = False,
 ) -> dict[str, Any]:
     """将 GA 输出的 Individual 列表格式化为前端 AICandidate 结构
 
@@ -461,6 +463,11 @@ def _format_ga_candidates(
     # 使用优化器实际加载的药材字典做 herb_id → 中文名映射。
     # 早期版本硬编码 _BUILTIN_HERBS，导致数据库药材被映射成原始 ID。
     loaded_herbs: dict = getattr(optimizer, "_herbs", None) or {}
+
+    # ★ 诊断字段开关：默认关闭，保持生产响应契约干净。
+    # 仅当调用方经 run_ga_generation 传 include_debug=True（constraints={"debug": true}）
+    # 时才注入 _efficacy_debug / _herb_load_debug。曾用于定位"efficacy 恒地板"假警报，
+    # 现已确认那是测试客户端 GBK 编码所致、后端一直正常，故默认不再对外暴露内部结构。
     herb_id_to_name: dict[str, str] = {}
     if loaded_herbs:
         for hid, h in loaded_herbs.items():
@@ -499,6 +506,42 @@ def _format_ga_candidates(
         cost = getattr(ind, "cost", 0.7)
         synergy = getattr(ind, "synergy", 0.5)
         stability = getattr(ind, "stability", 0.65)
+
+        # ★ P0 诊断字段（仅 debug=True 时注入；默认不输出，避免泄露内部结构到生产 API）★
+        # 逐关键词统计：优化器评分字典(optimizer._herbs)里该候选各药材对此功效的贡献者。
+        # 注意：GA evaluate() 实际用 _translate_effect_ids 归一化后的 DB 键（免疫调节/补气/…），
+        # 而非前端 label（增强免疫）。故调试同时覆盖 tcm_keywords（真实评分键）与 target_effects（label）。
+        efficacy_debug: Optional[dict[str, Any]] = None
+        if include_debug:
+            _debug_kws = list(dict.fromkeys(list(tcm_keywords or []) + list(target_effects or [])))
+            _eff_debug_kws: dict[str, Any] = {}
+            for _kw in _debug_kws:
+                _contributors: list[str] = []
+                _kw_scores: list[float] = []
+                for _hid, _dos in ind.genes.items():
+                    _h = loaded_herbs.get(_hid)
+                    _s = (getattr(_h, "efficacy_scores", {}) or {}).get(_kw, 0) if _h else 0
+                    if _s > 0:
+                        _contributors.append(getattr(_h, "name_cn", _hid))
+                        _kw_scores.append(_s)
+                _eff_debug_kws[_kw] = {
+                    "contributors": _contributors,
+                    "scores": [round(x, 3) for x in _kw_scores],
+                    "n_contributors": len(_contributors),
+                }
+            _first_hid = next(iter(ind.genes.keys()), None)
+            _first_h = loaded_herbs.get(_first_hid) if _first_hid else None
+            efficacy_debug = {
+                "efficacy_raw": round(efficacy, 4),
+                "per_keyword": _eff_debug_kws,
+                "sample_herb_id": _first_hid,
+                "sample_herb_name": (getattr(_first_h, "name_cn", _first_hid) if _first_h else "NOT_IN_OPTIMIZER_DICT"),
+                "sample_herb_efficacy_keys": (list((getattr(_first_h, "efficacy_scores", {}) or {}).keys())[:8] if _first_h else []),
+                "optimizer_herbs_total": len(loaded_herbs),
+                "optimizer_herbs_with_efficacy": sum(
+                    1 for _h in loaded_herbs.values() if getattr(_h, "efficacy_scores", None)
+                ),
+            }
 
         overall = (
             efficacy * 0.30 + safety * 0.25 + taste * 0.10
@@ -549,8 +592,39 @@ def _format_ga_candidates(
             "generated_by": "ga_optimizer",
             "generated_at": datetime.datetime.now().isoformat(),
         })
+        # ★ P0 诊断字段：仅 debug=True 时注入（默认不输出，保持生产响应契约干净）★
+        if include_debug and efficacy_debug is not None:
+            formatted_candidates[-1]["_efficacy_debug"] = efficacy_debug
 
-    return {
+    # ★ 响应级药材装载诊断：仅 debug=True 时构建并返回 ★
+    herb_load_debug: Optional[dict[str, Any]] = None
+    if include_debug:
+        from .algorithms.herb_knowledge_service import get_global_herb_knowledge as _gg
+        _hk = _gg()
+        _svc_herbs = (_hk.get_herbs() if _hk else {}) or {}
+        _svc_with_eff = sum(1 for _h in _svc_herbs.values() if getattr(_h, "efficacy_scores", None))
+        _opt_with_eff = sum(1 for _h in loaded_herbs.values() if getattr(_h, "efficacy_scores", None))
+        _svc_sample = next(iter(_svc_herbs.values()), None)
+        _opt_sample = next(iter(loaded_herbs.values()), None)
+        herb_load_debug = {
+            "service_singleton": {
+                "total": len(_svc_herbs),
+                "with_efficacy": _svc_with_eff,
+                "sample_name": (getattr(_svc_sample, "name_cn", "") if _svc_sample else None),
+                "sample_efficacy_keys": (list((getattr(_svc_sample, "efficacy_scores", {}) or {}).keys())[:8] if _svc_sample else []),
+            },
+            "optimizer_dict": {
+                "total": len(loaded_herbs),
+                "with_efficacy": _opt_with_eff,
+                "sample_name": (getattr(_opt_sample, "name_cn", "") if _opt_sample else None),
+                "sample_efficacy_keys": (list((getattr(_opt_sample, "efficacy_scores", {}) or {}).keys())[:8] if _opt_sample else []),
+            },
+            "target_tcm_keywords": target_effects,
+            # GA evaluate 实际评分用的归一化 DB 键（关键：增强免疫→免疫调节/补气/抗炎/抗氧化）
+            "ga_evaluated_keywords": tcm_keywords or [],
+        }
+
+    result: dict[str, Any] = {
         "candidates": formatted_candidates,
         "total": len(formatted_candidates),
         "generator": "ga_optimizer",
@@ -558,6 +632,9 @@ def _format_ga_candidates(
         "strategy": "ga",
         "best_score": round(max((c["overall_score"] for c in formatted_candidates), default=0), 4),
     }
+    if include_debug and herb_load_debug is not None:
+        result["_herb_load_debug"] = herb_load_debug
+    return result
 
 
 def _clamp_int(value: Any, default: int, lo: int, hi: int) -> int:
@@ -629,15 +706,65 @@ async def run_ga_generation(
     _hk = get_global_herb_knowledge()
     if _hk is not None:
         try:
-            if _hk.get_herbs() and not _hk.get_efficacy_to_herbs():
+            # ── P0 自愈闸（收紧版）───────────────────────────────────────────
+            # 旧条件 `not _hk.get_efficacy_to_herbs()` 只查「功效→药材索引空」，
+            # 漏掉「索引非空但单味药材 efficacy_scores 为空」的场景 —— 此时 GA 逐味
+            # 打分 herb.efficacy_scores.get(effect,0) 全返 0，4 关键词全压地板 → 恒 0.01。
+            # 新条件：直接校验「本次 tcm_keywords 能否真正命中带功效分的药材」。
+            herbs_now = _hk.get_herbs() or {}
+            herbs_with_efficacy = sum(
+                1 for h in herbs_now.values() if getattr(h, "efficacy_scores", None)
+            )
+            if herbs_with_efficacy == 0:
+                logger.error(
+                    "[FormulaGenerationService] 启动自检失败：带功效分药材数=0/%d，"
+                    "强制重载 HerbKnowledge（GA 将无真实功效数据可评）",
+                    len(herbs_now),
+                )
+            per_kw_hits = {
+                kw: sum(
+                    1
+                    for h in herbs_now.values()
+                    if (getattr(h, "efficacy_scores", {}) or {}).get(kw, 0) > 0
+                )
+                for kw in tcm_keywords
+            }
+            any_kw_zero_hit = any(v == 0 for v in per_kw_hits.values())
+            if any_kw_zero_hit:
                 logger.warning(
-                    "[FormulaGenerationService] HerbKnowledge 功效索引为空（启动时序不完整），强制重载"
+                    "[FormulaGenerationService] 部分目标关键词全库零命中（候选池将偏窄），"
+                    "尝试强制重载: %s",
+                    {k: v for k, v in per_kw_hits.items() if v == 0},
+                )
+            if herbs_with_efficacy == 0 or any_kw_zero_hit:
+                logger.warning(
+                    "[FormulaGenerationService] 功效数据未送达 GA（带功效分=%d/%d，关键词命中=%s），"
+                    "强制 reload_herbs 复检",
+                    herbs_with_efficacy, len(herbs_now), per_kw_hits,
                 )
                 await _hk.load_herbs(force_reload=True)
-                logger.info(
-                    "[FormulaGenerationService] HerbKnowledge 自愈重载完成: %d 味药材, %d 个功效",
-                    len(_hk.get_herbs()), len(_hk.get_efficacy_to_herbs()),
+                herbs_now = _hk.get_herbs() or {}
+                herbs_with_efficacy = sum(
+                    1 for h in herbs_now.values() if getattr(h, "efficacy_scores", None)
                 )
+                per_kw_hits = {
+                    kw: sum(
+                        1
+                        for h in herbs_now.values()
+                        if (getattr(h, "efficacy_scores", {}) or {}).get(kw, 0) > 0
+                    )
+                    for kw in tcm_keywords
+                }
+                logger.info(
+                    "[FormulaGenerationService] 自愈重载完成: 带功效分=%d/%d, 关键词命中=%s",
+                    herbs_with_efficacy, len(herbs_now), per_kw_hits,
+                )
+                if herbs_with_efficacy == 0:
+                    logger.error(
+                        "[FormulaGenerationService] ⚠️ 重载后仍无任何药材带功效分 —— "
+                        "功效数据管线（DB/adapter）在进程内失效，GA 功效评分将退化为地板值，"
+                        "根因需后续在 herb_knowledge 适配器/预热链路排查"
+                    )
         except Exception as e:
             logger.warning(f"[FormulaGenerationService] HerbKnowledge 自愈重载失败（忽略，GA 按当前数据执行）: {e}")
 
@@ -836,7 +963,11 @@ async def run_ga_generation(
             fallback["rag_evidence"] = rag_signals
             return fallback
 
-        result = _format_ga_candidates(candidates, optimizer, target_effects, max_candidates, start_ts, total_dosage_g)
+        result = _format_ga_candidates(
+            candidates, optimizer, target_effects, max_candidates, start_ts,
+            total_dosage_g, tcm_keywords=tcm_keywords,
+            include_debug=bool((constraints or {}).get("debug")),
+        )
 
         # ★ 健壮性兜底（阶段2）：GA 产出了候选但全部被 L3 安全闸门拒绝（result.total==0）
         # 时，绝不能静默返回空配方（用户看不到任何东西，比降级更糟）。

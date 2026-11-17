@@ -1,0 +1,22 @@
+LOGIN HTTP/1.1 200 OK
+
+主路径 /ai/generate [增强免疫]
+  HTTP=200 total=3 degraded=None efficacy[:3]=[0.5788, 0.6221, 0.5366]
+
+主路径 /ai/generate [改善睡眠]
+  HTTP=200 total=3 degraded=None efficacy[:3]=[0.7198, 0.658, 0.6711]
+
+/ai/generate/advanced [增强免疫]
+  HTTP=200 total=3 degraded=None efficacy[:3]=[0.5331, 0.5121, 0.4732]
+
+/ai/generate/genetic [增强免疫]
+  HTTP=200 total=3 degraded=None efficacy[:3]=[0.5698, 0.6109, 0.6059]
+
+/ai/generate/multi-objective [增强免疫]
+  HTTP=200 total=10 degraded=None efficacy[:3]=[None, None, None]
+
+/ai/generate/unified [增强免疫]
+  HTTP=200 total=3 degraded=None efficacy[:3]=[0.524, 0.528, 0.5059]
+
+/ai/generate/genetic/hybrid [增强免疫]
+  HTTP=200 total=3 degraded=None efficacy[:3]=[None, None, None]

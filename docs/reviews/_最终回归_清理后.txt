@@ -1,0 +1,19 @@
+LOGIN HTTP/1.1 200 OK
+
+/ai/generate [增强免疫]
+  HTTP=200 total=3 efficacy[:3]=[0.5682, 0.5771, 0.6407] debug_fields_present=False
+
+/ai/generate [改善睡眠]
+  HTTP=200 total=3 efficacy[:3]=[0.5739, 0.6011, 0.5958] debug_fields_present=False
+
+/ai/generate/advanced
+  HTTP=200 total=3 efficacy[:3]=[0.6491, 0.6073, 0.6189] debug_fields_present=False
+
+/ai/generate/genetic
+  HTTP=200 total=3 efficacy[:3]=[0.6556, 0.4961, 0.6395] debug_fields_present=False
+
+/ai/generate/multi-objective
+  HTTP=200 total=10 efficacy[:3]=[None, None, None] debug_fields_present=False
+
+/ai/generate/unified
+  HTTP=200 total=3 efficacy[:3]=[0.5317, 0.5384, 0.6027] debug_fields_present=False
