@@ -22,6 +22,25 @@
  * - docsUrl: 相关文档链接
  */
 
+// 德语错误文案（集中来源，与 zh-CN-error.ts / en-US-error.ts 逐 key 对称）
+import deDEErrors from '@/i18n/de-DE-error'
+
+/** 支持的错误语言（新增语言时扩展此联合类型） */
+export type ErrorLocale = 'zh-CN' | 'en-US' | 'de-DE'
+
+/** 归一化语言：仅接受受支持的 ErrorLocale，否则回退到中文（保持既有默认行为） */
+function normalizeLocale(locale?: string): ErrorLocale {
+  return locale === 'en-US' || locale === 'de-DE' ? locale : 'zh-CN'
+}
+
+// 德语文案表（符号名 -> 德语）。CODE_TO_SYMBOL 依赖 ERROR_CODES，故在其声明之后构建。
+const DE_ERRORS: Record<string, string> = deDEErrors.errors
+
+/** 取某错误码的德语用户提示；先查覆盖表，再查 *-error 德语表，无则返回空串（由调用方回退） */
+function deUserMessage(code: string): string {
+  return DE_MESSAGE_OVERRIDES[code] || (CODE_TO_SYMBOL[code] && DE_ERRORS[CODE_TO_SYMBOL[code]]) || ''
+}
+
 export enum ErrorCategory {
   COMMON = 'COMMON',
   API = 'API',
@@ -172,6 +191,40 @@ export const ERROR_CODES = {
 } as const
 
 export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES]
+
+// 反向映射（E 码 -> 符号名），用于按 code 从 DE_ERRORS 取德语用户提示。
+// 必须在 ERROR_CODES 声明之后构建（deUserMessage 运行时才调用，此处初始化即可）。
+const CODE_TO_SYMBOL: Record<string, string> = Object.fromEntries(
+  Object.entries(ERROR_CODES).map(([symbol, ecode]) => [ecode, symbol]),
+)
+
+// 德语覆盖表：仅收录 *-error.ts（84 key）未涵盖、但存在于 ERROR_CODES 的 code。
+// 这些 code 在 zh-CN-error.ts / en-US-error.ts 里也没有对应 key，故在此集中补德语，
+// 使德语用户对全部 ERROR_CODES 都能拿到德语提示（而非回退英文）。
+const DE_MESSAGE_OVERRIDES: Record<string, string> = {
+  [ERROR_CODES.SUCCESS]: 'Vorgang erfolgreich',
+  [ERROR_CODES.COMMON_DATA_FORMAT_ERROR]: 'Datenformatfehler, bitte Eingabedaten prüfen',
+  [ERROR_CODES.COMMON_STORAGE_ERROR]: 'Lokaler Speicherfehler, bitte Speicherplatz prüfen',
+  [ERROR_CODES.COMMON_MEMORY_ERROR]: 'Unzureichender Speicher, bitte andere Registerkarten schließen',
+  [ERROR_CODES.COMMON_BROWSER_NOT_SUPPORTED]: 'Ihr Browser wird nicht unterstützt, bitte einen aktuellen Browser verwenden',
+  [ERROR_CODES.COMMON_SECURITY_ERROR]: 'Sicherheitsfehler, der Vorgang wurde blockiert',
+  [ERROR_CODES.COMMON_ENCRYPTION_ERROR]: 'Verschlüsselungsfehler bei der Datenverarbeitung',
+  [ERROR_CODES.API_CERTIFICATE_ERROR]: 'Zertifikatsfehler, bitte die Serverzertifikatkonfiguration prüfen',
+  [ERROR_CODES.API_SSL_ERROR]: 'SSL-Fehler, eine sichere Verbindung konnte nicht hergestellt werden',
+  [ERROR_CODES.API_VERSION_MISMATCH]: 'API-Versionskonflikt, bitte Client und Server aktualisieren',
+  [ERROR_CODES.API_SIGNATURE_INVALID]: 'Ungültige API-Signatur, die Anfrage wurde abgelehnt',
+  [ERROR_CODES.AUTH_ACCOUNT_NOT_FOUND]: 'Konto nicht gefunden',
+  [ERROR_CODES.AUTH_ACCOUNT_EXISTS]: 'Konto existiert bereits',
+  [ERROR_CODES.AUTH_PASSWORD_WEAK]: 'Passwort zu schwach, bitte ein stärkeres Passwort wählen',
+  [ERROR_CODES.AUTH_SSO_FAILED]: 'Single-Sign-On fehlgeschlagen, bitte erneut versuchen',
+  [ERROR_CODES.BUSINESS_PROJECT_NOT_FOUND]: 'Projekt nicht gefunden',
+  [ERROR_CODES.BUSINESS_PROJECT_ACCESS_DENIED]: 'Kein Zugriff auf dieses Projekt',
+  [ERROR_CODES.BUSINESS_DATA_VALIDATION_ERROR]: 'Datenvalidierungsfehler, bitte Eingabedaten prüfen',
+  [ERROR_CODES.BUSINESS_QUOTA_EXCEEDED]: 'Kontingent überschritten, bitte Tarif upgraden',
+  [ERROR_CODES.BUSINESS_TEMPLATE_ERROR]: 'Vorlagenfehler, bitte die Vorlage prüfen',
+  [ERROR_CODES.BUSINESS_REPORT_GENERATION_FAILED]: 'Berichterstellung fehlgeschlagen, bitte erneut versuchen',
+  [ERROR_CODES.BUSINESS_FILE_UPLOAD_FAILED]: 'Datei-Upload fehlgeschlagen, bitte erneut versuchen',
+}
 
 export const ERROR_CODE_MAP: Record<string, ErrorCodeInfo> = {
   [ERROR_CODES.SUCCESS]: {
@@ -1554,32 +1607,160 @@ export const ERROR_CODE_MAP: Record<string, ErrorCodeInfo> = {
 
 // ============ 辅助函数 ============
 
+// 德语内部消息 + 解决方案（E 码 -> { message, solution }）。
+// 补齐遗留②：*-error.ts 仅有用户提示，无内部 message / solution 文案，
+// 故在此集中提供真德语；getter 的 de 分支查此表，某字段为空则回退英文。
+// solution 为可执行步骤，用 "\n" 分隔，对齐 en 的 "1. …\n2. …" 格式。
+const DE_MESSAGES: Record<string, { message: string; solution: string }> = {
+  [ERROR_CODES.SUCCESS]: { message: 'Vorgang erfolgreich', solution: '' },
+  [ERROR_CODES.COMMON_UNKNOWN]: { message: 'Unbekannter Fehler', solution: '1. Seite neu laden und erneut versuchen\n2. Browser-Cache leeren\n3. Netzwerkverbindung prüfen\n4. Bei anhaltenden Problemen technischen Support kontaktieren' },
+  [ERROR_CODES.COMMON_INVALID_PARAMS]: { message: 'Ungültige Parameter', solution: '1. Prüfen, ob Eingabefelder leer sind oder das falsche Format haben\n2. Sicherstellen, dass alle Pflichtfelder ausgefüllt sind\n3. Datentypen überprüfen' },
+  [ERROR_CODES.COMMON_NETWORK_ERROR]: { message: 'Netzwerkverbindung fehlgeschlagen', solution: '1. Netzwerkverbindungsstatus prüfen\n2. Zwischen WLAN und mobilen Daten wechseln\n3. Router/Modem neu starten\n4. Firewall-Einstellungen prüfen' },
+  [ERROR_CODES.COMMON_TIMEOUT]: { message: 'Zeitüberschreitung der Anfrage', solution: '1. Netzwerkstabilität prüfen\n2. Datenmenge der Anfrage reduzieren\n3. Später erneut versuchen\n4. Administrator wegen Serverlast kontaktieren' },
+  [ERROR_CODES.COMMON_NOT_FOUND]: { message: 'Ressource nicht gefunden', solution: '1. Prüfen, ob die URL korrekt ist\n2. Bestätigen, dass die Ressource nicht gelöscht wurde\n3. Zurückgehen und erneut versuchen' },
+  [ERROR_CODES.COMMON_PERMISSION_DENIED]: { message: 'Zugriff verweigert', solution: '1. Bestätigen, dass das richtige Konto angemeldet ist\n2. Administrator um Berechtigung bitten\n3. Rollenberechtigungen prüfen' },
+  [ERROR_CODES.COMMON_INTERNAL_ERROR]: { message: 'Interner Systemfehler', solution: '1. Fehlercode E007 notieren\n2. Technischen Support mit Details kontaktieren\n3. Auf Systemwiederherstellung warten' },
+  [ERROR_CODES.COMMON_SERVICE_UNAVAILABLE]: { message: 'Dienst nicht verfügbar', solution: '1. Später erneut versuchen\n2. Systemankündigungen prüfen\n3. Support wegen Dienststatus kontaktieren' },
+  [ERROR_CODES.COMMON_REQUEST_CANCELLED]: { message: 'Anfrage abgebrochen', solution: '' },
+  [ERROR_CODES.COMMON_VALIDATION_FAILED]: { message: 'Validierung fehlgeschlagen', solution: '1. Alle Formularfelder prüfen\n2. Sicherstellen, dass das Datenformat den Anforderungen entspricht\n3. Fehlerhinweise neben den Feldern beachten' },
+  [ERROR_CODES.COMMON_RATE_LIMITED]: { message: 'Anfragelimit erreicht', solution: '1. Eine Weile warten und erneut versuchen\n2. Betriebsfrequenz reduzieren\n3. Administrator um höhere Limits bitten' },
+  [ERROR_CODES.COMMON_CONFLICT]: { message: 'Ressourcenkonflikt', solution: '1. Seite aktualisieren\n2. Prüfen, ob andere Benutzer gerade bearbeiten\n3. Vorgang später erneut versuchen' },
+  [ERROR_CODES.COMMON_DEPENDENCY_ERROR]: { message: 'Fehler im Abhängigkeitsdienst', solution: '1. Später erneut versuchen\n2. Status des Abhängigkeitsdienstes prüfen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.COMMON_DATA_FORMAT_ERROR]: { message: 'Datenformatfehler', solution: '1. Sicherstellen, dass das Dateiformat korrekt ist\n2. Empfohlenes Dateiformat verwenden\n3. Dateikodierung prüfen' },
+  [ERROR_CODES.COMMON_STORAGE_ERROR]: { message: 'Speicherdienstfehler', solution: '1. Upload/Download später erneut versuchen\n2. Prüfen, ob der Speicherplatz voll ist\n3. Administrator kontaktieren' },
+  [ERROR_CODES.COMMON_MEMORY_ERROR]: { message: 'Unzureichender Speicher', solution: '1. Andere Browser-Tabs schließen\n2. Browser neu starten\n3. Systemspeicher freigeben' },
+  [ERROR_CODES.COMMON_BROWSER_NOT_SUPPORTED]: { message: 'Browser wird nicht unterstützt', solution: '1. Browser auf die neueste Version aktualisieren\n2. Empfohlene Browser verwenden (Chrome/Firefox/Edge)\n3. Browser-Cache leeren' },
+  [ERROR_CODES.COMMON_SECURITY_ERROR]: { message: 'Sicherheitsfehler', solution: '1. Sofort abmelden\n2. Passwort ändern\n3. Administrator kontaktieren, um die Sicherheit zu bestätigen' },
+  [ERROR_CODES.COMMON_ENCRYPTION_ERROR]: { message: 'Verschlüsselungsfehler', solution: '1. Vorgang erneut versuchen\n2. Netzwerkverbindung prüfen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_REQUEST_FAILED]: { message: 'API-Anfrage fehlgeschlagen', solution: '1. Netzwerkverbindung prüfen\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.API_RESPONSE_INVALID]: { message: 'Ungültige API-Antwort', solution: '1. Seite neu laden und erneut versuchen\n2. Netzwerkverbindung prüfen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.API_HEADER_MISSING]: { message: 'Anfrage-Header fehlt', solution: '1. Seite aktualisieren\n2. Browser-Cache leeren\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_BODY_PARSE_ERROR]: { message: 'Antwort konnte nicht geparst werden', solution: '1. Seite neu laden und erneut versuchen\n2. Netzwerkstabilität prüfen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.API_ENDPOINT_NOT_FOUND]: { message: 'API-Endpunkt nicht gefunden', solution: '1. URL prüfen\n2. API-Version überprüfen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_METHOD_NOT_ALLOWED]: { message: 'HTTP-Methode nicht zulässig', solution: '1. Seite aktualisieren\n2. Browser-Cache leeren\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_BAD_REQUEST]: { message: 'Fehlerhafte Anfrage', solution: '1. Anfrageparameter prüfen\n2. Datenformat überprüfen\n3. Vorgang erneut versuchen' },
+  [ERROR_CODES.API_SERVER_ERROR]: { message: 'Serverfehler', solution: '1. Fehlercode E207 notieren\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.API_GATEWAY_ERROR]: { message: 'Gateway-Fehler', solution: '1. Später erneut versuchen\n2. Netzwerkverbindung prüfen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_MAINTENANCE]: { message: 'Systemwartung', solution: '1. Später erneut versuchen\n2. Systemankündigungen prüfen\n3. Wartungshinweise beachten' },
+  [ERROR_CODES.API_QUOTA_EXCEEDED]: { message: 'API-Kontingent überschritten', solution: '1. Auf Kontingentzurücksetzung warten\n2. Konto-Tarif upgraden\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_CONNECTION_FAILED]: { message: 'Verbindung zum Server fehlgeschlagen', solution: '1. Netzwerkverbindung prüfen\n2. Später erneut versuchen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_RESPONSE_EMPTY]: { message: 'API hat leere Daten zurückgegeben', solution: '1. Seite aktualisieren\n2. Filterkriterien prüfen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_RESPONSE_TIMEOUT]: { message: 'Zeitüberschreitung der API-Antwort', solution: '1. Seite aktualisieren\n2. Netzwerkverbindung prüfen\n3. Datenmenge der Anfrage reduzieren' },
+  [ERROR_CODES.API_PARSE_ERROR]: { message: 'DatenParsing-Fehler', solution: '1. Seite aktualisieren\n2. Browser-Cache leeren\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.API_RETRY_EXHAUSTED]: { message: 'Wiederholungsversuche erschöpft', solution: '1. Eine Weile warten und später erneut versuchen\n2. Netzwerkverbindung prüfen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_CERTIFICATE_ERROR]: { message: 'Zertifikatsfehler', solution: '1. Systemzeit prüfen\n2. Browser aktualisieren\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_SSL_ERROR]: { message: 'SSL-Fehler', solution: '1. Netzwerkverbindung prüfen\n2. Browser aktualisieren\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_VERSION_MISMATCH]: { message: 'API-Versionskonflikt', solution: '1. Seite aktualisieren\n2. Browser-Cache leeren\n3. Administrator kontaktieren' },
+  [ERROR_CODES.API_SIGNATURE_INVALID]: { message: 'Ungültige Signatur', solution: '1. Seite aktualisieren\n2. Erneut anmelden\n3. Administrator kontaktieren' },
+  [ERROR_CODES.AUTH_TOKEN_EXPIRED]: { message: 'Authentifizierung abgelaufen', solution: '1. Auf erneutes Anmelden klicken\n2. Browser-Cache leeren\n3. Cookie-Einstellungen prüfen' },
+  [ERROR_CODES.AUTH_TOKEN_INVALID]: { message: 'Ungültige Authentifizierung', solution: '1. Erneut anmelden\n2. Browser-Cache leeren\n3. Netzwerkverbindung prüfen' },
+  [ERROR_CODES.AUTH_TOKEN_MISSING]: { message: 'Authentifizierungstoken fehlt', solution: '1. Auf Anmeldeschaltfläche klicken\n2. Anmeldestatus prüfen\n3. Browser-Cache leeren' },
+  [ERROR_CODES.AUTH_REFRESH_FAILED]: { message: 'Token konnte nicht aktualisiert werden', solution: '1. Erneut anmelden\n2. Browser-Cache leeren\n3. Administrator kontaktieren' },
+  [ERROR_CODES.AUTH_LOGIN_FAILED]: { message: 'Anmeldung fehlgeschlagen', solution: '1. Benutzername und Passwort prüfen\n2. Sicherstellen, dass die Feststelltaste deaktiviert ist\n3. Passwort-Wiederherstellung versuchen' },
+  [ERROR_CODES.AUTH_LOGIN_REQUIRED]: { message: 'Anmeldung erforderlich', solution: '1. Auf Anmeldeschaltfläche klicken\n2. Benutzername und Passwort eingeben' },
+  [ERROR_CODES.AUTH_PERMISSION_DENIED]: { message: 'Zugriff verweigert', solution: '1. Bestätigen, dass das richtige Konto angemeldet ist\n2. Administrator um Berechtigung bitten\n3. Rolleneinstellungen prüfen' },
+  [ERROR_CODES.AUTH_ACCOUNT_LOCKED]: { message: 'Konto gesperrt', solution: '1. Administrator kontaktieren, um das Konto zu entsperren\n2. Auf automatische Entsperrung warten (falls konfiguriert)\n3. Kontosicherheit bestätigen' },
+  [ERROR_CODES.AUTH_ACCOUNT_DISABLED]: { message: 'Konto deaktiviert', solution: '1. Administrator für Details kontaktieren\n2. Kontostatus überprüfen' },
+  [ERROR_CODES.AUTH_PASSWORD_WRONG]: { message: 'Falsches Passwort', solution: '1. Sicherstellen, dass das Passwort korrekt eingegeben wurde\n2. Feststelltaste prüfen\n3. Funktion „Passwort vergessen" verwenden' },
+  [ERROR_CODES.AUTH_PASSWORD_EXPIRED]: { message: 'Passwort abgelaufen', solution: '1. Auf Passwort ändern klicken\n2. Neues Passwort festlegen\n3. Neues Passwort speichern' },
+  [ERROR_CODES.AUTH_SESSION_EXPIRED]: { message: 'Sitzung abgelaufen', solution: '1. Auf erneutes Anmelden klicken\n2. Browser-Cache leeren\n3. Cookie-Einstellungen prüfen' },
+  [ERROR_CODES.AUTH_SESSION_INVALID]: { message: 'Ungültige Sitzung', solution: '1. Erneut anmelden\n2. Browser-Cache leeren\n3. Netzwerkverbindung prüfen' },
+  [ERROR_CODES.AUTH_2FA_REQUIRED]: { message: 'Zwei-Faktor-Authentifizierung erforderlich', solution: '1. Verifizierungscode eingeben\n2. Authentifizierungsgerät prüfen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.AUTH_2FA_FAILED]: { message: 'Zwei-Faktor-Authentifizierung fehlgeschlagen', solution: '1. Verifizierungscode prüfen\n2. Gerätezeit überprüfen\n3. Authentifizierung erneut versuchen' },
+  [ERROR_CODES.AUTH_ACCOUNT_NOT_FOUND]: { message: 'Konto nicht gefunden', solution: '1. Benutzername prüfen\n2. Neues Konto registrieren\n3. Administrator kontaktieren' },
+  [ERROR_CODES.AUTH_ACCOUNT_EXISTS]: { message: 'Konto existiert bereits', solution: '1. Mit bestehendem Konto anmelden\n2. Passwort wiederherstellen (falls vergessen)\n3. Administrator kontaktieren' },
+  [ERROR_CODES.AUTH_PASSWORD_WEAK]: { message: 'Schwaches Passwort', solution: '1. Mindestens 8 Zeichen verwenden\n2. Groß- und Kleinbuchstaben sowie Zahlen einbeziehen\n3. Sonderzeichen hinzufügen' },
+  [ERROR_CODES.AUTH_SSO_FAILED]: { message: 'SSO-Anmeldung fehlgeschlagen', solution: '1. Andere Anmeldemethoden versuchen\n2. Administrator kontaktieren\n3. SSO-Konfiguration prüfen' },
+  [ERROR_CODES.BUSINESS_FORMULA_NOT_FOUND]: { message: 'Formel nicht gefunden', solution: '1. Formel-ID prüfen\n2. Bestätigen, dass die Formel nicht gelöscht wurde\n3. Zur Liste zurückkehren und erneut auswählen' },
+  [ERROR_CODES.BUSINESS_FORMULA_SAVE_FAILED]: { message: 'Formel konnte nicht gespeichert werden', solution: '1. Vollständigkeit der Formeldaten prüfen\n2. Netzwerkverbindung überprüfen\n3. Später erneut versuchen' },
+  [ERROR_CODES.BUSINESS_FORMULA_DELETE_FAILED]: { message: 'Formel konnte nicht gelöscht werden', solution: '1. Prüfen, ob die Formel referenziert wird\n2. Berechtigungen überprüfen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.BUSINESS_FORMULA_INVALID]: { message: 'Ungültige Formeldaten', solution: '1. Formelfelder prüfen\n2. Datenformat überprüfen\n3. Ungültige Felder korrigieren' },
+  [ERROR_CODES.BUSINESS_INGREDIENT_NOT_FOUND]: { message: 'Inhaltsstoff nicht gefunden', solution: '1. Namen des Inhaltsstoffs prüfen\n2. Nach vorhandenen Inhaltsstoffen suchen\n3. Neuen Inhaltsstoff hinzufügen' },
+  [ERROR_CODES.BUSINESS_INGREDIENT_INVALID]: { message: 'Ungültige Inhaltsstoffdaten', solution: '1. Felder des Inhaltsstoffs prüfen\n2. Datenformat überprüfen\n3. Ungültige Felder korrigieren' },
+  [ERROR_CODES.BUSINESS_EFFECT_NOT_FOUND]: { message: 'Wirkung nicht gefunden', solution: '1. Namen der Wirkung prüfen\n2. Nach vorhandenen Wirkungen suchen\n3. Neue Wirkung hinzufügen' },
+  [ERROR_CODES.BUSINESS_EFFECT_INVALID]: { message: 'Ungültige Wirkungsdaten', solution: '1. Felder der Wirkung prüfen\n2. Datenformat überprüfen\n3. Ungültige Felder korrigieren' },
+  [ERROR_CODES.BUSINESS_CATEGORY_NOT_FOUND]: { message: 'Kategorie nicht gefunden', solution: '1. Kategorienamen prüfen\n2. Nach vorhandenen Kategorien suchen\n3. Neue Kategorie erstellen' },
+  [ERROR_CODES.BUSINESS_CATEGORY_INVALID]: { message: 'Ungültige Kategoriedaten', solution: '1. Kategoriefelder prüfen\n2. Datenformat überprüfen\n3. Ungültige Felder korrigieren' },
+  [ERROR_CODES.BUSINESS_EXPORT_FAILED]: { message: 'Export fehlgeschlagen', solution: '1. Dateninhalt prüfen\n2. Exportmenge reduzieren\n3. Später erneut versuchen' },
+  [ERROR_CODES.BUSINESS_IMPORT_FAILED]: { message: 'Import fehlgeschlagen', solution: '1. Dateiformat prüfen\n2. Datenstruktur überprüfen\n3. Importvorlage heranziehen' },
+  [ERROR_CODES.BUSINESS_OPERATION_FAILED]: { message: 'Vorgang fehlgeschlagen', solution: '1. Vorgangsbedingungen prüfen\n2. Berechtigungen überprüfen\n3. Später erneut versuchen' },
+  [ERROR_CODES.BUSINESS_DATA_CONFLICT]: { message: 'Datenkonflikt', solution: '1. Seite aktualisieren\n2. Prüfen, ob andere Benutzer gerade bearbeiten\n3. Vorgang später erneut versuchen' },
+  [ERROR_CODES.BUSINESS_DATA_LOCKED]: { message: 'Daten gesperrt', solution: '1. Einen Moment warten und erneut versuchen\n2. Prüfen, ob andere Benutzer gerade bearbeiten\n3. Administrator kontaktieren' },
+  [ERROR_CODES.BUSINESS_WORKFLOW_ERROR]: { message: 'Workflow-Fehler', solution: '1. Workflow-Konfiguration prüfen\n2. Vorgang erneut versuchen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.BUSINESS_ORGANIZATION_ERROR]: { message: 'Organisationsvorgang fehlgeschlagen', solution: '1. Organisationsdaten prüfen\n2. Berechtigungen überprüfen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.BUSINESS_USER_NOT_FOUND]: { message: 'Benutzer nicht gefunden', solution: '1. Benutzernamen prüfen\n2. Sicherstellen, dass der Benutzer existiert\n3. Administrator kontaktieren' },
+  [ERROR_CODES.BUSINESS_USER_ROLE_ERROR]: { message: 'Benutzerrolle stimmt nicht überein', solution: '1. Rollenzuweisung prüfen\n2. Administrator kontaktieren' },
+  [ERROR_CODES.BUSINESS_PROJECT_NOT_FOUND]: { message: 'Projekt nicht gefunden', solution: '1. Projekt-ID prüfen\n2. Bestätigen, dass das Projekt nicht gelöscht wurde\n3. Zur Projektliste zurückkehren' },
+  [ERROR_CODES.BUSINESS_PROJECT_ACCESS_DENIED]: { message: 'Kein Zugriff auf das Projekt', solution: '1. Berechtigungen prüfen\n2. Projektmitgliedschaft bestätigen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.BUSINESS_DATA_VALIDATION_ERROR]: { message: 'Datenvalidierungsfehler', solution: '1. Eingabedaten prüfen\n2. Datenformat überprüfen\n3. Fehlerhafte Felder korrigieren' },
+  [ERROR_CODES.BUSINESS_QUOTA_EXCEEDED]: { message: 'Kontingent überschritten', solution: '1. Auf Kontingentzurücksetzung warten\n2. Tarif upgraden\n3. Administrator kontaktieren' },
+  [ERROR_CODES.BUSINESS_TEMPLATE_ERROR]: { message: 'Vorlagenfehler', solution: '1. Vorlageninhalte prüfen\n2. Andere Vorlage auswählen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.BUSINESS_REPORT_GENERATION_FAILED]: { message: 'Berichterstellung fehlgeschlagen', solution: '1. Berichtsparameter prüfen\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.BUSINESS_FILE_UPLOAD_FAILED]: { message: 'Datei-Upload fehlgeschlagen', solution: '1. Dateigröße und -format prüfen\n2. Netzwerkverbindung überprüfen\n3. Upload erneut versuchen' },
+  [ERROR_CODES.AI_SERVICE_ERROR]: { message: 'KI-Dienstfehler', solution: '1. Netzwerkverbindung prüfen\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_SERVICE_UNAVAILABLE]: { message: 'KI-Dienst nicht verfügbar', solution: '1. Später erneut versuchen\n2. Systemankündigungen prüfen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.AI_SERVICE_TIMEOUT]: { message: 'Zeitüberschreitung des KI-Dienstes', solution: '1. Anfrage vereinfachen\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_MODEL_ERROR]: { message: 'Fehler im KI-Modell', solution: '1. Modellkonfiguration prüfen\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_MODEL_NOT_FOUND]: { message: 'KI-Modell nicht gefunden', solution: '1. Modellname prüfen\n2. Verfügbare Modelle aktualisieren\n3. Administrator kontaktieren' },
+  [ERROR_CODES.AI_MODEL_QUOTA_EXCEEDED]: { message: 'KI-Modellkontingent überschritten', solution: '1. Auf Kontingentzurücksetzung warten\n2. Tarif upgraden\n3. Administrator kontaktieren' },
+  [ERROR_CODES.AI_API_KEY_INVALID]: { message: 'Ungültiger KI-API-Key', solution: '1. API-Key-Konfiguration prüfen\n2. Gültigen Key eingeben\n3. Administrator kontaktieren' },
+  [ERROR_CODES.AI_API_KEY_MISSING]: { message: 'KI-API-Key fehlt', solution: '1. In den Einstellungen einen KI-API-Key konfigurieren\n2. Administrator kontaktieren' },
+  [ERROR_CODES.AI_API_KEY_QUOTA_EXCEEDED]: { message: 'KI-API-Key-Kontingent überschritten', solution: '1. Auf Kontingentzurücksetzung warten\n2. Tarif upgraden\n3. Administrator kontaktieren' },
+  [ERROR_CODES.AI_PROMPT_INVALID]: { message: 'Ungültiger KI-Prompt', solution: '1. Prompt-Inhalt prüfen\n2. Prompt gemäß den Richtlinien umformulieren\n3. Erneut senden' },
+  [ERROR_CODES.AI_RESPONSE_INVALID]: { message: 'Ungültige KI-Antwort', solution: '1. Anfrage erneut senden\n2. Parameter prüfen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_RESPONSE_EMPTY]: { message: 'KI hat leere Daten zurückgegeben', solution: '1. Erneut versuchen\n2. Anfrageparameter anpassen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_STREAM_ERROR]: { message: 'Fehler im KI-Antwortstrom', solution: '1. Netzwerkverbindung prüfen\n2. Anfrage erneut senden\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_GENERATION_FAILED]: { message: 'KI-Generierung fehlgeschlagen', solution: '1. Eingabedaten prüfen\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_ANALYSIS_FAILED]: { message: 'KI-Analyse fehlgeschlagen', solution: '1. Eingabedaten prüfen\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_SAFETY_CHECK_FAILED]: { message: 'KI-Sicherheitsprüfung fehlgeschlagen', solution: '1. Eingabeinhalte prüfen\n2. Anfrage anpassen\n3. Administrator kontaktieren' },
+  [ERROR_CODES.AI_SYNERGY_ERROR]: { message: 'Synergieanalyse fehlgeschlagen', solution: '1. Analyseparameter prüfen\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_PEPTIDE_DESIGN_ERROR]: { message: 'Peptid-Design fehlgeschlagen', solution: '1. Designparameter prüfen\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_OPTIMIZATION_ERROR]: { message: 'KI-Optimierung fehlgeschlagen', solution: '1. Optimierungsparameter prüfen\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_PREDICTION_ERROR]: { message: 'KI-Vorhersage fehlgeschlagen', solution: '1. Eingabedaten prüfen\n2. Später erneut versuchen\n3. Technischen Support kontaktieren' },
+  [ERROR_CODES.AI_VALIDATION_ERROR]: { message: 'KI-Validierungsfehler', solution: '1. Validierungsdaten prüfen\n2. Datenformat überprüfen\n3. Anfrage erneut senden' },
+}
+
 export function getErrorInfo(code: string): ErrorCodeInfo | undefined {
   return ERROR_CODE_MAP[code]
 }
 
-export function getErrorMessage(code: string, locale: 'zh-CN' | 'en-US' = 'zh-CN'): string {
-  const info = ERROR_CODE_MAP[code]
-  if (!info) {
-    return locale === 'zh-CN' ? '未知错误' : 'Unknown error'
-  }
-  return locale === 'zh-CN' ? info.message : info.messageEn
+/** 取某错误码的德语 { message, solution }；无对应条目时返回 undefined（由调用方回退英文） */
+function deMsg(code: string): { message: string; solution: string } | undefined {
+  return DE_MESSAGES[code]
 }
 
-export function getUserMessage(code: string, locale: 'zh-CN' | 'en-US' = 'zh-CN'): string {
+export function getErrorMessage(code: string, locale: string = 'zh-CN'): string {
+  const loc = normalizeLocale(locale)
   const info = ERROR_CODE_MAP[code]
   if (!info) {
-    return locale === 'zh-CN' ? '发生未知错误，请稍后重试' : 'An unknown error occurred, please try again later'
+    if (loc === 'de-DE') return deUserMessage(code) || 'Unbekannter Fehler'
+    return loc === 'zh-CN' ? '未知错误' : 'Unknown error'
   }
-  return locale === 'zh-CN' ? info.userMessage : info.userMessageEn
+  // 内部开发者消息：德语取 DE_MESSAGES，缺失则回退英文
+  if (loc === 'de-DE') return deMsg(code)?.message || info.messageEn
+  return loc === 'zh-CN' ? info.message : info.messageEn
 }
 
-export function getSolution(code: string, locale: 'zh-CN' | 'en-US' = 'zh-CN'): string {
+export function getUserMessage(code: string, locale: string = 'zh-CN'): string {
+  const loc = normalizeLocale(locale)
+  const info = ERROR_CODE_MAP[code]
+  if (!info) {
+    if (loc === 'de-DE') return deUserMessage(code) || DE_ERRORS.COMMON_UNKNOWN || 'Unbekannter Fehler'
+    return loc === 'zh-CN' ? '发生未知错误，请稍后重试' : 'An unknown error occurred, please try again later'
+  }
+  if (loc === 'de-DE') return deUserMessage(code) || info.userMessageEn
+  return loc === 'zh-CN' ? info.userMessage : info.userMessageEn
+}
+
+export function getSolution(code: string, locale: string = 'zh-CN'): string {
+  const loc = normalizeLocale(locale)
   const info = ERROR_CODE_MAP[code]
   if (!info) {
     return ''
   }
-  return locale === 'zh-CN' ? info.solution : info.solutionEn
+  // 德语解决方案：取 DE_MESSAGES，缺失/为空则回退英文（保持空 solution 行为）
+  if (loc === 'de-DE') return deMsg(code)?.solution || info.solutionEn
+  return loc === 'zh-CN' ? info.solution : info.solutionEn
 }
 
 export function isRetryable(code: string): boolean {

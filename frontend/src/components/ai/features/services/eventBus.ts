@@ -1,4 +1,5 @@
 import { logger } from '@/utils/safeLogger';
+import type { AIRecognizedFormula } from '@/types/ai.types';
 
 export type EventType =
   | 'message:sending'
@@ -32,7 +33,10 @@ export interface EventPayloadMap {
   'message:sending': { content: string; timestamp: number };
   'message:received': { content: string; senderId: string; timestamp: number };
   'message:error': { error: Error; messageId?: string };
-  'formulas:detected': { formulas: { name: string; value: number }[] };
+  // 修复：契约原声明为 { name: string; value: number }[]，与订阅方
+  // useFormulaManager.ts 实际读取的 id/ingredients/confidence/rawData 严重错配，
+  // 且无任何生产发布方。现统一为 AIRecognizedFormula[]（面板 formulaIndex 的原生形状）。
+  'formulas:detected': { formulas: AIRecognizedFormula[] };
   'formulas:added': { formulaName: string; formulaData: Record<string, unknown> };
   'report:generating': { reportType: string; progress: number };
   'report:generated': { reportUrl: string; reportType: string };
