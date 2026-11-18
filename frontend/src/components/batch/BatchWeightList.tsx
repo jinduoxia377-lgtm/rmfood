@@ -78,7 +78,7 @@ export default function BatchWeightList({
               <th className="text-left py-2 px-2">序号</th>
               <th className="text-left py-2 px-2">原料名称</th>
               <th className="text-right py-2 px-2">配方用量(mg)</th>
-              <th className="text-right py-2 px-2 font-semibold text-primary">称量(g)</th>
+              <th className="text-right py-2 px-2 font-semibold text-[var(--text-primary)]">称量(g)</th>
               <th className="text-left py-2 px-2">原料批号</th>
             </tr>
           </thead>
@@ -109,7 +109,7 @@ export default function BatchWeightList({
                 <td className="py-2 px-2 text-right text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] font-mono">
                   {ing.specified_dosage_mg?.toFixed(1)}
                 </td>
-                <td className="py-2 px-2 text-right font-mono font-semibold text-primary">
+                <td className="py-2 px-2 text-right font-mono font-semibold text-[var(--text-primary)]">
                   {(ing.scaled_dosage_mg / 1000).toFixed(3)}
                 </td>
                 <td className="py-2 px-2">

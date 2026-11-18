@@ -43,7 +43,7 @@ export function MechanismNetworkPanel({ mechanisms }: MechanismNetworkPanelProps
     <div className="space-y-4">
       {/* 统计摘要 */}
       <div className="flex flex-wrap items-center gap-3 text-caption">
-        <span className="flex items-center gap-1 font-semibold text-primary">
+        <span className="flex items-center gap-1 font-semibold text-[var(--text-primary)]">
           <Network className="w-3.5 h-3.5" />
           {t('ai.formula.generateTab.networkPharmacology')}
         </span>
@@ -61,7 +61,7 @@ export function MechanismNetworkPanel({ mechanisms }: MechanismNetworkPanelProps
       {/* 共享靶点（配伍协同的物质基础） */}
       {sharedTargets.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-caption font-semibold text-primary flex items-center gap-1">
+          <h4 className="text-caption font-semibold text-[var(--text-primary)] flex items-center gap-1">
             <Target className="w-3.5 h-3.5" />
             {t('ai.formula.generateTab.sharedTargetsTitle')}
           </h4>
@@ -87,7 +87,7 @@ export function MechanismNetworkPanel({ mechanisms }: MechanismNetworkPanelProps
 
       {/* 各药材靶点（共享靶点高亮） */}
       <div className="space-y-2">
-        <h4 className="text-caption font-semibold text-primary">
+        <h4 className="text-caption font-semibold text-[var(--text-primary)]">
           {t('ai.formula.generateTab.perHerbTargets')}
         </h4>
         <div className="space-y-2">

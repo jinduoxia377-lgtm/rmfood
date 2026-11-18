@@ -191,7 +191,7 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
       {stats && showStats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 p-4 bg-muted/30 dark:bg-muted/10 rounded-xl border border-border">
           <div className="text-center">
-            <div className="text-h5 font-bold font-mono text-primary">{stats.total}</div>
+            <div className="text-h5 font-bold font-mono text-[var(--text-primary)]">{stats.total}</div>
             <div className="text-caption text-muted-foreground mt-0.5">{t('ai.formula.generateTab.formulaCountLabel')}</div>
           </div>
           <div className="text-center">

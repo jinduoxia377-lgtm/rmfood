@@ -92,7 +92,7 @@ function SliderField({
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-muted-foreground">{label}</span>
-        <span className="text-xs font-mono text-primary">{value}{unit}</span>
+        <span className="text-xs font-mono text-[var(--text-primary)]">{value}{unit}</span>
       </div>
       <input
         type="range"

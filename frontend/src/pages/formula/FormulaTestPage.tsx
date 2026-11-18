@@ -185,7 +185,7 @@ export function FormulaTestPage() {
                       }`}
                     >
                       <div>
-                        <div className="font-mono text-xs text-primary">{f.id}</div>
+                        <div className="font-mono text-xs text-[var(--text-primary)]">{f.id}</div>
                         <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{f.name || f.code || `配方#${f.id}`}</div>
                       </div>
                       <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] flex items-center gap-3">
@@ -292,7 +292,7 @@ export function FormulaTestPage() {
               {!selectedFormulaId ? (
                 <div className="text-center py-8 text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">请先选择一个配方</div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-6">
                   <TestPanel
                     title="协同效应分析"
                     icon={<FlaskConical size={16} />}

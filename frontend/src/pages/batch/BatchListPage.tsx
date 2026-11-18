@@ -100,7 +100,7 @@ export default function BatchListPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           label={t('pages.batch.totalBatches')}
           value={total}
@@ -216,7 +216,7 @@ export default function BatchListPage() {
                 batches.map(batch => (
                   <tr key={batch.id} className="border-b border-neutral-50 dark:border-neutral-800/50 hover:bg-[var(--bg-tertiary)]/50 dark:hover:bg-[var(--bg-tertiary)]/30 transition-colors">
                     <td className="px-[var(--space-apple-md)] py-[var(--space-apple-md)]">
-                      <span className="font-mono text-xs font-medium text-primary">
+                      <span className="font-mono text-xs font-medium text-[var(--text-primary)]">
                         {batch.batch_code}
                       </span>
                     </td>

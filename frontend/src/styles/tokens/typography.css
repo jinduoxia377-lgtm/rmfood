@@ -160,6 +160,9 @@ p:last-child { margin-bottom: 0; }
 }
 
 /* ── 通用文字类 ── */
+/* .text-primary 现指向品牌绿 --color-primary（作强调色用），有意区别于同族
+   .text-secondary/.text-muted/.text-disabled（中性灰阶）。需要近黑正文色的场景
+   请显式使用 text-[var(--text-primary)]。 */
 .text-sm { font-size: var(--text-body-sm); line-height: var(--text-body-sm-line-height); }
 .text-xs { font-size: var(--text-caption); line-height: var(--text-caption-line-height); }
 .label { font-size: var(--text-body-sm); font-weight: 500; line-height: 1.4; color: var(--text-secondary); }
@@ -167,7 +170,7 @@ p:last-child { margin-bottom: 0; }
 .font-semibold { font-weight: 600; }
 .font-medium { font-weight: 500; }
 .font-normal { font-weight: 400; }
-.text-primary { color: var(--text-primary); }
+.text-primary { color: var(--color-primary); }
 .text-secondary { color: var(--text-secondary); }
 .text-muted { color: var(--text-muted); }
 .text-disabled { color: var(--text-disabled); }

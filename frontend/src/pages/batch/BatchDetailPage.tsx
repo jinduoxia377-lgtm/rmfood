@@ -68,7 +68,7 @@ export default function BatchDetailPage() {
           <Skeleton className="h-6 w-20" />
           <Skeleton className="h-8 w-48" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         </div>
         <Skeleton className="h-48" />
@@ -157,7 +157,7 @@ export default function BatchDetailPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label={t('pages.batch.targetYield')} value={`${batch.target_weight_kg?.toFixed(3)} kg`} />
         <StatCard
           label={t('pages.batch.actualYield')}
@@ -229,7 +229,7 @@ export default function BatchDetailPage() {
                   className="flex items-center justify-between p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)]/50 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-[var(--space-apple-sm)]">
-                    <span className="font-mono text-xs text-primary">{sample.sample_code}</span>
+                    <span className="font-mono text-xs text-[var(--text-primary)]">{sample.sample_code}</span>
                     <span className="text-sm text-[var(--text-secondary)]">{sample.sample_type}</span>
                     {sample.storage_condition && (
                       <span className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)]">{sample.storage_condition}</span>
@@ -273,7 +273,7 @@ export default function BatchDetailPage() {
                       <Tag size={14} className="text-[var(--color-success-text)]0 dark:text-[var(--color-success-text)]" />
                     </div>
                     <div>
-                      <div className="font-mono text-xs text-primary">{lot.internal_lot_code}</div>
+                      <div className="font-mono text-xs text-[var(--text-primary)]">{lot.internal_lot_code}</div>
                       <div className="text-sm text-[var(--text-secondary)]">{lot.ingredient_name}</div>
                     </div>
                   </div>

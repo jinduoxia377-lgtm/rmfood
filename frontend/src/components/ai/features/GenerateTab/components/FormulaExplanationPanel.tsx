@@ -187,7 +187,7 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
         <div className="space-y-3 text-body-sm">
           {interp.constitution && (
             <div>
-              <h4 className="text-h6 font-semibold text-primary mb-1 flex items-center gap-1"><Lightbulb className="w-3 h-3" />{t('ai.formula.generateTab.monarchMinisterStructure')}</h4>
+              <h4 className="text-h6 font-semibold text-[var(--text-primary)] mb-1 flex items-center gap-1"><Lightbulb className="w-3 h-3" />{t('ai.formula.generateTab.monarchMinisterStructure')}</h4>
               <p className="text-muted-foreground">{interp.constitution}</p>
             </div>
           )}
@@ -195,7 +195,7 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
           {/* 方解与机理散文（后端 L4 mechanism.explanation）—— Markdown 渲染正文 */}
           {interp.explanation && (
             <div>
-              <h4 className="text-h6 font-semibold text-primary mb-1 flex items-center gap-1"><BookOpen className="w-3 h-3" />{t('ai.formula.generateTab.formulaExplanationProse')}</h4>
+              <h4 className="text-h6 font-semibold text-[var(--text-primary)] mb-1 flex items-center gap-1"><BookOpen className="w-3 h-3" />{t('ai.formula.generateTab.formulaExplanationProse')}</h4>
               <div className="text-muted-foreground">
                 <MarkdownRenderer content={interp.explanation} />
               </div>
@@ -205,12 +205,12 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
           {candidate.mechanism?.mechanisms ? (
             // 后端 L4 机理（阶段2续）→ 网络药理可视化（突出共享靶点=配伍协同）
             <div>
-              <h4 className="text-h6 font-semibold text-primary mb-1">{t('ai.formula.generateTab.modernMechanism')}</h4>
+              <h4 className="text-h6 font-semibold text-[var(--text-primary)] mb-1">{t('ai.formula.generateTab.modernMechanism')}</h4>
               <MechanismNetworkPanel mechanisms={candidate.mechanism.mechanisms} />
             </div>
           ) : interp.mechanism && interp.mechanism.length > 0 ? (
             <div>
-              <h4 className="text-h6 font-semibold text-primary mb-1">{t('ai.formula.generateTab.modernMechanism')}</h4>
+              <h4 className="text-h6 font-semibold text-[var(--text-primary)] mb-1">{t('ai.formula.generateTab.modernMechanism')}</h4>
               <ul className="space-y-1.5">
                 {interp.mechanism.map((m, i) => (
                   <li key={i} className="rounded-lg bg-muted/50 p-2.5">
@@ -230,14 +230,14 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
 
           {interp.synergy && (
             <div>
-              <h4 className="text-h6 font-semibold text-primary mb-1">{t('ai.formula.generateTab.synergyEffectTitle')}</h4>
+              <h4 className="text-h6 font-semibold text-[var(--text-primary)] mb-1">{t('ai.formula.generateTab.synergyEffectTitle')}</h4>
               <p className="text-muted-foreground">{interp.synergy}</p>
             </div>
           )}
 
           {interp.safety && (
             <div>
-              <h4 className="text-h6 font-semibold text-primary mb-1 flex items-center gap-1"><Shield className="w-3 h-3" />{t('ai.formula.generateTab.safetyAssessment')}</h4>
+              <h4 className="text-h6 font-semibold text-[var(--text-primary)] mb-1 flex items-center gap-1"><Shield className="w-3 h-3" />{t('ai.formula.generateTab.safetyAssessment')}</h4>
               <p className="text-caption text-muted-foreground">{t('ai.formula.ui.safetySummary', { ratio: interp.safety.food_homology_ratio, level: interp.safety.risk_level })}</p>
               <ul className="text-caption text-muted-foreground mt-1 list-disc pl-4">
                 {(interp.safety.notes || []).map((n, i) => <li key={i}>{n}</li>)}
@@ -247,7 +247,7 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
 
           {interp.usage && (
             <div>
-              <h4 className="text-h6 font-semibold text-primary mb-1 flex items-center gap-1"><Clock className="w-3 h-3" />{t('ai.formula.generateTab.usageDosage')}</h4>
+              <h4 className="text-h6 font-semibold text-[var(--text-primary)] mb-1 flex items-center gap-1"><Clock className="w-3 h-3" />{t('ai.formula.generateTab.usageDosage')}</h4>
               <p className="text-muted-foreground">{interp.usage.form} · {interp.usage.dosage_summary} · {interp.usage.frequency}</p>
               <p className="text-caption text-muted-foreground">{interp.usage.course}。{interp.usage.adjustment_hint}</p>
             </div>
@@ -255,7 +255,7 @@ export function FormulaExplanationPanel({ candidate, targetEffects, onClose }: F
 
           {interp.monitoring && interp.monitoring.length > 0 && (
             <div>
-              <h4 className="text-h6 font-semibold text-primary mb-1">{t('ai.formula.generateTab.monitoringIndicators')}</h4>
+              <h4 className="text-h6 font-semibold text-[var(--text-primary)] mb-1">{t('ai.formula.generateTab.monitoringIndicators')}</h4>
               <ul className="text-caption text-muted-foreground space-y-1">
                 {interp.monitoring.map((m, i) => (
                   <li key={i}>「{m.effect}」：{m.metric}（{m.frequency}）</li>
