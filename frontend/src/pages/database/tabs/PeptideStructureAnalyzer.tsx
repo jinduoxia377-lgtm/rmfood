@@ -3,7 +3,7 @@
  * 肽链结构分析器 - 增强版
  * 功能：完整分析、结构转换、数据库查询、对比分析、历史记录、可视化图表
  */
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { peptideStructureService } from '@/services/professional/peptideStructureService';
 import { Button, Input, Card, Badge, Pagination } from '@/components/ui';
@@ -12,7 +12,7 @@ import {
   Beaker, ArrowRightLeft, Dna, ShieldCheck, Activity, FlaskConical,
   AlertCircle, CheckCircle, Database, GitCompare as Compare, History, BarChart3,
   Search, TrendingUp, Download, Trash2, Plus, X, Copy,
-  Layers, Zap, Target, Bot, ZoomIn, Expand, Leaf,
+  Layers, Zap, Target, Bot, ZoomIn, Expand, Leaf, Utensils,
 } from 'lucide-react';
 
 // 使用全局echarts对象（按需注入，见下方 loadEcharts）
@@ -47,37 +47,72 @@ function loadEcharts(): Promise<any> {
   return echartsLoadPromise;
 }
 
+// ECharts 渲染到 canvas/svg，无法解析 `var(--x, fallback)` 这类 CSS 变量
+// （会退化为黑色，暗色模式下坐标轴/标题文字不可见）。此处读取计算后的实际色值。
+function cssColor(varName: string, fallback: string): string {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    return v || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<any>(null);
-  const optionRef = useRef<any>(option);
-  // eslint-disable-next-line react-hooks/refs
-  optionRef.current = option;
+  const echartsModuleRef = useRef<any>(null);
   // null = 加载中，false = 加载失败，true = 就绪
   const [echartsReady, setEchartsReady] = useState<boolean | null>(null);
 
+  // ① 仅负责注入 echarts 脚本并标记就绪（不碰 DOM ref）
   useEffect(() => {
     let disposed = false;
     loadEcharts().then((echarts) => {
       if (disposed) return;
-      if (!echarts) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setEchartsReady(false);
-        return;
-      }
+      echartsModuleRef.current = echarts ?? null;
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setEchartsReady(true);
-      if (!chartRef.current) return;
-
-      if (!chartInstance.current) {
-        chartInstance.current = echarts.init(chartRef.current, null, { renderer: 'svg' });
-      }
-
-      chartInstance.current.setOption(optionRef.current, true);
+      setEchartsReady(!!echarts);
     });
-
     return () => {
       disposed = true;
+    };
+  }, []);
+
+  // ② echarts 就绪且 option 变化时，在已挂载的 chartRef 上 init / setOption。
+  //    依赖 [echartsReady, option]：解决原实现「empty deps + ref 未挂载即 return」
+  //    导致图表永远空白的缺陷，并让后续重新分析时图表跟随新数据更新。
+  useEffect(() => {
+    if (echartsReady !== true) return;
+    const echarts = echartsModuleRef.current;
+    if (!echarts || !chartRef.current) return;
+
+    if (!chartInstance.current) {
+      chartInstance.current = echarts.init(chartRef.current, null, { renderer: 'svg' });
+    }
+    chartInstance.current.setOption(option, true);
+  }, [echartsReady, option]);
+
+  // ③ 容器尺寸变化时重排（侧栏折叠 / 窗口缩放 / Tab 切换后重新可见）
+  //     ECharts 只在 init 时测量一次尺寸，不监听容器变化，缺此逻辑会导致图表被裁切或留白。
+  useEffect(() => {
+    if (echartsReady !== true) return;
+    const el = chartRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => {
+      // 容器被隐藏时宽高为 0，此时 resize 会报错，跳过
+      if (el.clientWidth > 0 && el.clientHeight > 0) {
+        chartInstance.current?.resize();
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [echartsReady]);
+
+  // ④ 卸载时释放实例
+  useEffect(() => {
+    return () => {
       if (chartInstance.current) {
         chartInstance.current.dispose();
         chartInstance.current = null;
@@ -159,7 +194,13 @@ interface MLModelInfo {
 
 interface ActivityScore {
   score: number;
-  level: 'high' | 'medium' | 'low' | 'none';
+  /** 后端等级：none/low/medium/high/very_high…；未知字符串原样展示，前端不自己定档 */
+  level: string;
+  /** 置信度 0..1（可能缺省/NaN，展示前统一夹紧） */
+  confidence?: number | null;
+  is_active?: boolean | null;
+  /** 活性基序（后端可选返回） */
+  motifs?: string[] | null;
 }
 
 interface SafetyInfo {
@@ -244,217 +285,510 @@ interface DatabasePeptide {
 type TabType = 'analyze' | 'convert' | 'database' | 'compare' | 'history' | 'batch' | 'deep' | 'optimize' | 'synergy' | 'advanced';
 
 // ─── 工具函数 ───
-function getScoreColor(score: number): string {
-  if (score >= 0.8) return 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]';
-  if (score >= 0.5) return 'text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]';
-  return 'text-[var(--color-error-text)] dark:text-[var(--color-error-text)]';
-}
+// ⚠ 这里刻意不再提供「score >= 0.8 → 绿 / >= 0.5 → 黄 / else 红」这类前端自造阈值：
+// 项目红线是「不编造数值/级别」，等级只能来自后端 level 字段（见 levelColor）。
 
 function getActivityBadge(level: string): 'success' | 'warning' | 'danger' | 'neutral' {
-  switch (level) {
-    case 'high': return 'success';
-    case 'medium': return 'warning';
+  switch ((level || '').toLowerCase()) {
+    case 'high':
+    case 'very_high': return 'success';
+    case 'medium':
+    case 'moderate': return 'warning';
     case 'low': return 'danger';
     default: return 'neutral';
   }
 }
 
-// ─── 评分进度条组件 ───
-function ScoreProgress({ label, score }: { label: string; score: number }) {
+// ─── 活性维度（雷达图 / 柱状图 / 数值条 / 热力图 / 进度条共用同一份定义）──────────
+// 只放「活性」维度：食品安全 51/100 是安全性评分，不是活性——把它混进活性雷达/柱状图
+// 会让语义失真；而 DPP-IV 抑制是真实活性维度，之前却被漏掉（与下方「活性预测」列表不一致）。
+// 维度顺序在此唯一定义，雷达/柱状/进度条/热力图都从 ACTIVITY_DIM_SPECS 派生，避免各处口径漂移。
+const ACTIVITY_LEVEL_ZH: Record<string, string> = {
+  none: '无', pass: '无', low: '低', medium: '中', moderate: '中', high: '高', very_high: '极高',
+};
+
+type ActivityDimKey = 'ace' | 'antioxidant' | 'antimicrobial' | 'dpp4';
+
+interface ActivityDimSpec {
+  key: ActivityDimKey;
+  label: string;          // 完整中文名（tooltip / 图下数值条）
+  short: string;          // 雷达轴名 / 柱状图 x 轴 / 热力图 x 轴短名
+  progressLabel: string;  // 进度条标签
+}
+
+const ACTIVITY_DIM_SPECS: ActivityDimSpec[] = [
+  { key: 'ace', label: 'ACE抑制', short: 'ACE抑制', progressLabel: 'ACE抑制活性' },
+  { key: 'antioxidant', label: '抗氧化', short: '抗氧化', progressLabel: '抗氧化活性' },
+  { key: 'antimicrobial', label: '抗菌', short: '抗菌', progressLabel: '抗菌活性' },
+  // 可选维度：后端返回了才出现（缺失 ≠ 0 分）
+  { key: 'dpp4', label: 'DPP-IV抑制', short: 'DPP-IV', progressLabel: 'DPP-IV抑制活性' },
+];
+
+interface ActivityDim {
+  key: ActivityDimKey;
+  label: string;          // 完整中文名（tooltip / 图下数值条）
+  short: string;          // 短名（雷达轴名 / x 轴）
+  progressLabel: string;  // 进度条标签
+  score: number;          // 归一化到 0..1（仅用于画图）
+  raw: number;            // 接口原始分值（已保证为有限数）
+  level: string;          // low / medium / high…（未知字符串原样保留）
+  confidence: number | null; // 0..1，缺省/非法时为 null（不显示，而不是显示 0%）
+  motifs: string[];       // 活性基序（可能为空）
+}
+
+function levelZh(level?: string): string {
+  if (!level) return '—';
+  return ACTIVITY_LEVEL_ZH[level.toLowerCase()] || level; // 未知等级原样展示
+}
+
+/** 等级配色：高=绿、中=黄、低=红、无/未知=灰（颜色有语义，不自己定档） */
+function levelColor(level?: string): string {
+  const l = (level || '').toLowerCase();
+  if (l === 'high' || l === 'very_high') return '#10b981';
+  if (l === 'medium' || l === 'moderate') return '#eab308';
+  if (l === 'low') return '#ef4444';
+  if (l === 'none' || l === 'pass') return '#9ca3af';
+  // 没有 level / 未知 level → 中性灰：不猜档，也不把「没测」染成红/绿
+  return '#9ca3af';
+}
+
+/** 归一化并夹紧：后端若返回 NaN / >1 / <0，ECharts 会画出 NaN 或越界图形 */
+function normScore(v?: number | null): number {
+  return Number.isFinite(v as number) ? Math.min(1, Math.max(0, v as number)) : 0;
+}
+
+/** 置信度 → 百分比文本；缺省 / 非法 / 0 时返回 null（调用方据此省略整行，绝不显示 0%） */
+function confPct(v?: number | null): string | null {
+  if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) return null;
+  return `${(normScore(v) * 100).toFixed(0)}%`;
+}
+
+/** 基序摘要：最多列 3 个，超出显示「等 n 个」 */
+function motifText(motifs?: string[] | null): string {
+  const list = (motifs || []).filter((m): m is string => typeof m === 'string' && m.trim().length > 0);
+  if (list.length === 0) return '';
+  if (list.length <= 3) return list.join('、');
+  return `${list.slice(0, 3).join('、')} 等 ${list.length} 个`;
+}
+
+/** 图表无障碍兜底：把活性谱拼成一句话，供 ECharts 容器 role="img" 的 aria-label 使用 */
+function activityAriaText(data: PeptideAnalysisResult): string {
+  const dims = buildActivityDims(data);
+  if (dims.length === 0) return '无活性预测数据';
+  return dims.map((d) => `${d.label} ${Math.round(d.score * 100)}%`).join('、');
+}
+
+/** 给十六进制颜色加透明度（热力图用：同一等级色按分值深浅表达强弱） */
+function withAlpha(hex: string, alpha: number): string {
+  const h = hex.replace('#', '');
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const n = Number.parseInt(full, 16);
+  if (!Number.isFinite(n) || full.length !== 6) return hex;
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${Math.min(1, Math.max(0, alpha))})`;
+}
+
+function getActivityScore(data: PeptideAnalysisResult, key: ActivityDimKey): ActivityScore | undefined {
+  switch (key) {
+    case 'ace': return data.ace_inhibition;
+    case 'antioxidant': return data.antioxidant;
+    case 'antimicrobial': return data.antimicrobial;
+    case 'dpp4': return data.dpp4_inhibition;
+    default: return undefined;
+  }
+}
+
+function buildActivityDims(data: PeptideAnalysisResult): ActivityDim[] {
+  const dims: ActivityDim[] = [];
+  for (const spec of ACTIVITY_DIM_SPECS) {
+    const scoreObj = getActivityScore(data, spec.key);
+    // 可选维度（DPP-IV）缺失时直接跳过：缺数据 ≠ 0 分，不伪造 0 分
+    if (!scoreObj) continue;
+    const raw = scoreObj.score;
+    dims.push({
+      key: spec.key,
+      label: spec.label,
+      short: spec.short,
+      progressLabel: spec.progressLabel,
+      score: normScore(raw),
+      raw: Number.isFinite(raw) ? raw : 0,
+      level: typeof scoreObj.level === 'string' ? scoreObj.level : '',
+      confidence: typeof scoreObj.confidence === 'number' && Number.isFinite(scoreObj.confidence) ? scoreObj.confidence : null,
+      motifs: Array.isArray(scoreObj.motifs) ? scoreObj.motifs.filter((m): m is string => typeof m === 'string') : [],
+    });
+  }
+  return dims;
+}
+
+/** 图下数值条：雷达图本身不显示刻度数值，这里把每个维度的百分比与等级写成可读文字 */
+function ActivityValueRow({ dims, allZero = false }: { dims: ActivityDim[]; allZero?: boolean }) {
+  // 结构转换会产出临时结果（活性全 0）：明确说明「无活性预测」，不把它当真实 0 分展示
+  if (allZero) {
+    return (
+      <div className="mt-1 text-[11px] leading-4 text-[var(--text-muted,#9A9A9F)]">
+        当前结果无活性预测（结构转换结果）
+      </div>
+    );
+  }
+  return (
+    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] leading-4">
+      {dims.map((d) => (
+        <span key={d.key} className="inline-flex items-center gap-1 text-[var(--text-muted,#9A9A9F)]">
+          <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ backgroundColor: levelColor(d.level) }} />
+          <span>{d.label}</span>
+          <span className="font-mono font-medium text-[var(--text-secondary,#374151)] dark:text-[var(--text-secondary-dark,#E5E7EB)]">
+            {(d.score * 100).toFixed(0)}%
+          </span>
+          <span>{levelZh(d.level)}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** 等级图例：高/中/低/无 四个语义色块（全页共用；不在雷达图、柱状图各重复一遍） */
+const ACTIVITY_LEVEL_LEGEND: Array<{ level: string; text: string }> = [
+  { level: 'low', text: '低' },
+  { level: 'medium', text: '中' },
+  { level: 'high', text: '高' },
+  { level: 'none', text: '无' },
+];
+
+function ActivityLevelLegend({ className = '' }: { className?: string }) {
+  return (
+    <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] leading-4 text-[var(--text-muted,#9A9A9F)] ${className}`}>
+      <span>等级配色</span>
+      {ACTIVITY_LEVEL_LEGEND.map((it) => (
+        <span key={it.level} className="inline-flex items-center gap-1">
+          <span className="inline-block w-2.5 h-2.5 rounded-[2px]" style={{ backgroundColor: levelColor(it.level) }} />
+          {it.text}
+        </span>
+      ))}
+      <span className="inline-flex items-center gap-1">
+        <span className="inline-block w-2.5 h-2.5 rounded-[2px] border border-dashed border-[var(--border-color)]" />
+        无数据（—）
+      </span>
+    </div>
+  );
+}
+
+// ─── 活性预测进度条（颜色只来自后端 level，宽度来自 score）───
+function ScoreProgress({ label, score, level, confidence }: {
+  label: string;
+  score: number;
+  level?: string;
+  confidence?: number | null;
+}) {
+  const pct = normScore(score);
+  // 没有 level → 中性灰；绝不再用前端自造的 0.8/0.5 阈值染色
+  const color = level ? levelColor(level) : '#9ca3af';
+  const conf = confPct(confidence);
   return (
     <div className="space-y-1">
-      <div className="flex justify-between text-xs">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-2 text-xs">
         <span className="text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">{label}</span>
-        <span className={`font-medium ${getScoreColor(score)}`}>{(score * 100).toFixed(1)}%</span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="font-medium" style={{ color }}>{level ? levelZh(level) : '无等级'}</span>
+          {conf && <span className="text-[var(--text-muted,#9A9A9F)]">置信度 {conf}</span>}
+          <span className="font-mono font-medium text-[var(--text-secondary,#374151)] dark:text-[var(--text-secondary-dark,#E5E7EB)]">
+            {(pct * 100).toFixed(1)}%
+          </span>
+        </span>
       </div>
       <div className="w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-pill)] h-2">
         <div
           className="h-2 rounded-[var(--radius-pill)] transition-all duration-500"
-          style={{
-            width: `${score * 100}%`,
-            backgroundColor: score >= 0.8 ? 'var(--color-primary-500)' : score >= 0.5 ? '#eab308' : '#ef4444',
-          }}
+          style={{ width: `${pct * 100}%`, backgroundColor: color }}
         />
       </div>
     </div>
   );
 }
 
+/** 「活性预测」卡片内容：进度条 + 等级图例 + 等级徽章，全部由 buildActivityDims 驱动 */
+function ActivityPredictionPanel({ data }: { data: PeptideAnalysisResult; dpp4Inhibition?: ActivityScore }) {
+  const dims = useMemo(() => buildActivityDims(data), [data]);
+  const allZero = dims.every((d) => d.score === 0);
+  return (
+    <div className="space-y-[var(--space-apple-sm)]">
+      <ActivityLevelLegend />
+      {dims.map((d) => (
+        <div key={d.key} className="space-y-1">
+          <ScoreProgress
+            label={d.progressLabel}
+            score={d.score}
+            level={d.level || undefined}
+            confidence={d.confidence}
+          />
+          {d.motifs && d.motifs.length > 0 && (
+            <p className="text-[11px] text-[var(--text-muted,#9A9A9F)]">活性基序：{motifText(d.motifs)}</p>
+          )}
+        </div>
+      ))}
+      {allZero && (
+        <p className="text-[11px] leading-4 text-[var(--text-muted,#9A9A9F)]">当前结果无活性预测（结构转换结果）</p>
+      )}
+      <div className="flex gap-2 flex-wrap pt-1">
+        {dims.map((d) => (
+          <Badge key={d.key} variant={getActivityBadge(d.level)}>
+            {d.key === 'dpp4' ? 'DPP-IV' : d.short}: {levelZh(d.level)}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 对比雷达多条序列的配色（ECharts 不解析 CSS 变量，这里用固定色值）
+const COMPARE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+const COMPARE_AREAS = [
+  'rgba(59,130,246,0.10)', 'rgba(16,185,129,0.10)', 'rgba(245,158,11,0.10)',
+  'rgba(239,68,68,0.10)', 'rgba(139,92,246,0.10)', 'rgba(6,182,212,0.10)',
+];
+
 // ─── 雷达图配置 ───
 function RadarChart({ data }: { data: PeptideAnalysisResult }) {
-  const option = {
-    title: {
-      text: '活性谱雷达图',
-      left: 'center',
-      top: 5,
-      textStyle: { fontSize: 12, fontWeight: 'normal', color: 'var(--text-secondary,#6B7280)' }
-    },
+  const axisColor = cssColor('--text-secondary', '#6B7280');
+  const dims = useMemo(() => buildActivityDims(data), [data]);
+  const allZero = dims.every((d) => d.score === 0);
+  // 用 useMemo 稳定 option 引用：否则父组件每次输入框按键都会生成新对象，
+  // 触发 ReactECharts 的 setOption 全量重绘（雷达图 + 柱状图各一次）。
+  const option = useMemo(() => ({
+    // 标题由卡片 h3 承载，图内不再重复一遍（原来两张图各有一个重复标题）
     radar: {
-      indicator: [
-        { name: 'ACE抑制', max: 1 },
-        { name: '抗氧化', max: 1 },
-        { name: '抗菌', max: 1 },
-        { name: '食品安全', max: 1 },
-      ],
+      center: ['50%', '54%'],
+      radius: '62%',
+      // 轴名用短名（DPP-IV 而不是 DPP-IV抑制）：窄栏不压线；完整名由图下数值条给出。
+      // overflow: 'break' 让极窄容器下超长轴名折行而不是溢出裁切。
+      indicator: dims.map((d) => ({ name: d.short, max: 1 })),
       shape: 'polygon',
       splitNumber: 4,
-      axisName: { color: 'var(--text-secondary,#6B7280)', fontSize: 12 },
-      splitLine: { lineStyle: { color: 'rgba(128,128,128,0.2)' } },
-      splitArea: { show: false },
-      axisLine: { lineStyle: { color: 'rgba(128,128,128,0.3)' } },
+      axisName: { color: axisColor, fontSize: 11, overflow: 'break', width: 62 },
+      axisLabel: { show: true, formatter: (v: any) => `${Math.round(v * 100)}%`, color: axisColor, fontSize: 9 },
+      splitLine: { lineStyle: { color: 'rgba(128,128,128,0.22)' } },
+      splitArea: { areaStyle: { color: ['rgba(148,163,184,0.03)', 'rgba(148,163,184,0.07)'] } },
+      axisLine: { lineStyle: { color: 'rgba(128,128,128,0.28)' } },
     },
     series: [{
       type: 'radar',
+      symbolSize: 5,
       data: [{
-        value: [
-          data.ace_inhibition.score,
-          data.antioxidant.score,
-          data.antimicrobial.score,
-          data.safety.food_score / 100,
-        ],
+        value: dims.map((d) => d.score),
         name: '活性谱',
-        areaStyle: { color: 'rgba(59,130,246,0.2)' },
+        areaStyle: { color: 'rgba(59,130,246,0.22)' },
         lineStyle: { color: '#3b82f6', width: 2 },
         itemStyle: { color: '#3b82f6' },
       }],
     }],
-    tooltip: { trigger: 'item' },
+    tooltip: {
+      trigger: 'item',
+      // 分值 + 后端等级 + confidence（无 confidence 时不显示该行，不显示 0%）
+      formatter: () => dims.map((d) => {
+        const conf = confPct(d.confidence);
+        return `${d.label}：<b>${(d.score * 100).toFixed(1)}%</b>（${levelZh(d.level)}）${conf ? `<br/>置信度：${conf}` : ''}`;
+      }).join('<br/>'),
+    },
     legend: { show: false },
-  };
-  return <ReactECharts option={option} style={{ height: 240 }} />;
+  }), [dims, axisColor]);
+  if (dims.length < 3) {
+    // 防御：雷达至少需要 3 个轴（正常数据契约不会走到这里）
+    return <p className="text-xs text-[var(--text-muted,#9A9A9F)] py-8 text-center">活性维度不足，无法绘制雷达图</p>;
+  }
+  return (
+    <div>
+      <ReactECharts option={option} style={{ height: 236 }} />
+      <ActivityValueRow dims={dims} allZero={allZero} />
+    </div>
+  );
 }
 
 // ─── 柱状图配置 ───
 function BarChart({ data }: { data: PeptideAnalysisResult }) {
-  const option = {
-    title: {
-      text: '活性得分柱状图',
-      left: 'center',
-      top: 5,
-      textStyle: { fontSize: 12, fontWeight: 'normal', color: 'var(--text-secondary,#6B7280)' }
-    },
-    grid: { left: '3%', right: '4%', bottom: '15%', top: '25%', containLabel: true },
+  const axisColor = cssColor('--text-secondary', '#6B7280');
+  const dims = useMemo(() => buildActivityDims(data), [data]);
+  const allZero = dims.every((d) => d.score === 0);
+  const option = useMemo(() => ({
+    grid: { left: 6, right: 10, bottom: 2, top: 26, containLabel: true },
     xAxis: {
       type: 'category',
-      data: ['ACE抑制', '抗氧化', '抗菌', '食品安全'],
-      axisLabel: { color: 'var(--text-secondary,#6B7280)', fontSize: 12 },
+      data: dims.map((d) => d.short),
+      axisTick: { show: false },
+      axisLabel: { color: axisColor, fontSize: 11, interval: 0, overflow: 'break', width: 54 },
       axisLine: { lineStyle: { color: 'rgba(128,128,128,0.3)' } },
     },
     yAxis: {
       type: 'value',
+      min: 0,
       max: 1,
       axisLabel: {
-        formatter: (value: number) => `${(value * 100).toFixed(0)}%`,
-        color: 'var(--text-secondary,#6B7280)'
+        // 0–100%（后端分值为 0..1，轴上直接显示百分比）
+        formatter: (value: number) => `${Math.round(value * 100)}%`,
+        color: axisColor,
+        fontSize: 11,
       },
-      splitLine: { lineStyle: { color: 'rgba(128,128,128,0.1)', type: 'dashed' } },
-      axisLine: { lineStyle: { color: 'rgba(128,128,128,0.3)' } },
+      splitLine: { lineStyle: { color: 'rgba(128,128,128,0.12)', type: 'dashed' } },
+      axisLine: { show: false },
     },
     series: [{
-      data: [
-        {
-          value: data.ace_inhibition.score,
-          itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] }
-        },
-        {
-          value: data.antioxidant.score,
-          itemStyle: { color: 'var(--color-primary-500)', borderRadius: [4, 4, 0, 0] }
-        },
-        {
-          value: data.antimicrobial.score,
-          itemStyle: { color: '#f59e0b', borderRadius: [4, 4, 0, 0] }
-        },
-        {
-          value: data.safety.food_score / 100,
-          itemStyle: { color: '#8b5cf6', borderRadius: [4, 4, 0, 0] }
-        },
-      ],
       type: 'bar',
-      barWidth: '50%',
+      barMaxWidth: 46,
+      // 只用 buildActivityDims 里真实存在的维度：缺 DPP-IV 时不画空柱/不补 0
+      data: dims.map((d) => ({
+        value: d.score,
+        itemStyle: { color: levelColor(d.level), borderRadius: [4, 4, 0, 0], opacity: 0.92 },
+      })),
       label: {
         show: true,
         position: 'top',
-        formatter: (params: any) => `${(params.value * 100).toFixed(0)}%`,
+        // 0 分不标顶层数值（避免结构转换临时结果的 0 被读成真实测量 0）；tooltip 仍可查看
+        formatter: (params: any) => (Number(params.value) > 0 ? `${(Number(params.value) * 100).toFixed(0)}%` : ''),
         fontSize: 10,
-        color: 'var(--text-secondary,#6B7280)'
+        color: axisColor,
       },
     }],
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
       formatter: (params: any) => {
-        const p = params[0];
-        return `${p.name}<br/>得分: <b>${(p.value * 100).toFixed(1)}%</b>`;
+        const d = dims[params?.[0]?.dataIndex ?? 0];
+        if (!d) return '';
+        const conf = confPct(d.confidence);
+        const motifs = motifText(d.motifs);
+        return [
+          d.label,
+          `活性评分：<b>${(d.score * 100).toFixed(1)}%</b>`,
+          `等级：${levelZh(d.level)}`,
+          conf ? `置信度：${conf}` : null,
+          motifs ? `基序：${motifs}` : null,
+        ].filter((s): s is string => !!s).join('<br/>');
       },
     },
-  };
-  return <ReactECharts option={option} style={{ height: 240 }} />;
+  }), [dims, axisColor]);
+  return (
+    <div>
+      <ReactECharts option={option} style={{ height: 236 }} />
+      <ActivityValueRow dims={dims} allZero={allZero} />
+    </div>
+  );
 }
 
-// ─── 活性热力图（多肽 × 多目标矩阵）───
+// ─── 活性热力图（多肽 × 活性维度矩阵；与雷达/柱状/进度条共用 ACTIVITY_DIM_SPECS）───
 function ActivityHeatmap({ results }: { results: PeptideAnalysisResult[] }) {
-  const objectives = ['ACE抑制', '抗氧化', '抗菌', '食品安全'];
-  const points: Array<[number, number, number, string]> = [];
-  results.forEach((r, row) => {
-    const vals = [
-      r.ace_inhibition.score,
-      r.antioxidant.score,
-      r.antimicrobial.score,
-      r.safety.food_score / 100,
-    ];
-    vals.forEach((v, col) => {
-      points.push([col, row, v, r.sequence]);
+  const axisColor = cssColor('--text-secondary', '#6B7280');
+  const cellLabelColor = cssColor('--text-primary', '#111827');
+  // 单元格分隔线跟随主题背景色（暗色模式下不再是一条刺眼的白线）
+  const cellBorder = cssColor('--bg-primary', '#fff');
+  // 维度取并集：任一结果含 DPP-IV 就出现该列；单行缺该维度时该单元格留「—」。
+  // 维度顺序与雷达/柱状/进度条完全一致（ACTIVITY_DIM_SPECS）。
+  const dims = useMemo(() => {
+    const present = new Set<ActivityDimKey>();
+    results.forEach((r) => buildActivityDims(r).forEach((d) => present.add(d.key)));
+    return ACTIVITY_DIM_SPECS.filter((s) => present.has(s.key));
+  }, [results]);
+
+  const { points, missingCount } = useMemo(() => {
+    const presentPoints: any[] = [];
+    const missingPoints: any[] = [];
+    results.forEach((r, row) => {
+      const byKey = new Map<ActivityDimKey, ActivityDim>(buildActivityDims(r).map((d) => [d.key, d]));
+      dims.forEach((spec, col) => {
+        const d = byKey.get(spec.key);
+        if (!d) {
+          // 缺数据：透明虚线格 + 「—」。明确区分「缺数据」与「测过且为 0 分」
+          missingPoints.push({
+            value: [col, row, 0],
+            missing: true,
+            sequence: r.sequence,
+            dimLabel: spec.label,
+            itemStyle: {
+              color: 'transparent',
+              borderColor: 'rgba(128,128,128,0.35)',
+              borderWidth: 1,
+              borderType: 'dashed',
+            },
+            label: { formatter: '—', color: axisColor },
+          });
+          return;
+        }
+        presentPoints.push({
+          value: [col, row, d.score],
+          level: d.level,
+          sequence: r.sequence,
+          dimLabel: spec.label,
+          confidence: d.confidence,
+          motifs: d.motifs,
+          // 语义色（等级） + 透明度（强度）：不再用无含义的蓝色彩虹色阶
+          itemStyle: {
+            color: withAlpha(levelColor(d.level), 0.30 + 0.55 * d.score),
+            borderColor: cellBorder,
+            borderWidth: 1,
+          },
+          label: { formatter: `${(d.score * 100).toFixed(0)}%` },
+        });
+      });
     });
-  });
-  const option = {
+    return { points: [...presentPoints, ...missingPoints], missingCount: missingPoints.length };
+  }, [results, dims, axisColor, cellBorder]);
+
+  const option = useMemo(() => ({
     title: {
-      text: '多肽 × 目标 活性热力图',
+      text: '多肽 × 活性维度 热力图',
       left: 'center',
       top: 5,
-      textStyle: { fontSize: 12, fontWeight: 'normal', color: 'var(--text-secondary,#6B7280)' },
+      textStyle: { fontSize: 12, fontWeight: 'normal', color: axisColor },
     },
     tooltip: {
       position: 'top',
-      formatter: (p: any) => `${p.data[3]}<br/>${objectives[p.data[0]]}: <b>${(p.data[2] * 100).toFixed(1)}%</b>`,
+      formatter: (p: any) => {
+        const data = p.data || {};
+        if (data.missing) return `${data.sequence}<br/>${data.dimLabel}：—（无此维度数据）`;
+        const conf = confPct(data.confidence);
+        const motifs = motifText(data.motifs);
+        return [
+          data.sequence,
+          `${data.dimLabel}：<b>${(Number(data.value?.[2] ?? 0) * 100).toFixed(1)}%</b>（${levelZh(data.level)}）`,
+          conf ? `置信度：${conf}` : null,
+          motifs ? `基序：${motifs}` : null,
+        ].filter((s): s is string => !!s).join('<br/>');
+      },
     },
-    grid: { left: '8%', right: '10%', top: '18%', bottom: '15%', containLabel: true },
+    grid: { left: '8%', right: '8%', top: '20%', bottom: '14%', containLabel: true },
     xAxis: {
       type: 'category',
-      data: objectives,
+      data: dims.map((d) => d.short),
       splitArea: { show: true },
-      axisLabel: { color: 'var(--text-secondary,#6B7280)', fontSize: 11 },
+      axisLabel: { color: axisColor, fontSize: 11, interval: 0, overflow: 'break', width: 54 },
+      axisLine: { lineStyle: { color: 'rgba(128,128,128,0.3)' } },
+      axisTick: { show: false },
     },
     yAxis: {
       type: 'category',
-      data: results.map(r => r.sequence),
+      data: results.map((r) => r.sequence),
       splitArea: { show: true },
-      axisLabel: { color: 'var(--text-secondary,#6B7280)', fontSize: 11, fontFamily: 'monospace' },
+      axisLabel: { color: axisColor, fontSize: 11, fontFamily: 'monospace' },
+      axisLine: { lineStyle: { color: 'rgba(128,128,128,0.3)' } },
+      axisTick: { show: false },
     },
-    visualMap: {
-      min: 0,
-      max: 1,
-      calculable: false,
-      orient: 'vertical',
-      right: 0,
-      top: 'center',
-      inRange: { color: ['#f1f5f9', '#bfdbfe', '#3b82f6', '#1d4ed8'] },
-      textStyle: { color: 'var(--text-secondary,#6B7280)', fontSize: 10 },
-      text: ['高', '低'],
-    },
+    // 不配 visualMap：颜色直接取自后端 level（语义色），避免「蓝色深浅=高低」与等级脱节
     series: [{
       type: 'heatmap',
       data: points,
-      label: {
-        show: true,
-        formatter: (p: any) => `${(p.data[2] * 100).toFixed(0)}%`,
-        fontSize: 10,
-        color: '#111827',
-      },
-      itemStyle: { borderColor: '#fff', borderWidth: 1 },
+      label: { show: true, fontSize: 10, color: cellLabelColor },
+      itemStyle: { borderColor: cellBorder, borderWidth: 1 },
       emphasis: { itemStyle: { shadowBlur: 8, shadowColor: 'rgba(0,0,0,0.3)' } },
     }],
-  };
-  return <ReactECharts option={option} style={{ height: Math.max(240, results.length * 36 + 80) }} />;
+  }), [dims, points, axisColor, cellLabelColor, cellBorder, results]);
+
+  return (
+    <div>
+      <ActivityLevelLegend className="mb-1" />
+      <ReactECharts option={option} style={{ height: Math.max(240, results.length * 36 + 96) }} />
+      {missingCount > 0 && (
+        <p className="mt-1 text-[11px] leading-4 text-[var(--text-muted,#9A9A9F)]">
+          「—」表示该结果缺此维度（缺数据 ≠ 0 分），未做任何补零。
+        </p>
+      )}
+    </div>
+  );
 }
 
 // ─── Pareto 前沿二维散点图 ──
@@ -541,6 +875,17 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
     }
   }, [sequences]);
 
+  const axisColor = cssColor('--text-secondary', '#6B7280');
+  // 对比雷达只画「所有序列都有」的维度（交集）：某条结果缺 DPP-IV 时不用 0 分填充伪造，
+  // 而是把该维度整体省略并在图下说明（数据结构里缺维度 ≠ 测得 0 分）。
+  const compareDims = useMemo(
+    () => ACTIVITY_DIM_SPECS.filter((spec) => (
+      results.length === 0 ? spec.key !== 'dpp4' : results.every((r) => !!getActivityScore(r, spec.key))
+    )),
+    [results],
+  );
+  const omittedDims = ACTIVITY_DIM_SPECS.filter((spec) => !compareDims.some((d) => d.key === spec.key));
+
   if (sequences.length < 2) {
     return (
       <div className="text-center py-8 text-[var(--text-muted,#9A9A9F)]">
@@ -589,25 +934,23 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
                     <td className="px-[var(--space-apple-sm)] py-2 font-mono font-medium">{r.sequence}</td>
                     <td className="px-[var(--space-apple-sm)] py-2 text-right">{r.molecular_weight.toFixed(1)}</td>
                     <td className="px-[var(--space-apple-sm)] py-2 text-right">
-                      <span className={`font-bold ${getScoreColor(r.safety.food_score / 100)}`}>
-                        {r.safety.food_score.toFixed(0)}
-                      </span>
+                      <span className="font-bold">{r.safety.food_score.toFixed(0)}</span>
                     </td>
                     <td className="px-[var(--space-apple-sm)] py-2 text-right">{(r.ace_inhibition.score * 100).toFixed(1)}%</td>
                     <td className="px-[var(--space-apple-sm)] py-2 text-right">{(r.antioxidant.score * 100).toFixed(1)}%</td>
                     <td className="px-[var(--space-apple-sm)] py-2 text-right">{(r.antimicrobial.score * 100).toFixed(1)}%</td>
                     <td className="px-[var(--space-apple-sm)] py-2 text-center">
                       {r.safety.is_allergen ? (
-                        <span className="text-[var(--color-error-text)]0">是</span>
+                        <span className="text-[var(--color-error-text)]">是</span>
                       ) : (
-                        <span className="text-[var(--color-success-text)]0">否</span>
+                        <span className="text-[var(--color-success-text)]">否</span>
                       )}
                     </td>
                     <td className="px-[var(--space-apple-sm)] py-2 text-center">
                       {r.safety.is_toxic ? (
-                        <span className="text-[var(--color-error-text)]0">是</span>
+                        <span className="text-[var(--color-error-text)]">是</span>
                       ) : (
-                        <span className="text-[var(--color-success-text)]0">否</span>
+                        <span className="text-[var(--color-success-text)]">否</span>
                       )}
                     </td>
                   </tr>
@@ -616,39 +959,52 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
             </table>
           </div>
 
-          {/* 综合评分对比图 */}
+          {/* 综合评分对比图（与雷达/柱状/进度条/热力图同一份活性维度，食品安全不再混入） */}
           <div className="pt-[var(--space-apple-md)]">
             <h4 className="text-sm font-medium mb-[var(--space-apple-sm)]">活性对比</h4>
             <ReactECharts
               option={{
                 radar: {
-                  indicator: [
-                    { name: 'ACE抑制', max: 1 },
-                    { name: '抗氧化', max: 1 },
-                    { name: '抗菌', max: 1 },
-                    { name: '食品安全', max: 1 },
-                  ],
+                  indicator: compareDims.map((d) => ({ name: d.short, max: 1 })),
                   shape: 'polygon',
                   splitNumber: 4,
+                  splitArea: { areaStyle: { color: ['rgba(148,163,184,0.03)', 'rgba(148,163,184,0.07)'] } },
+                  splitLine: { lineStyle: { color: 'rgba(128,128,128,0.22)' } },
+                  axisName: { color: axisColor, fontSize: 11, overflow: 'break', width: 62 },
+                },
+                tooltip: {
+                  trigger: 'item',
+                  formatter: (params: any) => {
+                    const name = params?.name ?? params?.data?.name;
+                    const r = results.find((x) => x.sequence === name) ?? results[params?.dataIndex ?? 0];
+                    if (!r) return '';
+                    return [`<b>${r.sequence}</b>`].concat(compareDims.map((d) => {
+                      const s = getActivityScore(r, d.key);
+                      const conf = confPct(s?.confidence);
+                      return `${d.label}：<b>${(normScore(s?.score) * 100).toFixed(1)}%</b>（${levelZh(s?.level)}）${conf ? ` 置信度 ${conf}` : ''}`;
+                    })).join('<br/>');
+                  },
                 },
                 series: [{
                   type: 'radar',
+                  symbolSize: 4,
                   data: results.map((r, i) => ({
-                    value: [
-                      r.ace_inhibition.score,
-                      r.antioxidant.score,
-                      r.antimicrobial.score,
-                      r.safety.food_score / 100,
-                    ],
+                    value: compareDims.map((d) => normScore(getActivityScore(r, d.key)?.score)),
                     name: r.sequence,
-                    lineStyle: { color: ['#3b82f6', 'var(--color-primary-500)', '#f59e0b', '#ef4444'][i % 4] },
-                    areaStyle: { color: (['rgba(59,130,246,0.1)', 'rgba(34,197,94,0.1)', 'rgba(245,158,11,0.1)', 'rgba(239,68,68,0.1)'][i % 4]) },
+                    lineStyle: { color: COMPARE_COLORS[i % COMPARE_COLORS.length], width: 2 },
+                    itemStyle: { color: COMPARE_COLORS[i % COMPARE_COLORS.length] },
+                    areaStyle: { color: COMPARE_AREAS[i % COMPARE_AREAS.length] },
                   })),
                 }],
-                legend: { bottom: 0, textStyle: { fontSize: 10 } },
+                legend: { bottom: 0, textStyle: { fontSize: 10, color: axisColor } },
               }}
               style={{ height: 280 }}
             />
+            {omittedDims.length > 0 && (
+              <p className="mt-1 text-[11px] leading-4 text-[var(--text-muted,#9A9A9F)]">
+                部分序列缺少 {omittedDims.map((d) => d.label).join('、')} 维度，已从此雷达图省略（不用 0 分填充）。
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -802,7 +1158,7 @@ setLoading(true);
                       <td className="px-[var(--space-apple-sm)] py-2 text-xs">{p.food_source || '-'}</td>
                       <td className="px-[var(--space-apple-sm)] py-2 text-center">
                         {onAnalyzeSequence && (
-                          <Button size="sm" variant="ghost" className="h-7 text-xs text-primary" onClick={() => onAnalyzeSequence(p.sequence)}>
+                          <Button size="sm" variant="ghost" className="h-7 text-xs text-[var(--color-primary)]" onClick={() => onAnalyzeSequence(p.sequence)}>
                             <Beaker className="w-3.5 h-3.5 mr-1" />分析
                           </Button>
                         )}
@@ -826,15 +1182,15 @@ setLoading(true);
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-apple-sm)]">
           <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
-            <div className="text-2xl font-bold text-primary">{stats.total_peptides}</div>
+            <div className="text-2xl font-bold text-[var(--text-primary)]">{stats.total_peptides}</div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">总肽数</div>
           </div>
           <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
-            <div className="text-2xl font-bold text-primary">{Object.keys(stats.activities).length}</div>
+            <div className="text-2xl font-bold text-[var(--text-primary)]">{Object.keys(stats.activities).length}</div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">活性类型</div>
           </div>
           <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
-            <div className="text-2xl font-bold text-primary">{Object.keys(stats.food_sources).length}</div>
+            <div className="text-2xl font-bold text-[var(--text-primary)]">{Object.keys(stats.food_sources).length}</div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">食物来源</div>
           </div>
         </div>
@@ -881,7 +1237,7 @@ setLoading(true);
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 text-xs text-primary hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/20"
+                          className="h-7 text-xs text-[var(--color-primary)] hover:bg-[var(--color-primary-container)] dark:hover:bg-[var(--color-primary-container)]/20"
                           onClick={() => onAnalyzeSequence(p.sequence)}
                         >
                           <Beaker className="w-3.5 h-3.5 mr-1" />分析
@@ -955,21 +1311,21 @@ function HistoryView() {
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-[var(--space-apple-sm)]">
           <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
-            <div className="text-xl font-bold text-primary">{stats.total_analyses}</div>
+            <div className="text-xl font-bold text-[var(--text-primary)]">{stats.total_analyses}</div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">总分析数</div>
           </div>
           <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
-            <div className="text-xl font-bold text-primary">{stats.avg_food_score.toFixed(1)}</div>
+            <div className="text-xl font-bold text-[var(--text-primary)]">{stats.avg_food_score.toFixed(1)}</div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">平均评分</div>
           </div>
           <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
-            <div className={`text-xl font-bold ${stats.allergen_count > 0 ? 'text-[var(--color-error-text)]0' : 'text-[var(--color-success-text)]0'}`}>
+            <div className={`text-xl font-bold ${stats.allergen_count > 0 ? 'text-[var(--color-error-text)]' : 'text-[var(--color-success-text)]'}`}>
               {stats.allergen_count}
             </div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">过敏原</div>
           </div>
           <div className="p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)] text-center">
-            <div className={`text-xl font-bold ${stats.toxic_count > 0 ? 'text-[var(--color-error-text)]0' : 'text-[var(--color-success-text)]0'}`}>
+            <div className={`text-xl font-bold ${stats.toxic_count > 0 ? 'text-[var(--color-error-text)]' : 'text-[var(--color-success-text)]'}`}>
               {stats.toxic_count}
             </div>
             <div className="text-xs text-[var(--text-muted,#9A9A9F)]">毒性</div>
@@ -1030,25 +1386,23 @@ function HistoryView() {
                 <td className="px-[var(--space-apple-sm)] py-2 font-mono font-medium">{r.sequence}</td>
                 <td className="px-[var(--space-apple-sm)] py-2 text-right">{r.molecular_weight.toFixed(1)}</td>
                 <td className="px-[var(--space-apple-sm)] py-2 text-right">
-                  <span className={`font-bold ${getScoreColor(r.food_safety_score / 100)}`}>
-                    {r.food_safety_score.toFixed(0)}
-                  </span>
+                  <span className="font-bold">{r.food_safety_score.toFixed(0)}</span>
                 </td>
                 <td className="px-[var(--space-apple-sm)] py-2 text-right">{(r.ace_inhibition_score * 100).toFixed(1)}%</td>
                 <td className="px-[var(--space-apple-sm)] py-2 text-right">{(r.antioxidant_score * 100).toFixed(1)}%</td>
                 <td className="px-[var(--space-apple-sm)] py-2 text-right">{((r.antimicrobial_score ?? 0) * 100).toFixed(1)}%</td>
                 <td className="px-[var(--space-apple-sm)] py-2 text-center">
                   {r.is_allergen ? (
-                    <span className="text-[var(--color-error-text)]0">是</span>
+                    <span className="text-[var(--color-error-text)]">是</span>
                   ) : (
-                    <span className="text-[var(--color-success-text)]0">否</span>
+                    <span className="text-[var(--color-success-text)]">否</span>
                   )}
                 </td>
                 <td className="px-[var(--space-apple-sm)] py-2 text-center">
                   {r.is_toxic ? (
-                    <span className="text-[var(--color-error-text)]0">是</span>
+                    <span className="text-[var(--color-error-text)]">是</span>
                   ) : (
-                    <span className="text-[var(--color-success-text)]0">否</span>
+                    <span className="text-[var(--color-success-text)]">否</span>
                   )}
                 </td>
                 <td className="px-[var(--space-apple-sm)] py-2 text-center capitalize">{r.digestibility || '未知'}</td>
@@ -1059,7 +1413,7 @@ function HistoryView() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-6 w-6 p-0 text-[var(--color-error-text)]0 hover:text-[var(--color-error-text)]"
+                    className="h-6 w-6 p-0 text-[var(--color-error-text)] hover:text-[var(--color-error-text)]"
                     onClick={() => handleDelete(r.id)}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -1191,7 +1545,7 @@ function BatchAnalysisView() {
             <span className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono">{task.completed}/{task.total} · {task.progress}%</span>
           </div>
           <div className="w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-pill)] h-2">
-            <div className="bg-[var(--color-primary-container)]0 h-2 rounded-[var(--radius-pill)] transition-all duration-500" style={{ width: `${task.progress}%` }} />
+            <div className="bg-[var(--color-primary-container)] h-2 rounded-[var(--radius-pill)] transition-all duration-500" style={{ width: `${task.progress}%` }} />
           </div>
           <p className="text-xs text-[var(--text-muted,#9A9A9F)]">
             任务 {task.taskId.slice(0, 8)}… 已后台并发处理，完成后自动刷新结果表。
@@ -1214,7 +1568,7 @@ function BatchAnalysisView() {
                   {r.success && r.result ? (
                     <>
                       <td className="px-[var(--space-apple-sm)] py-2 font-mono text-xs">{r.result.molecular_weight?.toFixed(1) ?? '-'}</td>
-                      <td className="px-[var(--space-apple-sm)] py-2"><span className={`font-bold ${getScoreColor((r.result.safety?.food_score ?? 0) / 100)}`}>{(r.result.safety?.food_score ?? 0).toFixed(0)}</span></td>
+                      <td className="px-[var(--space-apple-sm)] py-2"><span className="font-bold">{(r.result.safety?.food_score ?? 0).toFixed(0)}</span></td>
                       <td className="px-[var(--space-apple-sm)] py-2 text-xs">{((r.result.ace_inhibition?.score ?? 0) * 100).toFixed(1)}%</td>
                       <td className="px-[var(--space-apple-sm)] py-2 text-xs">{((r.result.antioxidant?.score ?? 0) * 100).toFixed(1)}%</td>
                       <td className="px-[var(--space-apple-sm)] py-2 text-xs">{((r.result.antimicrobial?.score ?? 0) * 100).toFixed(1)}%</td>
@@ -1222,7 +1576,7 @@ function BatchAnalysisView() {
                       <td className="px-[var(--space-apple-sm)] py-2 text-center text-xs">{r.result.safety?.is_toxic ? '是' : '否'}</td>
                     </>
                   ) : (
-                    <td colSpan={7} className="px-[var(--space-apple-sm)] py-2 text-xs text-[var(--color-error-text)]0">{r.error ?? '-'}</td>
+                    <td colSpan={7} className="px-[var(--space-apple-sm)] py-2 text-xs text-[var(--color-error-text)]">{r.error ?? '-'}</td>
                   )}
                 </tr>
               ))}
@@ -1279,7 +1633,7 @@ function DeepAnalysisView() {
     <div className="space-y-[var(--space-apple-md)]">
       <Card className="p-[var(--space-apple-md)]">
         <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2"><Dna className="w-4 h-4 text-primary"/>基本性质</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)] text-xs">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)] text-xs">
           {[
             ['分子量 (Da)', bpProps.molecular_weight?.toFixed(2)],
             ['LogP', bpProps.logp?.toFixed(3)],
@@ -1359,7 +1713,7 @@ function DeepAnalysisView() {
         )}
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-4">
         <Card className="p-[var(--space-apple-md)]">
           <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2"><Activity className="w-4 h-4 text-primary"/>生物活性预测</h3>
           <div className="space-y-2">
@@ -1470,7 +1824,7 @@ function OptimizeView() {
           <label className="text-xs text-[var(--text-secondary)] block mb-1">候选序列（每行一条）</label>
           <textarea value={sequences} onChange={e => setSequences(e.target.value)} placeholder={"VLGYT\nRPYPIP\nLLPGTFVDNQKF"} className="w-full h-20 font-mono text-xs p-2 bg-[var(--bg-tertiary)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] resize-none" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[var(--space-apple-sm)]">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-[var(--space-apple-sm)]">
           <div>
             <label className="text-xs text-[var(--text-secondary)] block mb-1">优化目标（逗号分隔）</label>
             <Input value={objectives} onChange={e => setObjectives(e.target.value)} placeholder="ACE_inhibitory,antioxidant" className="text-xs" />
@@ -1626,7 +1980,7 @@ function SynergyView() {
                 {result.top_combinations.slice(0, 5).map((c: any, i: number) => (
                   <div key={i} className="flex items-center justify-between text-xs p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                     <span className="font-mono font-medium">{c.peptide} + {c.herb}</span>
-                    <span className="font-mono text-primary">{(c.synergy_score ?? 0).toFixed(3)}</span>
+                    <span className="font-mono text-[var(--text-primary)]">{(c.synergy_score ?? 0).toFixed(3)}</span>
                   </div>
                 ))}
               </div>
@@ -1691,7 +2045,7 @@ function SynergyView() {
               ))}
               {result.herb_interactions.net_adjustment !== 0 && (
                 <div className="mt-1 text-[var(--text-muted)]">
-                  配伍修正后总分：{result.herb_interactions.base_overall} → <strong className="text-primary">{result.herb_interactions.adjusted_overall}</strong>
+                  配伍修正后总分：{result.herb_interactions.base_overall} → <strong className="text-[var(--text-primary)]">{result.herb_interactions.adjusted_overall}</strong>
                 </div>
               )}
             </div>
@@ -2012,7 +2366,7 @@ function VariantGeneratorView() {
           <label className="text-xs text-[var(--text-secondary)] block mb-1">模板序列</label>
           <Input value={template} onChange={e => setTemplate(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={100} />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-2">
           <div>
             <label className="text-xs text-[var(--text-secondary)] block mb-1">变体类型</label>
             <select value={variantType} onChange={e => setVariantType(e.target.value)}
@@ -2100,7 +2454,7 @@ function CustomOptimizerView() {
           <label className="text-xs text-[var(--text-secondary)] block mb-1">种子序列</label>
           <Input value={seed} onChange={e => setSeed(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={50} />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-2">
           <div>
             <label className="text-xs text-[var(--text-secondary)] block mb-1">ACE 抑制权重 ({aceWeight})</label>
             <input type="range" min={0} max={1} step={0.1} value={aceWeight}
@@ -2112,7 +2466,7 @@ function CustomOptimizerView() {
               onChange={e => setAoxWeight(Number(e.target.value))} className="w-full" aria-label="抗氧化权重" />
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-2">
           <div>
             <label className="text-xs text-[var(--text-secondary)] block mb-1">迭代次数（1-100）</label>
             <Input type="number" value={iterations} onChange={e => setIterations(Number(e.target.value))} className="text-xs" min={1} max={100} />
@@ -2133,7 +2487,7 @@ function CustomOptimizerView() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
               <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                 <div className="text-[var(--text-muted)]">优化序列</div>
-                <div className="font-mono font-medium text-primary">{result.optimized_sequence}</div>
+                <div className="font-mono font-medium text-[var(--text-primary)]">{result.optimized_sequence}</div>
               </div>
               <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
                 <div className="text-[var(--text-muted)]">最优得分</div>
@@ -2207,7 +2561,7 @@ function QuantitativePredictorView() {
       </Card>
       {error && <div className="p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{error}</div>}
       {result && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--space-apple-sm)]">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-[var(--space-apple-sm)]">
           <Card className="p-[var(--space-apple-md)]">
             <h3 className="text-sm font-medium mb-2">ACE 抑制 IC50</h3>
             <div className="text-2xl font-bold font-mono">
@@ -2316,7 +2670,7 @@ function RealSourceStatusPanel({ initialSequence = '' }: RealSourceStatusPanelPr
           <div className="space-y-1">
             {status.sources.map((s: any, i: number) => (
               <div key={i} className="flex items-center gap-2 text-xs">
-                <span className={`w-2 h-2 rounded-[var(--radius-pill)] ${s.reachable ? 'bg-[var(--color-success-container)]0' : 'bg-neutral-300 dark:bg-[var(--border-color)]'}`} />
+                <span className={`w-2 h-2 rounded-[var(--radius-pill)] ${s.reachable ? 'bg-[var(--color-success-container)]' : 'bg-neutral-300 dark:bg-[var(--border-color)]'}`} />
                 <span className="font-medium w-32">{s.name}</span>
                 <Badge variant={s.reachable ? 'success' : 'neutral'} size="sm">{s.reachable ? '可达' : '不可达'}</Badge>
                 <span className="text-[var(--text-muted,#9A9A9F)] flex-1 truncate">{s.note || s.url}</span>
@@ -2563,6 +2917,8 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
   const [renderingMode, setRenderingMode] = useState<'ball-stick' | 'space-filling' | 'tube'>('ball-stick');
   const [loading3D, setLoading3D] = useState(false);
   const [molecule3DError, setMolecule3DError] = useState<string | null>(null);
+  const abort3DRef = useRef<AbortController | null>(null);
+  const cancel3DRequestedRef = useRef(false);
 
   // 初始化
   useEffect(() => {
@@ -2595,11 +2951,33 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
     if (!smiles) return;
     setLoading3D(true);
     setMolecule3DError(null);
+    cancel3DRequestedRef.current = false;
+    // 注意：这里不再立刻清空上一次的坐标。
+    // 清空会让 3D 查看器卸载→重建，每重建一次就会新建一个 WebGL 上下文；
+    // 反复分析会累积上下文（实测每轮 +4，其中被 Chrome 强制丢弃后即报
+    // "THREE.WebGLRenderer: Context Lost."，严重时 getContext 返回 null → 3D 不可用）。
+    // 改为：加载期间保留旧结构并叠加「更新中」遮罩，仅在失败时清空（避免展示过期分子）。
+    // 构象生成是 CPU 密集任务（12 肽约 3~4s，20 肽约 12~15s），设 60s 上限避免永久转圈
+    const controller = new AbortController();
+    abort3DRef.current = controller;
+    const timer = setTimeout(() => controller.abort(), 60000);
     try {
-      const response = await fetch(`/api/v1/peptide-structure/smiles-to-3d?smiles=${encodeURIComponent(smiles)}`);
+      const response = await fetch(
+        `/api/v1/peptide-structure/smiles-to-3d?smiles=${encodeURIComponent(smiles)}`,
+        // 后端按 cookie/session 鉴权（与 utils/request.ts 一致），显式声明避免依赖默认值
+        { credentials: 'include', signal: controller.signal },
+      );
       if (!response.ok) {
-        const errText = await response.text().catch(() => '');
-        throw new Error(errText || `HTTP ${response.status}`);
+        // FastAPI 的错误体是 {"detail": "..."}；直接展示原文会把 JSON 撒到页面上
+        const body = await response.text().catch(() => '');
+        let detail = body;
+        try {
+          const parsed = JSON.parse(body);
+          detail = parsed?.detail || parsed?.message || body;
+        } catch {
+          // 非 JSON，保留原文
+        }
+        throw new Error(detail || `HTTP ${response.status}`);
       }
       const data = await response.json();
       if (data.success) {
@@ -2609,14 +2987,26 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
         }
       } else {
         setMolecule3DError(data.detail || '3D结构生成失败');
+        setMolecule3D(null); // 失败时清空，避免继续展示上一个分子的结构
       }
     } catch (e: any) {
-      const msg = e?.message || '3D坐标获取失败';
+      const msg = e?.name === 'AbortError'
+        ? (cancel3DRequestedRef.current ? '已取消 3D 结构生成。' : '3D 结构生成超时（>60s），请稍后重试或改用更短的肽序列')
+        : e?.message || '3D坐标获取失败';
       setMolecule3DError(msg);
+      setMolecule3D(null); // 失败时清空，让下方错误提示可见
       console.error('3D坐标获取失败:', e);
     } finally {
+      clearTimeout(timer);
+      abort3DRef.current = null;
       setLoading3D(false);
     }
+  }, []);
+
+  // 取消进行中的 3D 结构生成（用户主动取消，与超时区分文案）
+  const cancel3D = useCallback(() => {
+    cancel3DRequestedRef.current = true;
+    abort3DRef.current?.abort();
   }, []);
 
   // 完整分析
@@ -2637,7 +3027,10 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
     setLoading(true);
     setError(null);
-    setResult(null);
+    // 不再 setResult(null)：清空会让「分子结构可视化 / 3D 查看器」整块卸载——
+    // 每次重建 3D 查看器都会新建一个 WebGL 上下文（实测每轮 +1 次创建）。
+    // 改为保留上一次结果，按钮显示「分析中…」、3D 区域显示「正在生成新的 3D 结构…」遮罩，
+    // 新结果到达后原地替换（数据不同时查看器只更新 atoms，不重建上下文）。
     try {
       const res = await peptideStructureService.analyzePeptide(sequence.toUpperCase(), {
         n_terminal: nTerminal || undefined,
@@ -2778,6 +3171,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
   // 清空结果
   const handleClear = useCallback(() => {
+    if (!window.confirm('确认清空？将同时清除已生成的 3D 结构与分析结果')) return;
     setSequence('');
     setNTerminal('');
     setCTerminal('');
@@ -2806,16 +3200,18 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
   return (
     <div className="space-y-[var(--space-apple-md)]">
       {/* Tab 导航 */}
-      <div className="flex gap-1 bg-[var(--bg-tertiary)] p-1 rounded-[var(--radius-Apple-sm)]">
+      <div role="tablist" className="flex gap-1 bg-[var(--bg-tertiary)] p-1 rounded-[var(--radius-Apple-sm)] overflow-x-auto max-w-full">
         {tabs.map(tab => {
           const Icon = tab.icon;
           return (
             <Button
               key={tab.key}
               size="sm"
-              variant={activeTab === tab.key ? 'default' : 'ghost'}
+              role="tab"
+              aria-selected={activeTab === tab.key}
+              variant="ghost"
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 justify-center ${activeTab === tab.key ? 'bg-[var(--bg-secondary)] shadow-sm' : ''}`}
+              className={`flex-none justify-center whitespace-nowrap ${activeTab === tab.key ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm' : ''}`}
             >
               <Icon className="w-3.5 h-3.5 mr-1" />
               {tab.label}
@@ -2829,15 +3225,17 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
         <div className="space-y-[var(--space-apple-md)]">
           <Card className="p-[var(--space-apple-md)] space-y-[var(--space-apple-md)]">
             <div className="space-y-2">
-              <label className="text-xs text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
+              <label htmlFor="peptide-seq" className="text-xs text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
                 氨基酸序列
               </label>
               <Input
+                id="peptide-seq"
                 value={sequence}
                 onChange={(e) => setSequence(e.target.value.toUpperCase())}
                 placeholder="例如: ACDEFG 或 VLGYT"
                 className="font-mono text-sm"
                 maxLength={100}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !loading && sequence) handleAnalyze(); }}
               />
               <div className="flex gap-2 flex-wrap">
                 <span className="text-xs text-[var(--text-muted,#9A9A9F)]">快速测试:</span>
@@ -2845,7 +3243,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                   <button
                     key={seq}
                     onClick={() => setSequence(seq)}
-                    className="px-2 py-0.5 text-xs bg-[var(--bg-tertiary)] rounded hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)] transition-colors"
+                    className="px-3 py-1.5 min-h-[32px] text-xs bg-[var(--bg-tertiary)] rounded-[var(--radius-Apple-sm)] hover:bg-[var(--border-color)] dark:hover:bg-[var(--bg-secondary)] transition-colors"
                   >
                     {seq}
                   </button>
@@ -2853,12 +3251,13 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
+                <label htmlFor="n-terminal" className="text-xs text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
                   N端修饰
                 </label>
                 <Input
+                  id="n-terminal"
                   value={nTerminal}
                   onChange={(e) => setNTerminal(e.target.value.toUpperCase())}
                   placeholder="例如: ACT (乙酰化)"
@@ -2866,10 +3265,11 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
+                <label htmlFor="c-terminal" className="text-xs text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
                   C端修饰
                 </label>
                 <Input
+                  id="c-terminal"
                   value={cTerminal}
                   onChange={(e) => setCTerminal(e.target.value.toUpperCase())}
                   placeholder="例如: AMD (酰胺化)"
@@ -2904,7 +3304,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
           {error && (
             <div className="flex items-center gap-2 p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)]">
-              <AlertCircle className="w-4 h-4 text-[var(--color-error-text)]0 flex-shrink-0" />
+              <AlertCircle className="w-4 h-4 text-[var(--color-error-text)] flex-shrink-0" />
               <span className="text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">{error}</span>
             </div>
           )}
@@ -2927,22 +3327,24 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                   <Dna className="w-4 h-4 text-primary" />
                   基本信息
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-[var(--space-apple-sm)]">
                   <div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">序列</div>
-                    <div className="font-mono text-sm font-medium">{result.sequence}</div>
+                    <div className="font-mono text-2xl font-semibold tracking-wide break-all">{result.sequence}</div>
                   </div>
-                  <div>
-                    <div className="text-xs text-[var(--text-muted,#9A9A9F)]">分子量</div>
-                    <div className="text-sm font-medium">{result.molecular_weight.toFixed(2)} Da</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-[var(--text-muted,#9A9A9F)]">等电点</div>
-                    <div className="text-sm font-medium">{result.isoelectric_point.toFixed(2)}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-[var(--text-muted,#9A9A9F)]">疏水性</div>
-                    <div className="text-sm font-medium">{result.hydrophobicity.toFixed(4)}</div>
+                  <div className="grid grid-cols-1 min-[480px]:grid-cols-3 gap-4">
+                    <div>
+                      <div className="text-xs text-[var(--text-muted,#9A9A9F)]">分子量</div>
+                      <div className="text-sm font-medium">{result.molecular_weight.toFixed(2)} Da</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-[var(--text-muted,#9A9A9F)]">等电点</div>
+                      <div className="text-sm font-medium">{result.isoelectric_point.toFixed(2)}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-[var(--text-muted,#9A9A9F)]">疏水性</div>
+                      <div className="text-sm font-medium">{result.hydrophobicity.toFixed(4)}</div>
+                    </div>
                   </div>
                 </div>
                 {result.smiles && (
@@ -2961,18 +3363,6 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                           <Copy className="w-3 h-3" />
                           复制SMILES
                         </button>
-                        {/* 渲染模式切换 */}
-                        {molecule3D && (
-                          <select
-                            value={renderingMode}
-                            onChange={(e) => setRenderingMode(e.target.value as 'ball-stick'|'space-filling'|'tube')}
-                            className="text-xs bg-[var(--bg-tertiary)] border-none rounded px-2 py-0.5 text-[var(--text-secondary)]"
-                          >
-                            <option value="ball-stick">球棍模型</option>
-                            <option value="space-filling">空间填充</option>
-                            <option value="tube">管线模型</option>
-                          </select>
-                        )}
                       </div>
                     </div>
 
@@ -2983,7 +3373,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                         <div className="mb-[var(--space-apple-sm)]">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-medium text-[var(--text-secondary,#374151)] dark:text-[var(--text-secondary-dark,#E5E7EB)] flex items-center gap-1.5">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-secondary-text)]0"><circle cx="12" cy="12" r="10"/><path d="M12 2 L12 22 M2 12 L22 12"/></svg>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-secondary-text)]"><circle cx="12" cy="12" r="10"/><path d="M12 2 L12 22 M2 12 L22 12"/></svg>
                               2D 化学结构
                             </span>
                             <span className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono">{result.smiles?.length || 0} chars</span>
@@ -3010,12 +3400,13 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                           <div className="mb-[var(--space-apple-sm)]">
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-sm font-medium text-[var(--text-secondary,#374151)] dark:text-[var(--text-secondary-dark,#E5E7EB)] flex items-center gap-1.5">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-success-text)]0"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[var(--color-success-text)]"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                                 3D 分子结构
                               </span>
                               <select
                                 value={renderingMode}
                                 onChange={(e) => setRenderingMode(e.target.value as 'ball-stick'|'space-filling'|'tube')}
+                                aria-label="分子渲染模式"
                                 className="text-xs bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded px-2 py-1 text-[var(--text-secondary)]"
                               >
                                 <option value="ball-stick">球棍模型</option>
@@ -3023,11 +3414,25 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                                 <option value="tube">管线模型</option>
                               </select>
                             </div>
-                            <MoleculeViewer3D
-                              atoms={molecule3D.atoms}
-                              bonds={molecule3D.bonds}
-                              renderingMode={renderingMode}
-                            />
+                            <div className="relative">
+                              <MoleculeViewer3D
+                                atoms={molecule3D.atoms}
+                                bonds={molecule3D.bonds}
+                                renderingMode={renderingMode}
+                              />
+                              {/* 重新分析时保留查看器（避免卸载重建 WebGL 上下文），仅叠加更新遮罩 */}
+                              {loading3D && (
+                                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-[var(--radius-Apple-md)] bg-black/40">
+                                  <span className="flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-pill)] bg-black/70 text-xs text-white">
+                                    <span className="animate-spin w-3 h-3 border-2 border-white/70 border-t-transparent rounded-[var(--radius-pill)]" />
+                                    正在生成新的 3D 结构…
+                                  </span>
+                                  <Button variant="outline" size="sm" onClick={cancel3D} className="bg-transparent border-white/60 text-white hover:bg-white/10 hover:text-white">
+                                    取消
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
                             <div className="mt-2 flex items-center gap-[var(--space-apple-sm)] text-xs text-[var(--text-muted,#9A9A9F)]">
                               <span className="flex items-center gap-1"><Dna className="w-3 h-3" />拖拽旋转</span>
                               <span className="flex items-center gap-1"><ZoomIn className="w-3 h-3" />滚轮缩放</span>
@@ -3036,15 +3441,19 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                             </div>
                           </div>
                         ) : loading3D ? (
-                          <div className="mb-[var(--space-apple-sm)] p-8 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] flex items-center justify-center">
+                          <div className="mb-[var(--space-apple-sm)] p-8 bg-[var(--bg-secondary)] rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] flex flex-col items-center justify-center gap-2">
                             <div className="text-center text-[var(--text-muted,#9A9A9F)]">
                               <div className="animate-spin w-5 h-5 border-2 border-[var(--color-success)] border-t-transparent rounded-[var(--radius-pill)] mx-auto mb-2"></div>
                               <p className="text-xs">生成3D结构...</p>
                             </div>
+                            <Button variant="outline" size="sm" onClick={cancel3D}>
+                              取消
+                            </Button>
                           </div>
                         ) : molecule3DError ? (
-                          <div className="mb-[var(--space-apple-sm)] p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-xs text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">
-                            ⚠ 3D结构生成失败：{molecule3DError}
+                          <div className="mb-[var(--space-apple-sm)] p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)] text-xs text-[var(--color-error-text)] dark:text-[var(--color-error-text)] flex items-center gap-2">
+                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                            <span>3D结构生成失败：{molecule3DError}</span>
                           </div>
                         ) : null}
                       </>
@@ -3067,15 +3476,15 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
               </Card>
 
               {/* 可视化图表 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="p-[var(--space-apple-md)]">
+              <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-4">
+                <Card className="p-[var(--space-apple-md)]" role="img" aria-label={`活性雷达图：${activityAriaText(result)}`}>
                   <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-primary" />
                     活性雷达图
                   </h3>
                   <RadarChart data={result} />
                 </Card>
-                <Card className="p-[var(--space-apple-md)]">
+                <Card className="p-[var(--space-apple-md)]" role="img" aria-label={`活性柱状图：${activityAriaText(result)}`}>
                   <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2">
                     <BarChart3 className="w-4 h-4 text-primary" />
                     活性柱状图
@@ -3084,26 +3493,13 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                 </Card>
               </div>
 
-              {/* 活性预测 */}
+              {/* 活性预测：与雷达/柱状/热力图共用 buildActivityDims，等级图例只在此展示一次 */}
               <Card className="p-[var(--space-apple-md)]">
                 <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2">
                   <Activity className="w-4 h-4 text-primary" />
                   活性预测
                 </h3>
-                <div className="space-y-[var(--space-apple-sm)]">
-                  <ScoreProgress label="ACE抑制活性" score={result.ace_inhibition.score} />
-                  <ScoreProgress label="抗氧化活性" score={result.antioxidant.score} />
-                  <ScoreProgress label="抗菌活性" score={result.antimicrobial.score} />
-                  <ScoreProgress label="DPP-IV抑制活性" score={result.dpp4_inhibition?.score ?? 0} />
-                </div>
-                <div className="mt-[var(--space-apple-sm)] flex gap-2 flex-wrap">
-                  <Badge variant={getActivityBadge(result.ace_inhibition.level)}>ACE抑制: {result.ace_inhibition.level}</Badge>
-                  <Badge variant={getActivityBadge(result.antioxidant.level)}>抗氧化: {result.antioxidant.level}</Badge>
-                  <Badge variant={getActivityBadge(result.antimicrobial.level)}>抗菌: {result.antimicrobial.level}</Badge>
-                  {result.dpp4_inhibition && (
-                    <Badge variant={getActivityBadge(result.dpp4_inhibition.level)}>DPP-IV: {result.dpp4_inhibition.level}</Badge>
-                  )}
-                </div>
+                <ActivityPredictionPanel data={result} dpp4Inhibition={result.dpp4_inhibition?.score != null ? result.dpp4_inhibition : undefined} />
               </Card>
 
               {/* 真实 ML 模型（与 QSAR 规则分并列） */}
@@ -3154,101 +3550,110 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                         )}
                       </div>
                     )}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-apple-sm)]">
-                      <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
-                        <div className="text-lg font-bold text-primary">
-                          {result.ml_model.ace_score != null ? (result.ml_model.ace_score * 100).toFixed(1) + '%' : '-'}
-                        </div>
-                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">本条序列 ML 分</div>
+                    {/* 本条序列 ML 分：升级为 hero，与模型级恒定指标分层 */}
+                    <div className="flex flex-wrap items-baseline gap-x-6 gap-y-3">
+                      <div className="flex items-baseline gap-3 p-[var(--space-apple-sm)] bg-primary/5 rounded-[var(--radius-Apple-sm)]">
+                        <span className="text-3xl font-bold text-[var(--text-primary)] tabular-nums">{result.ml_model.ace_score != null ? (result.ml_model.ace_score * 100).toFixed(1) + '%' : '-'}</span>
+                        <span className="text-sm text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">本条序列 ML 分</span>
                       </div>
-                      <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
-                        <div className="text-lg font-bold text-primary">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">
                           {result.ace_inhibition ? (result.ace_inhibition.score * 100).toFixed(1) + '%' : '-'}
-                        </div>
-                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">QSAR 规则 ACE 分</div>
+                        </span>
+                        <span className="text-xs text-[var(--text-muted,#9A9A9F)]">QSAR 规则 ACE 分（对照）</span>
                       </div>
-                      <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
-                        <div className="text-lg font-bold text-primary">
-                          {result.ml_model.validation_f1 != null ? (result.ml_model.validation_f1 * 100).toFixed(1) + '%' : '-'}
+                    </div>
+                    {/* 模型级恒定指标 + 方法透明度：整体折叠，避免与逐条序列分争抢视觉权重 */}
+                    <details className="rounded-[var(--radius-Apple-sm)] border border-[var(--border-color)] bg-[var(--bg-tertiary)]/40">
+                      <summary className="cursor-pointer text-xs text-primary px-2 py-1.5 select-none">
+                        模型级指标与方法透明度（恒定值，点开展开）
+                      </summary>
+                      <div className="space-y-2 p-2 pt-0">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--space-apple-sm)]">
+                          <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
+                            <div className="text-lg font-bold text-[var(--text-primary)]">
+                              {result.ml_model.validation_f1 != null ? (result.ml_model.validation_f1 * 100).toFixed(1) + '%' : '-'}
+                            </div>
+                            <div className="text-xs text-[var(--text-muted,#9A9A9F)]">模型验证 F1（推荐）</div>
+                          </div>
+                          <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
+                            <div className="text-lg font-bold">
+                              {result.ml_model.validation_balanced_accuracy != null ? (result.ml_model.validation_balanced_accuracy * 100).toFixed(1) + '%' : '-'}
+                            </div>
+                            <div className="text-xs text-[var(--text-muted,#9A9A9F)]">模型平衡准确率</div>
+                          </div>
+                          <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
+                            <div className="text-lg font-bold text-[var(--text-muted,#9A9A9F)]">
+                              {result.ml_model.validation_accuracy != null ? (result.ml_model.validation_accuracy * 100).toFixed(1) + '%' : '-'}
+                            </div>
+                            <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
+                              模型准确率 <span className="text-[var(--text-muted,#9A9A9F)] opacity-70">(基线 {result.ml_model.validation_majority_baseline != null ? (result.ml_model.validation_majority_baseline * 100).toFixed(0) + '%' : '-'})</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">模型验证 F1（推荐）</div>
-                      </div>
-                      <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
-                        <div className="text-lg font-bold">
-                          {result.ml_model.validation_balanced_accuracy != null ? (result.ml_model.validation_balanced_accuracy * 100).toFixed(1) + '%' : '-'}
-                        </div>
-                        <div className="text-xs text-[var(--text-muted,#9A9A9F)]">模型平衡准确率</div>
-                      </div>
-                      <div className="p-2 bg-[var(--bg-tertiary)]/50 rounded">
-                        <div className="text-lg font-bold text-[var(--text-muted,#9A9A9F)]">
-                          {result.ml_model.validation_accuracy != null ? (result.ml_model.validation_accuracy * 100).toFixed(1) + '%' : '-'}
+                        <div className="text-xs text-[var(--text-muted,#9A9A9F)] bg-[var(--bg-tertiary)]/50 rounded p-1.5 leading-relaxed">
+                          <strong>模型级指标</strong>（验证 F1 / 平衡准确率 / 准确率）：描述<strong>整个模型</strong>在训练时留出验证集上的整体表现，<strong>对所有序列恒定不变</strong>；逐条序列的判定结果请以<strong>上方「本条序列 ML 分」</strong>为准。
                         </div>
                         <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
-                          模型准确率 <span className="text-[var(--text-muted,#9A9A9F)] opacity-70">(基线 {result.ml_model.validation_majority_baseline != null ? (result.ml_model.validation_majority_baseline * 100).toFixed(0) + '%' : '-'})</span>
+                          模型 {result.ml_model.name} · 库 {result.ml_model.library_size} 条 = 真实文献 {Math.max(result.ml_model.library_real_count - (result.ml_model.library_pubmed_count || 0), 0)} + PubMed 审计正类 {result.ml_model.library_pubmed_count || 0} + 程序合成 {result.ml_model.library_synth_count}
+                          {` · 训练 ${result.ml_model.training_samples} 条（真实 ${result.ml_model.train_real_count} + 合成 ${result.ml_model.train_synth_count}）`}
+                        </div>
+                        {/* 数据来源构成条（诚实标注三路：真实文献 / PubMed 审计 / 程序合成） */}
+                        {result.ml_model.library_size > 0 && (() => {
+                          const pubmed = result.ml_model.library_pubmed_count || 0;
+                          const synth = result.ml_model.library_synth_count || 0;
+                          const realLit = Math.max(result.ml_model.library_real_count - pubmed, 0);
+                          const total = Math.max(result.ml_model.library_size, 1);
+                          return (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 text-xs">
+                                <span className="text-[var(--text-muted,#9A9A9F)]">库数据来源构成</span>
+                                <span className="font-mono">
+                                  真实文献 {realLit}（{Math.round(realLit / total * 100)}%）
+                                  {' / '}PubMed 审计 {pubmed}（{Math.round(pubmed / total * 100)}%）
+                                  {' / '}合成 {synth}（{Math.round(synth / total * 100)}%）
+                                </span>
+                              </div>
+                              <div className="h-1.5 w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded overflow-hidden flex">
+                                <div className="h-full bg-primary" style={{ width: `${Math.round(realLit / total * 100)}%` }} />
+                                <div className="h-full bg-[var(--color-success-container)]" style={{ width: `${Math.round(pubmed / total * 100)}%` }} />
+                                <div className="h-full bg-[var(--color-warning)]" style={{ width: `${Math.round(synth / total * 100)}%` }} />
+                              </div>
+                              <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
+                                <span className="text-primary">■</span> 真实文献{' '}
+                                <span className="text-[var(--color-success-text)]">■</span> PubMed 审计正类（带可溯源 pmid，不参与合成训练）{' '}
+                                <span className="text-[var(--color-warning-text)]">■</span> 程序合成（仅库规模展示，不参与训练）
+                              </div>
+                            </div>
+                          );
+                        })()}
+                        {/* 诚实指标说明：不平衡数据集下 accuracy 具欺骗性 */}
+                        {result.ml_model.validation_f1 != null && (
+                          <div className="text-xs text-[var(--text-muted,#9A9A9F)] leading-relaxed">
+                            <strong>指标解读</strong>：标签不平衡（正类占比低），
+                            验证准确率 {result.ml_model.validation_accuracy != null ? (result.ml_model.validation_accuracy * 100).toFixed(1) + '%' : '-'}
+                            接近全预测负类的多数类基线（{result.ml_model.validation_majority_baseline != null ? (result.ml_model.validation_majority_baseline * 100).toFixed(1) + '%' : '-'}），
+                            本身不具判别力；模型对 ACE 抑制正类的召回仅 {result.ml_model.validation_recall != null ? (result.ml_model.validation_recall * 100).toFixed(1) + '%' : '-'}，
+                            请以 <strong className="text-primary">F1={result.ml_model.validation_f1 != null ? (result.ml_model.validation_f1 * 100).toFixed(1) + '%' : '-'}</strong>（推荐）
+                            与平衡准确率 {result.ml_model.validation_balanced_accuracy != null ? (result.ml_model.validation_balanced_accuracy * 100).toFixed(1) + '%' : '-'} 为准。
+                            {result.ml_model.metrics_note ? <div className="mt-1 text-xs opacity-80">{result.ml_model.metrics_note}</div> : null}
+                          </div>
+                        )}
+                        {/* 动态运行状态：按当前 method 显示，避免静态枚举说明误导 */}
+                        <div className={`flex items-center gap-2 text-xs px-2 py-1.5 rounded ${
+                          result.ml_model.method === 'ml'
+                            ? 'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/30 text-[var(--color-success-text)] dark:text-[var(--color-success-text)]'
+                            : 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/30 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]'
+                        }`}>
+                          <span className={`w-2 h-2 rounded-[var(--radius-pill)] ${result.ml_model.method === 'ml' ? 'bg-[var(--color-success-container)]' : 'bg-[var(--color-warning-container)]'}`} />
+                          {result.ml_model.method === 'ml'
+                            ? '方法：真实 ML 权重（method=ml）— 权重已加载，正在正常运行'
+                            : result.ml_model.method === 'fallback_rule'
+                            ? '方法：QSAR 规则分（method=fallback_rule）— 模型权重未加载，本次回退规则分'
+                            : '方法：不可用（method=unavailable）— 模型不可用'}
                         </div>
                       </div>
-                    </div>
-                    <div className="text-xs text-[var(--text-muted,#9A9A9F)] bg-[var(--bg-tertiary)]/50 rounded p-1.5 leading-relaxed">
-                      <strong>模型级指标</strong>（验证 F1 / 平衡准确率 / 准确率）：描述<strong>整个模型</strong>在训练时留出验证集上的整体表现，<strong>对所有序列恒定不变</strong>；逐条序列的判定结果请以<strong>上方「本条序列 ML 分」</strong>为准。
-                    </div>
-                    <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
-                      模型 {result.ml_model.name} · 库 {result.ml_model.library_size} 条 = 真实文献 {Math.max(result.ml_model.library_real_count - (result.ml_model.library_pubmed_count || 0), 0)} + PubMed 审计正类 {result.ml_model.library_pubmed_count || 0} + 程序合成 {result.ml_model.library_synth_count}
-                      {` · 训练 ${result.ml_model.training_samples} 条（真实 ${result.ml_model.train_real_count} + 合成 ${result.ml_model.train_synth_count}）`}
-                    </div>
-                    {/* 数据来源构成条（诚实标注三路：真实文献 / PubMed 审计 / 程序合成） */}
-                    {result.ml_model.library_size > 0 && (() => {
-                      const pubmed = result.ml_model.library_pubmed_count || 0;
-                      const synth = result.ml_model.library_synth_count || 0;
-                      const realLit = Math.max(result.ml_model.library_real_count - pubmed, 0);
-                      const total = Math.max(result.ml_model.library_size, 1);
-                      return (
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-xs">
-                            <span className="text-[var(--text-muted,#9A9A9F)]">库数据来源构成</span>
-                            <span className="font-mono">
-                              真实文献 {realLit}（{Math.round(realLit / total * 100)}%）
-                              {' / '}PubMed 审计 {pubmed}（{Math.round(pubmed / total * 100)}%）
-                              {' / '}合成 {synth}（{Math.round(synth / total * 100)}%）
-                            </span>
-                          </div>
-                          <div className="h-1.5 w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded overflow-hidden flex">
-                            <div className="h-full bg-primary" style={{ width: `${Math.round(realLit / total * 100)}%` }} />
-                            <div className="h-full bg-[var(--color-success-container)]0" style={{ width: `${Math.round(pubmed / total * 100)}%` }} />
-                            <div className="h-full bg-[var(--color-warning)]" style={{ width: `${Math.round(synth / total * 100)}%` }} />
-                          </div>
-                          <div className="text-xs text-[var(--text-muted,#9A9A9F)]">
-                            <span className="text-primary">■</span> 真实文献{' '}
-                            <span className="text-[var(--color-success-text)]0">■</span> PubMed 审计正类（带可溯源 pmid，不参与合成训练）{' '}
-                            <span className="text-[var(--color-warning-text)]">■</span> 程序合成（仅库规模展示，不参与训练）
-                          </div>
-                        </div>
-                      );
-                    })()}
-                    {/* 诚实指标说明：不平衡数据集下 accuracy 具欺骗性 */}
-                    {result.ml_model.validation_f1 != null && (
-                      <div className="text-xs text-[var(--text-muted,#9A9A9F)] leading-relaxed">
-                        <strong>指标解读</strong>：标签不平衡（正类占比低），
-                        验证准确率 {result.ml_model.validation_accuracy != null ? (result.ml_model.validation_accuracy * 100).toFixed(1) + '%' : '-'}
-                        接近全预测负类的多数类基线（{result.ml_model.validation_majority_baseline != null ? (result.ml_model.validation_majority_baseline * 100).toFixed(1) + '%' : '-'}），
-                        本身不具判别力；模型对 ACE 抑制正类的召回仅 {result.ml_model.validation_recall != null ? (result.ml_model.validation_recall * 100).toFixed(1) + '%' : '-'}，
-                        请以 <strong className="text-primary">F1={result.ml_model.validation_f1 != null ? (result.ml_model.validation_f1 * 100).toFixed(1) + '%' : '-'}</strong>（推荐）
-                        与平衡准确率 {result.ml_model.validation_balanced_accuracy != null ? (result.ml_model.validation_balanced_accuracy * 100).toFixed(1) + '%' : '-'} 为准。
-                        {result.ml_model.metrics_note ? <div className="mt-1 text-xs opacity-80">{result.ml_model.metrics_note}</div> : null}
-                      </div>
-                    )}
-                    {/* 动态运行状态：按当前 method 显示，避免静态枚举说明误导 */}
-                    <div className={`flex items-center gap-2 text-xs px-2 py-1.5 rounded ${
-                      result.ml_model.method === 'ml'
-                        ? 'bg-[var(--color-success-container)] dark:bg-[var(--color-success-container)]/30 text-[var(--color-success-text)] dark:text-[var(--color-success-text)]'
-                        : 'bg-[var(--color-warning-container)] dark:bg-[var(--color-warning-container)]/30 text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]'
-                    }`}>
-                      <span className={`w-2 h-2 rounded-[var(--radius-pill)] ${result.ml_model.method === 'ml' ? 'bg-[var(--color-success-container)]0' : 'bg-[var(--color-warning-container)]0'}`} />
-                      {result.ml_model.method === 'ml'
-                        ? '方法：真实 ML 权重（method=ml）— 权重已加载，正在正常运行'
-                        : result.ml_model.method === 'fallback_rule'
-                        ? '方法：QSAR 规则分（method=fallback_rule）— 模型权重未加载，本次回退规则分'
-                        : '方法：不可用（method=unavailable）— 模型不可用'}
-                    </div>
+                    </details>
                   </div>
                 ) : (
                   <p className="text-xs text-[var(--text-muted,#9A9A9F)]">ML 模型不可用（本次分析未启用真实模型预测）</p>
@@ -3261,25 +3666,25 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                   <ShieldCheck className="w-4 h-4 text-primary" />
                   安全性评估
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
-                    <div className="text-2xl font-bold text-primary">{result.safety.food_score.toFixed(0)}</div>
+                    <div className="text-2xl font-bold text-[var(--text-primary)]">{result.safety.food_score.toFixed(0)}</div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">食品安全评分</div>
                   </div>
                   <div className="text-center p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
-                    <div className={`text-2xl font-bold ${result.safety.is_allergen ? 'text-[var(--color-error-text)]0' : 'text-[var(--color-success-text)]0'}`}>
+                    <div className={`inline-flex items-center px-2 py-0.5 rounded-[var(--radius-pill)] text-sm font-semibold ${result.safety.is_allergen ? 'text-[var(--color-error-text)]' : 'text-[var(--color-success-text)]'}`}>
                       {result.safety.is_allergen ? '是' : '否'}
                     </div>
-                    <div className="text-xs text-[var(--text-muted,#9A9A9F)]">过敏原</div>
+                    <div className="text-xs text-[var(--text-muted,#9A9A9F)] mt-1">过敏原</div>
                   </div>
                   <div className="text-center p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
-                    <div className={`text-2xl font-bold ${result.safety.is_toxic ? 'text-[var(--color-error-text)]0' : 'text-[var(--color-success-text)]0'}`}>
+                    <div className={`inline-flex items-center px-2 py-0.5 rounded-[var(--radius-pill)] text-sm font-semibold ${result.safety.is_toxic ? 'text-[var(--color-error-text)]' : 'text-[var(--color-success-text)]'}`}>
                       {result.safety.is_toxic ? '是' : '否'}
                     </div>
-                    <div className="text-xs text-[var(--text-muted,#9A9A9F)]">毒性</div>
+                    <div className="text-xs text-[var(--text-muted,#9A9A9F)] mt-1">毒性</div>
                   </div>
                   <div className="text-center p-[var(--space-apple-sm)] bg-[var(--bg-tertiary)]/50 rounded-[var(--radius-Apple-sm)]">
-                    <div className="text-2xl font-bold text-primary capitalize">{result.safety.digestibility}</div>
+                    <div className="text-2xl font-bold text-[var(--text-primary)] capitalize">{result.safety.digestibility}</div>
                     <div className="text-xs text-[var(--text-muted,#9A9A9F)]">消化性</div>
                   </div>
                 </div>
@@ -3287,8 +3692,11 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
 
               {/* 风味预测 */}
               <Card className="p-[var(--space-apple-md)]">
-                <h3 className="text-sm font-medium mb-[var(--space-apple-sm)]">风味预测</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-sm font-medium mb-[var(--space-apple-sm)] flex items-center gap-2">
+                  <Utensils className="w-4 h-4 text-primary" />
+                  风味预测
+                </h3>
+                <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs">
                       <span className="text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">苦味</span>
@@ -3296,8 +3704,8 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                     </div>
                     <div className="w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-pill)] h-2">
                       <div
-                        className="bg-[var(--color-warning-container)]0 h-2 rounded-[var(--radius-pill)] transition-all duration-500"
-                        style={{ width: `${result.taste.bitterness * 100}%` }}
+                        className="h-2 rounded-[var(--radius-pill)] transition-all duration-500"
+                        style={{ width: `${result.taste.bitterness * 100}%`, backgroundColor: 'var(--color-warning-500)' }}
                       />
                     </div>
                   </div>
@@ -3308,12 +3716,13 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                     </div>
                     <div className="w-full bg-[var(--border-color)] dark:bg-[var(--bg-secondary)] rounded-[var(--radius-pill)] h-2">
                       <div
-                        className="bg-[var(--color-error-container)]0 h-2 rounded-[var(--radius-pill)] transition-all duration-500"
-                        style={{ width: `${result.taste.umami * 100}%` }}
+                        className="h-2 rounded-[var(--radius-pill)] transition-all duration-500"
+                        style={{ width: `${result.taste.umami * 100}%`, backgroundColor: 'var(--color-success-500)' }}
                       />
                     </div>
                   </div>
                 </div>
+                <p className="text-[11px] text-[var(--text-muted,#9A9A9F)]">条长表示该味强度，不代表好坏</p>
               </Card>
 
               {/* 来源与证据 */}
@@ -3344,7 +3753,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                             const isOnline = ref.includes('PubMed') || ref.includes('PMID');
                             const pmidMatch = ref.match(/PMID:(\d+)/);
                             return (
-                              <li key={i} className={`text-xs ${isOnline ? 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]0' : 'text-[var(--text-secondary,#6B7280)]'}`}>
+                              <li key={i} className={`text-xs ${isOnline ? 'text-[var(--color-success-text)] dark:text-[var(--color-success-text)]' : 'text-[var(--text-secondary,#6B7280)]'}`}>
                                 {isOnline && pmidMatch ? (
                                   <a href={`https://www.ncbi.nlm.nih.gov/pubmed/${pmidMatch[1]}/`} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted">
                                     {ref}
@@ -3360,7 +3769,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                     )}
                     {result.safety?.warnings && result.safety.warnings.length > 0 && (
                       <div>
-                        <div className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)]0 mb-1 flex items-center gap-1">
+                        <div className="text-[var(--color-warning-text)] dark:text-[var(--color-warning-text)] mb-1 flex items-center gap-1">
                           <AlertCircle className="w-3 h-3" />安全警告
                         </div>
                         <ul className="list-disc list-inside space-y-0.5">
@@ -3376,10 +3785,10 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                       数据来源：{result.source?.database || 'DFBP'} · 序列 {result.sequence}
                     </span>
                     <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" className="text-xs text-primary" onClick={handleLiveLiterature} disabled={liveRefLoading}>
+                      <Button size="sm" variant="ghost" className="text-xs text-[var(--color-primary)]" onClick={handleLiveLiterature} disabled={liveRefLoading}>
                         <Zap className="w-3 h-3 mr-1" />{liveRefLoading ? '检索中...' : '实时检索该肽 PubMed 文献'}
                       </Button>
-                      <Button size="sm" variant="ghost" className="text-xs text-primary" onClick={() => handleGoDatabase(result.sequence)}>
+                      <Button size="sm" variant="ghost" className="text-xs text-[var(--color-primary)]" onClick={() => handleGoDatabase(result.sequence)}>
                         <Database className="w-3 h-3 mr-1" />在数据库中查看
                       </Button>
                     </div>
@@ -3399,7 +3808,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                         <>
                           <ul className="list-disc list-inside space-y-0.5">
                             {liveRefs.references.map((r: any, i: number) => (
-                              <li key={i} className="text-xs text-[var(--color-success-text)] dark:text-[var(--color-success-text)]0">
+                              <li key={i} className="text-xs text-[var(--color-success-text)] dark:text-[var(--color-success-text)]">
                                 <a
                                   href={`https://www.ncbi.nlm.nih.gov/pubmed/${r.pmid}/`}
                                   target="_blank"
@@ -3464,7 +3873,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                 maxLength={100}
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
                   N端修饰
@@ -3497,7 +3906,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
           </Card>
           {error && (
             <div className="flex items-center gap-2 p-[var(--space-apple-sm)] bg-[var(--color-error-container)] border border-[var(--color-error-border)] dark:border-[var(--color-error)] rounded-[var(--radius-Apple-sm)]">
-              <AlertCircle className="w-4 h-4 text-[var(--color-error-text)]0" />
+              <AlertCircle className="w-4 h-4 text-[var(--color-error-text)]" />
               <span className="text-sm text-[var(--color-error-text)] dark:text-[var(--color-error-text)]">{error}</span>
             </div>
           )}
@@ -3528,16 +3937,17 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
       {activeTab === 'compare' && (
         <div className="space-y-[var(--space-apple-md)]">
           <Card className="p-[var(--space-apple-md)]">
-            <h3 className="text-sm font-medium mb-[var(--space-apple-sm)]">添加对比序列</h3>
+            <label htmlFor="compare-seq" className="block text-sm font-medium mb-[var(--space-apple-sm)]">添加对比序列</label>
             <div className="flex gap-2 mb-[var(--space-apple-sm)]">
               <Input
+                id="compare-seq"
                 value={compareInput}
                 onChange={(e) => setCompareInput(e.target.value.toUpperCase())}
                 placeholder="输入序列..."
                 className="flex-1 font-mono"
                 onKeyDown={(e) => e.key === 'Enter' && addCompareSequence()}
               />
-              <Button onClick={addCompareSequence} disabled={!compareInput.trim()}>
+              <Button onClick={addCompareSequence} disabled={!compareInput.trim()} aria-label="添加对比序列">
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
@@ -3546,8 +3956,12 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                 {compareSequences.map((seq, i) => (
                   <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--bg-tertiary)] rounded text-sm font-mono">
                     {seq}
-                    <button onClick={() => setCompareSequences(prev => prev.filter((_, j) => j !== i))} className="text-[var(--text-muted)] hover:text-[var(--color-error-text)]0">
-                      <X className="w-3 h-3" />
+                    <button
+                      onClick={() => setCompareSequences(prev => prev.filter((_, j) => j !== i))}
+                      aria-label={`删除对比序列 ${seq}`}
+                      className="h-8 w-8 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--color-error-text)]"
+                    >
+                      <X className="w-4 h-4" />
                     </button>
                   </span>
                 ))}

@@ -294,7 +294,7 @@ function ResultCard({
         </CardHeader>
         <CardContent className="space-y-[var(--space-apple-md)]">
           {/* 批次摘要 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)]">
+          <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)]">
             <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50">
               <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">配方</div>
               <div className="text-sm font-medium truncate" title={result.formula_name || result.formula_code}>
@@ -334,7 +334,7 @@ function ResultCard({
                         <Package size={14} className="text-primary" />
                       </div>
                       <div>
-                        <div className="font-mono text-xs text-primary">{lot.internal_lot_code}</div>
+                        <div className="font-mono text-xs text-[var(--text-primary)]">{lot.internal_lot_code}</div>
                         <div className="text-sm text-[var(--text-secondary)]">{lot.ingredient_name}</div>
                       </div>
                     </div>
@@ -399,7 +399,7 @@ function ResultCard({
       <CardContent className="space-y-[var(--space-apple-md)]">
         {/* 原料摘要 */}
         {(result.ingredient_name || result.received_qty_kg) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)]">
+          <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-4 gap-[var(--space-apple-sm)]">
             {result.ingredient_name && (
               <div className="p-[var(--space-apple-sm)] rounded-[var(--radius-Apple-sm)] bg-[var(--bg-tertiary)]/50">
                 <div className="text-xs text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] mb-1">原料</div>
@@ -442,7 +442,7 @@ function ResultCard({
                       <Package size={14} className="text-[var(--color-warning-text)]0" />
                     </div>
                     <div>
-                      <div className="font-mono text-xs text-primary">{b.batch_code}</div>
+                      <div className="font-mono text-xs text-[var(--text-primary)]">{b.batch_code}</div>
                       <div className="text-sm text-[var(--text-secondary)]">
                         {b.formula_name || b.formula_code}
                       </div>

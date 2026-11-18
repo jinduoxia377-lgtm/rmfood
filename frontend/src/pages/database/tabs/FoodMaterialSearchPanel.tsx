@@ -195,7 +195,7 @@ const MaterialCard: React.FC<{
           {hasRelevance && (
             <>
               <div className="text-xs text-muted-foreground">相关度</div>
-              <div className="text-xl font-bold text-primary">
+              <div className="text-xl font-bold text-[var(--text-primary)]">
                 {((material.score ?? 0) * 100).toFixed(1)}%
               </div>
               {material.similarity !== undefined && (
@@ -774,7 +774,7 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
 
       {/* 批量合规结果弹窗 */}
       <Dialog open={batchModalOpen} onOpenChange={setBatchModalOpen}>
-        <DialogContent className="max-w-[640px] max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-[640px] max-h-[80dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
