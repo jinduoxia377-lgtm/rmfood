@@ -144,6 +144,8 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
     handleRenameSession, handleClearChat, handleRetry, handleSend, handleForkMessage,
     handleGenerateReport,
     toggleHistory,
+    // 截断降级「重新生成」按钮 + 操作栏 regenerate 依赖的真实 handler（useMessageEditing）
+    regenerateMessage,
   } = ctx
 
   // ===== 本地 UI 状态 =====
@@ -561,6 +563,10 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
               onRetractMessage={retractMessage}
               onForkMessage={handleForkMessage}
               onDetailsMessage={(call) => { setDetailsCall(call); setDetailsOpen(true) }}
+              // 截断降级提示条与操作栏的「重新生成」：接线到 useMessageEditing.handleRegenerateMessage，
+              // 移除该 assistant 消息并以最近前置 user 消息重发。此前 ChatTab 未传，
+              // MessageList 兜底 ()=>{} → 按钮可点但无操作（死按钮）。
+              onRegenerate={regenerateMessage}
               thinkingSteps={thinkingSteps}
               onStructureSave={handleStructureSave}
               onStructureShare={handleStructureShare}

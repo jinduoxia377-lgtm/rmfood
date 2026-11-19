@@ -43,6 +43,9 @@ export interface ChatState {
   pauseStreaming: () => void
   editMessage: (id: string, newContent: string) => void
   retractMessage: (id: string) => void
+  /** 重新生成指定 assistant 消息：移除该条并以最近前置 user 消息重发（useMessageEditing）。
+   *  截断降级提示条与操作栏的「重新生成」按钮都复用此 handler。 */
+  regenerateMessage: (messageId: string) => void
   setActiveSessionId: (id: string | null) => void
   checkCompaction: () => Promise<void>
 

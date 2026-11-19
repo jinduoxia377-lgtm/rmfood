@@ -18,11 +18,11 @@ import { useAuthStore } from '@/stores/auth'
 import { RealAIAvatar } from '@/components/ai/shared/RealAIAvatar'
 import { detectMessageType, parseChartData } from './utils.tsx'
 import MarkdownRenderer from './MarkdownRenderer'
-import TypewriterText from './TypewriterText'
 import ReasoningRow, { type ReasoningStep } from './ReasoningRow'
 import StructuredMessageRenderer from '../structured/StructuredMessageRenderer'
-import { detectStructuredContent, extractStructuredFallback, repairTruncatedJson } from '../structured/utils'
+import { detectStructuredContent, extractStructuredFallback, repairTruncatedJsonDetailed, degradeJsonToMarkdown, recoverBlocksFromBrokenJson } from '../structured/utils'
 import EnhancedContentRenderer from './EnhancedContentRenderer'
+import { isPlaceholderConstitution } from './placeholderConstitution'
 import {
 	Leaf, Copy, Check, RefreshCw,
 	Pencil, Undo2, X,
@@ -50,11 +50,11 @@ function ModelSourceBadge({ model }: { model: string }) {
 	if (model === 'ultimate-fallback') {
 		return (
 			<div
-				className="mb-2 flex items-center gap-1.5 rounded-md border border-warning-200 dark:border-warning-500/40 bg-warning-50 dark:bg-warning-500/15 px-2 py-1 text-xs leading-tight text-warning-700 dark:text-warning-400"
+				className="mb-2 flex items-center gap-1.5 rounded-md border border-warning-200 dark:border-warning-500/40 bg-warning-50 dark:bg-warning-500/15 px-2 py-1 text-xs leading-tight text-warning-700 dark:text-warning-700"
 				role="note"
 			>
 				<AlertTriangle className="h-3 w-3 shrink-0" />
-				<span>{t('ai.chat.modelUltimateFallback')}</span>
+				<span className="font-medium">{t('ai.chat.modelUltimateFallback')}</span>
 			</div>
 		)
 	}
@@ -62,11 +62,11 @@ function ModelSourceBadge({ model }: { model: string }) {
 	if (model === 'rule-engine-fallback') {
 		return (
 			<div
-				className="mb-2 flex items-center gap-1.5 rounded-md border border-warning-200 dark:border-warning-500/40 bg-warning-50 dark:bg-warning-500/15 px-2 py-1 text-xs leading-tight text-warning-700 dark:text-warning-400"
+				className="mb-2 flex items-center gap-1.5 rounded-md border border-warning-200 dark:border-warning-500/40 bg-warning-50 dark:bg-warning-500/15 px-2 py-1 text-xs leading-tight text-warning-700 dark:text-warning-700"
 				role="note"
 			>
 				<AlertTriangle className="h-3 w-3 shrink-0" />
-				<span>{t('ai.chat.modelRuleEngineFallback')}</span>
+				<span className="font-medium">{t('ai.chat.modelRuleEngineFallback')}</span>
 			</div>
 		)
 	}
@@ -376,12 +376,58 @@ function isBrokenJsonContent(content: string): boolean {
 			JSON.parse(match[1].trim())
 			return false // 代码块内是合法 JSON → 交给结构化渲染
 		} catch {
-			// 闭合但解析失败：若能补全修复则不视为残缺
-			return !repairTruncatedJson(trimmed)
+			// 闭合但解析失败：能补全修复（确实缺括号/引号）则不视为残缺
+			return !repairTruncatedJsonDetailed(trimmed).repaired
 		}
 	}
-	// 代码块未闭合（截断）：若能补全修复则不视为残缺
-	return !repairTruncatedJson(trimmed)
+	// 代码块未闭合（截断）：能补全修复则不视为残缺
+	return !repairTruncatedJsonDetailed(trimmed).repaired
+}
+
+/**
+ * TruncationWarningBar — 截断降级提示 + 真正可点击的「重新生成」按钮。
+ *
+ * 背景：此前 replyInterrupted / replyDegradedToText 只是一段纯文本，文案里
+ * 让用户「点击重新生成」，但气泡内并没有对应按钮（操作栏的重新生成只在
+ * 「最后一条 assistant 消息」出现），测试反馈「说能点重新生成，体验不对」。
+ * 本组件在截断降级区块内补一个真正的按钮，复用既有的 onRegenerate 机制
+ * （MessageList → MessageBubble onRegenerate → useMessageEditing.handleRegenerateMessage，
+ * 移除该条 assistant 消息并以最近前置 user 消息重发），不自造重试逻辑。
+ *
+ * loading/disabled：重生成会移除本条消息并触发新一轮流式，期间 isStreaming=true，
+ * 按钮随之禁用避免重复点击（与操作栏 regenerate 按钮同一并发守卫口径）。
+ */
+function TruncationWarningBar({
+	msgId,
+	onRegenerate,
+	streaming,
+	messageKey,
+}: {
+	msgId: string
+	onRegenerate?: (id: string) => void
+	streaming: boolean
+	messageKey: 'ai.chat.replyInterrupted' | 'ai.chat.replyDegradedToText'
+}) {
+	const { t } = useTranslation()
+	const disabled = streaming || !onRegenerate
+	return (
+		<div className="rounded-md border border-amber-200/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-700 dark:text-amber-300/90">
+			<div className="flex items-start gap-1.5">
+				<AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" />
+				<span>{t(messageKey)}</span>
+			</div>
+			<button
+				type="button"
+				onClick={() => onRegenerate?.(msgId)}
+				className="mt-2 inline-flex items-center gap-1 rounded-md border border-amber-300/70 dark:border-amber-500/40 bg-white/70 dark:bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+				disabled={disabled}
+				title={t('ai.chat.regenerateTruncated')}
+			>
+				<RefreshCw className={`h-3 w-3${streaming ? ' animate-spin' : ''}`} />
+				{t('ai.chat.regenerateTruncated')}
+			</button>
+		</div>
+	)
 }
 
 function renderMessageContent(
@@ -390,6 +436,7 @@ function renderMessageContent(
 	allMessages: ChatMessage[],
 	streaming: boolean,
 	t: TFunction,
+	onRegenerate?: (id: string) => void,
 ) {
 	// ── 结构化内容优先检测 ──
 	if (msg.role === 'assistant') {
@@ -413,24 +460,62 @@ function renderMessageContent(
 				</div>
 			)
 		}
-		// 历史截断 JSON 自动修复：补全未闭合代码块后渲染为配方卡，避免友好提示
-		const repairedContent = repairTruncatedJson(msg.content)
-		if (repairedContent) {
+		// 历史截断 JSON 自动修复：补全未闭合代码块后渲染为配方卡，避免友好提示。
+		// 用 Detailed 版本拿到 wasTruncated 信号：只有「确实发生了补全」才弹
+		// replyInterrupted 警告；「本来完整」的配方卡（后端续写修复后为多数）不再误报。
+		const { repaired: repairedContent, wasTruncated } = repairTruncatedJsonDetailed(msg.content)
+		if (repairedContent && wasTruncated) {
 			const repairedStructured =
 				extractStructuredFallback(repairedContent) ?? detectStructuredContent(repairedContent)
 			if (repairedStructured) {
 				return (
 					<div className="space-y-2">
 						<StructuredMessageRenderer content={repairedStructured} />
-						<div className="rounded-md border border-amber-200/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-700 dark:text-amber-300/90">
-							{t('ai.chat.replyInterrupted')}
-						</div>
+						<TruncationWarningBar
+							msgId={msg.id}
+							onRegenerate={onRegenerate}
+							streaming={streaming}
+							messageKey="ai.chat.replyInterrupted"
+						/>
 					</div>
 				)
 			}
 		}
-		// 历史残缺 JSON（早期输出限制导致 parse 失败）→ 友好提示，不裸显示 JSON
+		// P0-4（本任务）：块级恢复 —— 即使整体 JSON 畸形（LLM 漏闭括号）无法整体修复，
+		// 也逐块提取完整可解析的 block 重新组装配方卡，避免降级为纯文本。
+		const recoveredStructured = recoverBlocksFromBrokenJson(msg.content)
+		if (recoveredStructured) {
+			return (
+				<div className="space-y-2">
+					<StructuredMessageRenderer content={recoveredStructured} />
+					<TruncationWarningBar
+						msgId={msg.id}
+						onRegenerate={onRegenerate}
+						streaming={streaming}
+						messageKey="ai.chat.replyInterrupted"
+					/>
+				</div>
+			)
+		}
+		// 历史残缺 JSON（早期输出限制导致 parse 失败）：
+		// P0-4（本任务）——不再仅显示「不完整的 JSON 数据」警告。优先降级为
+		// Markdown 文本渲染（把 ```json 开标签降级为普通 ```，MarkdownRenderer 渲染），
+		// 使用户仍能阅读原始内容而非空白警告；若内容不适合降级，再回退到原警告。
 		if (isBrokenJsonContent(msg.content)) {
+			const degraded = degradeJsonToMarkdown(msg.content)
+			if (degraded) {
+				return (
+					<div className="space-y-2">
+						<MarkdownRenderer content={degraded} />
+						<TruncationWarningBar
+							msgId={msg.id}
+							onRegenerate={onRegenerate}
+							streaming={streaming}
+							messageKey="ai.chat.replyDegradedToText"
+						/>
+					</div>
+				)
+			}
 			return (
 				<div className="rounded-lg border border-amber-200/70 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-300/90 leading-relaxed">
 					{t('ai.chat.incompleteJson')}
@@ -484,15 +569,11 @@ function renderMessageContent(
 				}
 			}
 
-			// eslint-disable-next-line no-case-declarations
-			const isLastAndNotStreaming = index === allMessages.length - 1 && !streaming
-			if (isLastAndNotStreaming) {
-				return (
-					<EnhancedContentRenderer content={msg.content}>
-						<TypewriterText content={msg.content} speed={20} chunkSize={5} />
-					</EnhancedContentRenderer>
-				)
-			}
+			// P2 修复（TypewriterText 从零重放）：流式消息在 SSE 期间已由 MarkdownRenderer
+			// 渐进揭示；流式结束瞬间 isLastAndNotStreaming 翻转会**重新挂载** TypewriterText，
+			// 它只能以完整 content 挂载 → displayedLen 必然从 0 重放，造成「已完整显示又从头逐字」闪跳。
+			// 长文(>800)又被 auto-skip → 特性半死且不一致。故对流式消息不再套 TypewriterText，
+			// 统一用 MarkdownRenderer 渲染完整内容（非流式回复也直接呈现，不做假流式）。
 			return (
 				<EnhancedContentRenderer content={msg.content}>
 					<MarkdownRenderer content={msg.content} />
@@ -525,10 +606,14 @@ export function DialecticsCallout({ dialectics }: { dialectics: NonNullable<Chat
 		)
 	}
 
+	// 规则引擎降级（LLM 不可用）：整卡使用警告色系，与正常 LLM 辨证卡从「第一眼」区分
+	const isFallback = dialectics.engine === 'rule_engine_fallback'
+
 	// P0 修复：当体质倾向为空或占位文本时不显示
+	// F7：占位过滤从「前缀黑名单」收紧为「整段占位且不含实质判断词」，
+	// 避免误伤「待用户提供更多信息，初步判断为…」这类含真实信息的半占位句。
 	const rawConstitution = dialectics.constitution_tendency?.trim() || ''
-	const PLACEHOLDER_PATTERNS = [/^(（未提供）|未提供)/, /^待用户提供.*$/, /^用户询问.*非特定.*/]
-	const constitution = PLACEHOLDER_PATTERNS.some(p => p.test(rawConstitution)) ? '' : rawConstitution
+	const constitution = isPlaceholderConstitution(rawConstitution) ? '' : rawConstitution
 	const syndrome = dialectics.syndrome_points?.trim() || ''
 	const goals = dialectics.regulation_goals || []
 	const evidence = dialectics.evidence || []
@@ -538,11 +623,41 @@ export function DialecticsCallout({ dialectics }: { dialectics: NonNullable<Chat
 	if (!constitution && !syndrome && goals.length === 0 && evidence.length === 0) return null
 
 	return (
-		<div className="mb-2 p-3 rounded-xl border border-primary-100 dark:border-primary-800/30 bg-primary-50/60 dark:bg-primary-900/10 text-sm">
-			<p className="text-xs font-semibold text-primary-700 dark:text-primary-700 mb-1.5 flex items-center gap-1.5">
-				<Cpu className="w-3.5 h-3.5" /> {t('ai.chat.dialecticsAnalysis')}
-				{dialectics.engine === 'rule_engine_fallback' && (
-					<span className="text-xs font-normal px-1.5 py-0.5 rounded bg-warning-100 dark:bg-warning-900/30 text-warning-600">{t('ai.chat.ruleEngineFallback')}</span>
+		<div
+			className={`mb-2 p-3 rounded-xl border text-sm ${
+				isFallback
+					? 'border-warning-200 dark:border-warning-800/30 bg-warning-50/60 dark:bg-warning-900/10'
+					: 'border-primary-100 dark:border-primary-800/30 bg-primary-50/60 dark:bg-primary-900/10'
+			}`}
+		>
+			{/* P1-F1/F2：降级卡顶部全宽警示条 —— 通俗文案说明「模板参考，非个性化 AI 辨证」 */}
+			{isFallback && (
+				<div
+					role="note"
+					aria-label={t('ai.chat.ruleEngineFallbackHint')}
+					className="flex items-center gap-1.5 rounded-md bg-warning-100/80 dark:bg-warning-500/15 px-2 py-1 mb-2 text-xs font-medium text-warning-700 dark:text-warning-700"
+				>
+					<AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+					<span>{t('ai.chat.ruleEngineFallbackHint')}</span>
+				</div>
+			)}
+			<p
+				className={`text-xs font-semibold mb-1.5 flex items-center gap-1.5 ${
+					isFallback ? 'text-warning-700 dark:text-warning-700' : 'text-primary-700 dark:text-primary-700'
+				}`}
+			>
+				{isFallback ? <BookOpen className="w-3.5 h-3.5" /> : <Cpu className="w-3.5 h-3.5" />}
+				{t('ai.chat.dialecticsAnalysis')}
+				{isFallback && (
+					<span
+						role="note"
+						aria-label={t('ai.chat.ruleEngineFallbackHint')}
+						title={t('ai.chat.ruleEngineFallbackHint')}
+						className="inline-flex items-center gap-0.5 text-xs font-normal px-1.5 py-0.5 rounded bg-warning-50 dark:bg-warning-900/30 text-warning-700 dark:text-warning-700 border border-warning-200 dark:border-warning-500/30"
+					>
+						<AlertTriangle className="w-3 h-3" />
+						{t('ai.chat.ruleEngineFallback')}
+					</span>
 				)}
 			</p>
 			{constitution && (
@@ -565,9 +680,24 @@ export function DialecticsCallout({ dialectics }: { dialectics: NonNullable<Chat
 			)}
 			{evidence.length > 0 && (
 				<div className="mt-1.5 space-y-0.5 text-xs text-neutral-500 dark:text-neutral-400">
-					{evidence.slice(0, 3).map((e, i) => (
-						<p key={i}><span className="text-info-600 dark:text-info-500">[{e.level}]</span> {e.claim}{e.source ? t('ai.chat.evidenceSource', { source: e.source }) : ''}</p>
-					))}
+					{evidence.slice(0, 3).map((e, i) => {
+						// F5/F8：降级卡与「传统经验整理」证据统一弱化视觉权重，
+						// 避免「国家标准/权威目录」等通用建议被误读为针对用户的循证结论。
+						const weakened = isFallback || e.level?.includes('传统经验整理')
+						// P0-4 收口：后端降级证据显式 authoritative:false，叠加更弱的一档视觉降权
+						// （降权而非隐藏——诚实声明仍完整可读，只是不再与真证据同等强调）。
+						const nonAuthoritative = e.authoritative === false || /降级/.test(e.source ?? '')
+						const source = isFallback && e.source ? `${e.source}${t('ai.chat.templateSuffix')}` : e.source
+						return (
+							<p key={i} className={nonAuthoritative ? 'opacity-70' : undefined}>
+								<span className={weakened ? 'text-neutral-400 dark:text-neutral-500' : 'text-info-600 dark:text-info-500'}>[{e.level}]</span> {e.claim}
+								{nonAuthoritative && (
+									<span className="ml-1 text-neutral-400 dark:text-neutral-500">· {t('ai.chat.nonAuthoritative')}</span>
+								)}
+								{e.source ? t('ai.chat.evidenceSource', { source }) : ''}
+							</p>
+						)
+					})}
 				</div>
 			)}
 			{cautions.length > 0 && (
@@ -783,7 +913,7 @@ export function MessageBubble({
 									{msg.role === 'assistant' && msg.model && <ModelSourceBadge model={msg.model} />}
 									{msg.role === 'assistant' && msg.metadata?.ragDegraded === true && <RAGDegradedHint />}
 									{msg.role === 'assistant' && msg.dialectics && <DialecticsCallout dialectics={msg.dialectics} />}
-									{renderMessageContent(msg, index, allMessages, isStreaming, t)}
+									{renderMessageContent(msg, index, allMessages, isStreaming, t, onRegenerate)}
 								</>
 							)}
 						</div>
@@ -809,8 +939,13 @@ export function MessageBubble({
 								<Undo2 className="w-3 h-3" />
 							</button>
 						)}
-						{msg.role === 'assistant' && onRegenerate && (
-							<button onClick={() => onRegenerate(msg.id)} className="chat-action-btn" title={t('ai.chat.regenerate')}>
+						{msg.role === 'assistant' && onRegenerate && index === allMessages.length - 1 && (
+							<button
+								onClick={() => onRegenerate(msg.id)}
+								className="chat-action-btn disabled:opacity-40 disabled:cursor-not-allowed"
+								title={t('ai.chat.regenerate')}
+								disabled={isStreaming}
+							>
 								<RefreshCw className="w-3 h-3" />
 							</button>
 						)}
@@ -853,17 +988,19 @@ export function MessageBubble({
 									>
 										{t('ai.chat.edit')}
 									</button>
-									{msg.role === 'assistant' && onRegenerate && (
+									{msg.role === 'assistant' && onRegenerate && index === allMessages.length - 1 && (
 										<button
 											onClick={() => { onRegenerate(msg.id); setMoreMenuOpen(false) }}
-											className="w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+											className="w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+											disabled={isStreaming}
 										>
 											{t('ai.chat.regenerate')}
 										</button>
 									)}
 									<button
 										onClick={() => { onDelete(msg.id); setMoreMenuOpen(false) }}
-										className="w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-error-600 dark:text-error-400"
+										className="w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-error-600 dark:text-error-400 disabled:opacity-40 disabled:cursor-not-allowed"
+										disabled={isStreaming}
 									>
 										{t('ai.chat.delete')}
 									</button>

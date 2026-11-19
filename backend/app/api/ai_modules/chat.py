@@ -53,9 +53,13 @@ async def _get_user_llm(user_id: int):
     """
     return await LLMService.get_user_service(user_id)
 from ...services.ai.prompt_service import get_prompt_service
+from ...services.ai.safety.output_filter import get_output_checker
 from ...services.ai.shared.observability import ai_observability
 from ...services.ai.shared.response_cache import ai_cache
-from ...services.ai.safety.output_filter import get_output_checker
+from ...services.ai.structured_json_repair import (
+    ensure_valid_json_or_markdown,
+    repair_truncated_json,
+)
 
 
 def _repair_truncated_json(content: str) -> str:
@@ -63,59 +67,11 @@ def _repair_truncated_json(content: str) -> str:
 
     场景：LLM 流式输出提前停止，内容以 ```json 开头但缺少闭合 ```，
     且 JSON 因中途截断而括号不平衡。
-    本函数通过「补全未闭合字符串 + 逆序闭合未配对括号」恢复为可解析的 JSON 代码块；
-    无法安全修复时原样返回，交由前端兜底处理。
+    委托给 app.services.ai.structured_json_repair.repair_truncated_json：
+    按「闭合未闭合字符串 → 未闭合 key 补 : null → 去尾逗号 → 逆序闭合括号」
+    顺序修复；无法安全修复时原样返回，交由调用方降级（绝不持久化残缺 JSON）。
     """
-    stripped = content.lstrip()
-    if not stripped.startswith("```json"):
-        return content
-    opening = content.find("```json")
-    json_start = content.find("{", opening)
-    if json_start < 0:
-        return content
-    # 已存在闭合代码块 → 无需修复
-    first_close = content.find("```", opening + 7)
-    if first_close >= 0 and first_close > json_start:
-        return content
-
-    prefix = content[json_start:]
-    stack: list[str] = []
-    in_string = False
-    escaped = False
-    for ch in prefix:
-        if in_string:
-            if escaped:
-                escaped = False
-                continue
-            if ch == "\\":
-                escaped = True
-                continue
-            if ch == '"':
-                in_string = False
-            continue
-        if ch == '"':
-            in_string = True
-        elif ch in "{[":
-            stack.append(ch)
-        elif ch in "}]":
-            open_ch = "{" if ch == "}" else "["
-            if stack and stack[-1] == open_ch:
-                stack.pop()
-            else:
-                return content  # 括号不匹配，无法安全修复
-
-    repaired = prefix
-    if in_string:
-        repaired += '"'
-    repaired = repaired.rstrip()
-    repaired = repaired.rstrip(",").rstrip()
-    closers = "".join("}" if o == "{" else "]" for o in reversed(stack))
-    repaired += closers
-    try:
-        json.loads(repaired)
-    except Exception:
-        return content
-    return content[:json_start] + repaired + "\n```"
+    return repair_truncated_json(content)
 
 
 if _is_debug_mode():
@@ -204,6 +160,36 @@ def _format_sse_event(event_type: str, data: dict) -> str:
     return f"event: {event_type}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
+# ═══ P2 修复（2026-11-08）：上游 LLM 限流 ≠ 本平台对客户端限流 ═══
+# 背景（reports/chat-history/chat-module-audit.md P2「非流式 /chat 超时误标 429」）：
+# 上游模型客户端（llm_provider.py / llm_service.py）在命中 OpenAI/Anthropic/DeepSeek 的
+# 429 时抛 RuntimeError（含「频率限制」「API 调用频率过高」等字样）。此前异常处理器
+# 把这类 RuntimeError 一律映射成对**客户端**的 429，混淆了两种完全不同的限流：
+#   - 本平台对客户端限流：在端点入口 get_ai_rate_limiter() 已正确以 429 拦截（不会走到这里）；
+#   - 上游模型服务限流：属外部依赖过载，应映射为 5xx 上游错误，而非客户端超额。
+# 因此：凡以 RuntimeError 形式抵达异常处理器的限流，必然来自上游，统一判为上游限流。
+_UPSTREAM_RATE_LIMIT_MARKERS = (
+    "频率限制", "频率过高", "限流", "rate limit", "ratelimit",
+    "too many requests", "请求过于频繁", "调用频率",
+)
+# 缺陷3 收口：裸子串 "429" 理论上会被 "latency=1429ms" 之类误命中，改用词边界 \b429\b。
+_UPSTREAM_429_RE = re.compile(r"\b429\b")
+
+
+def _is_upstream_rate_limit(error_msg: str) -> bool:
+    """判断 RuntimeError 是否为**上游模型服务**限流（而非本平台对客户端限流）。
+
+    平台自身限流走 HTTPException(429) 在端点入口拦截，不会以 RuntimeError 抵达此处；
+    故此处命中间流关键词即判定为上游限流，应映射 5xx 上游错误。
+    """
+    if not error_msg:
+        return False
+    if _UPSTREAM_429_RE.search(error_msg):
+        return True
+    lowered = error_msg.lower()
+    return any(marker.lower() in lowered for marker in _UPSTREAM_RATE_LIMIT_MARKERS)
+
+
 def _sanitize_stream_chunk(chunk: str) -> str:
     """流式逐 chunk 轻量脱敏：复用 OutputSafetyChecker 的敏感模式（API Key/PII/邮箱等），
     在 chunk 展示给用户之前将命中内容替换为 [REDACTED]。
@@ -222,20 +208,144 @@ def _sanitize_stream_chunk(chunk: str) -> str:
 
 
 # ── LLM 超时配置（秒）──
-# 首包超时：连接建立后等待「首个内容分片」的最长时间，用于快速识别上游挂起（60s）；
-# 总超时：整个流式响应的总时长上限（含首包等待），必须 < 前端 STREAM_TIMEOUT_MS=240s。
-# 2026-10-28：总超时 170s → 200s——前端 STREAM_TIMEOUT_MS 已联动上调 180s→240s
-# （frontend/src/constants/businessRules.ts:22），200s < 240s，保留 40s 裕量，吸收
-# agnes-3.0-flash 偶发 >150s 甚至 >180s 的长尾（P1-6 平台库增强后 prompt 更长）。
-# 首包超时保持 60s 不变（仅检测上游挂起）。
-# 非流式 /chat 使用与流式对齐的总超时，避免降级后反而更早失败。
+# 唯一事实来源是下方「常量」，历史注释数值仅作演变记录，与常量冲突时以常量为准。
+#
+# 首包超时：连接建立后等待「首个内容分片」的最长时间，用于快速识别上游挂起。
 LLM_STREAM_FIRST_TOKEN_TIMEOUT = 60
-# 2026-10-29：总超时 200s → 120s（用户等待过长，恢复快速失败）；
-# 保持不变式：后端总超时（120s）< 前端 STREAM_TIMEOUT_MS（180s）
+# 主生成总超时：首轮流式响应（不含续写轮次）的总时长上限（含首包等待）。
+# 演变：170s → 200s（2026-10-28）→ 120s（2026-10-29，用户等待过长恢复快速失败）。
 LLM_STREAM_TOTAL_TIMEOUT = 120
 LLM_NON_STREAM_TIMEOUT = 120
 # 流式空闲超时：读流过程中超过该时长无任何内容分片，视为上游挂起（半死连接），快速失败
 LLM_STREAM_IDLE_TIMEOUT = 30
+#
+# ── 续写（continuation）预算：max_tokens 截断自动续写场景 ──
+# 前端整体超时 STREAM_TIMEOUT_MS = 180s（frontend/src/constants/businessRules.ts:22，
+# 由 chatService.ts:317 施加于 /ai 流式请求）。
+# 硬不变式：后端「首轮 + 全部续写轮次」总预算必须 < 前端 180s，保留裕量。
+# 首轮已由 LLM_STREAM_TOTAL_TIMEOUT=120s 封顶，续写只能占用剩余预算。
+LLM_STREAM_OVERALL_BUDGET = 165  # 首轮 + 续写的总预算上限（165 < 前端 180s，含 15s 裕量）
+LLM_CONTINUATION_MAX_ROUNDS = 2  # 最多续写轮次（防无限循环 / 成本失控）
+LLM_CONTINUATION_ROUND_TIMEOUT = 60  # 单轮续写上限（且受 LLM_STREAM_OVERALL_BUDGET 剩余约束）
+
+# 续写时追加给模型的用户指令：明确「从中断处接着写、不要重复、直到 JSON 闭合」。
+_CONTINUATION_INSTRUCTION = (
+    "继续输出剩余内容，从中断处接着写，不要重复已输出内容，"
+    "直接续写直到 JSON 完整闭合。"
+)
+
+
+def _is_formula_card_answer(text: str) -> bool:
+    """判断已生成内容是否为「配方卡」场景（```json 开头 或 含 blocks 结构）。
+
+    只有配方卡这类结构化长输出被 max_tokens 截断时才值得续写；
+    普通散文被截断语义损失小，交由前端降级提示即可，避免无谓拉长时长。
+    """
+    if not text:
+        return False
+    stripped = text.lstrip()
+    if stripped.startswith("```json") or stripped.startswith("```"):
+        return True
+    return '"blocks"' in text or "'blocks'" in text
+
+
+class _ContinuationOutcome:
+    """续写结果载体（由 _stream_formula_continuation 就地回填）。"""
+
+    def __init__(self) -> None:
+        self.rounds = 0
+        self.appended_chars = 0
+        self.finish_reason = ""  # 最后一轮的归一化 finish_reason
+
+
+async def _stream_formula_continuation(
+    *,
+    llm,
+    base_messages: list,
+    partial_answer: str,
+    model_override: str | None,
+    temperature_override: float | None,
+    overall_deadline: float,
+    outcome: _ContinuationOutcome,
+    log_prefix: str = "[chat_stream]",
+):
+    """对被 max_tokens 截断（finish_reason=="length"）的配方卡做自动续写。
+
+    - 复用与首轮相同的 model / temperature / max_tokens 配置（llm 实例内配置）。
+    - 最多 LLM_CONTINUATION_MAX_ROUNDS 轮；每轮把「已生成全文」作为 assistant 前缀，
+      追加一条续写指令 user 消息，再流式拼接。
+    - 每轮受「单轮上限」与「总预算剩余」双重约束；空闲超时快速失败。
+    - 逐片 yield 续写文本，供调用方流式下发前端；结束时 outcome.finish_reason 为
+      最后一轮的 finish_reason（若仍为 "length" 则调用方放弃续写、走既有降级）。
+    """
+    from ...services.ai.providers.llm_provider import StreamMeta
+
+    full_text = partial_answer
+    for rnd in range(1, LLM_CONTINUATION_MAX_ROUNDS + 1):
+        remaining = overall_deadline - time.monotonic()
+        if remaining <= 1:
+            logger.warning(
+                f"{log_prefix} 续写前总预算已耗尽（剩余={remaining:.1f}s），停止续写"
+            )
+            break
+        round_budget = min(LLM_CONTINUATION_ROUND_TIMEOUT, remaining)
+        outcome.rounds = rnd
+
+        cont_messages = list(base_messages)
+        cont_messages.append(LLMMessage(role="assistant", content=full_text))
+        cont_messages.append(LLMMessage(role="user", content=_CONTINUATION_INSTRUCTION))
+
+        meta = StreamMeta()
+        stream = None
+        round_chars = 0
+        try:
+            stream = llm.chat_stream(
+                cont_messages,
+                model=model_override,
+                temperature=temperature_override,
+                meta=meta,
+            )
+            async with asyncio.timeout(round_budget):
+                while True:
+                    try:
+                        chunk = await asyncio.wait_for(
+                            anext(stream), timeout=LLM_STREAM_IDLE_TIMEOUT
+                        )
+                    except StopAsyncIteration:
+                        break
+                    except asyncio.TimeoutError:
+                        logger.warning(
+                            f"{log_prefix} 续写第{rnd}轮空闲超时"
+                            f"（{LLM_STREAM_IDLE_TIMEOUT}s 无数据），提前结束本轮"
+                        )
+                        break
+                    if chunk:
+                        round_chars += len(chunk)
+                        outcome.appended_chars += len(chunk)
+                        full_text += chunk
+                        yield chunk
+        except asyncio.TimeoutError:
+            logger.warning(
+                f"{log_prefix} 续写第{rnd}轮超时（round_budget={round_budget:.1f}s）"
+            )
+        except Exception as e:
+            logger.error(f"{log_prefix} 续写第{rnd}轮失败: {e}", exc_info=True)
+        finally:
+            if stream is not None:
+                try:
+                    await stream.aclose()
+                except Exception:
+                    pass
+
+        outcome.finish_reason = meta.finish_reason
+        logger.info(
+            f"{log_prefix} 续写第{rnd}轮结束: finish_reason={meta.finish_reason!r}, "
+            f"本轮字符={round_chars}, 累计续写={outcome.appended_chars}"
+        )
+        if meta.finish_reason != "length":
+            # 正常结束 / content_filter / 其他 → 不再继续续写
+            break
+    # 轮次耗尽或不再 length → 返回，调用方据 outcome.finish_reason 决定后续
 
 
 class ChatRequest(BaseModel):
@@ -407,8 +517,8 @@ def _truncate_history_by_tokens(
 # 轻量级剂量预校验（P0-3）
 # ═══════════════════════════════════════════════════════════════
 
-# 内置常用药食同源原料安全剂量范围（g/天），参考《中国药典》2020年版及2023版目录。
-# 覆盖114种药食同源目录中的常见药材；未覆盖的药材不阻断对话但无单味校验。
+# 内置常用药食同源原料安全剂量范围（g/天），参考《中国药典》2025年版及2024版目录。
+# 覆盖药食同源目录主要常用药材；未覆盖的药材不阻断对话但无单味校验。
 # 日用总量安全上限：一般配方总干品 ≤30g/天；特殊滋补方 ≤50g/天
 _COMMON_HERB_DOSAGE: dict[str, tuple[float, float]] = {
     # ── 补气类 ──
@@ -513,6 +623,57 @@ _DOSAGE_SINGLE_BEFORE_RE = re.compile(
 )
 
 
+def _sum_herb_dosages(answer: str) -> float:
+    """聚合回复中「内置药食同源成分 + 剂量g」的克重总和（去重重叠匹配）。
+
+    供两处复用：
+      - _append_dosage_warnings：总量超标警示（本函数抽出的正是其原有聚合逻辑）；
+      - _validate_numeric_claims：克重加和守恒校验（P0-5）。
+    只认 _COMMON_HERB_DOSAGE 中的已知成分名，避免把正文里的「每日 30g」等
+    非配方克重误计入。重叠匹配（RANGE_*/SINGLE_* 命中同一段）只计一次。
+    """
+    matches: list[re.Match] = []
+    for pattern in (
+        _DOSAGE_RANGE_RE, _DOSAGE_SINGLE_RE,
+        _DOSAGE_RANGE_BEFORE_RE, _DOSAGE_SINGLE_BEFORE_RE,
+    ):
+        matches.extend(pattern.finditer(answer))
+
+    # 按匹配 span 去重：RANGE_* 与 SINGLE_* 正则可能重叠命中同一段文本
+    # （如「10-20g 黄芪」同时被 _DOSAGE_RANGE_BEFORE_RE 与 _DOSAGE_SINGLE_BEFORE_RE
+    # 命中），重叠只计一次，防止同一味同剂量被重复累加。
+    span_seen: list[tuple[int, int]] = []
+    herb_doses: dict[str, float] = {}
+    for m in sorted(matches, key=lambda x: (x.start(), -(x.end() - x.start()))):
+        start, end = m.span()
+        if any(start < e and s < end for s, e in span_seen):
+            continue
+        groups = m.groups()
+        if len(groups) == 3:
+            # 区间型：黄芪 10-20g（RANGE_RE: herb,low,high）/ 10-20g 黄芪（RANGE_BEFORE_RE: low,high,herb）
+            if m.re is _DOSAGE_RANGE_RE:
+                herb = (groups[0] or "").strip()
+                low, high = float(groups[1]), float(groups[2])
+            else:
+                herb = (groups[2] or "").strip()
+                low, high = float(groups[0]), float(groups[1])
+            dosage = round((low + high) / 2.0, 1)  # 代表值=区间中位数
+        else:
+            # 单值型：黄芪 10g（SINGLE_RE: herb,val）/ 10g 黄芪（SINGLE_BEFORE_RE: val,herb）
+            if m.re is _DOSAGE_SINGLE_RE:
+                herb = (groups[0] or "").strip()
+                dosage = float(groups[1])
+            else:
+                herb = (groups[1] or "").strip()
+                dosage = float(groups[0])
+        herb = (herb or "").strip()
+        if herb and dosage > 0:
+            span_seen.append((start, end))
+            herb_doses[herb] = herb_doses.get(herb, 0.0) + dosage
+
+    return sum(herb_doses.values())
+
+
 async def _append_dosage_warnings(answer: str, db: AsyncSession | None = None) -> str:
     """
     从回复文本提取「内置药食同源成分 + 剂量g」，与内置常用剂量上限表对比；
@@ -572,20 +733,9 @@ async def _append_dosage_warnings(answer: str, db: AsyncSession | None = None) -
         return answer
 
     # ── P0-2：总剂量聚合校验（单味药超标 + 总量超标）──
-    herb_doses: dict[str, float] = {}
-    for m in matches:
-        groups = m.groups()
-        if len(groups) == 3:
-            herb = (groups[0] or groups[2] or "").strip()
-            dosage = float(groups[2] or groups[1])
-        else:
-            herb = (groups[0] or groups[1] or "").strip()
-            dosage = float(groups[1] or groups[0])
-        herb = (herb or "").strip()
-        if herb and dosage > 0:
-            herb_doses[herb] = herb_doses.get(herb, 0.0) + dosage
-
-    total_dose = sum(herb_doses.values())
+    # P1-1 修复见 _sum_herb_dosages 注释（区间取中位数、按 span 去重）；
+    # 聚合逻辑已抽出复用（_validate_numeric_claims 的克重加和守恒也用它）。
+    total_dose = _sum_herb_dosages(answer)
     if total_dose > _TOTAL_DAILY_DOSAGE_WARNING:
         warnings.append(
             f"> ⚠️ **总剂量警示**：本配方累计日用量约 {total_dose:.0f}g，"
@@ -602,6 +752,239 @@ async def _append_dosage_warnings(answer: str, db: AsyncSession | None = None) -
     # 去重后追加
     unique_warnings = list(dict.fromkeys(warnings))
     return answer + "\n\n" + "\n\n".join(unique_warnings)
+
+
+# ═══ P0-5（2026-11-08）：克重/氮系数/机理断言的最小确定性校验层 ═══
+# 背景（reports/chat-history/chat-module-audit.md P0-5）：平台价值主张是「科学、精准、
+# 可量化」（精确克重 + 理论功效成分含量），但克重加和、氮折算系数、功效机理断言全部
+# LLM 直出、后端零校验即直达用户。本层对**能确定性判定**的最危险项做后处理校验，
+# 以警示标记追加（对齐 _append_dosage_warnings 的追加方式），**绝不阻断回答**
+# （药食同源定位辅助调理，急症拦截是另一层 _scan_urgent_question）。
+#
+# 设计原则——**宁保守不误报**：
+#   - 只在能确定性判定时才警示（加和守恒、明显系数错用、空依据下的机理断言）；
+#   - 判不准的场景宁可只「标注未校验」甚至不提示，也不瞎报——错误警示和漏校验一样
+#     损害平台可信度。
+#   - 克重解析复用 _append_dosage_warnings 的 _COMMON_HERB_DOSAGE 正则族（经
+#     _sum_herb_dosages 抽出复用），只认内置药食同源成分名，避免把正文非配方克重误计。
+
+# 克重加和守恒：声明总量的识别正则。只匹配「总量词 + 数字 + g/克」，数字须紧跟
+# 总量词之后（允许「约/≈/:」等连接词），避免把无关句子里的 g 值误当总量。
+_MASS_TOTAL_RE = re.compile(
+    r"(?:总量|总克重|总重量|总重|总剂量|总用量|合计|共计|总和)[^\d\n]{0,6}"
+    r"(\d+(?:\.\d+)?)\s*(?:g\b|G\b|克)"
+)
+# 加和守恒容差：声明总量与各成分加和的相对偏差超过此值才警示（±5%）。
+_MASS_SUM_TOLERANCE = 0.05
+
+# 氮折算系数：蛋白质/肽类理论含量 = 含氮量 × 折算系数。常见系数：
+#   6.25（一般蛋白通用）、5.79/5.70（小麦/谷物等特定原料）。
+_NITROGEN_FACTORS = ("6.25", "5.79", "5.70")
+# 出现「含氮量/氮含量 × 系数 = 蛋白」式计算即标注所引用系数、提醒核对（保守口径，
+# 不判定场景对错以免误报；仅当能确定场景时才给明确错用提示——见 _NITROGEN_GRAIN_TERMS）。
+_NITROGEN_CALC_RE = re.compile(r"(含氮量|氮含量|全氮|总氮|氮量)")
+# 谷物/小麦类原料：这些原料的氮折算系数通常用 5.79/5.70 而非通用 6.25。
+_NITROGEN_GRAIN_TERMS = ("小麦", "谷物", "燕麦", "大麦", "黑麦", "玉米", "稻米", "大米", "面粉", "麸皮")
+
+# 强功效机理断言：网络药理学式的分子机制表述。命中即视为「机理断言」，需绑定依据；
+# 空依据/弱依据下出现此类断言时提示「缺乏平台知识库依据，为模型生成」。
+_STRONG_MECHANISM_RE = re.compile(
+    r"(抑制|激活|上调|下调|调节|阻断|促进)[\u4e00-\u9fa5A-Za-z0-9]{0,12}"
+    r"(通路|信号通路|信号轴|受体|靶点|基因表达|蛋白表达|酶活性)"
+    r"|(显著)(降低|升高|抑制|改善|提升)"
+    r"|(通过)[\u4e00-\u9fa5A-Za-z0-9]{0,16}(通路|信号通路)"
+)
+
+
+def _validate_numeric_claims(answer: str) -> list[str]:
+    """对 LLM 回答做克重加和守恒 + 氮折算系数的确定性校验，返回警示标记列表。
+
+    1. 克重加和守恒：回答声明了「总量」数字时，验算各成分克重之和是否与声明一致
+       （容差 ±5%）；不一致注入「声明Xg/实际加和Yg」核对提示。
+    2. 氮折算系数：出现含氮量×系数=蛋白计算时，标注所引用系数并提醒核对（保守，
+       避免误报）；仅当场景明确（如对非谷物原料用 5.79）才给定向提示。
+    判不准时宁可不提示（返回空列表），绝不阻断回答。
+    """
+    warnings: list[str] = []
+    if not answer:
+        return warnings
+
+    # ── 1. 克重加和守恒 ──
+    # 各成分克重总和（复用剂量正则族，只认内置成分名）
+    summed = _sum_herb_dosages(answer)
+    if summed > 0:
+        declared = 0.0
+        for m in _MASS_TOTAL_RE.finditer(answer):
+            val = float(m.group(1))
+            if val > declared:
+                declared = val
+        if declared > 0:
+            low, high = declared * (1 - _MASS_SUM_TOLERANCE), declared * (1 + _MASS_SUM_TOLERANCE)
+            if summed < low or summed > high:
+                warnings.append(
+                    f"> ⚠️ **克重校验**：配方总克重与各成分之和不符"
+                    f"（声明{declared:g}g / 实际加和约{summed:.1f}g），请核对配方克重。"
+                )
+
+    # ── 2. 氮折算系数标注 ──
+    if _NITROGEN_CALC_RE.search(answer):
+        used = [f for f in _NITROGEN_FACTORS if f in answer]
+        if used:
+            coeff_txt = "、".join(used)
+            warnings.append(
+                f"> ℹ️ **理论含量提示**：检测到氮折算计算，本回复引用的折算系数为"
+                f"（{coeff_txt}）。一般蛋白通用系数为 6.25，小麦/谷物等特定原料常用"
+                f" 5.79/5.70；请核对系数与原料场景是否匹配。"
+            )
+
+    return warnings
+
+
+def _append_groundedness_warnings(answer: str, kb_state: str | None) -> list[str]:
+    """强功效机理断言绑定依据：依据为空/弱/不可用时提示「机理断言为模型生成」。
+
+    kb_state 由 _resolve_kb_state 提供（复用 _build_system_prompt 三态口径）：
+      - platform（平台知识库有命中）→ 有权威依据，不提示；
+      - weak_user（前端 RAG 弱依据）→ 提示「基于弱依据」；
+      - empty（检索成功但无命中）/ unavailable（检索异常）→ 提示「缺乏平台知识库依据」；
+      - none（未做知识检索）/ None（bot 上下文等未知态）→ 判不准，不提示（宁保守）。
+    """
+    if not answer or kb_state in (None, _KB_STATE_PLATFORM, _KB_STATE_NONE):
+        return []
+    if not _STRONG_MECHANISM_RE.search(answer):
+        return []
+
+    if kb_state == _KB_STATE_WEAK_USER:
+        return [
+            "> ℹ️ **依据提示**：以下机理断言基于用户上传文档的检索结果（弱依据），"
+            "为模型生成内容，非平台知识库权威结论，请谨慎参考。"
+        ]
+    # empty / unavailable
+    return [
+        "> ⚠️ **依据提示**：以下机理断言缺乏平台知识库依据，为模型生成，"
+        "请勿视为平台校验结论；涉及具体功效机理请以权威文献或医师意见为准。"
+    ]
+
+
+# ═══ P0-1（task-13，2026-11-08）：急重症拦截主回答（医疗合规红线）═══
+# 背景（reports/chat-history/chat-module-audit.md P0-1）：此前 URGENT_KEYWORDS 只在
+# dialectics_service（辨证侧卡）扫描，主回答（配方）从不设防——用户问
+# 「胸闷+左肩放射痛配食疗方」时，侧卡提示就医、主回答却照常生成精确到克的方子，
+# 自相矛盾且构成医疗合规风险。
+# 修法：主回答生成前扫描用户问题，命中即让主回答明确「立即就医、不提供食疗配方」，
+# 复用 dialectics_service.URGENT_KEYWORDS（import，勿复制，保证与侧卡口径一致）。
+_URGENT_REFUSAL_HEADER = (
+    "⚠️ **您描述的情况可能属于急重症，请立即就医，不建议通过食疗配方自行处理。**"
+)
+_URGENT_REFUSAL_BODY = (
+    "\n\n您提到的症状可能提示需要紧急医疗评估的急性状况（如心血管、脑血管、"
+    "急腹症、中毒或严重感染等）。此类情况存在时间敏感性，**请立即前往急诊或拨打 120**，"
+    "由专业医师当面诊治，切勿延误。\n\n"
+    "**为什么本平台不提供配方：**\n"
+    "- 药食同源食疗定位于日常调理与辅助，**起效温和、周期长**，无法应对急重症的时效要求；\n"
+    "- 在未明确诊断前自行服用食疗方，可能掩盖病情、延误最佳救治时机，甚至与后续治疗冲突；\n"
+    "- 急症处理需专业急救与医学干预，不在我能提供的安全边界内。\n\n"
+    "**请您现在就做：**\n"
+    "1. 立即就医（急诊）；如症状凶险（胸痛、呼吸困难、意识改变、大出血等）请拨打 120；\n"
+    "2. 就医前避免进食、自行服药或采用任何偏方；\n"
+    "3. 如有人陪同，请让其协助并告知接诊医师全部症状。\n\n"
+    "> 本提示为安全建议，不能替代医师诊断与治疗。急症请以急救医疗为准。"
+    "待病情稳定、经医师评估后，可再就日常调理咨询本平台。"
+)
+
+
+_URGENT_HISTORY_ROUNDS = 3  # 多轮绕过防护：只回看最近 3 条 user 消息（兼顾性能/上下文）
+
+
+def _scan_urgent_question(question: str, history: list | None = None) -> str | None:
+    """扫描「当前问题 + 最近几轮 history」是否命中急重症关键词（复用 URGENT_KEYWORDS）。
+
+    缺口1（task-13，2026-11-08）：仅扫当前 question 会被「多轮拆分」绕过——
+    第一轮「我胸闷/左肩放射痛」（命中拒），第二轮「针对上面症状给食疗方」
+    question 本身无急症词→绕过。故回看最近 N 条 user 消息一起匹配。
+    返回命中的关键词（用于日志与定位），未命中返回 None。
+    匹配为简单子串包含——与 dialectics_service 入口扫描口径一致，宁误报不漏报。
+    """
+    from ...services.ai.dialectics_service import URGENT_KEYWORDS
+
+    def _match(text: str) -> str | None:
+        if not text:
+            return None
+        for kw in URGENT_KEYWORDS:
+            if kw in text:
+                return kw
+        return None
+
+    # 1) 当前问题优先
+    hit = _match(question)
+    if hit:
+        return hit
+
+    # 2) 多轮绕过防护：只回看最近 _URGENT_HISTORY_ROUNDS 条 user 消息
+    #    （不无限拼接，兼顾性能/上下文；指代前文症状通常就在最近几轮内）。
+    if history:
+        recent_user_msgs = [
+            str(h.get("content") or "")
+            for h in history
+            if isinstance(h, dict) and str(h.get("role") or "") == "user"
+        ]
+        for text in recent_user_msgs[-_URGENT_HISTORY_ROUNDS:]:
+            hit = _match(text)
+            if hit:
+                return hit
+    return None
+
+
+def _urgent_refusal_answer(matched: str | None = None) -> str:
+    """构造急重症主回答：明确「立即就医、不提供食疗配方」，绝不生成克重方子。
+
+    matched 仅用于日志/可读性，不改变固定安全文本内容。
+    """
+    if matched:
+        logger.warning(f"[chat] 急症主回答拒绝生成配方，命中关键词: {matched}")
+    return _URGENT_REFUSAL_HEADER + _URGENT_REFUSAL_BODY
+
+
+# ═══ P0-5（2026-11-08）：知识依据三态——供功效机理断言绑定依据（groundedness）复用 ═══
+# _build_system_prompt 内部对知识库检索做了三态判断（有结果/成功但空/异常/前端弱依据），
+# 但该判断结果是局部的、调用方拿不到。这里把「检索态」抽成可复用常量 + 一个纯查询函数，
+# 让后处理也能判断「当前回答是否缺乏平台知识库依据」，从而给强机理断言绑定依据提示。
+# 说明：retrieve_herb_knowledge 有 DB 开销，故仅在回答里出现强机理断言时才调用（惰性），
+# 且所有异常静默降级为 None（判不准→不警示），避免误报、不阻断回答。
+_KB_STATE_PLATFORM = "platform"      # 平台知识库有命中结果（权威依据）
+_KB_STATE_WEAK_USER = "weak_user"     # 前端 RAG 非空（会话上下文弱依据）
+_KB_STATE_EMPTY = "empty"             # 平台检索成功但无命中（无依据）
+_KB_STATE_UNAVAILABLE = "unavailable"  # 平台检索异常（依据不可用）
+_KB_STATE_NONE = "none"               # 未做知识检索（非配方场景/bot 上下文）→ 不判 groundedness
+
+
+async def _resolve_kb_state(
+    scenario_mode: str,
+    question: str | None,
+    rag_context: list[str] | None,
+    db: AsyncSession | None = None,
+) -> str:
+    """复现 _build_system_prompt 的知识检索三态判断，返回当前回答的依据态。
+
+    与 _build_system_prompt 口径保持一致：前端 RAG 非空 → weak_user；否则配方类场景
+    走平台检索（有结果=platform / 空=empty / 异常=unavailable）；非配方场景 → none。
+    任何异常静默降级（不阻断），调用方据此决定是否给机理断言绑定依据提示。
+    """
+    sanitized_rag = _sanitize_rag_chunks(rag_context)
+    if sanitized_rag:
+        return _KB_STATE_WEAK_USER
+    if (scenario_mode or "formula_design") in (
+        "formula_design", "academician", "safety_off", "process_eng", "concise_adv",
+    ) and question:
+        try:
+            from ...services.ai.formula_intelligence import retrieve_herb_knowledge
+
+            entries = await retrieve_herb_knowledge(question, top_k=1, db=db)
+            return _KB_STATE_PLATFORM if entries else _KB_STATE_EMPTY
+        except Exception as e:
+            logger.warning(f"[chat] groundedness 知识态判定检索失败（忽略）: {e}")
+            return _KB_STATE_UNAVAILABLE
+    return _KB_STATE_NONE
 
 
 async def _build_system_prompt(
@@ -638,10 +1021,15 @@ async def _build_system_prompt(
     if sanitized_rag:
         # 合并前端 RAG 结果
         rag_lines = [f"- {chunk}" for chunk in sanitized_rag]
+        # 缺口2（task-13，2026-11-08）：前端 RAG 返回的 chunk 只经 _sanitize_rag_chunks
+        # 过滤注入字符、**不评相关性**，非空≠权威。若不标注，弱/不相关依据会呈现为「有据」。
+        # 故注入「会话上下文弱依据」标记，与平台知识库权威依据区分开。
         knowledge_block = (
             "\n\n【用户知识库参考】（来自用户上传文档的检索结果，可作为配方设计的依据；"
             "若与平台知识库冲突，以药食同源安全规范为准）\n"
             + "\n".join(rag_lines)
+            + "\n\n【依据强度提示】以上依据来自**用户会话上下文/上传文档**，"
+            "非平台知识库权威校验；涉及具体克重、功效机理时请谨慎核对，勿直接视为权威结论。"
         )
     elif (scenario_mode or "formula_design") in (
         "formula_design",
@@ -670,6 +1058,19 @@ async def _build_system_prompt(
                 knowledge_block = (
                     "\n\n【平台知识库参考】（来源：平台原料库）\n"
                     + "\n".join(lines)
+                )
+            else:
+                # P0-2（task-13）：检索**成功但空**——此前 knowledge_block 保持空、无任何
+                # 标记，主回答会凭空生成克重配方/机理断言却呈现为「有据」。此处注入显式
+                # 「无依据」标记，与下方异常分支口径一致，区分三种状态：
+                #   ①检索成功有结果 → 上方注入【平台知识库参考】
+                #   ②检索成功但空   → 此处注入【平台知识库参考】空结果标记
+                #   ③检索异常       → except 分支注入「检索不可用」标记
+                logger.info("平台知识库检索成功但无命中，注入无依据标记")
+                knowledge_block = (
+                    "\n\n【系统提示】未在平台知识库中检索到与该问题相关的数据，"
+                    "以下回复基于通用语言能力生成，**未引用平台原料库数据，缺乏平台知识库依据**；"
+                    "涉及具体克重、功效机理时请谨慎核对，勿视为平台知识库支撑的结论。"
                 )
         except Exception as e:
             # 检索失败时注入显式标记，告知用户知识增强已跳过（不静默降级）
@@ -842,6 +1243,51 @@ async def chat(
 
     try:
         start_time = time.time()
+        # P0-1（task-13）：急症红线——主回答不为急重症生成克重配方。
+        # 放在缓存查询之前，确保急症问题绝不命中可能含配方的历史缓存答案；
+        # 同时仍并行运行辨证任务以填充侧卡（其就医提示与主回答口径一致）。
+        _urgent_hit = _scan_urgent_question(req.question, getattr(req, "history", None))
+        if _urgent_hit:
+            logger.warning(
+                f"[chat] 急症关键词命中，主回答改为就医引导（不生成配方）: {_urgent_hit}"
+            )
+            _urgent_answer = _urgent_refusal_answer(_urgent_hit)
+            _dialectics = None
+            try:
+                from ...services.ai.dialectics_service import analyze_dialectics
+                _d_task = asyncio.create_task(
+                    analyze_dialectics(
+                        req.question,
+                        db=db,
+                        user_id=str(current_user.id) if current_user else None,
+                    )
+                )
+                _dialectics = await asyncio.wait_for(
+                    asyncio.shield(_d_task), timeout=10
+                )
+            except Exception as d_exc:
+                logger.warning(f"[chat] 急症路径辨证跳过（非致命）: {d_exc}")
+            await _persist_chat_record(
+                db, current_user.id, req.question, _urgent_answer,
+                bot_id=getattr(req, "bot_id", None), title=req.question[:50],
+                client_session_id=getattr(req, "client_session_id", None),
+            )
+            return {
+                "content": _urgent_answer,
+                "role": "assistant",
+                "formulas": [],
+                "timestamp": datetime.datetime.now().timestamp(),
+                "model": None,
+                "thinking_steps": [],
+                "success": True,
+                "cached": False,
+                "key_source": "urgent-safety",
+                "dialectics": _dialectics,
+            }
+
+        # P1-B7（2026-11-05）：非流式 /chat 补齐辨证/急重症安全网。
+        # 辨证任务与主 LLM 并行运行，完成后放入响应 dialectics 字段；异常时静默跳过（非致命）。
+        dialectics_task = None
 
         # 解析该用户实际可用的 LLM 服务：优先用户级密钥（SystemConfig llm_user_key_<user_id>），
         # 未配置则回退到全局 llm_service。缓存键加入用户维度，避免跨用户命中他人答案。
@@ -944,14 +1390,31 @@ async def chat(
                 }
             )
 
+        # P1-B7：启动辨证分析后台任务（与主 LLM 流并行；RAG/LLM 内部超时由
+        # dialectics_service 控制，这里只负责创建与收尾，绝不阻塞主回答）。
+        try:
+            from ...services.ai.dialectics_service import analyze_dialectics
+            dialectics_task = asyncio.create_task(
+                analyze_dialectics(
+                    req.question,
+                    db=db,
+                    user_id=str(current_user.id) if current_user else None,
+                )
+            )
+        except Exception as d_exc:
+            logger.warning(f"[chat] 辨证任务创建失败（忽略）: {d_exc}")
+            dialectics_task = None
+
         scenario_mode = getattr(req, "scenario_mode", "formula_design") or "formula_design"
         # DS Bot 移植：若指定 bot_id，以 Bot 的人设+记忆替代默认场景 prompt，并应用模型覆盖
         # 注：平台 JWT 可能不携带 org_id（global 模式），Bot 默认租户为 1
         bot_ctx = await _resolve_bot_chat_context(
             db, getattr(req, "bot_id", None), current_user.id, tenant.org_id or 1,
         )
+        kb_state = _KB_STATE_NONE
         if bot_ctx is not None:
             system_prompt, model_override, temperature_override = bot_ctx
+            # Bot 对话走 Bot 人设/记忆，非本平台知识检索路径 → groundedness 判不准，不提示
         else:
             system_prompt = await _build_system_prompt(
                 scenario_mode,
@@ -959,6 +1422,10 @@ async def chat(
                 question=req.question,
                 db=db,
                 rag_context=getattr(req, "rag_context", None),
+            )
+            # P0-5：记录知识依据态，供回答后处理给强机理断言绑定依据（避免二次检索）
+            kb_state = await _resolve_kb_state(
+                scenario_mode, req.question, getattr(req, "rag_context", None), db=db,
             )
             # 模型覆盖优先级：bot_id > req.model > 全局默认
             model_override = getattr(req, "model", None) or None
@@ -1006,6 +1473,34 @@ async def chat(
         # P0-3: 轻量级剂量预校验（超标时追加警示）
         answer = await _append_dosage_warnings(answer, db=db)
 
+        # P0-5: 克重加和守恒/氮折算系数/机理断言依据 的最小确定性校验（警示追加，不阻断）。
+        # 任何异常静默跳过（宁保守不误报，也绝不影响主回答返回）。
+        try:
+            claim_warnings = _validate_numeric_claims(answer)
+            claim_warnings += _append_groundedness_warnings(answer, kb_state)
+            if claim_warnings:
+                answer = answer + "\n\n" + "\n\n".join(dict.fromkeys(claim_warnings))
+        except Exception as exc:
+            logger.warning(f"[chat] 数值/依据校验失败（忽略）: {exc}")
+
+        # P0-4（本任务）：持久化前强制 JSON 完整性校验 —— 绝不允许把残缺配方卡
+        # 写入 chat_messages（可修复则补全，仍无法修复则降级为普通代码块）。
+        try:
+            answer, _ = ensure_valid_json_or_markdown(answer)
+        except Exception as jr_err:
+            logger.warning("[chat] JSON 完整性修复失败（忽略）: %s", jr_err)
+
+        # P1-B7：收尾辨证任务——已与主 LLM 并行，此处只做有界等待；
+        # 超时/失败静默跳过（dialectics=None），绝不阻塞或影响主回答返回。
+        dialectics = None
+        if dialectics_task is not None:
+            try:
+                dialectics = await asyncio.wait_for(asyncio.shield(dialectics_task), timeout=10)
+            except Exception as d_exc:
+                logger.warning(f"[chat] 辨证分析跳过（非致命）: {d_exc}")
+                if dialectics_task and not dialectics_task.done():
+                    dialectics_task.cancel()
+
         # 回写对话记录到数据库（按 bot_id 隔离持续会话；持久化最终脱敏+警示后的内容）
         await _persist_chat_record(
             db, current_user.id, req.question, answer,
@@ -1015,6 +1510,8 @@ async def chat(
 
         # 构建返回结果（匹配前端 AIResponse 接口）
         # 主路径使用直接 LLM 调用，无 thinking_steps；LLM 不可用时由下方降级路径产出
+        # P1-B7：新增 dialectics 字段（可能为 None）。前端旧客户端忽略未知字段，
+        # 新客户端据此渲染辨证卡片/急重症提示，不影响旧客户端兼容性。
         result = {
             "content": answer,
             "role": "assistant",
@@ -1025,6 +1522,7 @@ async def chat(
             "success": True,
             "cached": False,
             "key_source": key_source,
+            "dialectics": dialectics,
         }
 
         # 写入缓存 + 记录指标（在 return 之前）
@@ -1032,6 +1530,8 @@ async def chat(
         ai_observability.track_call("llm", (time.time() - start_time) * 1000, error=False)
         return result
     except RuntimeError as e:
+        if dialectics_task and not dialectics_task.done():
+            dialectics_task.cancel()
         error_msg = str(e)
         logger.error(f"AI 对话运行时错误: {error_msg}", exc_info=True)
 
@@ -1044,14 +1544,19 @@ async def chat(
                     "suggestion": "请在系统设置中重新配置有效的 API Key"
                 }
             )
-        elif "429" in error_msg or "频率限制" in error_msg:
+        elif _is_upstream_rate_limit(error_msg):
+            # P2 修复：上游 LLM 限流 ≠ 本平台对客户端限流。平台自身限流在端点入口
+            # get_ai_rate_limiter() 已以 429 正确拦截，走到这里的 RuntimeError 限流必然
+            # 来自上游模型服务，映射为 502 上游错误，不再误标成客户端超额（429）。
             raise HTTPException(
-                status_code=429,
+                status_code=502,
                 detail={
-                    "error": "RATE_LIMIT_EXCEEDED",
-                    "message": "API 调用频率过高，请稍后重试",
-                    "retry_after": 30
-                }
+                    "error": "AI_UPSTREAM_RATE_LIMITED",
+                    "message": "上游模型服务限流，请稍后重试",
+                    "retryable": True,
+                    "retry_after": 30,
+                    "suggestion": "上游模型服务商暂时限流，请稍候再试或降低请求频率",
+                },
             )
         elif any(k in error_msg for k in ("超时", "无法连接", "服务响应", "连接失败")):
             # 超时/连接/服务繁忙类错误 → 503 + Retry-After，供前端识别并自动重试
@@ -1076,6 +1581,8 @@ async def chat(
                 }
             )
     except TimeoutError:
+        if dialectics_task and not dialectics_task.done():
+            dialectics_task.cancel()
         # asyncio.timeout(LLM_NON_STREAM_TIMEOUT) 触发：与运行时错误同等对待，返回可重试 503
         logger.error(f"[chat] 非流式 LLM 调用超时（{LLM_NON_STREAM_TIMEOUT}s）: "
                      f"model={model_override or llm.config.model}, provider={llm.config.provider}")
@@ -1091,6 +1598,8 @@ async def chat(
             headers={"Retry-After": "5"},
         )
     except Exception as e:
+        if dialectics_task and not dialectics_task.done():
+            dialectics_task.cancel()
         logger.error("AI 对话未知异常: %s", e, exc_info=True)
         # 即使未知异常也回显 key_source，前端可据此区分"用户密钥导致"还是"服务器配置问题"
         try:
@@ -1201,6 +1710,31 @@ async def chat_stream(
         if not llm.is_available and user_llm is None:
             import json
             async def thinking_stream():
+                # ── P0（2026-11-08）：急症红线——降级分支同样不得为急症生成配方 ──
+                # 此前本 early-return 分支（LLM 未配置部署态）直接调 thinking_engine
+                # 生成主回答，而 thinking_engine 零急症防护、会经 FormulaDesigner 真产出
+                # 克重配方；且急症扫描 _scan_urgent_question 位于其后 event_stream() 内，
+                # 在此 early-return 路径上永不执行 → 「LLM 未配置 + 急症问题」穿透医疗红线。
+                # 现与 event_stream(L1466) / 非流式(L955) 对齐：在调用 thinking_engine 之前
+                # 先扫急症，命中即流式吐就医引导、绝不触达配方生成。
+                _urgent_hit = _scan_urgent_question(req.question, getattr(req, "history", None))
+                if _urgent_hit:
+                    logger.warning(
+                        "[chat_stream] 降级分支急症关键词命中，主回答改为就医引导（不调用 thinking_engine 生成配方）"
+                    )
+                    # 与 event_stream 急症分支口径一致：meta 标注来源 + progress 阶段
+                    yield _format_sse_event("meta", {"model": "rule-engine-fallback", "reason": "urgent_referral"})
+                    yield _format_sse_event("progress", {"stage": "preparing", "percent": 0})
+                    _urgent_answer = _urgent_refusal_answer(_urgent_hit)
+                    # 按标点切分为小块流式吐出（与 event_stream 急症分支同一打字机呈现方式）
+                    import re as _re
+                    for _seg in _re.split(r"(?<=[。！\n])", _urgent_answer):
+                        if _seg:
+                            yield _format_sse_event("content", {"content": _seg})
+                    yield _format_sse_event("progress", {"stage": "done", "percent": 100})
+                    yield "data: [DONE]\n\n"
+                    return  # 关键：绝不在急症路径调用 thinking_engine / 生成配方
+
                 from ...services.thinking_engine import thinking_engine
                 # 明示降级来源：此前此处静默替换为规则引擎，用户完全无感知，
                 # 是流式模式的「冒充专家」缺口。现显式标注 model 供前端展示徽标。
@@ -1223,8 +1757,10 @@ async def chat_stream(
         bot_ctx = await _resolve_bot_chat_context(
             db, getattr(req, "bot_id", None), current_user.id, tenant.org_id or 1,
         )
+        kb_state = _KB_STATE_NONE
         if bot_ctx is not None:
             system_prompt, model_override, temperature_override = bot_ctx
+            # Bot 对话走 Bot 人设/记忆，非本平台知识检索路径 → groundedness 判不准，不提示
         else:
             system_prompt = await _build_system_prompt(
                 scenario_mode,
@@ -1232,6 +1768,10 @@ async def chat_stream(
                 question=req.question,
                 db=db,
                 rag_context=getattr(req, "rag_context", None),
+            )
+            # P0-5：记录知识依据态，供聚合 content 后处理给强机理断言绑定依据
+            kb_state = await _resolve_kb_state(
+                scenario_mode, req.question, getattr(req, "rag_context", None), db=db,
             )
             # 模型覆盖优先级：bot_id > req.model > 全局默认
             model_override = getattr(req, "model", None) or None
@@ -1259,6 +1799,37 @@ async def chat_stream(
                 })
                 # 实时进度：请求开始处理
                 yield _format_sse_event("progress", {"stage": "preparing", "percent": 0})
+
+                # ── P0-1（task-13）：急症红线——流式主回答不为急重症生成配方 ──
+                # 在创建辨证任务 / LLM 消费任务之前拦截：命中 URGENT_KEYWORDS 即流式
+                # 输出「立即就医、不提供食疗配方」固定安全应答，随后 done 收尾，
+                # 绝不调用主 LLM（避免与辨证侧卡就医提示自相矛盾，也避免后台仍生成配方）。
+                if _scan_urgent_question(req.question, getattr(req, "history", None)):
+                    logger.warning(
+                        "[chat_stream] 急症关键词命中，主回答改为就医引导（不生成配方）"
+                    )
+                    _urgent_answer = _urgent_refusal_answer()
+                    # 按标点切分为小块流式吐出，前端打字机呈现自然（避免一次性大段）。
+                    import re as _re
+                    for _seg in _re.split(r"(?<=[。！\n])", _urgent_answer):
+                        if _seg:
+                            full_answer += _seg
+                            yield _format_sse_event("content", {"content": _seg})
+                    # 持久化急症拒绝回答（与非流式一致，保证会话历史完整）
+                    try:
+                        await _persist_chat_record(
+                            db, current_user.id, req.question, full_answer,
+                            bot_id=getattr(req, "bot_id", None),
+                            title=req.question[:50],
+                            client_session_id=getattr(req, "client_session_id", None),
+                        )
+                    except Exception as p_exc:
+                        logger.warning(f"[chat_stream] 急症回答持久化失败（非致命）: {p_exc}")
+                    # 成功收尾：与正常成功路径一致以 data: [DONE] 终止（非 error 的 event: done）
+                    yield _format_sse_event("progress", {"stage": "done", "percent": 100})
+                    yield "data: [DONE]\n\n"
+                    return
+
                 # ── P2-3 修复：辨证引擎与 LLM 流并行启动，节省端到端延迟 ──
                 # 架构：dialectics 作为后台 task 与 LLM 流同时运行；
                 #      event_stream 先 yield 辨证结果（30s 超时），再处理 LLM chunks。
@@ -1279,6 +1850,12 @@ async def chat_stream(
                 # 防止上游 LLM 停顿/挂起导致 event_stream 永久阻塞。
                 # 架构：后台 task 读 LLM → 放入 queue；心跳 task 定期放入 ping；
                 #      event_stream 从 queue 消费并 yield，保证真正流式。
+                # 根因修复：记录整体起始时间 + 首轮 finish_reason 载体。
+                # overall_started 供续写计算总预算 deadline（首轮 + 续写 ≤ 165s < 前端 180s）。
+                from ...services.ai.providers.llm_provider import StreamMeta
+
+                overall_started = time.monotonic()
+                llm_stream_meta = StreamMeta()
                 llm_queue: asyncio.Queue = asyncio.Queue()
 
                 async def _consume_llm_stream():
@@ -1288,6 +1865,7 @@ async def chat_stream(
                     try:
                         stream = llm.chat_stream(
                             messages, model=model_override, temperature=temperature_override,
+                            meta=llm_stream_meta,
                         )
                         # 首包超时：等待第一个内容分片（上游挂起/网关排队时快速失败）
                         try:
@@ -1341,6 +1919,16 @@ async def chat_stream(
                                     return
                                 if chunk:
                                     await llm_queue.put(("chunk", chunk))
+                        # 根因修复：流正常结束后投递 finish（归一化 finish_reason + usage），
+                        # 供消费端判断是否被 max_tokens 截断（length）并触发自动续写。
+                        # 仅在正常读完（非超时/异常）时投递；异常路径由下方 except 兜住。
+                        await llm_queue.put((
+                            "finish",
+                            {
+                                "finish_reason": llm_stream_meta.finish_reason,
+                                "usage": dict(llm_stream_meta.usage or {}),
+                            },
+                        ))
                     except asyncio.TimeoutError:
                         elapsed = time.monotonic() - start_ts
                         logger.error(
@@ -1382,7 +1970,11 @@ async def chat_stream(
                 if dialectics_task:
                     try:
                         dialectics = await asyncio.wait_for(asyncio.shield(dialectics_task), timeout=30)
-                        yield _format_sse_event("dialectics", dialectics)
+                        # F9（P2）：剥离内部 token 用量字段，避免内部数据随 SSE 透传给前端
+                        yield _format_sse_event(
+                            "dialectics",
+                            {k: v for k, v in dialectics.items() if k != "_token_usage"},
+                        )
                         # 实时进度：辨证分析完成
                         yield _format_sse_event("progress", {"stage": "dialectics", "percent": 30})
                     except (asyncio.TimeoutError, Exception) as d_exc:
@@ -1395,6 +1987,7 @@ async def chat_stream(
                     yield _format_sse_event("progress", {"stage": "llm_start", "percent": 45})
                     first_chunk_emitted = False
                     stream_error_emitted = False
+                    stream_finish_reason = ""  # 首轮归一化 finish_reason（finish 消息回填）
                     generated_chars = 0
                     last_progress_chars = 0
                     while True:
@@ -1418,6 +2011,15 @@ async def chat_stream(
                                 last_progress_chars = generated_chars
                                 pct = min(85, 60 + generated_chars // 50)
                                 yield _format_sse_event("progress", {"stage": "generating", "percent": pct, "chars": generated_chars})
+                        elif msg_type == "finish":
+                            # 根因修复：捕获归一化 finish_reason（"length" → max_tokens 截断，
+                            # 触发下方配方卡自动续写）。finish 消息先于 eof 投递，保证此处已就绪。
+                            _fr = (msg_data or {}).get("finish_reason", "")
+                            if _fr:
+                                stream_finish_reason = _fr
+                                logger.info(
+                                    f"[chat_stream] 收到 finish: finish_reason={_fr!r}"
+                                )
                         elif msg_type == "error":
                             stream_error_emitted = True
                             yield _format_sse_event("error", {"message": msg_data, "error": "STREAM_ERROR"})
@@ -1449,6 +2051,45 @@ async def chat_stream(
                         })
                     yield _format_sse_event("done", {})
                     return
+
+                # ── 根因修复：max_tokens 截断（finish_reason=="length"）时自动续写配方卡 ──
+                # 仅当（1）上游明确因 token 上限截断，且（2）当前是配方卡场景（```json 开头
+                # 或含 blocks）时才续写；普通散文截断语义损失小，交由前端降级提示，避免无谓拉长时长。
+                # 续写轮次受 LLM_CONTINUATION_MAX_ROUNDS 与 LLM_STREAM_OVERALL_BUDGET（总预算
+                # 165s < 前端 180s）双重约束；续写后仍走下方 _repair_truncated_json +
+                # ensure_valid_json_or_markdown 兜底。若仍 length 截断或达轮次上限，则放弃续写，
+                # 保留既有降级（此时前端警告是合理的）。
+                if stream_finish_reason == "length" and _is_formula_card_answer(full_answer):
+                    logger.info(
+                        f"[chat_stream] 检测到 length 截断且为配方卡场景，启动自动续写: "
+                        f"chars={len(full_answer)}, max_rounds={LLM_CONTINUATION_MAX_ROUNDS}"
+                    )
+                    _cont_outcome = _ContinuationOutcome()
+                    _cont_deadline = overall_started + LLM_STREAM_OVERALL_BUDGET
+                    async for _cont_chunk in _stream_formula_continuation(
+                        llm=llm,
+                        base_messages=messages,
+                        partial_answer=full_answer,
+                        model_override=model_override,
+                        temperature_override=temperature_override,
+                        overall_deadline=_cont_deadline,
+                        outcome=_cont_outcome,
+                    ):
+                        _cont_sanitized = _sanitize_stream_chunk(_cont_chunk)
+                        full_answer += _cont_sanitized
+                        yield _format_sse_event("content", {"content": _cont_sanitized})
+                    stream_finish_reason = _cont_outcome.finish_reason
+                    logger.info(
+                        f"[chat_stream] 续写结束: rounds={_cont_outcome.rounds}, "
+                        f"appended={_cont_outcome.appended_chars}, "
+                        f"final_finish_reason={stream_finish_reason!r}, "
+                        f"total_chars={len(full_answer)}"
+                    )
+                    # 续写完成（或放弃）后同步一次进度，反映内容已增长
+                    yield _format_sse_event(
+                        "progress",
+                        {"stage": "generating", "percent": 85, "chars": len(full_answer)},
+                    )
 
                 # 输出完整性修复：LLM 提前停止导致 JSON 代码块未闭合时，
                 # 自动补全后把差异补发到前端（用户无需刷新即可看到完整配方卡），
@@ -1504,6 +2145,17 @@ async def chat_stream(
                 except Exception as exc:
                     logger.warning("[chat_stream] 剂量预校验失败（忽略）: %s", exc)
 
+                # P0-5: 克重加和守恒/氮折算系数/机理断言依据 的最小确定性校验。
+                # 对聚合后的完整 content 校验，警示作为追加内容在 done 前输出（不阻断）。
+                try:
+                    claim_warnings = _validate_numeric_claims(full_answer)
+                    claim_warnings += _append_groundedness_warnings(full_answer, kb_state)
+                    claim_warnings = list(dict.fromkeys(claim_warnings))
+                    if claim_warnings:
+                        safety_patch += "\n\n" + "\n\n".join(claim_warnings)
+                except Exception as exc:
+                    logger.warning("[chat_stream] 数值/依据校验失败（忽略）: %s", exc)
+
                 if safety_patch:
                     yield _format_sse_event("content", {"content": safety_patch})
                 # 实时进度：安全校验完成
@@ -1523,6 +2175,16 @@ async def chat_stream(
                 # 实时进度：完成
                 yield _format_sse_event("progress", {"stage": "done", "percent": 100, "chars": len(full_answer)})
                 yield "data: [DONE]\n\n"
+                # P0-4（本任务）：持久化前强制 JSON 完整性校验 —— 绝不允许把
+                # 「以 ```json 开头但无法解析」的残缺配方卡写入 chat_messages。
+                # ensure_valid_json_or_markdown 会：可修复则按正确顺序补全（闭字符串→补
+                # key 值→去尾逗号→逆序闭括号）；仍无法修复则把 json 开标签降级为普通
+                # 代码块，使前端按 Markdown 渲染，而不是显示「不完整的 JSON 数据」。
+                try:
+                    full_answer, _ = ensure_valid_json_or_markdown(full_answer)
+                except Exception as jr_err:
+                    logger.warning("[chat_stream] JSON 完整性修复失败（忽略）: %s", jr_err)
+
                 # 流式对话写回会话历史（含 Bot 持续会话）
                 try:
                     await _persist_chat_record(
@@ -1542,11 +2204,14 @@ async def chat_stream(
                         "message": "API Key 无效或已过期",
                         "suggestion": "请在系统设置中重新配置 API Key"
                     }
-                elif "429" in error_msg or "频率限制" in error_msg:
+                elif _is_upstream_rate_limit(error_msg):
+                    # P2 修复：上游 LLM 限流映射为上游错误事件，不冒充本平台客户端限流。
                     error_data = {
-                        "error": "RATE_LIMITED",
-                        "message": "请求过于频繁，请稍后重试",
-                        "retry_after": 30
+                        "error": "AI_UPSTREAM_RATE_LIMITED",
+                        "message": "上游模型服务限流，请稍后重试",
+                        "retryable": True,
+                        "retry_after": 30,
+                        "suggestion": "上游模型服务商暂时限流，请稍候再试",
                     }
                 elif any(k in error_msg for k in ("超时", "无法连接", "服务响应", "连接失败", "响应中断")):
                     error_data = {
@@ -1623,6 +2288,38 @@ class FollowUpSuggestionsRequest(BaseModel):
     history: list[dict[str, Any]] | None = Field(None, description="最近对话历史（可选）")
     max_suggestions: int = Field(3, ge=1, le=5, description="建议数量，默认 3，范围 1-5")
 
+    # ── 结构化领域上下文（全部可选，向后兼容：旧前端不传也能正常工作） ──
+    # 设计原则：字段一律宽类型（str | dict[str, Any] | list[str] | None），
+    # 由后端 _stringify_context 统一归一化，避免前端结构演进（如药材从文本改为
+    # {name,dose,role} 对象数组）时触发 422。所有结构化输入均视同不可信，注入前净化。
+    formula_context: str | dict[str, Any] | list[Any] | None = Field(
+        None,
+        description=(
+            "当前配方摘要：药材/食材、克重、君臣佐使角色、制备形式（汤剂/膏方/代茶饮）、"
+            "服用周期等。可为纯文本或结构化对象（如 {name, herbs:[{name,dose,role}]}）。"
+        ),
+    )
+    constitution: str | dict[str, Any] | None = Field(
+        None,
+        description="用户中医体质/证型（如 湿热质、气阴两虚），可为文本或 {constitution_tendency, syndrome_points}。",
+    )
+    user_constraints: str | dict[str, Any] | list[Any] | None = Field(
+        None,
+        description="个人约束：过敏原、饮食禁忌、忌口、特殊人群（孕妇/儿童/慢病）等，可为文本或列表。",
+    )
+    rag_context: list[str] | None = Field(
+        None,
+        description="命中的 RAG 知识块摘要（与 /chat 的 rag_context 同源，注入前经 _sanitize_rag_chunks 净化）。",
+    )
+    dialectics_summary: str | dict[str, Any] | None = Field(
+        None,
+        description="辨证分析结论摘要（体质倾向/证候要点/调理目标/ caution），可为文本或结构化对象。",
+    )
+    compliance_context: str | dict[str, Any] | None = Field(
+        None,
+        description="当前配方的合规结论（药食同源目录/十八反十九畏/日用剂量上限等安全评估结果）。",
+    )
+
 
 # LLM 不可用/失败时的固定候选追问（与前端固定问题池对齐）
 _FALLBACK_FOLLOW_UP_SUGGESTIONS: list[dict[str, str]] = [
@@ -1632,18 +2329,113 @@ _FALLBACK_FOLLOW_UP_SUGGESTIONS: list[dict[str, str]] = [
 ]
 
 
-_FOLLOW_UP_SYSTEM_PROMPT = """你是药食同源与中医食疗领域的专家助手，擅长从对话中挖掘用户可能继续追问的方向。
+# ═══════════════════════════════════════════════════════════════
+# 追问领域上下文：归一化 / 会话线索提取（提升「不传结构化上下文」时的智能度）
+# ═══════════════════════════════════════════════════════════════
 
-任务：根据给定的「用户问题」「AI 回复」和「最近对话历史」，生成用户最可能继续追问的 2-3 个问题。
+# 结构化上下文字段注入 user_content 的字符上限（控成本、防 prompt 膨胀）
+_FOLLOWUP_CTX_FIELD_MAX_CHARS = 700
+# 会话线索提取时扫描的最近消息条数
+_FOLLOWUP_CLUE_SCAN_MESSAGES = 8
 
-要求：
-1. 问题必须贴合对话内容，具体、有信息量，禁止出现「还有其他问题吗」「还有什么可以帮您」这类泛泛而谈。
-2. 尽量覆盖不同角度（成分机理、使用方法、注意事项、适用人群、配伍禁忌、安全合规等）。
-3. 每个问题不超过 30 字。
-4. 只返回 JSON，不要输出任何解释或前后缀文字，格式如下：
+
+def _stringify_context(value: Any, max_chars: int = _FOLLOWUP_CTX_FIELD_MAX_CHARS) -> str:
+    """把结构化/文本领域上下文归一化为可安全注入 prompt 的短文本。
+
+    - str/num → 净化文本（防注入 + 折叠空白 + 限长），与 _sanitize_profile 同源清洗；
+    - dict/list → 紧凑 JSON（ensure_ascii=False 保留中文可读性），再净化限长；
+      序列化失败时降级为 str()，保证永不抛异常。
+    用于配方/体质/约束/合规等宽类型字段（前端结构可能演进，后端宽进严出）。
+    """
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return _sanitize_profile(value)[:max_chars]
+    try:
+        text = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    except Exception:
+        text = str(value)
+    return _sanitize_profile(text)[:max_chars]
+
+
+# 会话线索提取用的目标/症状关键词族（低成本的零 LLM 领域推断）
+_FOLLOWUP_GOAL_KEYWORDS: dict[str, list[str]] = {
+    "血糖": ["降血糖", "血糖", "糖尿病", "胰岛素", "糖耐量"],
+    "睡眠": ["睡眠", "失眠", "入睡", "安神", "多梦"],
+    "脾胃": ["脾胃", "消化", "胃胀", "食欲", "大便"],
+    "免疫": ["免疫", "易感冒", "抵抗力", "卫外"],
+    "血脂": ["血脂", "胆固醇", "甘油三酯", "降脂"],
+    "尿酸": ["尿酸", "痛风", "降尿酸"],
+    "气血": ["气血", "贫血", "乏力", "气虚", "面色"],
+    "湿热": ["湿热", "湿气", "祛湿", "黏腻", "舌苔厚"],
+    "肝肾": ["肝肾", "阴虚", "腰膝", "耳鸣", "眼干"],
+}
+
+
+def _extract_session_clues(question: str, answer: str, history: list[dict] | None) -> str:
+    """从最近对话自行提取领域线索（配方药材/剂量/调理目标），供 LLM 生成更贴切的追问。
+
+    设计定位：后端兜底增强——即使前端不传结构化上下文，也尽量从已有 session 文本
+    推断可用线索，零额外 LLM 调用、零 DB 查询（复用 chat.py 既有正则/名称表），成本极低。
+    任何异常静默降级返回空串，绝不阻断追问主流程。
+    """
+    try:
+        # 取最近若干条消息 + 当前问答，拼成待扫描文本（限制长度，控成本）
+        parts: list[str] = [question or "", answer or ""]
+        if history:
+            for h in _truncate_history_by_tokens(history, max_messages=_FOLLOWUP_CLUE_SCAN_MESSAGES):
+                parts.append(str(h.get("content") or ""))
+        text = "\n".join(p for p in parts if p)[:6000]
+        if not text.strip():
+            return ""
+
+        clues: list[str] = []
+
+        # 1) 调理目标/症状族：命中即提示 LLM 围绕该目标发问
+        for goal, kws in _FOLLOWUP_GOAL_KEYWORDS.items():
+            if any(kw in text for kw in kws):
+                clues.append(f"调理目标线索：{goal}")
+
+        # 2) 当前配方药材：复用平台内置药食同源名称表，命中即视为「配方中出现的药材」
+        found_herbs = [name for name in _COMMON_HERB_NAMES if name in text]
+        if found_herbs:
+            clues.append("涉及药材/食材：" + "、".join(found_herbs[:8]))
+
+        # 3) 药材克重：复用剂量正则，命中说明回复刚给出具体克重配方，
+        #    提示 LLM 可围绕剂量合规/调整发问
+        dosage_matches = _DOSAGE_SINGLE_RE.findall(text) or _DOSAGE_RANGE_RE.findall(text)
+        if dosage_matches:
+            clues.append("回复中包含具体克重配方（可围绕剂量/总量合规追问）")
+
+        return "\n".join(clues)
+    except Exception as e:  # noqa: BLE001 - 线索提取失败不影响主流程
+        logger.debug(f"[follow-up-suggestions] 会话线索提取失败（忽略）: {e}")
+        return ""
+
+
+_FOLLOW_UP_SYSTEM_PROMPT = """你是药食同源与中医食疗领域的资深配方顾问。你的任务：基于下方提供的「用户问题」「AI 回复」「最近对话历史」与「结构化领域上下文」（当前配方/体质证型/辨证结论/合规结论/个人约束/知识库依据），预判用户接下来最可能追问的真实需求，生成 2-3 个专业追问。
+
+【第一原则：一切追问必须锚定上下文里真实出现的具体信息】
+每个问题都要点到具体对象——配方中某味药材的名字、克重、君臣佐使角色，或用户的体质证型/症状/禁忌/西药。禁止输出换成任何配方都成立、或任何用户都适用的通用问题（如「还有什么问题」「如何判断体质」「配伍有什么作用」这类零信息提问一律禁止）。
+- 上下文里没有的信息不要凭空捏造前提，但可以就有信息深挖。
+
+【优先深挖维度：每个问题聚焦一个，优先挑当前语境最值得深究的点，不必面面俱到】
+1. 剂量合理性：某味药材克重对当前体质/症状是否偏轻偏重、是否贴药食同源每日上限、如何增减；
+2. 配伍协同/相畏：君臣佐使角色是否得当、两味协同或相恶、能否加减替换；
+3. 禁忌冲突：配方药材是否与用户过敏原/饮食禁忌/特殊人群/正在服用的西药冲突；
+4. 体质适配：当前体质证型下的疗程、服用周期、见效指标与随访评估；
+5. 制备服用：煎煮 SOP、服用时点、疗程中如何监测效果。
+
+【风格示例（仅供参考风格，严禁照抄文本）】
+- 好：「黄芪15g对气阴两虚是否偏温燥、需否减量？」（点具体药材+克重+体质，聚焦剂量）
+- 好：「方中麦冬与党参同用，滋阴与补气是否相冲？」（点具体两味+配伍关系）
+- 差：「如何判断自己是湿热质？」（与当前配方/体质无关，泛泛，禁止）
+
+【上下文不全时】即使只有配方、缺体质或合规，也要围绕配方本身深挖（剂量/配伍/禁忌/疗程），不退回泛泛；确无任何具体线索时，才围绕用户问题里最具体的症状或目标发问。
+
+【输出】每题不超过 30 字，只返回 JSON，不要任何解释或前后缀：
 {"suggestions": [{"question": "问题文本", "category": "分类"}, ...]}
-
-category 取值参考：配方设计、安全合规、配伍知识、成分知识、体质辨识、药材知识。"""
+category 取值：配方设计、剂量优化、安全合规、配伍禁忌、个人适配、体质调理、成分机理、服用方法。"""
 
 
 @router.post("/chat/follow-up-suggestions", summary="根据对话内容动态生成追问问题")
@@ -1747,9 +2539,48 @@ async def follow_up_suggestions(
         )
         if history_text:
             user_content += f"【最近对话历史】\n{history_text}\n"
+
+        # ── 结构化领域上下文（前端传入则注入，全部经 _stringify_context 净化限长） ──
+        # 把辨证/配方/合规/约束/RAG 等真实领域语境带给 LLM，使追问紧扣当前需求而非泛泛而谈。
+        ctx_blocks: list[str] = []
+        for label, raw in (
+            ("当前辨证结论", getattr(req, "dialectics_summary", None)),
+            ("用户体质/证型", getattr(req, "constitution", None)),
+            ("当前配方", getattr(req, "formula_context", None)),
+            ("当前配方合规结论", getattr(req, "compliance_context", None)),
+            ("个人约束（过敏原/禁忌/特殊人群）", getattr(req, "user_constraints", None)),
+        ):
+            text = _stringify_context(raw)
+            if text:
+                ctx_blocks.append(f"- {label}：{text}")
+
+        sanitized_rag = _sanitize_rag_chunks(getattr(req, "rag_context", None))
+        if sanitized_rag:
+            ctx_blocks.append(
+                "- 命中的知识库依据：" + "；".join(sanitized_rag)
+            )
+
+        if ctx_blocks:
+            user_content += (
+                "【结构化领域上下文】（追问请紧扣以下真实语境）\n"
+                + "\n".join(ctx_blocks) + "\n\n"
+            )
+        else:
+            # 后端兜底增强：前端未传结构化上下文时，从最近对话自行提取领域线索，
+            # 仍让 LLM 能围绕具体药材/目标/剂量发问（零额外 LLM/DB 成本）。
+            clue_text = _extract_session_clues(question, answer, req.history)
+            if clue_text:
+                user_content += (
+                    "【会话领域线索（系统自动提取）】\n"
+                    + "\n".join(f"- {line}" for line in clue_text.split("\n") if line)
+                    + "\n\n"
+                )
+
         user_content += (
-            f"请根据以上内容生成 {req.max_suggestions} 个用户最可能继续追问的问题，"
-            "覆盖不同角度，每个问题不超过 30 字，只返回 JSON。"
+            f"请基于以上用户当前辨证/配方/合规/约束语境，生成 {req.max_suggestions} 个"
+            "用户最可能继续追问的问题：优先围绕当前配方的药材配伍、剂量调整、合规风险、"
+            "个人禁忌、体质调理与服用方法等真实需求，避免泛泛而谈；每个问题不超过 30 字，"
+            "只返回 JSON。"
         )
 
         messages = [
@@ -1757,8 +2588,13 @@ async def follow_up_suggestions(
             LLMMessage(role="user", content=user_content),
         ]
 
-        # 12s 超时保护，防止上游 LLM 挂起拖垮接口
-        data = await asyncio.wait_for(llm.chat_with_json(messages), timeout=12)
+        # 超时保护，防止上游 LLM 挂起拖垮接口。
+        # 根因（2026-11-09 实测取证）：原 timeout=12 是 follow-up 长期走兜底固定池的
+        # 唯一高频根因。实测上游 agnes-3.0-flash 一次 chat_with_json 稳定耗时 15~22s
+        # （对照普通 chat() 也要 15.27s），远超 12s → 必然 asyncio.TimeoutError → 走 fallback，
+        # 而 LLM 本身 is_available=True、返回的是合法 JSON，调用链无任何其他故障。
+        # 故放宽到 30s（前端 followUpSuggestionApi 动态超时需同步 ≥ 35s，否则前端先掐断）。
+        data = await asyncio.wait_for(llm.chat_with_json(messages), timeout=30)
 
         raw_suggestions = data.get("suggestions") if isinstance(data, dict) else None
         if not isinstance(raw_suggestions, list):
@@ -1788,7 +2624,7 @@ async def follow_up_suggestions(
         return {"success": True, "source": "llm", "suggestions": suggestions}
 
     except asyncio.TimeoutError:
-        logger.warning("[follow-up-suggestions] LLM 调用超时（12s），使用固定候选")
+        logger.warning("[follow-up-suggestions] LLM 调用超时（30s），使用固定候选")
     except Exception as e:
         logger.warning(f"[follow-up-suggestions] LLM 调用失败，使用固定候选: {e}")
 

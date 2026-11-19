@@ -5,47 +5,354 @@ import type { StructuredContent, BlockType } from './types'
 import { logger } from '@/utils/safeLogger'
 
 /**
- * 尝试补全截断的 JSON（后端流式输出可能被截断：追加缺失的闭合括号/引号
- * 并尝试解析）。成功返回补全后的 JSON 字符串，否则返回 null。
- * 供 MessageBubble.isBrokenJsonContent 判残缺 + 历史截断 JSON 自动修复。
+ * 尝试补全截断/残缺的 JSON（后端流式输出可能被截断，或 LLM 直接产出缺括号的畸形 JSON）。
+ *
+ * 背景：旧实现在补全时先追加闭合大括号/方括号、最后才补未闭合字符串引号，
+ * 导致当 JSON 在「字符串中间」被截断（如尾部为 `"status`、`"AKT1/NF`）时，
+ * 追加的 `}`/`]` 被吞进未闭合的字符串字面量里，修复结果仍是非法 JSON，永远返回 null，
+ * 于是前端只能显示「该历史消息为不完整的 JSON 数据」警告 —— 这是用户每次对话
+ * 都能看到该提示的根因（证据：chat_messages 中 role='assistant' 且 content LIKE
+ * '```json%' 的最近 25 条里有 7 条未闭合，如 id=963 尾缀 `"status`）。
+ *
+ * 修复策略（按优先级）：
+ *   1) 已可解析 → 直接返回。
+ *   2) 端部修复：先闭合未闭合字符串 `"`（若是未闭合 key 则补 `: null`；
+ *      若截断在冒号后则补 ` null`），再去尾逗号，最后逆序闭合未配对括号。
+ *   3) 端部修复 + 自动补插缺失括号（LLM 偶发在数组/对象闭合处漏掉 `]`/`}`）。
+ *   4) 最长有效前缀（从后向前枚举 `}` 位置，找到可解析且含 blocks 的最长前缀）。
+ * 全部失败返回 null，由调用方降级为 Markdown 渲染（不再显示「不完整 JSON」警告）。
+ *
+ * 成功返回补全后的 JSON 字符串；失败返回 null。
  */
 export function repairTruncatedJson(content: string): string | null {
-  if (!content) return null
-  const start = content.search(/[\[{]/)
-  if (start < 0) return null
+  return repairTruncatedJsonDetailed(content).repaired
+}
+
+/**
+ * repairTruncatedJsonDetailed — repairTruncatedJson 的「带截断信号」版本。
+ *
+ * 背景：repairTruncatedJson 只回答「能否补全」，无法区分两种情况：
+ *   - 「本来完整」：内容首查即可 JSON.parse，无需任何补全；
+ *   - 「被截断/残缺后补全」：首查失败，靠闭括号/闭引号/补前缀才修复成功。
+ * 后端续写修复上线后多数配方卡是完整的，若对「本来完整」的内容也弹
+ * replyInterrupted 警告，会造成误报、误导用户去点「重新生成」。
+ *
+ * 返回 { repaired, wasTruncated }：
+ *   - repaired: 与 repairTruncatedJson 完全一致的补全结果（null 表示无法修复）；
+ *   - wasTruncated: true 仅当「首查解析失败、确实做了补全」时成立。
+ *
+ * 向后兼容：repairTruncatedJson 保持原签名/返回值不变，内部改为委托本函数，
+ * 因此既有调用方与测试（repairTruncatedJson.test.ts / formulaStructuredFallback.test.ts）
+ * 行为完全不变。
+ */
+export function repairTruncatedJsonDetailed(content: string): { repaired: string | null; wasTruncated: boolean } {
+  if (!content) return { repaired: null, wasTruncated: false }
+  // 提取首个 JSON 主体（以 { 或 [ 开头，跳过 ```json 开标签）
+  const start = content.search(/\{|\[/)
+  if (start < 0) return { repaired: null, wasTruncated: false }
   const jsonText = content.slice(start)
+
+  // 1) 已可解析 →「本来完整」，未发生截断
   try {
     JSON.parse(jsonText)
-    return jsonText
+    return { repaired: jsonText, wasTruncated: false }
   } catch {
-    // 截断或残缺 → 尝试逐层补全
+    // 截断或残缺 → 尝试修复
   }
-  let candidate = jsonText
-  for (let i = 0; i < 8; i++) {
-    const openObj = (candidate.match(/\{/g) || []).length
-    const closeObj = (candidate.match(/\}/g) || []).length
-    const openArr = (candidate.match(/\[/g) || []).length
-    const closeArr = (candidate.match(/\]/g) || []).length
-    const openQuote = (candidate.match(/"/g) || []).length % 2
-    let repaired = candidate
-    if (closeObj < openObj) repaired += '}'.repeat(openObj - closeObj)
-    if (closeArr < openArr) repaired += ']'.repeat(openArr - closeArr)
-    if (openQuote === 1) repaired += '"'
-    if (repaired === candidate) break
-    candidate = repaired
-    try {
-      JSON.parse(candidate)
-      return candidate
-    } catch {
-      // 继续补全
+
+  // 2) 端部修复（正确顺序：先闭字符串，再补 key 值/尾逗号，最后逆序闭括号）
+  const endRepaired = endRepairJson(jsonText, false)
+  if (endRepaired) return { repaired: endRepaired, wasTruncated: true }
+
+  // 3) 端部修复 + 自动补插缺失括号（LLM 漏闭合 `]`/`}`）
+  const autoRepaired = endRepairJson(jsonText, true)
+  if (autoRepaired) return { repaired: autoRepaired, wasTruncated: true }
+
+  // 4) 最长有效前缀（内部缺陷：截断到最后一个完整可解析的 blocks 前缀）
+  const longestPrefix = longestValidPrefix(jsonText)
+  if (longestPrefix) return { repaired: longestPrefix, wasTruncated: true }
+
+  return { repaired: null, wasTruncated: false }
+}
+
+/** 判断当前打开的字符串是否处于「对象的 key 位置」（key 紧跟 `{` 或 `,`，且栈顶为 `{`）。 */
+function isKeyPosition(prev: string | null, stack: string[]): boolean {
+  return (prev === null || prev === '{' || prev === ',') && stack.length > 0 && stack[stack.length - 1] === '{'
+}
+
+/**
+ * 端部修复：用状态机扫描，结束时按正确顺序补全。
+ * autoInsert=true 时，遇到不匹配的闭合括号会先补插缺失括号（封顶 10 次），
+ * 并在「对象闭合后紧跟 , 但外层对象未闭合」处补 `}`，
+ * 用于修复 LLM 漏闭合 `]`/`}` 的内部缺陷（证据 id=899/923）。
+ */
+function endRepairJson(body: string, autoInsert: boolean): string | null {
+  const stack: string[] = []
+  let inString = false
+  let escaped = false
+  let lastNonspace: string | null = null
+  let openQuotePrev: string | null = null
+  let stringIsKey = false
+  let lastClosedKey = false
+  let auto = 0
+  const out: string[] = []
+
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i]
+    if (inString) {
+      if (escaped) { escaped = false; out.push(ch); continue }
+      if (ch === '\\') { escaped = true; out.push(ch); continue }
+      if (ch === '"') { inString = false; lastClosedKey = isKeyPosition(openQuotePrev, stack); out.push(ch); continue }
+      // P0-4（本任务）：截断常发生在字符串值中途，末尾可能残留原始换行符；
+      // JSON 字符串字面量不允许未转义的换行。将其转义为 \\n / \\r，
+      // 避免补全闭合引号后因 Bad control character 解析失败（证据 id=811）。
+      if (ch === '\n') { out.push('\\n'); continue }
+      if (ch === '\r') { out.push('\\r'); continue }
+      out.push(ch)
+      continue
     }
+    if (ch === '"') {
+      inString = true
+      openQuotePrev = lastNonspace
+      stringIsKey = isKeyPosition(openQuotePrev, stack)
+      out.push(ch)
+      continue
+    }
+    if (ch === '{' || ch === '[') {
+      stack.push(ch)
+      out.push(ch)
+      lastNonspace = ch
+      continue
+    }
+    if (ch === '}' || ch === ']') {
+      const openCh = ch === '}' ? '{' : '['
+      if (stack.length > 0 && stack[stack.length - 1] === openCh) {
+        stack.pop()
+        out.push(ch)
+        lastNonspace = ch
+      } else if (autoInsert && auto < 10 && stack.length > 0) {
+        // 自动补插缺失括号：先闭合栈顶（数组→`]`，对象→`}`），再消费当前字符
+        const miss = stack[stack.length - 1] === '[' ? ']' : '}'
+        out.push(miss)
+        stack.pop()
+        auto++
+        if (stack.length > 0 && stack[stack.length - 1] === openCh) {
+          stack.pop()
+          out.push(ch)
+          lastNonspace = ch
+        } else if (stack.length > 0) {
+          const miss2 = stack[stack.length - 1] === '[' ? ']' : '}'
+          out.push(miss2)
+          stack.pop()
+          auto++
+          if (stack.length > 0 && stack[stack.length - 1] === openCh) {
+            stack.pop()
+            out.push(ch)
+            lastNonspace = ch
+          } else {
+            out.push(ch)
+            lastNonspace = ch
+          }
+        } else {
+          out.push(ch)
+          lastNonspace = ch
+        }
+      } else {
+        // 括号不匹配且无法自动修复 → 放弃
+        return null
+      }
+      continue
+    }
+    // P0-4（本任务）：LLM 偶发在「对象闭合后紧跟 , 但外层对象未闭合」处漏掉 `}`，
+    // 典型如 `...]}]},`（edges 数组闭合后本应再补 `}` 却直接逗号进入下一 block）。
+    // 此时栈顶是 `{` 且刚闭合的是 `}`，自动补插缺失的 `}`（证据 id=923）。
+    if (
+      autoInsert &&
+      auto < 10 &&
+      ch === ',' &&
+      stack.length > 0 &&
+      stack[stack.length - 1] === '{' &&
+      lastNonspace === '}'
+    ) {
+      out.push('}')
+      stack.pop()
+      auto++
+    }
+    out.push(ch)
+    if (!/\s/.test(ch)) lastNonspace = ch
   }
+
+  let repaired = out.join('')
+  // ① 闭合未闭合字符串（若为未闭合 key 则补 `: null`；截断在冒号后补 ` null`）
+  if (inString) {
+    if (escaped) repaired = repaired.slice(0, -1) // 剥离孤立反斜杠，避免转义吞掉闭合引号
+    repaired += '"'
+    if (stringIsKey) repaired += ': null'
+  } else if (lastNonspace === ':') {
+    repaired += ' null'
+  } else if (lastNonspace === '"' && lastClosedKey) {
+    repaired += ': null'
+  }
+  // ② 去除尾部逗号/空白
+  repaired = repaired.replace(/[\s,]+$/, '')
+  // ③ 逆序闭合未配对括号
+  repaired += stack.slice().reverse().map(o => (o === '{' ? '}' : ']')).join('')
+
   try {
-    JSON.parse(candidate)
-    return candidate
+    JSON.parse(repaired)
+    return repaired
   } catch {
     return null
   }
+}
+
+/**
+ * 最长有效前缀：从后向前枚举 `}` 位置（封顶 300 个候选），
+ * 找到第一个可解析且含非空 blocks 的前缀。用于内部结构性缺陷
+ * （如 LLM 在数组/对象闭合处漏掉 `]`/`}`，导致整体无法解析）。
+ */
+function longestValidPrefix(body: string, cap = 300): string | null {
+  const positions: number[] = []
+  for (let i = body.length - 1; i >= 0 && positions.length < cap; i--) {
+    if (body[i] === '}') positions.push(i)
+  }
+  for (const i of positions) {
+    const prefix = body.slice(0, i + 1)
+    try {
+      const parsed = JSON.parse(prefix)
+      if (parsed && typeof parsed === 'object' && Array.isArray((parsed as { blocks?: unknown[] }).blocks) && (parsed as { blocks: unknown[] }).blocks.length > 0) {
+        return prefix
+      }
+    } catch {
+      // 尝试更短前缀
+    }
+  }
+  return null
+}
+
+/**
+ * recoverBlocksFromBrokenJson — 从「整体无法解析的畸形 JSON」中逐块恢复配方卡。
+ *
+ * P0-4（本任务）：LLM 偶发在 JSON 内部漏闭括号（如 callout.details 数组少一个 `}`），
+ * 导致 repairTruncatedJson 也无法整体修复（证据 id=875）。此时不再降级为纯文本，
+ * 而是：
+ *   1. 定位正文中每个 `"type":` 前的 `{` 起点；
+ *   2. 用括号匹配器找出每个 block 的完整闭合区间；
+ *   3. 逐个 JSON.parse，把可解析且含合法 type/data 的 block 收集起来；
+ *   4. 重新组装 { responseType, title, blocks } 结构化配方卡。
+ *
+ * 这样即使个别 block 畸形（被丢弃），其余完整 block 仍能渲染为配方卡，
+ * 用户看到的是「配方卡（部分区块缺失）」而非「纯文本 + 误导提示」。
+ *
+ * @param content 消息原始内容（可能以 ```json 开头）
+ * @returns 重组后的结构化配方卡；无可解析 block 时返回 null。
+ */
+export function recoverBlocksFromBrokenJson(content: string): StructuredContent | null {
+  if (!content) return null
+  const start = content.search(/\{|\[/)
+  if (start < 0) return null
+  const jsonText = content.slice(start)
+
+  // 快速路径：整体已可解析 → 直接交给常规解析
+  try {
+    const parsed = JSON.parse(jsonText) as Record<string, unknown>
+    if (parsed && Array.isArray(parsed.blocks) && (parsed.blocks as unknown[]).length > 0) {
+      return parsed as unknown as StructuredContent
+    }
+  } catch {
+    // 走块级恢复
+  }
+
+  // 定位所有 `"type":` 前的 `{` 起点
+  const blockStarts: number[] = []
+  const typeRe = /"type"\s*:/g
+  let m: RegExpExecArray | null
+  while ((m = typeRe.exec(jsonText)) !== null) {
+    let brace = m.index
+    while (brace >= 0 && jsonText[brace] !== '{') brace--
+    if (brace >= 0 && !blockStarts.includes(brace)) blockStarts.push(brace)
+  }
+  blockStarts.sort((a, b) => a - b)
+
+  const validTypes = new Set<BlockType>([
+    'header', 'data-table', 'chart', 'list',
+    'callout', 'metrics', 'divider',
+    'ingredient-detail', 'synergy-chart', 'timeline',
+  ])
+  const blocks: Array<Record<string, unknown>> = []
+  for (const blockStart of blockStarts) {
+    const blockEnd = findJsonBlockEnd(jsonText, blockStart)
+    if (blockEnd < 0) continue
+    const blockStr = jsonText.slice(blockStart, blockEnd + 1)
+    try {
+      const b = JSON.parse(blockStr) as Record<string, unknown>
+      if (
+        b && typeof b === 'object' &&
+        typeof b.type === 'string' &&
+        validTypes.has(b.type as BlockType) &&
+        b.data && typeof b.data === 'object'
+      ) {
+        blocks.push(b)
+      }
+    } catch {
+      // 该 block 畸形，丢弃
+    }
+  }
+  if (blocks.length === 0) return null
+
+  // 提取 title（在整体文本中找第一个 "title" 字符串值）
+  const titleMatch = jsonText.match(/"title"\s*:\s*"((?:[^"\\]|\\.)*)"/)
+  let title: string | undefined
+  if (titleMatch) {
+    try { title = JSON.parse('"' + titleMatch[1] + '"') as string } catch { title = undefined }
+  }
+
+  return {
+    responseType: 'recommendation',
+    title,
+    blocks: blocks as unknown as StructuredContent['blocks'],
+  }
+}
+
+/** 从给定起点（'{' 或 '['）找到匹配的闭合 `}`/`]` 下标；未闭合返回 -1。 */
+function findJsonBlockEnd(text: string, start: number): number {
+  let depth = 0
+  let inString = false
+  let escaped = false
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i]
+    if (inString) {
+      if (escaped) { escaped = false; continue }
+      if (ch === '\\') { escaped = true; continue }
+      if (ch === '"') inString = false
+      continue
+    }
+    if (ch === '"') { inString = true; continue }
+    if (ch === '{' || ch === '[') { depth++; continue }
+    if (ch === '}' || ch === ']') {
+      depth--
+      if (depth === 0) return i
+    }
+  }
+  return -1
+}
+
+/**
+ * degradeJsonToMarkdown — 把「无法修复的残缺 ```json」降级为可读 Markdown。
+ *
+ * P0-4（本任务）：当 repairTruncatedJson 与 recoverBlocksFromBrokenJson 都无法修复
+ * （极端畸形）时，不再让用户看到「不完整的 JSON 数据」空白警告，而是把 ```json
+ * 开标签降级为普通 ``` 代码块，交给 MarkdownRenderer 渲染原始文本，保留可读性。
+ *
+ * 返回降级后的 Markdown 文本；若内容不适合降级（无 ```json 标记）返回 null。
+ */
+export function degradeJsonToMarkdown(content: string): string | null {
+  if (!content || !content.includes('```json')) return null
+  // 仅替换第一个 ```json 开标签（该消息以配方卡 JSON 开头）
+  const firstFence = content.indexOf('```json')
+  if (firstFence < 0) return null
+  const degraded = content.slice(0, firstFence) + '```' + content.slice(firstFence + '```json'.length)
+  return degraded || null
 }
 
 /**
@@ -306,7 +613,6 @@ function convertLegacyFormulaBlocks(parsed: Record<string, unknown>): Array<{ ty
     (parsed['合规说明'] || parsed['安全依据'] || parsed['regulatory_compliance'] || parsed['compliance'] || parsed['safety_basis']) as string | undefined
   const specialGroups = (parsed['特殊人群提示'] || parsed['特殊人群']) as string | undefined
   const dailyCheck = (parsed['每日用量上限校验'] || parsed['每日用量'] || parsed['用量限制']) as string | undefined
-  const conflicts = parsed['冲突说明'] as string | Array<string> | undefined
 
   if (!name && !ingredientsRaw) return null
 
@@ -438,4 +744,47 @@ export function safeBlockData<T>(data: T | undefined | null, fallback: T): T {
  */
 export function formatPercent(value: number, decimals = 0): string {
   return (value * 100).toFixed(decimals) + '%'
+}
+
+/**
+ * 统一的结构化内容解析入口（多级兜底）。
+ *
+ * 这是「渲染」与「数据捕获」共用的唯一解析口径 —— 与 MessageBubble.renderMessageContent
+ * 的五级 blocks 解析链一致，保证「能渲染成结构化卡的消息」就「能被数据捕获」。
+ *
+ * 逐级尝试，返回首个非 null 的 StructuredContent：
+ *   1. detectStructuredContent       —— 标准 blocks JSON
+ *   2. extractStructuredFallback     —— 带前后说明文字 / 旧格式 / 未知 block 白名单过滤
+ *   3. repairTruncatedJson + 再解析  —— 流式截断/漏闭括号
+ *   4. recoverBlocksFromBrokenJson   —— 整体畸形但可逐块恢复
+ *
+ * 全部失败返回 null（调用方再走 markdown/文本兜底）。
+ *
+ * 背景：此前 useChatMessages 的配方捕获只用第 1 级 detectStructuredContent，
+ * 而消息渲染用完整五级链，导致「卡片渲染成结构化、面板却空」的不对称缺陷。
+ */
+export function resolveStructuredContent(content: string): StructuredContent | null {
+  if (!content) return null
+
+  // 第 1 级：标准 blocks JSON
+  const standard = detectStructuredContent(content)
+  if (standard) return standard
+
+  // 第 2 级：带前后杂讯 / 旧格式 / 白名单过滤
+  const fallback = extractStructuredFallback(content)
+  if (fallback) return fallback
+
+  // 第 3 级：截断/漏括号修复后重解析
+  const repairedContent = repairTruncatedJson(content)
+  if (repairedContent) {
+    const repaired =
+      extractStructuredFallback(repairedContent) ?? detectStructuredContent(repairedContent)
+    if (repaired) return repaired
+  }
+
+  // 第 4 级：整体畸形但可逐块恢复
+  const recovered = recoverBlocksFromBrokenJson(content)
+  if (recovered) return recovered
+
+  return null
 }

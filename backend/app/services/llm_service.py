@@ -12,13 +12,23 @@ import logging
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import TYPE_CHECKING, Any, AsyncIterator
 
 import httpx
 
 from ..core.config import settings
 
+if TYPE_CHECKING:
+    # 仅供类型检查器识别 chat_stream 签名中的 StreamMeta；
+    # 运行时不导入，避免与 services.ai 包形成循环导入（见下方模块级注释）。
+    from .ai.providers.llm_provider import StreamMeta
+
 logger = logging.getLogger(__name__)
+
+# 注：StreamMeta / normalize_finish_reason 定义在 services.ai.providers.llm_provider，
+# 但本模块被 services.ai.orchestration.react_chain 顶层导入，而 services.ai.__init__
+# 会拉起整个 AI 包（含 react_chain），若在此顶层导入会形成循环导入。
+# 因此在 chat_stream 内部按需延迟导入（运行时所有模块均已加载，安全）。
 
 # ── 数据库持久化 ──
 _CONFIG_DB_KEY = "llm_runtime_config"
@@ -765,6 +775,7 @@ class LLMService:
         tools: list[dict] | None = None,
         model: str | None = None,
         temperature: float | None = None,
+        meta: StreamMeta | None = None,
     ) -> AsyncIterator[str]:
         """
         流式对话（SSE）
@@ -774,12 +785,19 @@ class LLMService:
             tools: 函数调用定义（Function Calling）
             model: 按调用覆盖模型 ID（DS Bot 移植，可选）
             temperature: 按调用覆盖温度（可选）
+            meta: 可选流式结果载体（StreamMeta）。传入时，本方法会把上游 SSE 中的
+                finish_reason（归一化为 stop/length/content_filter/...）与 usage 回填到
+                该对象，供调用方判断是否被 max_tokens 截断。不传则行为与历史版本完全一致
+                （纯文本迭代器，向后兼容既有调用点）。
 
         Yields:
             每次产出一段文本 chunk
         """
         if not self.is_available:
             raise RuntimeError("LLM 服务未配置")
+
+        # 延迟导入，避免与 services.ai 包形成循环导入（见模块顶部注释）
+        from .ai.providers.llm_provider import normalize_finish_reason
 
         url = f"{self.config.base_url}/chat/completions"
         headers = self._build_headers()
@@ -851,7 +869,8 @@ class LLMService:
                                 break
                             try:
                                 chunk = json.loads(data_str)
-                                delta = chunk["choices"][0].get("delta", {})
+                                choice = chunk["choices"][0]
+                                delta = choice.get("delta", {})
                                 content = delta.get("content", "")
                                 if content:
                                     if not first_chunk_logged:
@@ -863,6 +882,19 @@ class LLMService:
                                         )
                                     line_count += 1
                                     yield content
+                                # 根因修复：透传上游停止原因（末尾 chunk 携带 finish_reason）。
+                                # 归一化后回填到 meta，供上层判断是否被 max_tokens 截断（length）。
+                                if meta is not None:
+                                    raw_fr = choice.get("finish_reason")
+                                    if raw_fr:
+                                        meta.raw_finish_reason = raw_fr
+                                        meta.finish_reason = normalize_finish_reason(raw_fr)
+                                        logger.info(
+                                            f"[chat_stream] 上游 finish_reason={raw_fr!r} "
+                                            f"(normalized={meta.finish_reason!r})"
+                                        )
+                                    if chunk.get("usage"):
+                                        meta.usage = chunk["usage"]
                             except (json.JSONDecodeError, KeyError, IndexError) as parse_err:
                                 logger.warning(f"[chat_stream] 流式响应解析失败: {data_str[:100]}, error={parse_err}")
                                 continue

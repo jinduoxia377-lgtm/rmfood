@@ -350,6 +350,7 @@ export function ChatStateProvider({ children }: ChatStateProviderProps) {
     retryLastMessage, clearError, isPaused, pauseStreaming,
     editMessage: messageEditing.handleEditMessage,
     retractMessage: messageEditing.handleRetractMessage,
+    regenerateMessage: (messageId: string) => { void messageEditing.handleRegenerateMessage(messageId) },
     setActiveSessionId, checkCompaction,
 
     // 实时进度条

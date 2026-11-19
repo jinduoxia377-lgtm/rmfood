@@ -44,13 +44,60 @@ class LLMResponse:
     latency_ms: float = 0.0
 
 
+# ── 流式 finish_reason 归一化 + 流式结果载体 ──
+# 各上游对"为何停止生成"的命名不同，这里统一映射为规范值：
+#   "stop"          正常结束
+#   "length"        达到 max_tokens 上限被截断（续写触发信号）
+#   "content_filter"内容安全过滤
+#   "tool_calls"    模型请求工具调用
+#   "other"/""      其他/未知
+_FINISH_REASON_ALIASES: Dict[str, str] = {
+    # OpenAI / OpenAI 兼容（DeepSeek、Ollama OpenAI 层等）
+    "stop": "stop",
+    "length": "length",
+    "content_filter": "content_filter",
+    "tool_calls": "tool_calls",
+    "function_call": "tool_calls",
+    # Anthropic messages API
+    "end_turn": "stop",
+    "max_tokens": "length",
+    "stop_sequence": "stop",
+    "tool_use": "tool_calls",
+    "refusal": "content_filter",
+    # Ollama /api/chat
+    "done": "stop",
+}
+
+
+def normalize_finish_reason(raw: str) -> str:
+    """把各 provider 的停止原因归一化为规范字符串（未知值归为 "other"）。"""
+    if not raw:
+        return ""
+    return _FINISH_REASON_ALIASES.get(str(raw).strip().lower(), "other")
+
+
+@dataclass
+class StreamMeta:
+    """流式结果载体（side-channel）。
+
+    ``stream_generate`` / ``chat_stream`` 是 ``AsyncIterator[str]``，为保持向后兼容
+    （现有调用方按纯文本迭代器消费），不改变 yield 类型；当调用方需要感知上游的
+    finish_reason / usage 时，传入一个 ``StreamMeta`` 实例，适配器在解析 SSE 过程中
+    就地回填字段。调用方在流结束后读取 ``meta.finish_reason`` 即可。
+    """
+
+    finish_reason: str = ""  # 归一化后的停止原因（见 normalize_finish_reason）
+    raw_finish_reason: str = ""  # 上游原始值（便于排查）
+    usage: Dict[str, int] = field(default_factory=dict)
+
+
 @dataclass
 class ProviderConfig:
     """Provider配置"""
     api_key: str = ""
     base_url: str = ""
     model: str = ""
-    max_tokens: int = 16000
+    max_tokens: int = 32000
     temperature: float = 0.7
     top_p: float = 1.0
     timeout: float = 60.0
@@ -114,6 +161,10 @@ class LLMProvider(ABC):
 
         Yields:
             每个token或文本块，用于前端打字机效果
+
+        附加：调用方可传入 ``meta=StreamMeta()``（见本模块 ``StreamMeta``），
+        适配器会把上游的 finish_reason（归一化）与 usage 回填到该载体，
+        从而在不破坏 ``AsyncIterator[str]`` 纯文本契约的前提下透传停止原因。
         """
         pass
 
@@ -273,6 +324,7 @@ class OpenAIProvider(LLMProvider):
     async def stream_generate(
         self,
         messages: List[Dict[str, str]],
+        meta: Optional[StreamMeta] = None,
         **kwargs
     ) -> AsyncIterator[str]:
         url = f"{self.config.base_url}/chat/completions"
@@ -295,10 +347,20 @@ class OpenAIProvider(LLMProvider):
 
                     try:
                         chunk = json.loads(data_str)
-                        delta = chunk["choices"][0].get("delta", {})
+                        choice = chunk["choices"][0]
+                        delta = choice.get("delta", {})
                         content = delta.get("content", "")
                         if content:
                             yield content
+                        # 透传停止原因（最后一个 chunk 携带 finish_reason）
+                        if meta is not None:
+                            raw_fr = choice.get("finish_reason")
+                            if raw_fr:
+                                meta.raw_finish_reason = raw_fr
+                                meta.finish_reason = normalize_finish_reason(raw_fr)
+                            # 部分 provider 在末尾 chunk 附带 usage
+                            if chunk.get("usage"):
+                                meta.usage = chunk["usage"]
                     except (json.JSONDecodeError, KeyError) as e:
                         logger.warning(f"流式响应解析失败: {e}")
                         continue
@@ -460,6 +522,7 @@ class AnthropicProvider(LLMProvider):
     async def stream_generate(
         self,
         messages: List[Dict[str, str]],
+        meta: Optional[StreamMeta] = None,
         **kwargs
     ) -> AsyncIterator[str]:
         url = f"{self.config.base_url}/v1/messages"
@@ -497,6 +560,26 @@ class AnthropicProvider(LLMProvider):
                             text = delta.get("text", "")
                             if text:
                                 yield text
+                        # 透传停止原因：Anthropic 在 message_delta 事件里带 stop_reason
+                        if meta is not None:
+                            if chunk.get("type") == "message_delta":
+                                raw_sr = (chunk.get("delta", {}) or {}).get("stop_reason")
+                                if raw_sr:
+                                    meta.raw_finish_reason = raw_sr
+                                    meta.finish_reason = normalize_finish_reason(raw_sr)
+                                msg_usage = chunk.get("usage")
+                                if msg_usage:
+                                    meta.usage = {
+                                        "input_tokens": msg_usage.get("input_tokens", 0),
+                                        "output_tokens": msg_usage.get("output_tokens", 0),
+                                    }
+                            elif chunk.get("type") == "message_start":
+                                msg_usage = (chunk.get("message", {}) or {}).get("usage")
+                                if msg_usage and not meta.usage:
+                                    meta.usage = {
+                                        "input_tokens": msg_usage.get("input_tokens", 0),
+                                        "output_tokens": msg_usage.get("output_tokens", 0),
+                                    }
                     except (json.JSONDecodeError, KeyError) as e:
                         logger.warning(f"流式响应解析失败: {e}")
                         continue
@@ -615,6 +698,7 @@ class LocalLlamaProvider(LLMProvider):
     async def stream_generate(
         self,
         messages: List[Dict[str, str]],
+        meta: Optional[StreamMeta] = None,
         **kwargs
     ) -> AsyncIterator[str]:
         url = f"{self.config.base_url}/api/chat"
@@ -645,6 +729,17 @@ class LocalLlamaProvider(LLMProvider):
                         content = message.get("content", "")
                         if content:
                             yield content
+                        # 透传停止原因：Ollama 末尾 chunk 带 done=True + done_reason
+                        if meta is not None and chunk.get("done"):
+                            raw_dr = chunk.get("done_reason", "")
+                            meta.raw_finish_reason = raw_dr
+                            meta.finish_reason = normalize_finish_reason(raw_dr)
+                            meta.usage = {
+                                "prompt_tokens": chunk.get("prompt_eval_count", 0),
+                                "completion_tokens": chunk.get("eval_count", 0),
+                                "total_tokens": chunk.get("prompt_eval_count", 0)
+                                + chunk.get("eval_count", 0),
+                            }
                     except (json.JSONDecodeError, KeyError) as e:
                         logger.warning(f"流式响应解析失败: {e}")
                         continue
