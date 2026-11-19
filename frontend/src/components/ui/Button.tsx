@@ -18,9 +18,9 @@ const buttonVariants = cva(
         link: 'text-primary underline-offset-4 hover:underline',
         success: 'bg-success text-success-foreground shadow-sm hover:bg-success/90',
         warning: 'bg-warning text-warning-foreground shadow-sm hover:bg-warning/90',
-        ai: 'bg-gradient-to-r from-accent to-primary text-white shadow-md hover:shadow-lg',
+        ai: 'bg-gradient-to-r from-[var(--color-accent-surface)] to-[var(--color-primary-surface)] text-white shadow-md hover:shadow-lg',
         amber: 'bg-warning text-warning-foreground shadow-sm hover:bg-warning/90',
-        glass: 'backdrop-blur-md bg-white/90 dark:bg-neutral-900/10 border border-white/40 dark:border-neutral-500/30 text-neutral-800 dark:text-neutral-100 shadow-lg hover:bg-white dark:hover:bg-neutral-900/20',
+        glass: 'backdrop-blur-md bg-white/90 dark:bg-[var(--bg-surface-container)] border border-white/40 dark:border-neutral-500/30 text-neutral-800 dark:text-neutral-100 shadow-lg hover:bg-white dark:hover:bg-neutral-900/80',
       },
       /* A-10 触控目标（10/10 判据）：原 h-9(36px) / h-8(32px) / icon 36×36
          均低于 WCAG 2.5.5 的 44×44，实测仪表盘 18 个可交互元素不达标。
@@ -64,29 +64,33 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={loading || undefined}
         {...props}
       >
-        {loading && (
-          <svg
-            className="animate-spin h-4 w-4"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
+        {loading ? (
+          <span className="inline-flex items-center gap-2">
+            <svg
+              className="animate-spin h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+            {children}
+          </span>
+        ) : (
+          children
         )}
-        {children}
       </Comp>
     )
   }
