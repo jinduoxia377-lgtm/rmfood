@@ -25,6 +25,8 @@ import {
   FileText,
   UserCircle,
   Search as SearchIcon,
+  Maximize2,
+  Minimize2,
   type LucideIcon,
 } from 'lucide-react'
 import type { ScenarioMode } from '../services/scenarioSwitcher'
@@ -70,6 +72,10 @@ export interface TopBarProps {
   onOpenUserProfile?: () => void
   onToggleSearch?: () => void
   searchOpen?: boolean
+  /** 放大对话窗口：展开态 + 切换回调 + 触发按钮 ref（折叠时焦点还原目标） */
+  expanded?: boolean
+  onToggleExpand?: () => void
+  expandTriggerRef?: React.RefObject<HTMLButtonElement | null>
   t: TFunction
 }
 
@@ -172,7 +178,8 @@ export function TopBar({
   onToggleRAG, onTriggerSeed,
   formulaCount, onShowFormulaList,
   messageCount, onClearChat, onOpenKBPanel,
-  onOpenUserProfile, onToggleSearch, searchOpen, t,
+  onOpenUserProfile, onToggleSearch, searchOpen,
+  expanded, onToggleExpand, expandTriggerRef, t,
 }: TopBarProps) {
   // 动态模型列表：从 store 获取，若无则降级为已知提供商默认模型
   const { selectedModel, availableModels } = useModelStore()
@@ -328,6 +335,25 @@ export function TopBar({
             }`}
           >
             <SearchIcon className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* ⑤½ 放大/还原对话窗口 — 改视图动作，紧邻同为改视图的搜索；展开态镜像搜索激活态高亮 */}
+        {onToggleExpand && (
+          <button
+            ref={expandTriggerRef}
+            onClick={onToggleExpand}
+            aria-label={expanded ? t('ai.chat.topbar.restoreChat') : t('ai.chat.topbar.expandChat')}
+            aria-pressed={expanded}
+            aria-controls="chat-stage"
+            title={expanded ? t('ai.chat.topbar.restoreChat') : t('ai.chat.topbar.expandChat')}
+            className={`p-1.5 min-h-[36px] min-w-[36px] inline-flex items-center justify-center rounded-md transition-colors ${
+              expanded
+                ? 'text-primary-500 bg-primary-50 dark:bg-primary-300/20'
+                : 'text-[color:var(--text-muted)] dark:text-[color:var(--text-secondary)] hover:bg-neutral-100 dark:hover:bg-neutral-800'
+            }`}
+          >
+            {expanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
         )}
 

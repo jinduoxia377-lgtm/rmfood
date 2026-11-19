@@ -27,6 +27,7 @@ import ComposerStatusBar from './components/pro/ComposerStatusBar'
 import DetailsPanel from './components/pro/DetailsPanel'
 import FollowUpSuggestionsBar from './components/pro/FollowUpSuggestionsBar'
 import { RAGSourcesBanner } from '@/components/ai/rag/RAGSourcesBanner'
+import { useExpandChatA11y } from './hooks/useExpandChatA11y'
 
 // ===== 视觉设计系统 =====
 
@@ -183,6 +184,19 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
     formulaName: string
     payload: FormulaCreatePayload
   } | null>(null)
+
+  // ── 放大对话窗口：展开态 + 触发按钮 ref + 展开面根容器 ref，并接入 a11y 副作用 ──
+  const [chatExpanded, setChatExpanded] = React.useState(false)
+  const expandTriggerRef = React.useRef<HTMLButtonElement | null>(null)
+  const chatStageRef = React.useRef<HTMLDivElement | null>(null)
+  const toggleChatExpand = React.useCallback(() => setChatExpanded(v => !v), [])
+  // 仅展开态生效：Esc 关闭 / Tab 焦点陷阱 / body 滚动锁 / 折叠时焦点还原
+  useExpandChatA11y({
+    isExpanded: chatExpanded,
+    stageRef: chatStageRef,
+    triggerRef: expandTriggerRef,
+    onCollapse: () => setChatExpanded(false),
+  })
 
   // ── 同步 Context 状态到本地（用于回调）──
   React.useEffect(() => {
@@ -431,8 +445,19 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
         onToggle={toggleHistory}
       />
 
-      {/* 主内容区 */}
-      <div className="flex flex-col flex-1 min-h-0 min-w-0">
+      {/* 主内容区 — 展开态：fixed 覆盖层放大对话窗口（z-[60] 高于 DetailsPanel/notice 的 z-50）；
+          折叠态：常规 flex 列。id="chat-stage" 供 TopBar 放大按钮 aria-controls 引用。 */}
+      <div
+        id="chat-stage"
+        ref={chatStageRef}
+        // 仅展开态宣告为模态对话框，折叠态是常驻非模态区域（不能恒标 dialog）
+        role={chatExpanded ? 'dialog' : undefined}
+        aria-modal={chatExpanded ? true : undefined}
+        aria-label={chatExpanded ? t('ai.empty.chatAreaAria') : undefined}
+        className={`flex flex-col flex-1 min-h-0 min-w-0 ${
+          chatExpanded ? 'fixed inset-0 z-[60] bg-white dark:bg-neutral-950' : ''
+        }`}
+      >
         {/* ① 顶栏 */}
         <TopBar
           llmAvailable={llmAvailable}
@@ -460,6 +485,10 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
           onOpenUserProfile={() => setShowUserProfileSettings(true)}
           onToggleSearch={() => setSearchOpen(v => !v)}
           searchOpen={searchOpen}
+          // 放大/还原对话窗口：传 expanded + onToggleExpand 后 TopBar 才渲染放大按钮（⑤½）
+          expanded={chatExpanded}
+          onToggleExpand={toggleChatExpand}
+          expandTriggerRef={expandTriggerRef}
           // 传入真实翻译函数，确保 TopBar 文案随全局语言切换
           t={t}
         />
@@ -749,7 +778,7 @@ export function ChatTab({ onOpenKnowledgeTab }: ChatTabProps) {
         {notice && (
           <div
             role="status"
-            className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full
+            className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-[70] px-4 py-2 rounded-full
               text-xs font-medium shadow-lg animate-fade-in text-white flex items-center gap-3 ${
                 notice.kind === 'success'
                   ? 'bg-success-500'
