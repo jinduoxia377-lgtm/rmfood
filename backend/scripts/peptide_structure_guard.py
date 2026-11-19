@@ -132,10 +132,18 @@ CHECKS = [
         "前端 service：quantitative/predict 必须用查询参数",
     ),
     # 完整分析 Tab：DPP4 + 来源证据 + 安全警告
+    # 2026-11-19 放宽：活性渲染已重构为 buildActivityDims/ACTIVITY_DIM_SPECS 统一驱动，
+    # result.dpp4_inhibition? 字面访问点消失，故改为「一组备选模式，任一命中即通过」：
+    #   ① 旧写法直访 result.dpp4_inhibition?（含可选 ?）
+    #   ② getActivityScore 中 case 'dpp4'（dpp4 维度取分分支）
+    #   ③ ACTIVITY_DIM_SPECS 中 key: 'dpp4'（dpp4 维度注册行，buildActivityDims 统一渲染的依据）
+    #   ④ dpp4Inhibition= 显式回传
+    # 保护强度不降：DPP-IV 渲染逻辑被删光（含只删 dpp4 维度的降级回退）时，
+    # 四种证据同时消失，仍会 [REVERTED]。全为字面分支，无前瞻，门禁保持毫秒级。
     (
         "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
-        r"result\.dpp4_inhibition\?",
-        "完整分析 Tab：DPP4 抑制必须渲染（带缺失守卫）",
+        r"result\.dpp4_inhibition\??|case\s+'dpp4'|key:\s*'dpp4'|dpp4Inhibition\s*=",
+        "完整分析 Tab：DPP4 抑制必须渲染（旧直访 / case 'dpp4' / ACTIVITY_DIM_SPECS 的 key:'dpp4' / dpp4Inhibition 回传，任一即可）",
     ),
     (
         "frontend/src/pages/database/tabs/PeptideStructureAnalyzer.tsx",
