@@ -3419,6 +3419,7 @@ export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: Pep
                                 atoms={molecule3D.atoms}
                                 bonds={molecule3D.bonds}
                                 renderingMode={renderingMode}
+                                sequence={result?.sequence}
                               />
                               {/* 重新分析时保留查看器（避免卸载重建 WebGL 上下文），仅叠加更新遮罩 */}
                               {loading3D && (
